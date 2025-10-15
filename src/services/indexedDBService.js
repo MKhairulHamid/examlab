@@ -4,9 +4,10 @@
  */
 
 import { openDB } from 'idb'
+import { IDB_NAME, IDB_VERSION } from '../utils/constants.js'
 
-const DB_NAME = 'ExamPrepDB'
-const DB_VERSION = 1
+const DB_NAME = IDB_NAME
+const DB_VERSION = IDB_VERSION
 
 // Store names
 const STORES = {

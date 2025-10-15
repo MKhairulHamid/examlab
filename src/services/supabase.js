@@ -10,7 +10,7 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
-    storageKey: 'examprep-auth'
+    storageKey: 'cloudexamlab-auth'
   }
 })
 

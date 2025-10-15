@@ -62,7 +62,7 @@ function App() {
   }, [initializeAuth, initializeSync])
   
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/examlab">
       <Routes>
         {/* Public routes */}
         <Route path="/" element={<Landing />} />

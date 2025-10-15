@@ -9,7 +9,7 @@ function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* About */}
           <div>
-            <h3 className="text-white font-bold mb-3">ExamPrep</h3>
+            <h3 className="text-white font-bold mb-3">Cloud Exam Lab</h3>
             <p className="text-white/70 text-sm">
               Professional exam practice platform for certification success
             </p>
@@ -62,7 +62,7 @@ function Footer() {
 
         <div className="mt-8 pt-6 border-t border-white/10 text-center">
           <p className="text-white/50 text-sm">
-            © {currentYear} ExamPrep. All rights reserved.
+            © {currentYear} Cloud Exam Lab. All rights reserved.
           </p>
         </div>
       </div>

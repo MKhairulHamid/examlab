@@ -1,13 +1,13 @@
 {
-  "name": "ExamPrep - Professional Exam Practice",
-  "short_name": "ExamPrep",
+  "name": "Cloud Exam Lab - Professional Exam Practice",
+  "short_name": "Cloud Exam Lab",
   "description": "Master certification exams with real-world practice questions, study materials, and progress tracking",
-  "start_url": "/dashboard.html",
+  "start_url": "/examlab/",
   "display": "standalone",
   "background_color": "#0A2540",
   "theme_color": "#0A2540",
   "orientation": "portrait-primary",
-  "scope": "/",
+  "scope": "/examlab/",
   "icons": [
     {
       "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' fill='%230A2540' rx='32'/><text x='96' y='130' font-size='100' text-anchor='middle' fill='white'>📋</text></svg>",
@@ -25,7 +25,7 @@
   "categories": ["education", "productivity"],
   "screenshots": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1080 1920'><rect width='1080' height='1920' fill='%230A2540'/><text x='540' y='960' font-size='120' text-anchor='middle' fill='%2300D4AA'>ExamPrep Practice</text></svg>",
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1080 1920'><rect width='1080' height='1920' fill='%230A2540'/><text x='540' y='960' font-size='120' text-anchor='middle' fill='%2300D4AA'>Cloud Exam Lab</text></svg>",
       "sizes": "1080x1920",
       "type": "image/svg+xml",
       "form_factor": "narrow"

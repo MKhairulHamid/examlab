@@ -3,7 +3,9 @@
  * Used for quick access to small data (profiles, progress metadata, etc.)
  */
 
-const CACHE_PREFIX = 'examprep_cache_'
+import { STORAGE_PREFIX } from '../utils/constants.js'
+
+const CACHE_PREFIX = `${STORAGE_PREFIX}cache_`
 
 export const cacheService = {
   /**

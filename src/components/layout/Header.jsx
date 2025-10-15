@@ -23,7 +23,7 @@ function Header() {
           {/* Logo */}
           <Link to="/dashboard" className="flex items-center space-x-2">
             <span className="text-2xl">📚</span>
-            <span className="text-white font-bold text-xl hidden sm:inline">ExamPrep</span>
+            <span className="text-white font-bold text-xl hidden sm:inline">Cloud Exam Lab</span>
           </Link>
 
           {/* Right section */}

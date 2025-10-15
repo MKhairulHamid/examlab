@@ -2,7 +2,7 @@
  * Application constants
  */
 
-export const APP_NAME = 'ExamPrep'
+export const APP_NAME = 'Cloud Exam Lab'
 export const APP_DESCRIPTION = 'Master certification exams with professional practice'
 
 // Supabase configuration from environment variables
@@ -66,10 +66,10 @@ export const TIMER_WARNING = {
 }
 
 // Local storage keys prefix
-export const STORAGE_PREFIX = 'examprep_'
+export const STORAGE_PREFIX = 'cloudexamlab_'
 
 // IndexedDB database name
-export const IDB_NAME = 'ExamPrepDB'
+export const IDB_NAME = 'CloudExamLabDB'
 export const IDB_VERSION = 1
 
 // Sync intervals

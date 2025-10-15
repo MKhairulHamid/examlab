@@ -67,7 +67,7 @@ function Landing() {
         <div className="features-container">
           <div className="features-header">
             <div className="features-label">
-              Why Professionals Choose ExamPrep
+              Why Professionals Choose Cloud Exam Lab
             </div>
             <h2 className="features-title">
               Everything You Need to Pass Your Certification
