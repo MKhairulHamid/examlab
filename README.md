@@ -75,6 +75,16 @@ The built files will be in the `dist/` directory.
 npm run preview
 ```
 
+### Deploy to GitHub Pages
+
+```bash
+npm run deploy
+```
+
+Or push to `main` branch for automatic deployment via GitHub Actions.
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.
+
 ## 📁 Project Structure
 
 ```
