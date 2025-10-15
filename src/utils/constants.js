@@ -5,9 +5,9 @@
 export const APP_NAME = 'ExamPrep'
 export const APP_DESCRIPTION = 'Master certification exams with professional practice'
 
-// Supabase configuration (from exam-prep-test)
-export const SUPABASE_URL = 'https://nknsajgstykclmneeecx.supabase.co'
-export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5rbnNhamdzdHlrY2xtbmVlZWN4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAyMDczOTIsImV4cCI6MjA3NTc4MzM5Mn0.0OM6VR8RFTS3hnxjPD7CzkBM9ks8SwmkZyD6BcbnUvc'
+// Supabase configuration from environment variables
+export const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
+export const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 // Supabase table names
 export const TABLES = {
