@@ -1,0 +1,35 @@
+{
+  "name": "ExamPrep - Professional Exam Practice",
+  "short_name": "ExamPrep",
+  "description": "Master certification exams with real-world practice questions, study materials, and progress tracking",
+  "start_url": "/dashboard.html",
+  "display": "standalone",
+  "background_color": "#0A2540",
+  "theme_color": "#0A2540",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' fill='%230A2540' rx='32'/><text x='96' y='130' font-size='100' text-anchor='middle' fill='white'>📋</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' fill='%230A2540' rx='96'/><text x='256' y='350' font-size='280' text-anchor='middle' fill='white'>📋</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "productivity"],
+  "screenshots": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1080 1920'><rect width='1080' height='1920' fill='%230A2540'/><text x='540' y='960' font-size='120' text-anchor='middle' fill='%2300D4AA'>ExamPrep Practice</text></svg>",
+      "sizes": "1080x1920",
+      "type": "image/svg+xml",
+      "form_factor": "narrow"
+    }
+  ]
+}
+
