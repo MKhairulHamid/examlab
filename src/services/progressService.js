@@ -114,17 +114,24 @@ export const progressService = {
    * Save progress (local immediate, queue Supabase sync)
    */
   async saveProgress(progress) {
-    const localKey = `progress_${progress.examAttemptId}`
+    const localKey = `progress_${progress.examAttemptId || progress.attemptId}`
     
     // 1. Save to localStorage immediately (instant, < 10ms)
     progress.updatedAt = new Date().toISOString()
-    cacheService.set(localKey, progress, 60 * 60 * 1000) // 1 hour cache
+    
+    // Add 'id' property for IndexedDB (keyPath compatibility)
+    const progressWithId = {
+      ...progress,
+      id: progress.attemptId || progress.examAttemptId || progress.id
+    }
+    
+    cacheService.set(localKey, progressWithId, 60 * 60 * 1000) // 1 hour cache
     
     // 2. Save to IndexedDB (for persistence)
-    await indexedDBService.setExamAttempt(progress)
+    await indexedDBService.setExamAttempt(progressWithId)
     
     // 3. Queue background sync to Supabase (debounced)
-    this.queueProgressSync(progress)
+    this.queueProgressSync(progressWithId)
     
     console.log('✅ Progress saved locally')
   },

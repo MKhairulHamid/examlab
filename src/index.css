@@ -1196,126 +1196,193 @@ button:disabled {
   line-height: 1.6;
 }
 
-/* Dashboard Styles */
+/* Dashboard Styles - Modern & Clean */
 .dashboard-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
+  animation: fadeIn 0.5s ease;
 }
 
 .dashboard-title {
   font-size: 1.875rem;
   font-weight: 700;
   color: var(--color-white);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .logout-button {
-  padding: 0.5rem 1rem;
+  padding: 0.625rem 1.25rem;
   background-color: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(16px);
   color: var(--color-white);
-  border-radius: 0.5rem;
+  border-radius: 0.75rem;
   border: 1px solid rgba(255, 255, 255, 0.2);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 500;
 }
 
 .logout-button:hover {
   background-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
+/* Welcome Card - Gradient Background */
 .welcome-card {
-  background-color: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(16px);
-  border-radius: 1rem;
+  background: linear-gradient(135deg, rgba(0, 212, 170, 0.1) 0%, rgba(10, 37, 64, 0.3) 100%);
+  backdrop-filter: blur(20px);
+  border-radius: 1.25rem;
   padding: 2rem;
-  margin-bottom: 2rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  margin-bottom: 2.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  animation: slideUp 0.6s ease;
 }
 
 .welcome-title {
-  font-size: 1.5rem;
+  font-size: 1.75rem;
   font-weight: 700;
   color: var(--color-white);
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.3;
 }
 
 .welcome-text {
   color: rgba(255, 255, 255, 0.9);
+  line-height: 1.6;
+  font-size: 0.9375rem;
 }
 
+/* Section Title */
 .section-title {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: var(--color-white);
-  margin-bottom: 1rem;
-  line-height: 1.4;
+  margin-bottom: 1.5rem;
+  line-height: 1.3;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  animation: slideDown 0.5s ease;
 }
 
 @media (min-width: 640px) {
   .section-title {
-    font-size: 1.5rem;
-    margin-bottom: 1.5rem;
+    font-size: 1.75rem;
+    margin-bottom: 2rem;
+  }
+  
+  .welcome-title {
+    font-size: 2rem;
   }
 }
 
+/* Exam Cards Grid */
 .exams-grid {
   display: grid;
   gap: 1.5rem;
+  animation: fadeIn 0.7s ease;
 }
 
+@media (min-width: 768px) {
+  .exams-grid {
+    gap: 1.75rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .exams-grid {
+    gap: 2rem;
+  }
+}
+
+/* Enhanced Exam Card */
 .exam-card {
-  background-color: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(16px);
-  border-radius: 1rem;
-  padding: 1.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  border-radius: 1.25rem;
+  padding: 1.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.exam-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--gradient-accent);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.exam-card:hover::before {
+  transform: scaleX(1);
 }
 
 .exam-card:hover {
-  background-color: rgba(255, 255, 255, 0.15);
-  transform: translateY(-4px);
+  background-color: rgba(255, 255, 255, 0.12);
+  transform: translateY(-6px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+  border-color: rgba(0, 212, 170, 0.3);
 }
 
 .exam-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
+  font-size: 3.5rem;
+  margin-bottom: 1.25rem;
+  line-height: 1;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
 .exam-provider {
   color: var(--color-accent);
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.025em;
-  margin-bottom: 0.5rem;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.625rem;
+  display: inline-block;
 }
 
 .exam-name {
   font-size: 1.25rem;
   font-weight: 700;
   color: var(--color-white);
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.875rem;
+  line-height: 1.4;
 }
 
 .exam-description {
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.75);
   font-size: 0.875rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  line-height: 1.6;
 }
 
 .exam-meta {
   display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
-  font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.65);
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.exam-meta span {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
 }
 
 /* Back Button */
