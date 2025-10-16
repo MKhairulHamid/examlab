@@ -1017,7 +1017,7 @@ function Dashboard() {
       <DashboardHeader />
       <div style={{ 
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        background: 'linear-gradient(135deg, #0A2540 0%, #1A3B5C 100%)',
         padding: '0'
       }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '1.5rem' }}>
