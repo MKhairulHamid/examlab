@@ -115,15 +115,22 @@ class SyncQueue {
    * Sync exam progress to Supabase
    */
   async syncProgress(data) {
+    // Support both attemptId and examAttemptId naming conventions
+    const attemptId = data.attemptId || data.examAttemptId
+    
+    if (!attemptId) {
+      throw new Error('Missing attempt ID in progress data')
+    }
+    
     const { data: result, error } = await supabase
       .from('user_progress')
       .upsert({
         user_id: data.userId,
-        exam_attempt_id: data.examAttemptId,
-        current_question_number: data.currentQuestionNumber,
-        current_answers_json: data.answers,
-        time_elapsed_seconds: data.timeElapsed,
-        timer_paused: data.timerPaused,
+        exam_attempt_id: attemptId,
+        current_question_number: data.currentQuestionIndex || data.currentQuestionNumber || 0,
+        current_answers_json: data.answers || {},
+        time_elapsed_seconds: data.timeElapsed || 0,
+        timer_paused: data.timerPaused || false,
         last_synced_at: new Date().toISOString()
       }, {
         onConflict: 'user_id,exam_attempt_id'
