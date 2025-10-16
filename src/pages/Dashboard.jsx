@@ -14,9 +14,7 @@ function Dashboard() {
   const navigate = useNavigate()
   const { user, profile } = useAuthStore()
   const { exams, fetchExams } = useExamStore()
-  const { purchases, fetchPurchases, purchasedQuestionSetIds } = usePurchaseStore()
-  const [activeView, setActiveView] = useState('overview') // 'overview', 'analytics', 'review', 'explore'
-  const [selectedCert, setSelectedCert] = useState(null)
+  const { purchases, fetchPurchases } = usePurchaseStore()
   const [showPurchaseModal, setShowPurchaseModal] = useState(false)
   const [selectedExam, setSelectedExam] = useState(null)
   const [streakStats, setStreakStats] = useState(null)
