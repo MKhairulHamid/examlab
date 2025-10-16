@@ -67,7 +67,18 @@ class StreakService {
         .eq('user_id', userId)
         .single()
 
-      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+      if (error) {
+        // PGRST116 = no rows returned (normal case for new users)
+        if (error.code === 'PGRST116') {
+          return this.getDefaultStreak()
+        }
+        
+        // 42P01 = table doesn't exist, PGRST106 = table not found, 406 = Not Acceptable
+        if (error.code === '42P01' || error.code === 'PGRST106' || error.message?.includes('406')) {
+          console.warn('Study streaks table not available yet. Using local storage only.')
+          return null
+        }
+        
         console.error('Error fetching streak from DB:', error)
         return null
       }
@@ -87,6 +98,11 @@ class StreakService {
         lastSynced: new Date().toISOString()
       }
     } catch (error) {
+      // Catch network or other errors
+      if (error.message?.includes('406') || error.message?.includes('Not Acceptable')) {
+        console.warn('Study streaks feature not available. Using local storage only.')
+        return null
+      }
       console.error('Error in fetchStreakFromDB:', error)
       return null
     }
@@ -111,12 +127,20 @@ class StreakService {
         })
 
       if (error) {
+        // Silently fail if table doesn't exist
+        if (error.code === '42P01' || error.code === 'PGRST106' || error.message?.includes('406')) {
+          return false
+        }
         console.error('Error updating streak in DB:', error)
         return false
       }
 
       return true
     } catch (error) {
+      // Silently fail if table doesn't exist
+      if (error.message?.includes('406') || error.message?.includes('Not Acceptable')) {
+        return false
+      }
       console.error('Error in updateStreakInDB:', error)
       return false
     }

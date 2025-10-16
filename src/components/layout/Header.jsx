@@ -26,34 +26,34 @@ function Header() {
   return (
     <header className="bg-white/10 backdrop-blur-lg border-b border-white/20 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-14">
           {/* Logo */}
           <Link 
             to="/dashboard" 
-            className="flex items-center space-x-3 hover:opacity-90 transition-opacity"
+            className="flex items-center space-x-2 hover:opacity-90 transition-opacity"
           >
             <span className="text-2xl">📚</span>
             <span className="text-white font-bold text-lg sm:text-xl">Cloud Exam Lab</span>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-1">
+          <nav className="hidden md:flex items-center space-x-4">
             <Link 
               to="/dashboard" 
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
                 isActive('/dashboard') 
-                  ? 'bg-white/20 text-white' 
-                  : 'text-white/80 hover:bg-white/10 hover:text-white'
+                  ? 'bg-white/20 text-white underline' 
+                  : 'text-white/80 hover:bg-accent/10 hover:text-accent'
               }`}
             >
               Dashboard
             </Link>
             <Link 
               to="/" 
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
                 isActive('/') 
-                  ? 'bg-white/20 text-white' 
-                  : 'text-white/80 hover:bg-white/10 hover:text-white'
+                  ? 'bg-white/20 text-white underline' 
+                  : 'text-white/80 hover:bg-accent/10 hover:text-accent'
               }`}
             >
               Browse Exams
@@ -70,6 +70,7 @@ function Header() {
                 pendingCount > 0 ? 'bg-orange-400 animate-pulse' :
                 'bg-green-400'
               }`}></div>
+              <span className="text-white/80 text-xs mr-1">☁️</span>
               <span className="text-white/80 text-xs">
                 {getSyncStatusText()}
               </span>
@@ -98,7 +99,7 @@ function Header() {
             <div className="relative z-50">
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className="flex items-center space-x-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors border border-white/20"
+                className="flex items-center space-x-2 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors border border-white/30"
               >
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-accent to-accent-dark flex items-center justify-center text-white font-bold text-sm">
                   {userInitial}
@@ -160,6 +161,7 @@ function Header() {
                           pendingCount > 0 ? 'bg-orange-400' :
                           'bg-green-400'
                         }`}></div>
+                        <span className="mr-1">☁️</span>
                         {getSyncStatusText()}
                       </div>
                     </div>
@@ -189,10 +191,10 @@ function Header() {
             <nav className="flex flex-col">
               <Link 
                 to="/dashboard" 
-                className={`px-4 py-2.5 text-sm font-medium transition-colors ${
+                className={`px-4 py-2.5 text-sm font-semibold transition-colors ${
                   isActive('/dashboard') 
-                    ? 'bg-white/20 text-white' 
-                    : 'text-white/80 hover:bg-white/10 hover:text-white'
+                    ? 'bg-white/20 text-white underline' 
+                    : 'text-white/80 hover:bg-accent/10 hover:text-accent'
                 }`}
                 onClick={() => setShowMobileMenu(false)}
               >
@@ -200,10 +202,10 @@ function Header() {
               </Link>
               <Link 
                 to="/" 
-                className={`px-4 py-2.5 text-sm font-medium transition-colors ${
+                className={`px-4 py-2.5 text-sm font-semibold transition-colors ${
                   isActive('/') 
-                    ? 'bg-white/20 text-white' 
-                    : 'text-white/80 hover:bg-white/10 hover:text-white'
+                    ? 'bg-white/20 text-white underline' 
+                    : 'text-white/80 hover:bg-accent/10 hover:text-accent'
                 }`}
                 onClick={() => setShowMobileMenu(false)}
               >
@@ -218,6 +220,7 @@ function Header() {
                   pendingCount > 0 ? 'bg-orange-400 animate-pulse' :
                   'bg-green-400'
                 }`}></div>
+                <span className="mr-1">☁️</span>
                 {getSyncStatusText()}
               </div>
             </nav>

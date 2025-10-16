@@ -29,7 +29,7 @@ function Dashboard() {
   }, [user])
 
   useEffect(() => {
-    // Get user's certifications (purchased or started free)
+    // Get user's certifications (only purchased or started trial)
     if (exams.length > 0 && purchases.length >= 0) {
       const userExams = exams.filter(exam => {
         // Check if user has purchased any sets for this exam
@@ -39,12 +39,12 @@ function Dashboard() {
           return false
         })
         
-        // For now, show all available exams
-        // TODO: Filter by actually started exams from progress data
-        return hasPurchased || exam.is_active
+        // TODO: Add check for trial questions started from progress/attempt data
+        // For now, only show purchased certifications
+        return hasPurchased
       })
       
-      setUserCertifications(userExams.slice(0, 10)) // Show top 10
+      setUserCertifications(userExams)
     }
   }, [exams, purchases])
 
@@ -88,7 +88,16 @@ function Dashboard() {
           📚 My Certifications
         </h2>
         <button
-          onClick={() => navigate('/')}
+          onClick={() => {
+            navigate('/')
+            // Scroll to certifications section after navigation
+            setTimeout(() => {
+              const element = document.getElementById('certifications')
+              if (element) {
+                element.scrollIntoView({ behavior: 'smooth' })
+              }
+            }, 100)
+          }}
           style={{
             padding: '0.75rem 1.5rem',
             background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
@@ -105,7 +114,7 @@ function Dashboard() {
         >
           <span>+</span> Browse More Exams
         </button>
-      </div>
+        </div>
 
       {userCertifications.length === 0 ? (
         <div style={{
@@ -213,7 +222,7 @@ function Dashboard() {
                       Free Questions Available
                     </div>
                   )}
-                </div>
+        </div>
 
                 {/* Actions */}
                 <div style={{ display: 'flex', gap: '0.75rem' }}>
@@ -415,8 +424,8 @@ function Dashboard() {
           >
             <div style={{ fontSize: '3rem', marginBottom: '0.75rem' }}>{exam.icon || '📚'}</div>
             <div style={{ fontSize: '0.75rem', color: '#00D4AA', fontWeight: '600', marginBottom: '0.5rem', textTransform: 'uppercase' }}>
-              {exam.provider}
-            </div>
+                    {exam.provider}
+                  </div>
             <h3 style={{ fontSize: '1rem', fontWeight: '700', color: 'white', marginBottom: '0.5rem' }}>
               {exam.name}
             </h3>
@@ -425,8 +434,8 @@ function Dashboard() {
             </p>
             <div style={{ display: 'flex', gap: '1rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)', marginBottom: '1rem' }}>
               <span>📝 {exam.total_questions || 'N/A'} Qs</span>
-              <span>⏱️ {exam.duration_minutes || 'N/A'} min</span>
-            </div>
+                    <span>⏱️ {exam.duration_minutes || 'N/A'} min</span>
+                  </div>
 
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <button
@@ -472,7 +481,16 @@ function Dashboard() {
 
       <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
         <button
-          onClick={() => navigate('/')}
+          onClick={() => {
+            navigate('/')
+            // Scroll to certifications section after navigation
+            setTimeout(() => {
+              const element = document.getElementById('certifications')
+              if (element) {
+                element.scrollIntoView({ behavior: 'smooth' })
+              }
+            }, 100)
+          }}
           style={{
             padding: '0.75rem 1.5rem',
             background: 'rgba(255,255,255,0.1)',
@@ -481,7 +499,16 @@ function Dashboard() {
             borderRadius: '0.5rem',
             fontWeight: '600',
             cursor: 'pointer',
-            fontSize: '0.875rem'
+            fontSize: '0.875rem',
+            transition: 'all 0.2s'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(255,255,255,0.2)'
+            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.5)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'rgba(255,255,255,0.1)'
+            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'
           }}
         >
           View All 21 Certifications →
