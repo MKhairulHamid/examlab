@@ -234,7 +234,9 @@ export const useProgressStore = create((set, get) => ({
       percentageScore: results.percentage,
       scaledScore: results.scaledScore,
       passed: results.passed,
-      totalQuestions: results.totalQuestions
+      totalQuestions: results.totalQuestions,
+      examName: results.examName || 'Exam',
+      examSlug: results.examSlug || ''
     }
     
     // Save result to IndexedDB

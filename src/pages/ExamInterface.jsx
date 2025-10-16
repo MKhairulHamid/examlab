@@ -221,6 +221,57 @@ function ExamInterface() {
     saveAnswer(currentQuestionIndex, newAnswer)
   }
 
+  const calculateResults = () => {
+    let correctCount = 0
+    
+    questions.forEach((question, index) => {
+      const userAnswer = answers[index] || []
+      const correctAnswers = question.correctAnswers || []
+      
+      // Sort arrays for comparison
+      const sortedUserAnswer = [...userAnswer].sort()
+      const sortedCorrectAnswers = [...correctAnswers].sort()
+      
+      // Check if arrays are equal
+      if (JSON.stringify(sortedUserAnswer) === JSON.stringify(sortedCorrectAnswers)) {
+        correctCount++
+      }
+    })
+    
+    const percentage = Math.round((correctCount / questions.length) * 100)
+    const scaledScore = Math.round((correctCount / questions.length) * 1000) // Scale to 1000
+    
+    // Determine if passed (typically 70% or higher)
+    const passingScore = 70
+    const passed = percentage >= passingScore
+    
+    return {
+      correctCount,
+      totalQuestions: questions.length,
+      percentage,
+      scaledScore,
+      passed
+    }
+  }
+
+  const handleFinishExam = async () => {
+    // Calculate results
+    const results = calculateResults()
+    
+    // Add exam metadata
+    const resultsWithMetadata = {
+      ...results,
+      examName: currentQuestionSet.name,
+      examSlug: slug
+    }
+    
+    // Complete the exam and save results
+    const result = await useProgressStore.getState().completeExam(resultsWithMetadata)
+    
+    // Navigate to results page
+    navigate(`/exam/${slug}/results?resultId=${result.id}&set=${setId}`)
+  }
+
   const currentAnswer = answers[currentQuestionIndex] || []
 
   return (
@@ -300,7 +351,7 @@ function ExamInterface() {
               if (currentQuestionIndex < questions.length - 1) {
                 goToQuestion(currentQuestionIndex + 1)
               } else {
-                navigate(`/exam/${slug}`)
+                handleFinishExam()
               }
             }}
             className="nav-button nav-button-next"

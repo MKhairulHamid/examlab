@@ -9,6 +9,7 @@ import Landing from './pages/Landing'
 import Dashboard from './pages/Dashboard'
 import ExamDetail from './pages/ExamDetail'
 import ExamInterface from './pages/ExamInterface'
+import ExamResults from './pages/ExamResults'
 import ResetPassword from './pages/ResetPassword'
 import PaymentSuccess from './pages/PaymentSuccess'
 
@@ -91,6 +92,14 @@ function App() {
           element={
             <ProtectedRoute>
               <ExamInterface />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/exam/:slug/results" 
+          element={
+            <ProtectedRoute>
+              <ExamResults />
             </ProtectedRoute>
           } 
         />

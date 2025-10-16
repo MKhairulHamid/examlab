@@ -6,6 +6,8 @@ import usePurchaseStore from '../stores/purchaseStore'
 import PageLayout from '../components/layout/PageLayout'
 import PurchaseModal from '../components/purchase/PurchaseModal'
 import streakService from '../services/streakService'
+import progressService from '../services/progressService'
+import indexedDBService from '../services/indexedDBService'
 
 
 function Dashboard() {
@@ -19,34 +21,65 @@ function Dashboard() {
   const [selectedExam, setSelectedExam] = useState(null)
   const [streakStats, setStreakStats] = useState(null)
   const [userCertifications, setUserCertifications] = useState([])
+  const [examResults, setExamResults] = useState([])
 
   useEffect(() => {
     fetchExams()
     if (user) {
       fetchPurchases(user.id)
       initializeStreak()
+      loadExamResults()
     }
   }, [user])
 
+  const loadExamResults = async () => {
+    if (user) {
+      const results = await indexedDBService.getExamResultsByUser(user.id)
+      // Sort by completion date, newest first
+      const sortedResults = results.sort((a, b) => 
+        new Date(b.completedAt) - new Date(a.completedAt)
+      )
+      setExamResults(sortedResults)
+    }
+  }
+
   useEffect(() => {
-    // Get user's certifications (only purchased or started trial)
-    if (exams.length > 0 && purchases.length >= 0) {
-      const userExams = exams.filter(exam => {
-        // Check if user has purchased any sets for this exam
-        const hasPurchased = purchases.some(purchase => {
-          if (purchase.question_sets?.exam_type_id === exam.id) return true
-          if (purchase.packages?.exam_type_id === exam.id) return true
-          return false
+    // Get user's certifications (purchased or started)
+    const loadUserCertifications = async () => {
+      if (exams.length > 0 && purchases.length >= 0 && user) {
+        // Get all exam attempts from progress
+        const userAttempts = await progressService.getAllProgress(user.id)
+        
+        // Get unique exam type IDs from attempts
+        const attemptedExamIds = new Set()
+        for (const attempt of userAttempts) {
+          // Get the question set details to find exam_type_id
+          const questionSet = await indexedDBService.getQuestionSet(attempt.questionSetId)
+          if (questionSet?.exam_type_id) {
+            attemptedExamIds.add(questionSet.exam_type_id)
+          }
+        }
+        
+        const userExams = exams.filter(exam => {
+          // Check if user has purchased any sets for this exam
+          const hasPurchased = purchases.some(purchase => {
+            if (purchase.question_sets?.exam_type_id === exam.id) return true
+            if (purchase.packages?.exam_type_id === exam.id) return true
+            return false
+          })
+          
+          // Check if user has started any practice for this exam
+          const hasStarted = attemptedExamIds.has(exam.id)
+          
+          return hasPurchased || hasStarted
         })
         
-        // TODO: Add check for trial questions started from progress/attempt data
-        // For now, only show purchased certifications
-        return hasPurchased
-      })
-      
-      setUserCertifications(userExams)
+        setUserCertifications(userExams)
+      }
     }
-  }, [exams, purchases])
+    
+    loadUserCertifications()
+  }, [exams, purchases, user])
 
   const userName = profile?.full_name || user?.email?.split('@')[0] || 'Student'
 
@@ -156,6 +189,9 @@ function Dashboard() {
               p.packages?.exam_type_id === exam.id
             )
             
+            // Check if exam is started (has progress) but not purchased
+            const isStartedOnly = !isPurchased
+            
             return (
               <div 
                 key={exam.id}
@@ -208,6 +244,19 @@ function Dashboard() {
                     }}>
                       ✓ Purchased
                     </div>
+                  ) : isStartedOnly ? (
+                    <div style={{ 
+                      display: 'inline-block',
+                      padding: '0.25rem 0.75rem',
+                      background: 'rgba(59,130,246,0.2)',
+                      border: '1px solid rgba(59,130,246,0.5)',
+                      borderRadius: '0.5rem',
+                      color: 'rgba(147,197,253,1)',
+                      fontSize: '0.75rem',
+                      fontWeight: '600'
+                    }}>
+                      📝 In Progress
+                    </div>
                   ) : (
                     <div style={{ 
                       display: 'inline-block',
@@ -243,7 +292,7 @@ function Dashboard() {
                       fontSize: '0.875rem'
                     }}
                   >
-                    {isPurchased ? 'Continue Practice' : 'Try Free Questions'}
+                    {isPurchased ? 'Continue Practice' : isStartedOnly ? 'Continue Practice' : 'Try Free Questions'}
                   </button>
                   {!isPurchased && (
                     <button
@@ -263,7 +312,7 @@ function Dashboard() {
                         fontSize: '0.875rem'
                       }}
                     >
-                      Purchase
+                      {isStartedOnly ? 'Unlock Full Access' : 'Purchase'}
                     </button>
                   )}
                 </div>
@@ -275,6 +324,127 @@ function Dashboard() {
     </div>
   )
 
+
+  const renderRecentResults = () => {
+    if (examResults.length === 0) return null
+
+    return (
+      <div style={{ marginBottom: '3rem' }}>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: '700', color: 'white', marginBottom: '1.5rem' }}>
+          📊 Recent Exam Results
+        </h2>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          {examResults.slice(0, 5).map((result, index) => {
+            const passColor = result.passed ? '#10b981' : '#ef4444'
+            const passIcon = result.passed ? '✓' : '✗'
+            
+            return (
+              <div
+                key={result.id}
+                style={{
+                  background: 'rgba(255,255,255,0.1)',
+                  backdropFilter: 'blur(20px)',
+                  padding: '1.5rem',
+                  borderRadius: '1rem',
+                  border: `1px solid ${result.passed ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '1.5rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s'
+                }}
+                onClick={async () => {
+                  // Navigate using stored exam slug or fallback to finding it
+                  if (result.examSlug) {
+                    navigate(`/exam/${result.examSlug}/results?resultId=${result.id}&set=${result.questionSetId}`)
+                  } else {
+                    // Fallback: Find the exam slug
+                    const questionSet = await indexedDBService.getQuestionSet(result.questionSetId)
+                    if (questionSet?.exam_type_id) {
+                      const exam = exams.find(e => e.id === questionSet.exam_type_id)
+                      if (exam) {
+                        navigate(`/exam/${exam.slug}/results?resultId=${result.id}&set=${result.questionSetId}`)
+                      }
+                    }
+                  }
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.15)'
+                  e.currentTarget.style.transform = 'translateY(-2px)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.1)'
+                  e.currentTarget.style.transform = 'translateY(0)'
+                }}
+              >
+                {/* Status Icon */}
+                <div style={{
+                  width: '3rem',
+                  height: '3rem',
+                  borderRadius: '0.75rem',
+                  background: passColor,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white',
+                  fontWeight: '700',
+                  fontSize: '1.5rem',
+                  flexShrink: 0
+                }}>
+                  {passIcon}
+                </div>
+
+                {/* Result Details */}
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                    <h3 style={{ fontSize: '1rem', fontWeight: '700', color: 'white' }}>
+                      {result.examName || 'Exam Result'}
+                    </h3>
+                    <span style={{
+                      padding: '0.25rem 0.75rem',
+                      background: result.passed ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)',
+                      border: `1px solid ${result.passed ? 'rgba(16,185,129,0.5)' : 'rgba(239,68,68,0.5)'}`,
+                      borderRadius: '0.5rem',
+                      color: passColor,
+                      fontSize: '0.75rem',
+                      fontWeight: '600'
+                    }}>
+                      {result.passed ? 'PASSED' : 'FAILED'}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.7)' }}>
+                    {new Date(result.completedAt).toLocaleDateString()} • {new Date(result.completedAt).toLocaleTimeString()}
+                  </div>
+                </div>
+
+                {/* Score Display */}
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '2rem', fontWeight: '700', color: passColor }}>
+                    {result.percentageScore}%
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)' }}>
+                    {result.rawScore}/{result.totalQuestions} correct
+                  </div>
+                </div>
+
+                {/* View Arrow */}
+                <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '1.5rem' }}>
+                  →
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        {examResults.length > 5 && (
+          <div style={{ marginTop: '1rem', textAlign: 'center', color: 'rgba(255,255,255,0.7)', fontSize: '0.875rem' }}>
+            + {examResults.length - 5} more results
+          </div>
+        )}
+      </div>
+    )
+  }
 
   const renderStudyStreak = () => {
     if (!streakStats) return null
@@ -867,6 +1037,9 @@ function Dashboard() {
 
         {/* My Certifications */}
         {renderMyCertifications()}
+
+        {/* Recent Results */}
+        {renderRecentResults()}
 
         {/* Study Streak */}
         {renderStudyStreak()}

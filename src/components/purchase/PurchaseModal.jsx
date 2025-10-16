@@ -73,10 +73,26 @@ const PurchaseModal = ({ isOpen, onClose, examTypeId, examName }) => {
   // Find bundle package (3 sets)
   const bundlePackage = packages?.find(p => p.question_set_ids?.length >= 3)
   
-  // Calculate individual set pricing
-  const singleSetPrice = questionSets.length > 0 ? questionSets[0].price_cents / 100 : 5
-  const threeSetsPrice = bundlePackage ? bundlePackage.price_cents / 100 : singleSetPrice * 3 - 5
-  const bundleSavings = (singleSetPrice * 3) - threeSetsPrice
+  // Calculate individual set pricing - use actual prices from question sets
+  const singleSetPrice = questionSets.length > 0 && questionSets[0]?.price_cents 
+    ? questionSets[0].price_cents / 100 
+    : 5.00
+  
+  // Calculate total cost if buying all sets individually
+  const totalIndividualPrice = questionSets.length > 0
+    ? questionSets.reduce((sum, set) => sum + (set.price_cents || 500), 0) / 100
+    : singleSetPrice * 3
+  
+  // Bundle/package price - use actual package price or calculate discount
+  const threeSetsPrice = bundlePackage?.price_cents 
+    ? bundlePackage.price_cents / 100 
+    : Math.max(totalIndividualPrice * 0.8, singleSetPrice * 3 - 5) // 20% discount fallback
+  
+  // Calculate actual savings
+  const bundleSavings = totalIndividualPrice - threeSetsPrice
+  
+  // For display - ensure we're showing meaningful savings
+  const displayBundleSavings = bundleSavings > 0 ? bundleSavings : 5
 
   return (
     <div 
@@ -198,10 +214,14 @@ const PurchaseModal = ({ isOpen, onClose, examTypeId, examName }) => {
                   3 Question Sets
                 </h3>
                 <div style={{ fontSize: '2.5rem', fontWeight: '700', color: '#00D4AA', marginBottom: '0.5rem', textAlign: 'center' }}>
-                  ${threeSetsPrice}
+                  ${threeSetsPrice.toFixed(2)}
                 </div>
                 <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.875rem', marginBottom: '1rem', textAlign: 'center' }}>
-                  Save ${bundleSavings.toFixed(0)} • Complete bundle
+                  {bundleSavings > 0 ? (
+                    <>Save ${displayBundleSavings.toFixed(2)} • Complete bundle</>
+                  ) : (
+                    <>Complete bundle • Best value</>
+                  )}
                 </p>
                 
                 <ul style={{ listStyle: 'none', padding: 0, marginBottom: '1rem' }}>
@@ -246,10 +266,10 @@ const PurchaseModal = ({ isOpen, onClose, examTypeId, examName }) => {
                   1 Question Set
                 </h3>
                 <div style={{ fontSize: '2.5rem', fontWeight: '700', color: '#00D4AA', marginBottom: '0.5rem', textAlign: 'center' }}>
-                  ${singleSetPrice}
+                  ${singleSetPrice.toFixed(2)}
                 </div>
                 <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.875rem', marginBottom: '1rem', textAlign: 'center' }}>
-                  Single set option
+                  Per question set
                 </p>
                 
                 <ul style={{ listStyle: 'none', padding: 0, marginBottom: '1rem' }}>
@@ -344,7 +364,7 @@ const PurchaseModal = ({ isOpen, onClose, examTypeId, examName }) => {
                   opacity: selectedOption && !checkoutLoading ? 1 : 0.5
                 }}
               >
-                {checkoutLoading ? 'Processing...' : `Purchase ${selectedOption ? `- $${selectedOption.price}` : ''}`}
+                {checkoutLoading ? 'Processing...' : `Purchase ${selectedOption ? `- $${Number(selectedOption.price).toFixed(2)}` : ''}`}
               </button>
             </div>
 
