@@ -70,13 +70,13 @@ const PurchaseModal = ({ isOpen, onClose, examTypeId, examName }) => {
 
   if (!isOpen) return null
 
-  // Find bundle package (all sets)
-  const bundlePackage = packages?.find(p => p.question_set_ids?.length === questionSets.length)
+  // Find bundle package (3 sets)
+  const bundlePackage = packages?.find(p => p.question_set_ids?.length >= 3)
   
   // Calculate individual set pricing
   const singleSetPrice = questionSets.length > 0 ? questionSets[0].price_cents / 100 : 5
-  const bundlePrice = bundlePackage ? bundlePackage.price_cents / 100 : singleSetPrice * 3 - 5
-  const bundleSavings = (singleSetPrice * (questionSets.length || 3)) - bundlePrice
+  const threeSetsPrice = bundlePackage ? bundlePackage.price_cents / 100 : singleSetPrice * 3 - 5
+  const bundleSavings = (singleSetPrice * 3) - threeSetsPrice
 
   return (
     <div 
@@ -156,13 +156,13 @@ const PurchaseModal = ({ isOpen, onClose, examTypeId, examName }) => {
               gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
               marginBottom: '2rem'
             }}>
-              {/* Bundle Option */}
+              {/* 3 Sets Bundle Option */}
               <div
                 onClick={() => setSelectedOption({ 
                   type: 'package', 
                   id: bundlePackage?.id,
-                  name: 'Complete Bundle (All Sets)',
-                  price: bundlePrice
+                  name: '3 Question Sets Bundle',
+                  price: threeSetsPrice
                 })}
                 style={{
                   background: selectedOption?.type === 'package' 
@@ -195,18 +195,18 @@ const PurchaseModal = ({ isOpen, onClose, examTypeId, examName }) => {
 
                 <div style={{ fontSize: '2.5rem', marginBottom: '1rem', textAlign: 'center' }}>🎓</div>
                 <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: 'white', marginBottom: '0.5rem', textAlign: 'center' }}>
-                  Complete Bundle
+                  3 Question Sets
                 </h3>
                 <div style={{ fontSize: '2.5rem', fontWeight: '700', color: '#00D4AA', marginBottom: '0.5rem', textAlign: 'center' }}>
-                  ${bundlePrice}
+                  ${threeSetsPrice}
                 </div>
                 <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.875rem', marginBottom: '1rem', textAlign: 'center' }}>
-                  Save ${bundleSavings.toFixed(0)} • All {questionSets.length || 3} question sets
+                  Save ${bundleSavings.toFixed(0)} • Complete bundle
                 </p>
                 
                 <ul style={{ listStyle: 'none', padding: 0, marginBottom: '1rem' }}>
                   <li style={{ color: 'rgba(255,255,255,0.9)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center' }}>
-                    <span style={{ marginRight: '0.5rem' }}>✓</span> {questionSets.length || 3} complete question sets
+                    <span style={{ marginRight: '0.5rem' }}>✓</span> 3 complete question sets
                   </li>
                   <li style={{ color: 'rgba(255,255,255,0.9)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center' }}>
                     <span style={{ marginRight: '0.5rem' }}>✓</span> Full exam simulation
@@ -220,12 +220,12 @@ const PurchaseModal = ({ isOpen, onClose, examTypeId, examName }) => {
                 </ul>
               </div>
 
-              {/* Single Set Option */}
+              {/* 1 Set Option */}
               <div
                 onClick={() => setSelectedOption({ 
                   type: 'question_set', 
                   id: questionSets[0]?.id,
-                  name: 'Single Question Set',
+                  name: '1 Question Set',
                   price: singleSetPrice
                 })}
                 style={{
@@ -243,18 +243,18 @@ const PurchaseModal = ({ isOpen, onClose, examTypeId, examName }) => {
               >
                 <div style={{ fontSize: '2.5rem', marginBottom: '1rem', textAlign: 'center' }}>📝</div>
                 <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: 'white', marginBottom: '0.5rem', textAlign: 'center' }}>
-                  Single Set
+                  1 Question Set
                 </h3>
                 <div style={{ fontSize: '2.5rem', fontWeight: '700', color: '#00D4AA', marginBottom: '0.5rem', textAlign: 'center' }}>
                   ${singleSetPrice}
                 </div>
                 <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.875rem', marginBottom: '1rem', textAlign: 'center' }}>
-                  Per question set
+                  Single set option
                 </p>
                 
                 <ul style={{ listStyle: 'none', padding: 0, marginBottom: '1rem' }}>
                   <li style={{ color: 'rgba(255,255,255,0.9)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center' }}>
-                    <span style={{ marginRight: '0.5rem' }}>✓</span> One complete set
+                    <span style={{ marginRight: '0.5rem' }}>✓</span> 1 complete set
                   </li>
                   <li style={{ color: 'rgba(255,255,255,0.9)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center' }}>
                     <span style={{ marginRight: '0.5rem' }}>✓</span> {questionSets[0]?.question_count || 65} questions
