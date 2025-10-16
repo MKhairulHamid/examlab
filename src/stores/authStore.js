@@ -268,7 +268,7 @@ export const useAuthStore = create((set, get) => ({
       set({ loading: true, error: null })
       
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/examlab/reset-password`
+        redirectTo: `${window.location.origin}/reset-password`
       })
       
       if (error) throw error
@@ -314,7 +314,7 @@ export const useAuthStore = create((set, get) => ({
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: `${window.location.origin}/examlab/dashboard`,
+          emailRedirectTo: `${window.location.origin}/dashboard`,
           data: metadata
         }
       })
