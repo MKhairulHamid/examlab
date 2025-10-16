@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import useAuthStore from '../stores/authStore'
 import useExamStore from '../stores/examStore'
 import usePurchaseStore from '../stores/purchaseStore'
-import PageLayout from '../components/layout/PageLayout'
+import DashboardHeader from '../components/layout/DashboardHeader'
 import PurchaseModal from '../components/purchase/PurchaseModal'
 import streakService from '../services/streakService'
 import progressService from '../services/progressService'
@@ -1013,8 +1013,14 @@ function Dashboard() {
   )
 
   return (
-    <PageLayout showFooter={false}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '1.5rem' }}>
+    <>
+      <DashboardHeader />
+      <div style={{ 
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        padding: '0'
+      }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '1.5rem' }}>
         {/* Dashboard Header */}
         <div style={{ 
           background: 'rgba(255,255,255,0.1)',
@@ -1049,6 +1055,7 @@ function Dashboard() {
 
         {/* Dashboard Footer */}
         {renderDashboardFooter()}
+        </div>
       </div>
 
       {/* Purchase Modal */}
@@ -1063,7 +1070,7 @@ function Dashboard() {
           examName={selectedExam.name}
         />
       )}
-    </PageLayout>
+    </>
   )
 }
 
