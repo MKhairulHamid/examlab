@@ -29,7 +29,8 @@ export const useProgressStore = create((set, get) => ({
    * Start new exam attempt
    */
   startExam: async (questionSetId, userId, questionCount) => {
-    const attemptId = `attempt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    // Generate UUID v4 compatible ID for database
+    const attemptId = crypto.randomUUID()
     
     const initialState = {
       attemptId,
@@ -222,7 +223,7 @@ export const useProgressStore = create((set, get) => ({
     
     // Save results
     const result = {
-      id: `result_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      id: crypto.randomUUID(),
       userId: state.userId,
       questionSetId: state.questionSetId,
       attemptId: state.attemptId,

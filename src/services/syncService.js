@@ -144,25 +144,42 @@ class SyncQueue {
    * Sync exam result to Supabase
    */
   async syncResult(data) {
+    // Ensure we have a valid UUID for the result ID
+    const resultId = data.id || crypto.randomUUID()
+    
+    const resultData = {
+      id: resultId,
+      user_id: data.userId,
+      question_set_id: data.questionSetId,
+      started_at: data.startedAt,
+      completed_at: data.completedAt,
+      time_spent_seconds: data.timeSpent || 0,
+      answers_json: data.answers || {},
+      raw_score: data.rawScore || 0,
+      percentage_score: data.percentageScore || 0,
+      scaled_score: data.scaledScore || 0,
+      passed: data.passed || false,
+      status: 'completed',
+      updated_at: new Date().toISOString()
+    }
+
+    console.log('📤 Syncing exam result to Supabase:', {
+      id: resultId,
+      userId: resultData.user_id,
+      questionSetId: resultData.question_set_id,
+      score: resultData.percentage_score
+    })
+
     const { data: result, error } = await supabase
       .from('exam_attempts')
-      .upsert({
-        id: data.id,
-        user_id: data.userId,
-        question_set_id: data.questionSetId,
-        started_at: data.startedAt,
-        completed_at: data.completedAt,
-        time_spent_seconds: data.timeSpent,
-        answers_json: data.answers,
-        raw_score: data.rawScore,
-        percentage_score: data.percentageScore,
-        scaled_score: data.scaledScore,
-        passed: data.passed,
-        status: 'completed',
-        updated_at: new Date().toISOString()
-      })
+      .upsert(resultData)
 
-    if (error) throw error
+    if (error) {
+      console.error('❌ Failed to sync exam result:', error)
+      throw error
+    }
+
+    console.log('✅ Exam result synced successfully')
     return result
   }
 

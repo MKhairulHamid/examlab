@@ -114,34 +114,51 @@ export const progressService = {
    * Save progress (local immediate, queue Supabase sync)
    */
   async saveProgress(progress) {
-    const attemptId = progress.attemptId || progress.examAttemptId
+    const attemptId = progress.attemptId || progress.examAttemptId || progress.id
     
     if (!attemptId) {
       console.error('❌ Cannot save progress: missing attempt ID', progress)
       return
     }
+
+    if (!progress.userId) {
+      console.error('❌ Cannot save progress: missing user ID', progress)
+      return
+    }
     
     const localKey = `progress_${attemptId}`
     
-    // 1. Save to localStorage immediately (instant, < 10ms)
-    progress.updatedAt = new Date().toISOString()
-    
-    // Add 'id' property for IndexedDB (keyPath compatibility)
-    const progressWithId = {
-      ...progress,
+    // Create a clean, serializable copy of progress (no functions or non-clonable data)
+    const cleanProgress = {
       id: attemptId,
-      // Ensure attemptId is always present for sync
       attemptId: attemptId,
-      examAttemptId: attemptId
+      examAttemptId: attemptId,
+      questionSetId: progress.questionSetId,
+      userId: progress.userId,
+      currentQuestionIndex: progress.currentQuestionIndex || 0,
+      answers: progress.answers || {},
+      timeElapsed: progress.timeElapsed || 0,
+      timerPaused: progress.timerPaused || false,
+      status: progress.status || 'in_progress',
+      startedAt: progress.startedAt,
+      completedAt: progress.completedAt || null,
+      updatedAt: new Date().toISOString()
     }
+
+    console.log('💾 Saving progress locally:', {
+      attemptId,
+      userId: cleanProgress.userId,
+      currentQuestion: cleanProgress.currentQuestionIndex,
+      answersCount: Object.keys(cleanProgress.answers).length
+    })
     
-    cacheService.set(localKey, progressWithId, 60 * 60 * 1000) // 1 hour cache
+    cacheService.set(localKey, cleanProgress, 60 * 60 * 1000) // 1 hour cache
     
     // 2. Save to IndexedDB (for persistence)
-    await indexedDBService.setExamAttempt(progressWithId)
+    await indexedDBService.setExamAttempt(cleanProgress)
     
     // 3. Queue background sync to Supabase (debounced)
-    this.queueProgressSync(progressWithId)
+    this.queueProgressSync(cleanProgress)
     
     console.log('✅ Progress saved locally')
   },
