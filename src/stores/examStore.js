@@ -191,36 +191,105 @@ export const useExamStore = create((set, get) => ({
       
       // Try IndexedDB first
       const cached = await indexedDBService.getQuestionSet(questionSetId)
-      if (cached) {
+      if (cached && cached.questions_json) {
         console.log('📦 Question set loaded from IndexedDB')
-        set({ currentQuestionSet: cached, loading: false })
+        
+        // Validate and normalize questions
+        const normalized = get().normalizeQuestionSet(cached)
+        set({ currentQuestionSet: normalized, loading: false })
         
         // Background: check for version update
         get().checkQuestionSetVersion(questionSetId, cached.version_number)
         
-        return cached
+        return normalized
       }
       
-      // Fetch from Supabase
+      // Fetch from Supabase with related exam_types data
       console.log('🔄 Fetching question set from Supabase...')
       const { data, error } = await supabase
         .from('question_sets')
-        .select('*')
+        .select('*, exam_types(name, provider, duration_minutes, passing_score, max_score)')
         .eq('id', questionSetId)
+        .eq('is_active', true)
         .single()
       
       if (error) throw error
       
+      // Validate questions_json exists
+      if (!data || !data.questions_json) {
+        console.error('❌ No questions found in database')
+        throw new Error('No questions available for this exam.')
+      }
+      
+      // Normalize question set
+      const normalized = get().normalizeQuestionSet(data)
+      
       // Save to IndexedDB for offline use
-      await indexedDBService.setQuestionSet(data)
+      await indexedDBService.setQuestionSet(normalized)
       
-      set({ currentQuestionSet: data, loading: false })
+      set({ currentQuestionSet: normalized, loading: false })
       
-      return data
+      console.log(`✅ Loaded ${normalized.questions_json?.questions?.length || 0} questions from: ${data.name}`)
+      
+      return normalized
     } catch (error) {
       console.error('Error loading question set:', error)
       set({ error: error.message, loading: false })
       return null
+    }
+  },
+
+  /**
+   * Normalize question set to ensure consistent format
+   */
+  normalizeQuestionSet: (data) => {
+    if (!data || !data.questions_json) {
+      return data
+    }
+    
+    // Parse questions from JSON
+    const questionsData = data.questions_json
+    
+    // Check if questions_json has a 'questions' array or is the array itself
+    let questions = questionsData.questions || questionsData
+    
+    if (!Array.isArray(questions)) {
+      console.warn('⚠️ questions_json is not an array, attempting to parse')
+      questions = []
+    }
+    
+    // Transform questions to ensure correct format
+    questions = questions.map((q, index) => {
+      // Ensure options have the correct structure
+      const options = (q.options || []).map(opt => {
+        if (typeof opt === 'string') {
+          // If option is just a string, determine if it's correct
+          const isCorrect = q.correctAnswers ? q.correctAnswers.includes(opt) : false
+          return { text: opt, correct: isCorrect }
+        } else if (opt.text !== undefined) {
+          // Option already has the correct structure
+          return opt
+        }
+        return { text: String(opt), correct: false }
+      })
+      
+      return {
+        id: q.id || `q_${index}`,
+        question: q.question,
+        options: options,
+        type: q.type || 'single',
+        materials: q.materials || q.explanation || 'No additional materials available.',
+        explanations: q.explanations || {},
+        correctAnswers: q.correctAnswers || []
+      }
+    })
+    
+    // Return normalized data with questions in standard format
+    return {
+      ...data,
+      questions_json: {
+        questions: questions
+      }
     }
   },
 
@@ -240,18 +309,22 @@ export const useExamStore = create((set, get) => ({
       if (data.version_number > localVersion) {
         console.log('🆕 New version available - updating...')
         
-        // Fetch full question set
+        // Fetch full question set with related data
         const { data: fullData, error: fetchError } = await supabase
           .from('question_sets')
-          .select('*')
+          .select('*, exam_types(name, provider, duration_minutes, passing_score, max_score)')
           .eq('id', questionSetId)
+          .eq('is_active', true)
           .single()
         
         if (fetchError) throw fetchError
         
+        // Normalize the data
+        const normalized = get().normalizeQuestionSet(fullData)
+        
         // Update IndexedDB
-        await indexedDBService.setQuestionSet(fullData)
-        set({ currentQuestionSet: fullData })
+        await indexedDBService.setQuestionSet(normalized)
+        set({ currentQuestionSet: normalized })
         
         console.log('✅ Question set updated to version', data.version_number)
       }

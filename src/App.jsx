@@ -10,6 +10,7 @@ import Dashboard from './pages/Dashboard'
 import ExamDetail from './pages/ExamDetail'
 import ExamInterface from './pages/ExamInterface'
 import ResetPassword from './pages/ResetPassword'
+import PaymentSuccess from './pages/PaymentSuccess'
 
 // Protected Route wrapper
 function ProtectedRoute({ children }) {
@@ -90,6 +91,14 @@ function App() {
           element={
             <ProtectedRoute>
               <ExamInterface />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/payment-success" 
+          element={
+            <ProtectedRoute>
+              <PaymentSuccess />
             </ProtectedRoute>
           } 
         />
