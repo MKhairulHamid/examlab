@@ -23,7 +23,7 @@ function SyncIndicator({ className = '' }) {
   }
 
   return (
-    <div className={`flex items-center space-x-2 ${className}`}>
+    <div className={`flex items-center gap-2 ${className}`}>
       {/* Status dot */}
       <div className="relative">
         <div className={`w-2.5 h-2.5 rounded-full ${colorClasses[statusColor]} ${

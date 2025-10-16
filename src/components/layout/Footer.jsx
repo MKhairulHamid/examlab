@@ -10,7 +10,7 @@ function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
           {/* About Section */}
           <div>
-            <div className="flex items-center space-x-2 mb-3">
+            <div className="flex items-center gap-2 mb-3">
               <span className="text-2xl">📚</span>
               <h3 className="text-white font-bold text-base">Cloud Exam Lab</h3>
             </div>

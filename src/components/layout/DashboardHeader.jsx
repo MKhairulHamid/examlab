@@ -60,16 +60,16 @@ function DashboardHeader() {
             {/* Logo */}
             <Link 
               to="/dashboard" 
-              className="flex items-center space-x-2 hover:opacity-90 transition-opacity"
+              className="flex items-center gap-2 hover:opacity-90 transition-opacity"
             >
               <span className="text-2xl">📚</span>
               <span className="text-white font-bold text-lg sm:text-xl">Cloud Exam Lab</span>
             </Link>
 
             {/* Right Section */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center gap-4">
               {/* Sync Status Indicator */}
-              <div className="hidden md:flex items-center space-x-2 px-3 py-2 bg-white/5 rounded-lg border border-white/10">
+              <div className="hidden md:flex items-center gap-2 px-3 py-2 bg-white/5 rounded-lg border border-white/10">
                 <div className={`w-2 h-2 rounded-full ${
                   !isOnline ? 'bg-gray-400' :
                   isSyncing ? 'bg-yellow-400 animate-pulse' :
@@ -92,9 +92,14 @@ function DashboardHeader() {
               {/* User Profile Button */}
               <button
                 onClick={() => setShowProfileModal(true)}
-                className="flex items-center space-x-2 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-all border border-white/30 group"
+                className="flex items-center gap-2 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-all border border-white/30 group"
               >
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-accent to-accent-dark flex items-center justify-center text-white font-bold text-sm shadow-lg">
+                <div 
+                  className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg"
+                  style={{
+                    background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)'
+                  }}
+                >
                   {userInitial}
                 </div>
                 <span className="text-white text-sm font-medium hidden sm:inline max-w-[120px] truncate">
@@ -123,7 +128,12 @@ function DashboardHeader() {
             style={{ maxHeight: '90vh', overflowY: 'auto' }}
           >
             {/* Header */}
-            <div className="relative bg-gradient-to-br from-accent to-accent-dark p-6">
+            <div 
+              className="relative p-6"
+              style={{
+                background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)'
+              }}
+            >
               <button
                 onClick={() => {
                   setShowProfileModal(false)
@@ -204,7 +214,10 @@ function DashboardHeader() {
                   <div className="flex gap-3 pt-4">
                     <button
                       onClick={handleSaveProfile}
-                      className="flex-1 bg-gradient-to-r from-accent to-accent-dark text-white font-semibold py-2.5 px-4 rounded-lg hover:shadow-lg transition-all"
+                      className="flex-1 text-white font-semibold py-2.5 px-4 rounded-lg hover:shadow-lg transition-all"
+                      style={{
+                        background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)'
+                      }}
                     >
                       Save Changes
                     </button>
@@ -273,7 +286,10 @@ function DashboardHeader() {
                   <div className="space-y-2 pt-4 border-t border-gray-200">
                     <button
                       onClick={handleEditProfile}
-                      className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-accent to-accent-dark text-white font-semibold py-2.5 px-4 rounded-lg hover:shadow-lg transition-all"
+                      className="w-full flex items-center justify-center gap-2 text-white font-semibold py-2.5 px-4 rounded-lg hover:shadow-lg transition-all"
+                      style={{
+                        background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)'
+                      }}
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -284,7 +300,7 @@ function DashboardHeader() {
                     <Link
                       to="/"
                       onClick={() => setShowProfileModal(false)}
-                      className="md:hidden w-full flex items-center justify-center space-x-2 bg-gray-100 text-gray-700 font-semibold py-2.5 px-4 rounded-lg hover:bg-gray-200 transition-all"
+                      className="md:hidden w-full flex items-center justify-center gap-2 bg-gray-100 text-gray-700 font-semibold py-2.5 px-4 rounded-lg hover:bg-gray-200 transition-all"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -294,7 +310,7 @@ function DashboardHeader() {
 
                     <button
                       onClick={() => navigate('/dashboard')}
-                      className="w-full flex items-center justify-center space-x-2 bg-gray-100 text-gray-700 font-semibold py-2.5 px-4 rounded-lg hover:bg-gray-200 transition-all"
+                      className="w-full flex items-center justify-center gap-2 bg-gray-100 text-gray-700 font-semibold py-2.5 px-4 rounded-lg hover:bg-gray-200 transition-all"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -304,7 +320,7 @@ function DashboardHeader() {
 
                     <button
                       onClick={handleLogout}
-                      className="w-full flex items-center justify-center space-x-2 bg-red-50 text-red-600 font-semibold py-2.5 px-4 rounded-lg hover:bg-red-100 transition-all"
+                      className="w-full flex items-center justify-center gap-2 bg-red-50 text-red-600 font-semibold py-2.5 px-4 rounded-lg hover:bg-red-100 transition-all"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

@@ -30,14 +30,14 @@ function Header() {
           {/* Logo */}
           <Link 
             to="/dashboard" 
-            className="flex items-center space-x-2 hover:opacity-90 transition-opacity"
+            className="flex items-center gap-2 hover:opacity-90 transition-opacity"
           >
             <span className="text-2xl">📚</span>
             <span className="text-white font-bold text-lg sm:text-xl">Cloud Exam Lab</span>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-4">
+          <nav className="hidden md:flex items-center gap-4">
             <Link 
               to="/dashboard" 
               className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
@@ -61,9 +61,9 @@ function Header() {
           </nav>
 
           {/* Right section */}
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center gap-3">
             {/* Sync indicator - Desktop only */}
-            <div className="hidden lg:flex items-center space-x-2 px-3 py-2 bg-white/5 rounded-lg border border-white/10">
+            <div className="hidden lg:flex items-center gap-2 px-3 py-2 bg-white/5 rounded-lg border border-white/10">
               <div className={`w-2 h-2 rounded-full ${
                 !isOnline ? 'bg-gray-400' :
                 isSyncing ? 'bg-yellow-400 animate-pulse' :
@@ -99,9 +99,14 @@ function Header() {
             <div className="relative z-50">
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className="flex items-center space-x-2 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors border border-white/30"
+                className="flex items-center gap-2 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors border border-white/30"
               >
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-accent to-accent-dark flex items-center justify-center text-white font-bold text-sm">
+                <div 
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm"
+                  style={{
+                    background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)'
+                  }}
+                >
                   {userInitial}
                 </div>
                 <span className="text-white text-sm hidden md:inline max-w-[120px] truncate">
