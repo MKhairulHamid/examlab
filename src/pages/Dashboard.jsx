@@ -568,8 +568,282 @@ function Dashboard() {
     )
   }
 
+  const renderDashboardFooter = () => (
+    <footer style={{
+      marginTop: '4rem',
+      paddingTop: '2rem',
+      borderTop: '1px solid rgba(255,255,255,0.1)'
+    }}>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+        gap: '2rem',
+        marginBottom: '2rem'
+      }}>
+        {/* Brand Section */}
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+            <span style={{ fontSize: '1.5rem' }}>📚</span>
+            <h3 style={{ fontSize: '1.125rem', fontWeight: '700', color: 'white' }}>Cloud Exam Lab</h3>
+          </div>
+          <p style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.7)', lineHeight: '1.6', marginBottom: '1rem' }}>
+            Master cloud certifications with professional exam practice. AWS, Azure, and GCP.
+          </p>
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            <a 
+              href="https://twitter.com/cloudexamlab" 
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ 
+                color: 'rgba(255,255,255,0.7)', 
+                fontSize: '0.875rem',
+                textDecoration: 'none',
+                transition: 'color 0.2s'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
+              onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
+            >
+              Twitter
+            </a>
+            <a 
+              href="https://linkedin.com/company/cloudexamlab" 
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ 
+                color: 'rgba(255,255,255,0.7)', 
+                fontSize: '0.875rem',
+                textDecoration: 'none',
+                transition: 'color 0.2s'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
+              onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
+            >
+              LinkedIn
+            </a>
+            <a 
+              href="https://github.com/cloudexamlab" 
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ 
+                color: 'rgba(255,255,255,0.7)', 
+                fontSize: '0.875rem',
+                textDecoration: 'none',
+                transition: 'color 0.2s'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
+              onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
+            >
+              GitHub
+            </a>
+          </div>
+        </div>
+
+        {/* Quick Links */}
+        <div>
+          <h4 style={{ fontSize: '0.875rem', fontWeight: '700', color: 'white', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Quick Links
+          </h4>
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <li>
+              <button
+                onClick={() => navigate('/')}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'rgba(255,255,255,0.7)',
+                  fontSize: '0.875rem',
+                  cursor: 'pointer',
+                  padding: 0,
+                  transition: 'color 0.2s',
+                  textAlign: 'left'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
+                onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
+              >
+                Browse Exams
+              </button>
+            </li>
+            <li>
+              <button
+                onClick={() => navigate('/dashboard')}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'rgba(255,255,255,0.7)',
+                  fontSize: '0.875rem',
+                  cursor: 'pointer',
+                  padding: 0,
+                  transition: 'color 0.2s',
+                  textAlign: 'left'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
+                onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
+              >
+                Dashboard
+              </button>
+            </li>
+            <li>
+              <a
+                href="mailto:support@cloudexamlab.com"
+                style={{
+                  color: 'rgba(255,255,255,0.7)',
+                  fontSize: '0.875rem',
+                  textDecoration: 'none',
+                  transition: 'color 0.2s'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
+                onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
+              >
+                Support
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        {/* Resources */}
+        <div>
+          <h4 style={{ fontSize: '0.875rem', fontWeight: '700', color: 'white', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Resources
+          </h4>
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <li>
+              <button
+                onClick={() => {
+                  navigate('/')
+                  setTimeout(() => {
+                    const element = document.getElementById('certifications')
+                    if (element) element.scrollIntoView({ behavior: 'smooth' })
+                  }, 100)
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'rgba(255,255,255,0.7)',
+                  fontSize: '0.875rem',
+                  cursor: 'pointer',
+                  padding: 0,
+                  transition: 'color 0.2s',
+                  textAlign: 'left'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
+                onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
+              >
+                All Certifications
+              </button>
+            </li>
+            <li>
+              <button
+                onClick={() => {
+                  navigate('/')
+                  setTimeout(() => {
+                    const element = document.getElementById('pricing')
+                    if (element) element.scrollIntoView({ behavior: 'smooth' })
+                  }, 100)
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'rgba(255,255,255,0.7)',
+                  fontSize: '0.875rem',
+                  cursor: 'pointer',
+                  padding: 0,
+                  transition: 'color 0.2s',
+                  textAlign: 'left'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
+                onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
+              >
+                Pricing
+              </button>
+            </li>
+            <li>
+              <button
+                onClick={() => {
+                  navigate('/')
+                  setTimeout(() => {
+                    const element = document.getElementById('faq')
+                    if (element) element.scrollIntoView({ behavior: 'smooth' })
+                  }, 100)
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'rgba(255,255,255,0.7)',
+                  fontSize: '0.875rem',
+                  cursor: 'pointer',
+                  padding: 0,
+                  transition: 'color 0.2s',
+                  textAlign: 'left'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
+                onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
+              >
+                FAQ
+              </button>
+            </li>
+          </ul>
+        </div>
+
+        {/* Stats */}
+        <div>
+          <h4 style={{ fontSize: '0.875rem', fontWeight: '700', color: 'white', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Your Progress
+          </h4>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <div style={{
+              background: 'rgba(255,255,255,0.05)',
+              padding: '0.75rem',
+              borderRadius: '0.5rem',
+              border: '1px solid rgba(255,255,255,0.1)'
+            }}>
+              <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#00D4AA' }}>
+                {userCertifications.length}
+              </div>
+              <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)' }}>
+                Active Certifications
+              </div>
+            </div>
+            <div style={{
+              background: 'rgba(255,255,255,0.05)',
+              padding: '0.75rem',
+              borderRadius: '0.5rem',
+              border: '1px solid rgba(255,255,255,0.1)'
+            }}>
+              <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#f59e0b' }}>
+                {streakStats?.currentStreak || 0}
+              </div>
+              <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)' }}>
+                Day Streak 🔥
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Bar */}
+      <div style={{
+        paddingTop: '1.5rem',
+        borderTop: '1px solid rgba(255,255,255,0.1)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '1rem',
+        alignItems: 'center',
+        textAlign: 'center'
+      }}>
+        <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', lineHeight: '1.6', maxWidth: '800px' }}>
+          <strong style={{ color: 'rgba(255,255,255,0.6)' }}>Disclaimer:</strong> Independent practice questions for certification preparation. 
+          Not affiliated with or endorsed by Amazon Web Services (AWS), Microsoft Azure, Google Cloud Platform (GCP), 
+          or any other certification provider. All trademarks are property of their respective owners.
+        </p>
+        <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>
+          © {new Date().getFullYear()} Cloud Exam Lab. All rights reserved.
+        </p>
+      </div>
+    </footer>
+  )
+
   return (
-    <PageLayout>
+    <PageLayout showFooter={false}>
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '1.5rem' }}>
         {/* Dashboard Header */}
         <div style={{ 
@@ -599,6 +873,9 @@ function Dashboard() {
 
         {/* Explore More */}
         {renderExploreMore()}
+
+        {/* Dashboard Footer */}
+        {renderDashboardFooter()}
       </div>
 
       {/* Purchase Modal */}
