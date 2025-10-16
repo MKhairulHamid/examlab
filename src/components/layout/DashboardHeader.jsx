@@ -51,7 +51,10 @@ function DashboardHeader() {
   return (
     <>
       {/* Professional Dashboard Header */}
-      <header className="bg-white/10 backdrop-blur-lg border-b border-white/20 sticky top-0 z-50">
+      <header style={{
+        background: 'linear-gradient(135deg, #0A2540 0%, #1A3B5C 100%)',
+        borderBottom: '1px solid rgba(255,255,255,0.1)'
+      }} className="sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}

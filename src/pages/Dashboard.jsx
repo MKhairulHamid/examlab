@@ -115,11 +115,17 @@ function Dashboard() {
 
 
   const renderMyCertifications = () => (
-    <div style={{ marginBottom: '3rem' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: '700', color: 'white' }}>
-          📚 My Certifications
-        </h2>
+    <section style={{ padding: '4rem 0', background: '#f9fafb' }}>
+      <div style={{ marginBottom: '3rem' }}>
+        <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+          <div style={{ color: '#00D4AA', fontSize: '0.875rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.025em', marginBottom: '0.75rem' }}>
+            YOUR CERTIFICATIONS
+          </div>
+          <h2 style={{ fontSize: '2rem', fontWeight: '700', color: '#0A2540', marginBottom: '1rem', lineHeight: '1.3' }}>
+            📚 My Certifications
+          </h2>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '1.5rem' }}>
         <button
           onClick={() => {
             navigate('/')
@@ -151,18 +157,18 @@ function Dashboard() {
 
       {userCertifications.length === 0 ? (
         <div style={{
-          background: 'rgba(255,255,255,0.1)',
-          backdropFilter: 'blur(20px)',
+          background: 'white',
           padding: '3rem',
           borderRadius: '1rem',
-          border: '1px solid rgba(255,255,255,0.2)',
+          border: '1px solid #e5e7eb',
+          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
           textAlign: 'center'
         }}>
           <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>📚</div>
-          <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: 'white', marginBottom: '0.5rem' }}>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: '#0A2540', marginBottom: '0.5rem' }}>
             No Certifications Yet
           </h3>
-          <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '1.5rem' }}>
+          <p style={{ color: '#6b7280', marginBottom: '1.5rem' }}>
             Start your certification journey today!
           </p>
           <button
@@ -196,20 +202,20 @@ function Dashboard() {
               <div 
                 key={exam.id}
                 style={{
-                  background: 'rgba(255,255,255,0.1)',
-                  backdropFilter: 'blur(20px)',
+                  background: 'white',
                   padding: '1.5rem',
                   borderRadius: '1rem',
-                  border: '1px solid rgba(255,255,255,0.2)',
+                  border: '1px solid #e5e7eb',
+                  boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
                   transition: 'all 0.3s',
                   cursor: 'pointer'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.15)'
+                  e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
                   e.currentTarget.style.transform = 'translateY(-4px)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.1)'
+                  e.currentTarget.style.boxShadow = '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
                   e.currentTarget.style.transform = 'translateY(0)'
                 }}
               >
@@ -219,10 +225,10 @@ function Dashboard() {
                     <div style={{ fontSize: '0.75rem', color: '#00D4AA', fontWeight: '600', marginBottom: '0.25rem', textTransform: 'uppercase' }}>
                       {exam.provider}
                     </div>
-                    <h3 style={{ fontSize: '1.125rem', fontWeight: '700', color: 'white', marginBottom: '0.5rem' }}>
+                    <h3 style={{ fontSize: '1.125rem', fontWeight: '700', color: '#0A2540', marginBottom: '0.5rem' }}>
                       {exam.name}
                     </h3>
-                    <div style={{ display: 'flex', gap: '1rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)' }}>
+                    <div style={{ display: 'flex', gap: '1rem', fontSize: '0.75rem', color: '#6b7280' }}>
                       <span>📝 {exam.total_questions || 'N/A'} Qs</span>
                       <span>⏱️ {exam.duration_minutes || 'N/A'} min</span>
                     </div>
@@ -235,10 +241,10 @@ function Dashboard() {
                     <div style={{ 
                       display: 'inline-block',
                       padding: '0.25rem 0.75rem',
-                      background: 'rgba(0,212,170,0.2)',
-                      border: '1px solid #00D4AA',
+                      background: '#d1fae5',
+                      border: '1px solid #6ee7b7',
                       borderRadius: '0.5rem',
-                      color: '#00D4AA',
+                      color: '#065f46',
                       fontSize: '0.75rem',
                       fontWeight: '600'
                     }}>
@@ -248,10 +254,10 @@ function Dashboard() {
                     <div style={{ 
                       display: 'inline-block',
                       padding: '0.25rem 0.75rem',
-                      background: 'rgba(59,130,246,0.2)',
-                      border: '1px solid rgba(59,130,246,0.5)',
+                      background: '#dbeafe',
+                      border: '1px solid #93c5fd',
                       borderRadius: '0.5rem',
-                      color: 'rgba(147,197,253,1)',
+                      color: '#1e40af',
                       fontSize: '0.75rem',
                       fontWeight: '600'
                     }}>
@@ -261,10 +267,10 @@ function Dashboard() {
                     <div style={{ 
                       display: 'inline-block',
                       padding: '0.25rem 0.75rem',
-                      background: 'rgba(251,191,36,0.2)',
-                      border: '1px solid rgba(251,191,36,0.5)',
+                      background: '#fef3c7',
+                      border: '1px solid #fcd34d',
                       borderRadius: '0.5rem',
-                      color: 'rgba(255,255,255,0.9)',
+                      color: '#92400e',
                       fontSize: '0.75rem',
                       fontWeight: '600'
                     }}>
@@ -303,13 +309,22 @@ function Dashboard() {
                       }}
                       style={{
                         padding: '0.75rem 1rem',
-                        background: 'rgba(255,255,255,0.1)',
-                        color: 'white',
-                        border: '1px solid rgba(255,255,255,0.3)',
+                        background: 'white',
+                        color: '#374151',
+                        border: '1px solid #d1d5db',
                         borderRadius: '0.5rem',
                         fontWeight: '600',
                         cursor: 'pointer',
-                        fontSize: '0.875rem'
+                        fontSize: '0.875rem',
+                        transition: 'all 0.2s'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = '#f9fafb'
+                        e.currentTarget.style.borderColor = '#9ca3af'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'white'
+                        e.currentTarget.style.borderColor = '#d1d5db'
                       }}
                     >
                       {isStartedOnly ? 'Unlock Full Access' : 'Purchase'}
@@ -321,7 +336,8 @@ function Dashboard() {
           })}
         </div>
       )}
-    </div>
+      </div>
+    </section>
   )
 
 
@@ -329,10 +345,15 @@ function Dashboard() {
     if (examResults.length === 0) return null
 
     return (
-      <div style={{ marginBottom: '3rem' }}>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: '700', color: 'white', marginBottom: '1.5rem' }}>
-          📊 Recent Exam Results
-        </h2>
+      <section style={{ padding: '4rem 0', background: 'white' }}>
+        <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+          <div style={{ color: '#00D4AA', fontSize: '0.875rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.025em', marginBottom: '0.75rem' }}>
+            YOUR PERFORMANCE
+          </div>
+          <h2 style={{ fontSize: '2rem', fontWeight: '700', color: '#0A2540', marginBottom: '1rem', lineHeight: '1.3' }}>
+            📊 Recent Exam Results
+          </h2>
+        </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {examResults.slice(0, 5).map((result, index) => {
@@ -343,11 +364,12 @@ function Dashboard() {
               <div
                 key={result.id}
                 style={{
-                  background: 'rgba(255,255,255,0.1)',
-                  backdropFilter: 'blur(20px)',
+                  background: 'white',
                   padding: '1.5rem',
                   borderRadius: '1rem',
-                  border: `1px solid ${result.passed ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}`,
+                  border: '1px solid #e5e7eb',
+                  borderLeft: `4px solid ${result.passed ? '#10b981' : '#ef4444'}`,
+                  boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '1.5rem',
@@ -370,11 +392,11 @@ function Dashboard() {
                   }
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.15)'
+                  e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
                   e.currentTarget.style.transform = 'translateY(-2px)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.1)'
+                  e.currentTarget.style.boxShadow = '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
                   e.currentTarget.style.transform = 'translateY(0)'
                 }}
               >
@@ -398,22 +420,22 @@ function Dashboard() {
                 {/* Result Details */}
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-                    <h3 style={{ fontSize: '1rem', fontWeight: '700', color: 'white' }}>
+                    <h3 style={{ fontSize: '1rem', fontWeight: '700', color: '#0A2540' }}>
                       {result.examName || 'Exam Result'}
                     </h3>
                     <span style={{
                       padding: '0.25rem 0.75rem',
-                      background: result.passed ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)',
-                      border: `1px solid ${result.passed ? 'rgba(16,185,129,0.5)' : 'rgba(239,68,68,0.5)'}`,
+                      background: result.passed ? '#d1fae5' : '#fee2e2',
+                      border: `1px solid ${result.passed ? '#6ee7b7' : '#fca5a5'}`,
                       borderRadius: '0.5rem',
-                      color: passColor,
+                      color: result.passed ? '#065f46' : '#991b1b',
                       fontSize: '0.75rem',
                       fontWeight: '600'
                     }}>
                       {result.passed ? 'PASSED' : 'FAILED'}
                     </span>
                   </div>
-                  <div style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.7)' }}>
+                  <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
                     {new Date(result.completedAt).toLocaleDateString()} • {new Date(result.completedAt).toLocaleTimeString()}
                   </div>
                 </div>
@@ -423,13 +445,13 @@ function Dashboard() {
                   <div style={{ fontSize: '2rem', fontWeight: '700', color: passColor }}>
                     {result.percentageScore}%
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)' }}>
+                  <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
                     {result.rawScore}/{result.totalQuestions} correct
                   </div>
                 </div>
 
                 {/* View Arrow */}
-                <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '1.5rem' }}>
+                <div style={{ color: '#9ca3af', fontSize: '1.5rem' }}>
                   →
                 </div>
               </div>
@@ -438,11 +460,11 @@ function Dashboard() {
         </div>
 
         {examResults.length > 5 && (
-          <div style={{ marginTop: '1rem', textAlign: 'center', color: 'rgba(255,255,255,0.7)', fontSize: '0.875rem' }}>
+          <div style={{ marginTop: '1rem', textAlign: 'center', color: '#6b7280', fontSize: '0.875rem' }}>
             + {examResults.length - 5} more results
           </div>
         )}
-      </div>
+      </section>
     )
   }
 
@@ -460,18 +482,26 @@ function Dashboard() {
     })
     
     return (
-      <div style={{ 
-        background: 'rgba(255,255,255,0.1)',
-        backdropFilter: 'blur(20px)',
-        padding: '2rem',
-        borderRadius: '1rem',
-        border: '1px solid rgba(255,255,255,0.2)',
-        marginBottom: '3rem',
-        textAlign: 'center'
-      }}>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: '700', color: 'white', marginBottom: '1rem' }}>
-          🔥 Study Streak
-        </h2>
+      <section style={{ padding: '4rem 0', background: '#f9fafb' }}>
+        <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+          <div style={{ color: '#00D4AA', fontSize: '0.875rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.025em', marginBottom: '0.75rem' }}>
+            YOUR PROGRESS
+          </div>
+          <h2 style={{ fontSize: '2rem', fontWeight: '700', color: '#0A2540', marginBottom: '1rem', lineHeight: '1.3' }}>
+            🔥 Study Streak
+          </h2>
+        </div>
+
+        <div style={{ 
+          background: 'white',
+          padding: '2rem',
+          borderRadius: '1rem',
+          border: '1px solid #e5e7eb',
+          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+          maxWidth: '600px',
+          margin: '0 auto',
+          textAlign: 'center'
+        }}>
 
         <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🔥</div>
         
@@ -479,11 +509,11 @@ function Dashboard() {
           {currentStreak} {currentStreak === 1 ? 'Day' : 'Days'}
         </div>
         
-        <div style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.7)', marginBottom: '0.5rem' }}>
+        <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.5rem' }}>
           Longest Streak: {longestStreak} days
         </div>
         
-        <div style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.8)', marginBottom: '2rem' }}>
+        <div style={{ fontSize: '1rem', color: '#4b5563', marginBottom: '2rem' }}>
           {currentStreak > 0 
             ? "Keep it going! Don't break your streak." 
             : "Start your study streak today!"}
@@ -491,7 +521,7 @@ function Dashboard() {
 
         {/* Mini Calendar - Last 14 Days */}
         <div style={{ marginBottom: '2rem' }}>
-          <div style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.7)', marginBottom: '0.75rem' }}>
+          <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.75rem' }}>
             Last 14 Days
           </div>
           <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -505,13 +535,13 @@ function Dashboard() {
                     width: '2rem',
                     height: '2rem',
                     borderRadius: '0.25rem',
-                    background: isStudied ? (isToday ? '#00D4AA' : '#f59e0b') : 'rgba(255,255,255,0.1)',
-                    border: isToday ? '2px solid #00D4AA' : '1px solid rgba(255,255,255,0.2)',
+                    background: isStudied ? (isToday ? '#00D4AA' : '#f59e0b') : '#f3f4f6',
+                    border: isToday ? '2px solid #00D4AA' : '1px solid #e5e7eb',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     fontSize: '0.75rem',
-                    color: isStudied ? 'white' : 'rgba(255,255,255,0.5)',
+                    color: isStudied ? 'white' : '#9ca3af',
                     fontWeight: isStudied ? '700' : '400',
                     transition: 'all 0.3s'
                   }}
@@ -525,15 +555,15 @@ function Dashboard() {
         </div>
 
         {/* Daily Goal Progress */}
-        <div style={{ paddingTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-          <div style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.8)', marginBottom: '0.5rem', fontWeight: '600' }}>
+        <div style={{ paddingTop: '1.5rem', borderTop: '1px solid #e5e7eb' }}>
+          <div style={{ fontSize: '0.875rem', color: '#4b5563', marginBottom: '0.5rem', fontWeight: '600' }}>
             Daily Goal
           </div>
           <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#00D4AA', marginBottom: '0.75rem' }}>
             {questionsToday} / {dailyGoal} Questions Today
           </div>
           <div style={{ 
-            background: 'rgba(255,255,255,0.2)', 
+            background: '#e5e7eb', 
             borderRadius: '9999px', 
             height: '8px',
             overflow: 'hidden',
@@ -560,35 +590,41 @@ function Dashboard() {
             </div>
           )}
         </div>
-      </div>
+        </div>
+      </section>
     )
   }
 
   const renderExploreMore = () => (
-    <div style={{ marginBottom: '3rem' }}>
-      <h2 style={{ fontSize: '1.5rem', fontWeight: '700', color: 'white', marginBottom: '1.5rem' }}>
-        🔍 Explore More Certifications
-      </h2>
+    <section style={{ padding: '4rem 0', background: 'white' }}>
+      <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+        <div style={{ color: '#00D4AA', fontSize: '0.875rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.025em', marginBottom: '0.75rem' }}>
+          DISCOVER MORE
+        </div>
+        <h2 style={{ fontSize: '2rem', fontWeight: '700', color: '#0A2540', marginBottom: '1rem', lineHeight: '1.3' }}>
+          🔍 Explore More Certifications
+        </h2>
+      </div>
 
       <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
         {exams.slice(0, 6).map(exam => (
           <div
             key={exam.id}
             style={{
-              background: 'rgba(255,255,255,0.1)',
-              backdropFilter: 'blur(20px)',
+              background: 'white',
               padding: '1.5rem',
               borderRadius: '1rem',
-              border: '1px solid rgba(255,255,255,0.2)',
+              border: '1px solid #e5e7eb',
+              boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
               cursor: 'pointer',
               transition: 'all 0.3s'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(255,255,255,0.15)'
+              e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
               e.currentTarget.style.transform = 'translateY(-4px)'
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(255,255,255,0.1)'
+              e.currentTarget.style.boxShadow = '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
               e.currentTarget.style.transform = 'translateY(0)'
             }}
           >
@@ -596,16 +632,16 @@ function Dashboard() {
             <div style={{ fontSize: '0.75rem', color: '#00D4AA', fontWeight: '600', marginBottom: '0.5rem', textTransform: 'uppercase' }}>
                     {exam.provider}
                   </div>
-            <h3 style={{ fontSize: '1rem', fontWeight: '700', color: 'white', marginBottom: '0.5rem' }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: '700', color: '#0A2540', marginBottom: '0.5rem' }}>
               {exam.name}
             </h3>
-            <p style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.7)', marginBottom: '1rem', lineHeight: '1.4' }}>
+            <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '1rem', lineHeight: '1.4' }}>
               {exam.description?.slice(0, 80)}...
             </p>
-            <div style={{ display: 'flex', gap: '1rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)', marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', gap: '1rem', fontSize: '0.75rem', color: '#6b7280', marginBottom: '1rem' }}>
               <span>📝 {exam.total_questions || 'N/A'} Qs</span>
-                    <span>⏱️ {exam.duration_minutes || 'N/A'} min</span>
-                  </div>
+              <span>⏱️ {exam.duration_minutes || 'N/A'} min</span>
+            </div>
 
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <button
@@ -613,13 +649,20 @@ function Dashboard() {
                 style={{
                   flex: 1,
                   padding: '0.5rem',
-                  background: 'rgba(255,255,255,0.1)',
-                  color: 'white',
-                  border: '1px solid rgba(255,255,255,0.3)',
+                  background: 'white',
+                  color: '#374151',
+                  border: '1px solid #d1d5db',
                   borderRadius: '0.5rem',
                   fontWeight: '600',
                   cursor: 'pointer',
-                  fontSize: '0.75rem'
+                  fontSize: '0.75rem',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#f9fafb'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'white'
                 }}
               >
                 Try Free
@@ -663,9 +706,9 @@ function Dashboard() {
           }}
           style={{
             padding: '0.75rem 1.5rem',
-            background: 'rgba(255,255,255,0.1)',
-            color: 'white',
-            border: '1px solid rgba(255,255,255,0.3)',
+            background: 'white',
+            color: '#374151',
+            border: '1px solid #d1d5db',
             borderRadius: '0.5rem',
             fontWeight: '600',
             cursor: 'pointer',
@@ -673,35 +716,36 @@ function Dashboard() {
             transition: 'all 0.2s'
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(255,255,255,0.2)'
-            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.5)'
+            e.currentTarget.style.background = '#f9fafb'
+            e.currentTarget.style.borderColor = '#9ca3af'
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(255,255,255,0.1)'
-            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'
+            e.currentTarget.style.background = 'white'
+            e.currentTarget.style.borderColor = '#d1d5db'
           }}
         >
           View All 21 Certifications →
         </button>
       </div>
-    </div>
+    </section>
   )
 
   const renderPurchasesSummary = () => {
     if (purchases.length === 0) return null
 
     return (
-      <div style={{
-        background: 'rgba(0,212,170,0.1)',
-        backdropFilter: 'blur(20px)',
-        borderRadius: '1rem',
-        padding: '1.5rem',
-        border: '1px solid rgba(0,212,170,0.3)',
-        marginBottom: '2rem'
-      }}>
-        <h3 style={{ fontSize: '1.125rem', fontWeight: '700', color: 'white', marginBottom: '1rem' }}>
-          💳 Your Purchases
-        </h3>
+      <section style={{ padding: '2rem 0' }}>
+        <div style={{
+          background: 'white',
+          borderRadius: '1rem',
+          padding: '1.5rem',
+          border: '1px solid #e5e7eb',
+          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+          marginBottom: '2rem'
+        }}>
+          <h3 style={{ fontSize: '1.125rem', fontWeight: '700', color: '#0A2540', marginBottom: '1rem' }}>
+            💳 Your Purchases
+          </h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {purchases.slice(0, 5).map((purchase, index) => (
             <div 
@@ -711,15 +755,16 @@ function Dashboard() {
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 padding: '0.75rem',
-                background: 'rgba(255,255,255,0.05)',
-                borderRadius: '0.5rem'
+                background: '#f9fafb',
+                borderRadius: '0.5rem',
+                border: '1px solid #e5e7eb'
               }}
             >
               <div>
-                <div style={{ color: 'white', fontWeight: '600', fontSize: '0.875rem' }}>
+                <div style={{ color: '#0A2540', fontWeight: '600', fontSize: '0.875rem' }}>
                   {purchase.question_sets?.name || purchase.packages?.name || 'Purchase'}
                 </div>
-                <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.75rem' }}>
+                <div style={{ color: '#6b7280', fontSize: '0.75rem' }}>
                   {new Date(purchase.purchased_at).toLocaleDateString()}
                 </div>
               </div>
@@ -730,19 +775,20 @@ function Dashboard() {
           ))}
         </div>
         {purchases.length > 5 && (
-          <div style={{ marginTop: '0.75rem', textAlign: 'center', color: 'rgba(255,255,255,0.7)', fontSize: '0.875rem' }}>
+          <div style={{ marginTop: '0.75rem', textAlign: 'center', color: '#6b7280', fontSize: '0.875rem' }}>
             + {purchases.length - 5} more purchases
           </div>
         )}
-      </div>
+        </div>
+      </section>
     )
   }
 
   const renderDashboardFooter = () => (
     <footer style={{
-      marginTop: '4rem',
-      paddingTop: '2rem',
-      borderTop: '1px solid rgba(255,255,255,0.1)'
+      background: '#f9fafb',
+      padding: '4rem 0 2rem',
+      borderTop: '1px solid #e5e7eb'
     }}>
       <div style={{
         display: 'grid',
@@ -754,9 +800,9 @@ function Dashboard() {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
             <span style={{ fontSize: '1.5rem' }}>📚</span>
-            <h3 style={{ fontSize: '1.125rem', fontWeight: '700', color: 'white' }}>Cloud Exam Lab</h3>
+            <h3 style={{ fontSize: '1.125rem', fontWeight: '700', color: '#0A2540' }}>Cloud Exam Lab</h3>
           </div>
-          <p style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.7)', lineHeight: '1.6', marginBottom: '1rem' }}>
+          <p style={{ fontSize: '0.875rem', color: '#6b7280', lineHeight: '1.6', marginBottom: '1rem' }}>
             Master cloud certifications with professional exam practice. AWS, Azure, and GCP.
           </p>
           <div style={{ display: 'flex', gap: '1rem' }}>
@@ -765,13 +811,13 @@ function Dashboard() {
               target="_blank"
               rel="noopener noreferrer"
               style={{ 
-                color: 'rgba(255,255,255,0.7)', 
+                color: '#6b7280', 
                 fontSize: '0.875rem',
                 textDecoration: 'none',
                 transition: 'color 0.2s'
               }}
-              onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
-              onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
+              onMouseEnter={(e) => e.currentTarget.style.color = '#0A2540'}
+              onMouseLeave={(e) => e.currentTarget.style.color = '#6b7280'}
             >
               Twitter
             </a>
@@ -780,13 +826,13 @@ function Dashboard() {
               target="_blank"
               rel="noopener noreferrer"
               style={{ 
-                color: 'rgba(255,255,255,0.7)', 
+                color: '#6b7280', 
                 fontSize: '0.875rem',
                 textDecoration: 'none',
                 transition: 'color 0.2s'
               }}
-              onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
-              onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
+              onMouseEnter={(e) => e.currentTarget.style.color = '#0A2540'}
+              onMouseLeave={(e) => e.currentTarget.style.color = '#6b7280'}
             >
               LinkedIn
             </a>
@@ -795,13 +841,13 @@ function Dashboard() {
               target="_blank"
               rel="noopener noreferrer"
               style={{ 
-                color: 'rgba(255,255,255,0.7)', 
+                color: '#6b7280', 
                 fontSize: '0.875rem',
                 textDecoration: 'none',
                 transition: 'color 0.2s'
               }}
-              onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
-              onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
+              onMouseEnter={(e) => e.currentTarget.style.color = '#0A2540'}
+              onMouseLeave={(e) => e.currentTarget.style.color = '#6b7280'}
             >
               GitHub
             </a>
@@ -810,7 +856,7 @@ function Dashboard() {
 
         {/* Quick Links */}
         <div>
-          <h4 style={{ fontSize: '0.875rem', fontWeight: '700', color: 'white', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          <h4 style={{ fontSize: '0.875rem', fontWeight: '700', color: '#0A2540', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             Quick Links
           </h4>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -820,7 +866,7 @@ function Dashboard() {
                 style={{
                   background: 'none',
                   border: 'none',
-                  color: 'rgba(255,255,255,0.7)',
+                  color: '#6b7280',
                   fontSize: '0.875rem',
                   cursor: 'pointer',
                   padding: 0,
@@ -839,7 +885,7 @@ function Dashboard() {
                 style={{
                   background: 'none',
                   border: 'none',
-                  color: 'rgba(255,255,255,0.7)',
+                  color: '#6b7280',
                   fontSize: '0.875rem',
                   cursor: 'pointer',
                   padding: 0,
@@ -856,7 +902,7 @@ function Dashboard() {
               <a
                 href="mailto:support@cloudexamlab.com"
                 style={{
-                  color: 'rgba(255,255,255,0.7)',
+                  color: '#6b7280',
                   fontSize: '0.875rem',
                   textDecoration: 'none',
                   transition: 'color 0.2s'
@@ -872,7 +918,7 @@ function Dashboard() {
 
         {/* Resources */}
         <div>
-          <h4 style={{ fontSize: '0.875rem', fontWeight: '700', color: 'white', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          <h4 style={{ fontSize: '0.875rem', fontWeight: '700', color: '#0A2540', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             Resources
           </h4>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -888,7 +934,7 @@ function Dashboard() {
                 style={{
                   background: 'none',
                   border: 'none',
-                  color: 'rgba(255,255,255,0.7)',
+                  color: '#6b7280',
                   fontSize: '0.875rem',
                   cursor: 'pointer',
                   padding: 0,
@@ -913,7 +959,7 @@ function Dashboard() {
                 style={{
                   background: 'none',
                   border: 'none',
-                  color: 'rgba(255,255,255,0.7)',
+                  color: '#6b7280',
                   fontSize: '0.875rem',
                   cursor: 'pointer',
                   padding: 0,
@@ -938,7 +984,7 @@ function Dashboard() {
                 style={{
                   background: 'none',
                   border: 'none',
-                  color: 'rgba(255,255,255,0.7)',
+                  color: '#6b7280',
                   fontSize: '0.875rem',
                   cursor: 'pointer',
                   padding: 0,
@@ -956,7 +1002,7 @@ function Dashboard() {
 
         {/* Stats */}
         <div>
-          <h4 style={{ fontSize: '0.875rem', fontWeight: '700', color: 'white', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          <h4 style={{ fontSize: '0.875rem', fontWeight: '700', color: '#0A2540', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             Your Progress
           </h4>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -1000,12 +1046,12 @@ function Dashboard() {
         alignItems: 'center',
         textAlign: 'center'
       }}>
-        <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', lineHeight: '1.6', maxWidth: '800px' }}>
-          <strong style={{ color: 'rgba(255,255,255,0.6)' }}>Disclaimer:</strong> Independent practice questions for certification preparation. 
+        <p style={{ fontSize: '0.75rem', color: '#9ca3af', lineHeight: '1.6', maxWidth: '800px' }}>
+          <strong style={{ color: '#6b7280' }}>Disclaimer:</strong> Independent practice questions for certification preparation. 
           Not affiliated with or endorsed by Amazon Web Services (AWS), Microsoft Azure, Google Cloud Platform (GCP), 
           or any other certification provider. All trademarks are property of their respective owners.
         </p>
-        <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>
+        <p style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
           © {new Date().getFullYear()} Cloud Exam Lab. All rights reserved.
         </p>
       </div>
@@ -1017,26 +1063,61 @@ function Dashboard() {
       <DashboardHeader />
       <div style={{ 
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #0A2540 0%, #1A3B5C 100%)',
+        background: 'white',
         padding: '0'
       }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '1.5rem' }}>
-        {/* Dashboard Header */}
-        <div style={{ 
-          background: 'rgba(255,255,255,0.1)',
-          backdropFilter: 'blur(20px)',
-          padding: '2rem',
-          borderRadius: '1rem',
-          border: '1px solid rgba(255,255,255,0.2)',
-          marginBottom: '2rem'
+        {/* Hero Welcome Section */}
+        <section style={{
+          background: 'linear-gradient(135deg, #0A2540 0%, #1A3B5C 100%)',
+          padding: '4rem 1rem',
+          position: 'relative',
+          overflow: 'hidden'
         }}>
-          <h1 style={{ fontSize: '2rem', fontWeight: '700', color: 'white', marginBottom: '0.5rem' }}>
-            👋 Welcome back, {userName}!
-          </h1>
-          <p style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.8)' }}>
-            Ready to continue your certification journey? Let's make today count!
-          </p>
-        </div>
+          {/* Decorative elements */}
+          <div style={{
+            position: 'absolute',
+            width: '24rem',
+            height: '24rem',
+            background: 'rgba(0, 212, 170, 0.1)',
+            borderRadius: '9999px',
+            filter: 'blur(80px)',
+            top: 0,
+            right: 0
+          }}></div>
+          <div style={{
+            position: 'absolute',
+            width: '20rem',
+            height: '20rem',
+            background: 'rgba(0, 212, 170, 0.08)',
+            borderRadius: '9999px',
+            filter: 'blur(80px)',
+            bottom: 0,
+            left: 0
+          }}></div>
+          
+          <div style={{ maxWidth: '1200px', margin: '0 auto', position: 'relative', zIndex: 1, textAlign: 'center' }}>
+            <div style={{ 
+              display: 'inline-block',
+              padding: '0.5rem 1rem',
+              background: 'rgba(0, 212, 170, 0.15)',
+              borderRadius: '9999px',
+              color: '#00D4AA',
+              fontSize: '0.875rem',
+              fontWeight: '600',
+              marginBottom: '1rem'
+            }}>
+              👋 YOUR DASHBOARD
+            </div>
+            <h1 style={{ fontSize: '2.5rem', fontWeight: '700', color: 'white', marginBottom: '0.75rem', lineHeight: '1.2' }}>
+              Welcome back, {userName}!
+            </h1>
+            <p style={{ fontSize: '1.125rem', color: 'rgba(255,255,255,0.9)', maxWidth: '600px', margin: '0 auto' }}>
+              Ready to continue your certification journey? Let's make today count!
+            </p>
+          </div>
+        </section>
+
+        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 1.5rem' }}>
 
         {/* Purchase Summary */}
         {renderPurchasesSummary()}
