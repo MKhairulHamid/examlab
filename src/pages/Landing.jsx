@@ -71,9 +71,14 @@ function Landing() {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' })
   const [expandedFAQ, setExpandedFAQ] = useState(null)
   
-  // Redirect if already logged in
+  // Redirect if already logged in (but not if processing auth tokens)
   useEffect(() => {
-    if (user) {
+    // Check if URL contains auth tokens (from magic link or OAuth)
+    const hasAuthTokens = window.location.hash.includes('access_token') || 
+                         window.location.hash.includes('refresh_token')
+    
+    // Only redirect if user is logged in AND not currently processing auth tokens
+    if (user && !hasAuthTokens) {
       navigate('/dashboard')
     }
   }, [user, navigate])

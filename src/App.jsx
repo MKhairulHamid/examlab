@@ -17,12 +17,17 @@ import PaymentSuccess from './pages/PaymentSuccess'
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuthStore()
   
-  if (loading) {
+  // Check if URL contains auth tokens (from magic link or OAuth callback)
+  const hasAuthTokens = window.location.hash.includes('access_token') || 
+                       window.location.hash.includes('refresh_token')
+  
+  // If we're still loading OR processing auth tokens, show loading state
+  if (loading || hasAuthTokens) {
     return (
       <div className="loading-container">
         <div className="loading-content">
           <div className="spinner"></div>
-          <p>Loading...</p>
+          <p>{hasAuthTokens ? 'Signing you in...' : 'Loading...'}</p>
         </div>
       </div>
     )
@@ -48,7 +53,7 @@ function App() {
     
     // Register service worker for PWA
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/examlab/sw.js')
+      navigator.serviceWorker.register('/sw.js')
         .then(registration => {
           console.log('✅ Service Worker registered:', registration.scope)
         })
