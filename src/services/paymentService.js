@@ -24,9 +24,19 @@ export const processCheckout = async ({ itemType, itemId, userId, email }) => {
       }
     })
 
-    if (error) throw error
+    if (error) {
+      console.error('Edge Function error:', error)
+      console.error('Error details:', JSON.stringify(error, null, 2))
+      throw error
+    }
 
-    if (!data.approvalUrl) {
+    console.log('Edge Function response:', data)
+
+    if (data?.error) {
+      throw new Error(data.error)
+    }
+
+    if (!data?.approvalUrl) {
       throw new Error('No approval URL received from PayPal')
     }
 
@@ -36,7 +46,8 @@ export const processCheckout = async ({ itemType, itemId, userId, email }) => {
     return { success: true }
   } catch (error) {
     console.error('Checkout error:', error)
-    return { success: false, error: error.message }
+    console.error('Full error object:', JSON.stringify(error, null, 2))
+    return { success: false, error: error.message || 'Unknown error occurred' }
   }
 }
 
