@@ -1,85 +1,37 @@
 /**
- * Payment Service - Handle Stripe payments and purchase processing
+ * Payment Service - Handle PayPal payments and purchase processing
  */
 
-import { loadStripe } from '@stripe/stripe-js'
 import supabase from './supabase'
 
-// Initialize Stripe (replace with your publishable key)
-const stripePromise = loadStripe(
-  import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_placeholder'
-)
+// PayPal configuration
+const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID || ''
 
 /**
- * Create a payment intent for a question set or package
- */
-export const createPaymentIntent = async ({ itemType, itemId, userId }) => {
-  try {
-    // Call your backend API to create payment intent
-    // For now, we'll use Supabase Edge Function
-    const { data, error } = await supabase.functions.invoke('create-payment-intent', {
-      body: { itemType, itemId, userId }
-    })
-
-    if (error) throw error
-    return { success: true, clientSecret: data.clientSecret, amount: data.amount }
-  } catch (error) {
-    console.error('Error creating payment intent:', error)
-    return { success: false, error: error.message }
-  }
-}
-
-/**
- * Confirm payment with Stripe
- */
-export const confirmPayment = async (clientSecret, paymentMethod) => {
-  try {
-    const stripe = await stripePromise
-    
-    const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
-      payment_method: paymentMethod
-    })
-
-    if (error) {
-      throw error
-    }
-
-    return { success: true, paymentIntent }
-  } catch (error) {
-    console.error('Payment confirmation error:', error)
-    return { success: false, error: error.message }
-  }
-}
-
-/**
- * Process checkout with Stripe Checkout
+ * Process checkout with PayPal
  */
 export const processCheckout = async ({ itemType, itemId, userId, email }) => {
   try {
-    const stripe = await stripePromise
-    
-    // Create checkout session via backend
-    const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+    // Create PayPal order via backend
+    const { data, error } = await supabase.functions.invoke('create-paypal-order', {
       body: {
         itemType,
         itemId,
         userId,
         email,
-        successUrl: `${window.location.origin}/payment-success`,
+        returnUrl: `${window.location.origin}/payment-success`,
         cancelUrl: `${window.location.origin}/dashboard`
       }
     })
 
     if (error) throw error
 
-    // Redirect to Stripe Checkout
-    const result = await stripe.redirectToCheckout({
-      sessionId: data.sessionId
-    })
-
-    if (result.error) {
-      throw result.error
+    if (!data.approvalUrl) {
+      throw new Error('No approval URL received from PayPal')
     }
+
+    // Redirect to PayPal for payment
+    window.location.href = data.approvalUrl
 
     return { success: true }
   } catch (error) {
@@ -196,7 +148,8 @@ export const mockPurchase = async (userId, itemType, itemId) => {
         amount_cents: 0,
         currency: 'usd',
         payment_status: 'succeeded',
-        stripe_payment_intent_id: `mock_${Date.now()}`
+        payment_provider_id: `mock_paypal_${Date.now()}`,
+        payment_provider: 'paypal'
       })
       .select()
       .single()
@@ -210,8 +163,6 @@ export const mockPurchase = async (userId, itemType, itemId) => {
 }
 
 export default {
-  createPaymentIntent,
-  confirmPayment,
   processCheckout,
   getUserPurchases,
   hasUserPurchased,

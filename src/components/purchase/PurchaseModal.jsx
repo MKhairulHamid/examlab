@@ -364,7 +364,7 @@ const PurchaseModal = ({ isOpen, onClose, examTypeId, examName }) => {
                   opacity: selectedOption && !checkoutLoading ? 1 : 0.5
                 }}
               >
-                {checkoutLoading ? 'Processing...' : `Purchase ${selectedOption ? `- $${Number(selectedOption.price).toFixed(2)}` : ''}`}
+                {checkoutLoading ? 'Redirecting to PayPal...' : `Purchase ${selectedOption ? `- $${Number(selectedOption.price).toFixed(2)}` : ''}`}
               </button>
             </div>
 
@@ -392,10 +392,11 @@ const PurchaseModal = ({ isOpen, onClose, examTypeId, examName }) => {
               paddingTop: '1.5rem',
               borderTop: '1px solid rgba(255,255,255,0.1)',
               color: 'rgba(255,255,255,0.7)',
-              fontSize: '0.875rem'
+              fontSize: '0.875rem',
+              flexWrap: 'wrap'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span>🔒</span> Secure Payment
+                <span>🔒</span> Secure PayPal Checkout
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <span>⚡</span> Instant Access
