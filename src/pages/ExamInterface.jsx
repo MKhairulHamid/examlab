@@ -92,7 +92,24 @@ function ExamInterface() {
           })
           
           // Start exam
-          const examDuration = questionSet.exam_types?.duration_minutes || 60
+          let examDuration = questionSet.exam_types?.duration_minutes || 60
+          
+          // Adjust duration for free samples based on sample_question_count
+          if (isFree && questionSet.sample_question_count) {
+            const totalQuestions = questionSet.exam_types?.total_questions || questionSet.question_count
+            const sampleQuestions = questionSet.sample_question_count
+            
+            // Calculate proportional time: (sample_questions / total_questions) * full_duration
+            examDuration = Math.ceil((sampleQuestions / totalQuestions) * examDuration)
+            
+            console.log('⏱️ Adjusted duration for free sample:', {
+              sampleQuestions,
+              totalQuestions,
+              originalDuration: questionSet.exam_types?.duration_minutes,
+              adjustedDuration: examDuration
+            })
+          }
+          
           setDuration(examDuration * 60)
           
           // Check if there's an existing in-progress exam
@@ -439,9 +456,40 @@ function ExamInterface() {
     })
     
     const percentage = Math.round((correctCount / questions.length) * 100)
-    const scaledScore = Math.round((correctCount / questions.length) * 1000) // Scale to 1000
+    
+    // Get max score from exam type (default to 1000)
+    const maxScore = currentQuestionSet.exam_types?.max_score || 1000
+    
+    // Check if this is a free sample
+    const isFree = currentQuestionSet.is_free_sample || currentQuestionSet.price_cents === 0
+    
+    let scaledScore
+    if (isFree && currentQuestionSet.sample_question_count) {
+      // For free samples, scale the score proportionally
+      // Example: 10/65 questions means the score should be scaled accordingly
+      const totalQuestions = currentQuestionSet.exam_types?.total_questions || currentQuestionSet.question_count
+      const sampleQuestions = currentQuestionSet.sample_question_count
+      
+      // Calculate score as if taking the full exam
+      // (correct / sample_questions) * (sample_questions / total_questions) * max_score
+      scaledScore = Math.round((correctCount / questions.length) * (sampleQuestions / totalQuestions) * maxScore)
+      
+      console.log('📊 Adjusted scoring for free sample:', {
+        correctCount,
+        sampleQuestions,
+        totalQuestions,
+        maxScore,
+        scaledScore
+      })
+    } else {
+      // Regular scoring: scale to max_score (default 1000)
+      scaledScore = Math.round((correctCount / questions.length) * maxScore)
+    }
     
     // Determine if passed (typically 70% or higher)
+    // Note: Pass/fail is based on percentage of questions answered correctly,
+    // not the scaled score. This ensures fair evaluation for both free samples and full exams.
+    // Example: 8/10 correct = 80% = PASSED (even though scaled score might be lower)
     const passingScore = 70
     const passed = percentage >= passingScore
     
