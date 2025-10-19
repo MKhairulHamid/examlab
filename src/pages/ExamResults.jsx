@@ -347,7 +347,7 @@ function ExamResults() {
                   </div>
 
                   {/* Explanation Toggle */}
-                  {question.materials && (
+                  {question.explanation && (
                     <div>
                       <button
                         onClick={() => toggleExplanation(index)}
@@ -382,7 +382,7 @@ function ExamResults() {
                           fontSize: '0.875rem',
                           lineHeight: '1.6'
                         }}>
-                          {question.materials}
+                          {question.explanation}
                         </div>
                       )}
                     </div>
