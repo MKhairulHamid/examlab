@@ -741,12 +741,28 @@ function Dashboard() {
     const { currentStreak, longestStreak, questionsToday, dailyGoal, studyDates } = streakStats
     const today = new Date().toISOString().split('T')[0]
     
-    // Get last 14 days for visualization
-    const last14Days = Array.from({ length: 14 }, (_, i) => {
-      const date = new Date()
-      date.setDate(date.getDate() - (13 - i))
+    // Get the earliest study date or today
+    const sortedStudyDates = [...studyDates].sort()
+    const firstStudyDate = sortedStudyDates.length > 0 ? sortedStudyDates[0] : today
+    
+    // Calculate how many days since first study (or 0 if no studies yet)
+    const firstDate = new Date(firstStudyDate)
+    const todayDate = new Date(today)
+    const daysSinceFirst = Math.floor((todayDate - firstDate) / (1000 * 60 * 60 * 24))
+    
+    // Calculate which cycle we're in (0-based)
+    const cycleNumber = Math.floor(daysSinceFirst / 14)
+    const cycleStart = cycleNumber * 14
+    
+    // Generate 14 boxes starting from the current cycle
+    const displayDays = Array.from({ length: 14 }, (_, i) => {
+      const date = new Date(firstDate)
+      date.setDate(date.getDate() + cycleStart + i)
       return date.toISOString().split('T')[0]
     })
+    
+    // Filter to only show boxes up to today
+    const visibleDays = displayDays.filter(date => date <= today)
     
     return (
       <section style={{ padding: '4rem 0', background: '#f9fafb' }}>
@@ -790,16 +806,19 @@ function Dashboard() {
           Answer at least 1 question per day to maintain your streak
         </div>
 
-        {/* Mini Calendar - Last 14 Days */}
+        {/* Mini Calendar - Progress Tracker (14-day cycles) */}
         <div style={{ marginBottom: '2rem' }}>
           <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.75rem' }}>
-            Last 14 Days
+            {studyDates.length === 0 ? 'Start Your Journey' : `Cycle ${cycleNumber + 1} Progress`}
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 2rem)', gap: '0.5rem', justifyContent: 'center' }}>
-            {last14Days.map((date, i) => {
-              const isStudied = studyDates.includes(date)
+            {Array.from({ length: 14 }, (_, i) => {
+              const date = displayDays[i]
+              const isStudied = date && studyDates.includes(date)
               const isToday = date === today
-              const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'short' }).slice(0, 1)
+              const isFuture = !date || date > today
+              const dayNumber = i + 1
+              
               return (
                 <div 
                   key={i}
@@ -807,20 +826,21 @@ function Dashboard() {
                     width: '2rem',
                     height: '2rem',
                     borderRadius: '0.25rem',
-                    background: isStudied ? (isToday ? '#00D4AA' : '#10b981') : '#f3f4f6',
-                    border: isToday ? '2px solid #00D4AA' : '1px solid #e5e7eb',
+                    background: isFuture ? '#f9fafb' : (isStudied ? (isToday ? '#00D4AA' : '#10b981') : '#f3f4f6'),
+                    border: isToday ? '2px solid #00D4AA' : (isFuture ? '1px solid #f3f4f6' : '1px solid #e5e7eb'),
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     fontSize: '0.75rem',
-                    color: isStudied ? 'white' : '#9ca3af',
+                    color: isFuture ? '#e5e7eb' : (isStudied ? 'white' : '#9ca3af'),
                     fontWeight: isStudied ? '700' : '400',
                     transition: 'all 0.3s',
-                    position: 'relative'
+                    position: 'relative',
+                    opacity: isFuture ? 0.3 : 1
                   }}
-                  title={`${date} (${dayOfWeek})`}
+                  title={date ? `${date} - Day ${dayNumber}` : `Day ${dayNumber} (upcoming)`}
                 >
-                  {isStudied ? '✓' : ''}
+                  {isStudied ? '✓' : (isFuture ? '' : dayNumber)}
                 </div>
               )
             })}

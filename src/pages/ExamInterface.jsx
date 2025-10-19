@@ -90,10 +90,10 @@ function ExamInterface() {
           const fullExamDuration = questionSet.exam_types?.duration_minutes || 60
           let examDuration = fullExamDuration
           
-          // Adjust duration for free samples based on sample_question_count
-          if (isFree && questionSet.sample_question_count) {
-            const totalQuestions = questionSet.exam_types?.total_questions || questionSet.question_count || 65
-            const sampleQuestions = questionSet.sample_question_count
+          // Adjust duration for free samples based on actual question count
+          if (isFree && questionSet.question_count) {
+            const totalQuestions = questionSet.exam_types?.total_questions || 65
+            const sampleQuestions = questionSet.question_count
             
             // Calculate proportional time: (sample_questions / total_questions) * full_duration
             examDuration = Math.ceil((sampleQuestions / totalQuestions) * fullExamDuration)
@@ -447,11 +447,11 @@ function ExamInterface() {
     const isFree = currentQuestionSet.is_free_sample || currentQuestionSet.price_cents === 0
     
     let scaledScore
-    if (isFree && currentQuestionSet.sample_question_count) {
+    if (isFree && currentQuestionSet.question_count) {
       // For free samples, scale the score proportionally
       // Example: 10/65 questions means the score should be scaled accordingly
-      const totalQuestions = currentQuestionSet.exam_types?.total_questions || currentQuestionSet.question_count
-      const sampleQuestions = currentQuestionSet.sample_question_count
+      const totalQuestions = currentQuestionSet.exam_types?.total_questions || 65
+      const sampleQuestions = currentQuestionSet.question_count
       
       // Calculate score as if taking the full exam
       // (correct / sample_questions) * (sample_questions / total_questions) * max_score
