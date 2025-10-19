@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom'
 import useExamStore from '../stores/examStore'
 import useProgressStore from '../stores/progressStore'
@@ -12,7 +12,7 @@ function ExamInterface() {
   const setId = searchParams.get('set')
   
   const { user } = useAuthStore()
-  const { loadQuestionSet, currentQuestionSet } = useExamStore()
+  const { loadQuestionSet, currentQuestionSet, getExamBySlug } = useExamStore()
   const { hasPurchased, fetchPurchases } = usePurchaseStore()
   const { 
     startExam, 
@@ -20,12 +20,19 @@ function ExamInterface() {
     answers,
     goToQuestion,
     saveAnswer,
-    getAnswerCount
+    getAnswerCount,
+    timeElapsed,
+    timerPaused,
+    updateTimer,
+    setTimerPaused,
+    isQuestionAnswered,
+    status
   } = useProgressStore()
 
   const [loading, setLoading] = useState(true)
   const [accessDenied, setAccessDenied] = useState(false)
   const [accessMessage, setAccessMessage] = useState('')
+  const [duration, setDuration] = useState(0)
 
   useEffect(() => {
     const initialize = async () => {
@@ -73,6 +80,8 @@ function ExamInterface() {
           })
           
           // Start exam
+          const examDuration = questionSet.exam_types?.duration_minutes || 60
+          setDuration(examDuration * 60)
           await startExam(setId, user.id, questionSet.question_count || 0)
           setLoading(false)
         } catch (error) {
@@ -86,6 +95,61 @@ function ExamInterface() {
     
     initialize()
   }, [setId, user, loadQuestionSet, startExam, fetchPurchases, hasPurchased])
+
+  // Timer interval
+  const timerRef = useRef(null)
+  useEffect(() => {
+    timerRef.current = setInterval(() => {
+      const state = useProgressStore.getState()
+      if (!state.timerPaused && state.status === 'in_progress') {
+        state.updateTimer(state.timeElapsed + 1)
+      }
+    }, 1000)
+
+    return () => clearInterval(timerRef.current)
+  }, [])
+
+  // Check time expired
+  useEffect(() => {
+    if (timeElapsed >= duration && status === 'in_progress' && duration > 0) {
+      handleFinishExam()
+    }
+  }, [timeElapsed, duration, status])
+
+  // Visibility change
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.hidden) {
+        setTimerPaused(true)
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+    return () => document.removeEventListener('visibilitychange', handleVisibility)
+  }, [setTimerPaused])
+
+  // Inactivity detection
+  const lastActivityRef = useRef(Date.now())
+  const inactivityRef = useRef(null)
+
+  const resetInactivity = () => {
+    lastActivityRef.current = Date.now()
+  }
+
+  useEffect(() => {
+    inactivityRef.current = setInterval(() => {
+      if (Date.now() - lastActivityRef.current > 5 * 60 * 1000) {
+        setTimerPaused(true)
+      }
+    }, 1000)
+
+    const events = ['mousemove', 'keydown', 'touchstart', 'scroll']
+    events.forEach(ev => document.addEventListener(ev, resetInactivity, { passive: true }))
+
+    return () => {
+      clearInterval(inactivityRef.current)
+      events.forEach(ev => document.removeEventListener(ev, resetInactivity))
+    }
+  }, [setTimerPaused])
 
   // Show access denied screen
   if (accessDenied) {
@@ -274,6 +338,15 @@ function ExamInterface() {
 
   const currentAnswer = answers[currentQuestionIndex] || []
 
+  const formatTime = (secs) => {
+    if (secs < 0) return '0:00'
+    const m = Math.floor(secs / 60)
+    const s = secs % 60
+    return `${m}:${s.toString().padStart(2, '0')}`
+  }
+
+  const timeLeft = Math.max(0, duration - timeElapsed)
+
   return (
     <div className="exam-interface">
       <div className="exam-interface-container">
@@ -281,6 +354,17 @@ function ExamInterface() {
         <div className="exam-header">
           <h1 className="exam-header-title">{currentQuestionSet.name}</h1>
           <p className="exam-header-progress">Question {currentQuestionIndex + 1} of {questions.length}</p>
+          <div className="exam-timer">
+            Time left: {formatTime(timeLeft)}
+          </div>
+        </div>
+
+        {/* Time Bar */}
+        <div className="time-bar-container">
+          <div 
+            className="time-bar"
+            style={{ width: `${(timeLeft / duration * 100)}%` }}
+          ></div>
         </div>
 
         {/* Progress Bar */}
@@ -295,7 +379,7 @@ function ExamInterface() {
         <div className="question-card">
           <div className="question-header">
             <span className="question-badge">
-              Question {currentQuestionIndex + 1} • {currentQuestion.type === 'multiple' ? 'Multiple Choice' : 'Single Choice'}
+              Question {currentQuestionIndex + 1} • {currentQuestion.type === 'multiple' ? 'Multiple Choice (select all that apply)' : 'Single Choice'}
             </span>
             <p className="question-text">
               {currentQuestion.question}
@@ -337,6 +421,19 @@ function ExamInterface() {
           </div>
         </div>
 
+        {/* Question Navigation */}
+        <div className="question-navigation">
+          {questions.map((_, index) => (
+            <button
+              key={index}
+              className={`nav-item ${index === currentQuestionIndex ? 'current' : ''} ${isQuestionAnswered(index) ? 'answered' : 'unanswered'}`}
+              onClick={() => goToQuestion(index)}
+            >
+              {index + 1}
+            </button>
+          ))}
+        </div>
+
         {/* Navigation */}
         <div className="navigation-buttons">
           <button
@@ -365,6 +462,25 @@ function ExamInterface() {
           {answeredCount} of {questions.length} questions answered
         </div>
       </div>
+
+      {/* Paused Modal */}
+      {timerPaused && (
+        <div className="paused-overlay">
+          <div className="paused-modal">
+            <h2>Exam Paused</h2>
+            <p>The exam is paused. Resume when you're ready.</p>
+            <button 
+              onClick={() => {
+                setTimerPaused(false)
+                resetInactivity()
+              }}
+              className="resume-button"
+            >
+              Resume
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
