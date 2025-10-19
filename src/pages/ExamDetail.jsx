@@ -102,59 +102,6 @@ function ExamDetail() {
           </div>
         </div>
 
-        {/* Purchase Banner */}
-        {!hasAnyPurchase && paidSets.length > 0 && (
-          <div style={{
-            background: 'linear-gradient(135deg, rgba(0,212,170,0.15) 0%, rgba(0,168,132,0.15) 100%)',
-            border: '1px solid rgba(0,212,170,0.3)',
-            borderRadius: '1rem',
-            padding: '2rem',
-            marginBottom: '2rem',
-            textAlign: 'center'
-          }}>
-            <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: 'white', marginBottom: '1rem' }}>
-              🎓 Unlock Complete Access
-            </h3>
-            <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: '1rem', marginBottom: '1.5rem' }}>
-              Get all {paidSets.length} question sets and ace your {exam.provider} certification exam!
-            </p>
-            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-              <button
-                onClick={() => setShowPurchaseModal(true)}
-                style={{
-                  padding: '1rem 2rem',
-                  background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '0.75rem',
-                  fontWeight: '700',
-                  fontSize: '1rem',
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 12px rgba(0,212,170,0.3)'
-                }}
-              >
-                View Pricing Options
-              </button>
-              {freeSet && (
-                <button
-                  onClick={() => navigate(`/exam/${slug}/take?set=${freeSet.id}`)}
-                  style={{
-                    padding: '1rem 2rem',
-                    background: 'rgba(255,255,255,0.1)',
-                    color: 'white',
-                    border: '2px solid rgba(255,255,255,0.3)',
-                    borderRadius: '0.75rem',
-                    fontWeight: '600',
-                    fontSize: '1rem',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Try 10 Free Questions First
-                </button>
-              )}
-            </div>
-          </div>
-        )}
 
         {/* Question Sets */}
         <h2 className="section-title">📝 Question Sets</h2>

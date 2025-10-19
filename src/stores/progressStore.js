@@ -57,6 +57,38 @@ export const useProgressStore = create((set, get) => ({
   },
 
   /**
+   * Start or resume exam
+   * Checks for in-progress exam first, otherwise starts new one
+   */
+  startOrResumeExam: async (questionSetId, userId, questionCount) => {
+    // Check for existing in-progress exam
+    const existingProgress = await progressService.findInProgressExam(userId, questionSetId)
+    
+    if (existingProgress) {
+      // Resume existing exam
+      console.log('🔄 Resuming existing exam')
+      set({
+        attemptId: existingProgress.id || existingProgress.attemptId || existingProgress.exam_attempt_id,
+        questionSetId: existingProgress.questionSetId || existingProgress.question_set_id,
+        userId: existingProgress.userId || existingProgress.user_id,
+        currentQuestionIndex: existingProgress.currentQuestionIndex || existingProgress.current_question_index || 0,
+        answers: existingProgress.answers || {},
+        timeElapsed: existingProgress.timeElapsed || existingProgress.time_elapsed || 0,
+        timerPaused: existingProgress.timerPaused || existingProgress.timer_paused || false,
+        status: existingProgress.status || 'in_progress',
+        startedAt: existingProgress.startedAt || existingProgress.started_at,
+        completedAt: existingProgress.completedAt || existingProgress.completed_at || null,
+        updatedAt: existingProgress.updatedAt || existingProgress.updated_at || new Date().toISOString()
+      })
+      
+      return existingProgress.id || existingProgress.attemptId || existingProgress.exam_attempt_id
+    }
+    
+    // No existing exam found, start new one
+    return get().startExam(questionSetId, userId, questionCount)
+  },
+
+  /**
    * Load existing progress
    */
   loadProgress: async (attemptId, userId) => {

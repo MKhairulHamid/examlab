@@ -134,6 +134,19 @@ export const indexedDBService = {
   },
 
   /**
+   * Get in-progress exam attempt for a specific question set
+   */
+  async getInProgressAttempt(userId, questionSetId) {
+    const db = await initDB()
+    const attempts = await db.getAllFromIndex(STORES.EXAM_ATTEMPTS, 'userId', userId)
+    return attempts.find(
+      attempt => 
+        attempt.questionSetId === questionSetId && 
+        attempt.status === 'in_progress'
+    )
+  },
+
+  /**
    * Delete an exam attempt
    */
   async deleteExamAttempt(id) {

@@ -15,7 +15,8 @@ function ExamInterface() {
   const { loadQuestionSet, currentQuestionSet, getExamBySlug } = useExamStore()
   const { hasPurchased, fetchPurchases } = usePurchaseStore()
   const { 
-    startExam, 
+    startExam,
+    startOrResumeExam,
     currentQuestionIndex, 
     answers,
     goToQuestion,
@@ -35,6 +36,8 @@ function ExamInterface() {
   const [duration, setDuration] = useState(0)
   const [showMaterialsModal, setShowMaterialsModal] = useState(false)
   const [shuffledOptions, setShuffledOptions] = useState({})
+  const [navMinimized, setNavMinimized] = useState(false)
+  const [showResumeNotification, setShowResumeNotification] = useState(false)
 
   useEffect(() => {
     const initialize = async () => {
@@ -85,8 +88,19 @@ function ExamInterface() {
           const examDuration = questionSet.exam_types?.duration_minutes || 60
           setDuration(examDuration * 60)
           
-          // Start new exam (progress is automatically saved to local and synced to Supabase)
-          await startExam(setId, user.id, questionSet.question_count || 0)
+          // Check if there's an existing in-progress exam
+          const progressService = await import('../services/progressService')
+          const existingProgress = await progressService.default.findInProgressExam(user.id, setId)
+          
+          // Start or resume exam (checks for existing in-progress exam first)
+          await startOrResumeExam(setId, user.id, questionSet.question_count || 0)
+          
+          // Show resume notification if exam was resumed
+          if (existingProgress) {
+            setShowResumeNotification(true)
+            setTimeout(() => setShowResumeNotification(false), 5000) // Hide after 5 seconds
+          }
+          
           setLoading(false)
         } catch (error) {
           console.error('Error initializing exam:', error)
@@ -98,7 +112,7 @@ function ExamInterface() {
     }
     
     initialize()
-  }, [setId, user, loadQuestionSet, startExam, fetchPurchases, hasPurchased])
+  }, [setId, user, loadQuestionSet, startOrResumeExam, fetchPurchases, hasPurchased])
 
   // Timer interval - only runs when not paused
   const timerRef = useRef(null)
@@ -140,17 +154,99 @@ function ExamInterface() {
     }
   }, [timeElapsed, duration, status])
 
-  // Visibility change - pause when tab is hidden
+  // Save current progress helper function
+  const saveCurrentProgress = async () => {
+    const state = useProgressStore.getState()
+    if (state.attemptId && state.status === 'in_progress') {
+      const progress = {
+        attemptId: state.attemptId,
+        questionSetId: state.questionSetId,
+        userId: state.userId,
+        currentQuestionIndex: state.currentQuestionIndex,
+        answers: state.answers,
+        timeElapsed: state.timeElapsed,
+        timerPaused: state.timerPaused,
+        status: state.status,
+        startedAt: state.startedAt,
+        updatedAt: new Date().toISOString()
+      }
+      
+      await useProgressStore.getState().updateTimer(state.timeElapsed)
+      console.log('💾 Progress saved:', {
+        question: progress.currentQuestionIndex + 1,
+        time: progress.timeElapsed,
+        answers: Object.keys(progress.answers).length
+      })
+    }
+  }
+
+  // Visibility change - pause when tab is hidden or phone is locked
   useEffect(() => {
     const handleVisibility = async () => {
       if (document.hidden) {
-        console.log('⏸️ Tab hidden - pausing exam')
+        console.log('⏸️ Tab hidden/Phone locked - saving and pausing exam')
+        // Save progress immediately
+        await saveCurrentProgress()
         await setTimerPaused(true)
+      } else {
+        console.log('👁️ Tab visible - exam can be resumed')
       }
     }
     document.addEventListener('visibilitychange', handleVisibility)
     return () => document.removeEventListener('visibilitychange', handleVisibility)
   }, [setTimerPaused])
+
+  // Before unload - save progress when user navigates away or closes tab
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      const state = useProgressStore.getState()
+      if (state.status === 'in_progress') {
+        // Save progress synchronously
+        saveCurrentProgress()
+        
+        // Show warning message (optional - commented out to avoid annoyance)
+        // e.preventDefault()
+        // e.returnValue = 'Your exam progress will be saved. Are you sure you want to leave?'
+      }
+    }
+    
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [])
+
+  // Page Hide - more reliable than beforeunload for mobile
+  useEffect(() => {
+    const handlePageHide = async () => {
+      console.log('📤 Page hiding - saving progress')
+      await saveCurrentProgress()
+    }
+    
+    window.addEventListener('pagehide', handlePageHide)
+    return () => window.removeEventListener('pagehide', handlePageHide)
+  }, [])
+
+  // Periodic auto-save every 30 seconds
+  useEffect(() => {
+    const autoSaveInterval = setInterval(async () => {
+      if (status === 'in_progress' && !timerPaused) {
+        console.log('⏰ Auto-saving progress...')
+        await saveCurrentProgress()
+      }
+    }, 30000) // 30 seconds
+
+    return () => clearInterval(autoSaveInterval)
+  }, [status, timerPaused])
+
+  // Navigation blocker - handle react-router navigation
+  useEffect(() => {
+    const handlePopState = async () => {
+      console.log('🔙 Navigation detected - saving progress')
+      await saveCurrentProgress()
+    }
+    
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
 
   // Inactivity detection - pause after 5 minutes of no activity
   const lastActivityRef = useRef(Date.now())
@@ -434,22 +530,33 @@ function ExamInterface() {
         </div>
 
         {/* Question Navigation */}
-        <div className="question-navigation">
+        <div className={`question-navigation ${navMinimized ? 'minimized' : ''}`}>
           <div className="question-nav-header">
-            <span className="text-sm text-white/80">Questions:</span>
+            <span className="text-sm text-white/80">
+              Questions: {answeredCount}/{questions.length}
+            </span>
+            <button
+              onClick={() => setNavMinimized(!navMinimized)}
+              className="nav-toggle-btn"
+              title={navMinimized ? 'Expand navigation' : 'Minimize navigation'}
+            >
+              {navMinimized ? '▼' : '▲'}
+            </button>
           </div>
-          <div className="question-nav-grid">
-            {questions.map((_, index) => (
-              <button
-                key={index}
-                className={`question-nav-item ${index === currentQuestionIndex ? 'current' : ''} ${isQuestionAnswered(index) ? 'answered' : 'unanswered'}`}
-                onClick={() => goToQuestion(index)}
-                title={`Question ${index + 1}${isQuestionAnswered(index) ? ' (Answered)' : ' (Not Answered)'}`}
-              >
-                {index + 1}
-              </button>
-            ))}
-          </div>
+          {!navMinimized && (
+            <div className="question-nav-grid">
+              {questions.map((_, index) => (
+                <button
+                  key={index}
+                  className={`question-nav-item ${index === currentQuestionIndex ? 'current' : ''} ${isQuestionAnswered(index) ? 'answered' : 'unanswered'}`}
+                  onClick={() => goToQuestion(index)}
+                  title={`Question ${index + 1}${isQuestionAnswered(index) ? ' (Answered)' : ' (Not Answered)'}`}
+                >
+                  {index + 1}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Progress Bar */}
@@ -547,6 +654,34 @@ function ExamInterface() {
         </div>
       </div>
 
+      {/* Resume Notification */}
+      {showResumeNotification && (
+        <div style={{
+          position: 'fixed',
+          top: '20px',
+          right: '20px',
+          background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
+          color: 'white',
+          padding: '1rem 1.5rem',
+          borderRadius: '0.75rem',
+          boxShadow: '0 10px 25px rgba(0, 212, 170, 0.3)',
+          zIndex: 10000,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+          animation: 'slideInRight 0.3s ease-out',
+          maxWidth: '400px'
+        }}>
+          <span style={{ fontSize: '1.5rem' }}>🔄</span>
+          <div>
+            <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>Exam Resumed</div>
+            <div style={{ fontSize: '0.875rem', opacity: 0.9 }}>
+              Welcome back! Your progress has been restored.
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Study Materials Modal */}
       {showMaterialsModal && (
         <div className="modal-overlay" onClick={() => setShowMaterialsModal(false)}>
@@ -567,16 +702,6 @@ function ExamInterface() {
                   {currentQuestion.materials || 'No additional materials available for this question.'}
                 </div>
               </div>
-              {currentQuestion.explanations && Object.keys(currentQuestion.explanations).length > 0 && (
-                <div className="material-item">
-                  <h3 className="material-title">💡 Answer Explanations</h3>
-                  {Object.entries(currentQuestion.explanations).map(([key, explanation], idx) => (
-                    <div key={idx} className="explanation-item">
-                      <strong>{key}:</strong> {explanation}
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
             <button 
               className="form-button"

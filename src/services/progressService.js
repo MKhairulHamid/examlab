@@ -232,6 +232,50 @@ export const progressService = {
    */
   async getAllProgress(userId) {
     return indexedDBService.getExamAttemptsByUser(userId)
+  },
+
+  /**
+   * Find in-progress exam for a question set
+   * Returns the attempt if found, null otherwise
+   */
+  async findInProgressExam(userId, questionSetId) {
+    try {
+      // Check IndexedDB for in-progress attempt
+      const inProgressAttempt = await indexedDBService.getInProgressAttempt(userId, questionSetId)
+      
+      if (inProgressAttempt) {
+        console.log('📂 Found in-progress exam:', {
+          attemptId: inProgressAttempt.id || inProgressAttempt.attemptId,
+          questionSetId,
+          currentQuestion: inProgressAttempt.currentQuestionIndex,
+          timeElapsed: inProgressAttempt.timeElapsed
+        })
+        return inProgressAttempt
+      }
+      
+      // Also check Supabase for in-progress attempts
+      const { data, error } = await supabase
+        .from('user_progress')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('question_set_id', questionSetId)
+        .eq('status', 'in_progress')
+        .order('started_at', { ascending: false })
+        .limit(1)
+        .single()
+      
+      if (data && !error) {
+        console.log('📂 Found in-progress exam on Supabase')
+        // Cache it locally
+        await indexedDBService.setExamAttempt(data)
+        return data
+      }
+      
+      return null
+    } catch (error) {
+      console.error('Error finding in-progress exam:', error)
+      return null
+    }
   }
 }
 
