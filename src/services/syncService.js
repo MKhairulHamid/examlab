@@ -35,7 +35,6 @@ class SyncQueue {
     this.queue.push(item)
     this.queue.sort((a, b) => b.priority - a.priority)
     
-    console.log(`📝 Added to sync queue: ${type}`, data)
     this.notifyListeners({ action: 'added', item })
     
     // Start processing if online
@@ -61,12 +60,10 @@ class SyncQueue {
       const item = this.queue[0]
       
       try {
-        console.log(`⏳ Syncing: ${item.type}`)
         await this.syncItem(item)
         
         // Success - remove from queue
         this.queue.shift()
-        console.log(`✅ Synced: ${item.type}`)
         this.notifyListeners({ action: 'synced', item })
         
       } catch (error) {
@@ -163,13 +160,6 @@ class SyncQueue {
       updated_at: new Date().toISOString()
     }
 
-    console.log('📤 Syncing exam result to Supabase:', {
-      id: resultId,
-      userId: resultData.user_id,
-      questionSetId: resultData.question_set_id,
-      score: resultData.percentage_score
-    })
-
     const { data: result, error } = await supabase
       .from('exam_attempts')
       .upsert(resultData)
@@ -179,7 +169,6 @@ class SyncQueue {
       throw error
     }
 
-    console.log('✅ Exam result synced successfully')
     return result
   }
 
@@ -204,7 +193,6 @@ class SyncQueue {
    * Handle online event
    */
   onOnline() {
-    console.log('🌐 Network online - resuming sync')
     this.notifyListeners({ action: 'online' })
     this.process()
   }
@@ -213,7 +201,6 @@ class SyncQueue {
    * Handle offline event
    */
   onOffline() {
-    console.log('📵 Network offline - sync paused')
     this.notifyListeners({ action: 'offline' })
   }
 
@@ -261,7 +248,6 @@ class SyncQueue {
    */
   clear() {
     this.queue = []
-    console.log('🗑️ Sync queue cleared')
     this.notifyListeners({ action: 'cleared' })
   }
 }

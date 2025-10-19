@@ -51,8 +51,6 @@ export const useProgressStore = create((set, get) => ({
     // Save immediately
     await progressService.saveProgress(initialState)
     
-    console.log('✅ Exam started:', attemptId)
-    
     return attemptId
   },
 
@@ -66,19 +64,20 @@ export const useProgressStore = create((set, get) => ({
     
     if (existingProgress) {
       // Resume existing exam
-      console.log('🔄 Resuming existing exam')
+      const resumedIndex = existingProgress.currentQuestionIndex || existingProgress.current_question_index || existingProgress.current_question_number || 0
+      
       set({
         attemptId: existingProgress.id || existingProgress.attemptId || existingProgress.exam_attempt_id,
         questionSetId: existingProgress.questionSetId || existingProgress.question_set_id,
         userId: existingProgress.userId || existingProgress.user_id,
-        currentQuestionIndex: existingProgress.currentQuestionIndex || existingProgress.current_question_index || 0,
-        answers: existingProgress.answers || {},
-        timeElapsed: existingProgress.timeElapsed || existingProgress.time_elapsed || 0,
+        currentQuestionIndex: resumedIndex,
+        answers: existingProgress.answers || existingProgress.current_answers_json || {},
+        timeElapsed: existingProgress.timeElapsed || existingProgress.time_elapsed || existingProgress.time_elapsed_seconds || 0,
         timerPaused: existingProgress.timerPaused || existingProgress.timer_paused || false,
         status: existingProgress.status || 'in_progress',
         startedAt: existingProgress.startedAt || existingProgress.started_at,
         completedAt: existingProgress.completedAt || existingProgress.completed_at || null,
-        updatedAt: existingProgress.updatedAt || existingProgress.updated_at || new Date().toISOString()
+        updatedAt: existingProgress.updatedAt || existingProgress.updated_at || existingProgress.last_synced_at || new Date().toISOString()
       })
       
       return existingProgress.id || existingProgress.attemptId || existingProgress.exam_attempt_id
@@ -102,7 +101,6 @@ export const useProgressStore = create((set, get) => ({
           ...progress,
           loading: false
         })
-        console.log('✅ Progress loaded')
         return progress
       }
       
@@ -145,8 +143,6 @@ export const useProgressStore = create((set, get) => ({
     }
     
     await progressService.saveProgress(progress)
-    
-    console.log(`✅ Answer saved for question ${questionIndex}`)
   },
 
   /**
@@ -277,8 +273,6 @@ export const useProgressStore = create((set, get) => ({
     
     // Queue result sync
     syncService.add('result', result, { priority: 10 })
-    
-    console.log('✅ Exam completed and saved')
     
     return result
   },

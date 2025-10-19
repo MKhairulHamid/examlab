@@ -59,7 +59,6 @@ async function initDB() {
     }
   })
 
-  console.log('✅ IndexedDB initialized')
   return dbPromise
 }
 
@@ -73,7 +72,6 @@ export const indexedDBService = {
       ...questionSet,
       lastUpdated: Date.now()
     })
-    console.log(`✅ Question set stored: ${questionSet.id}`)
   },
 
   /**
@@ -82,9 +80,6 @@ export const indexedDBService = {
   async getQuestionSet(id) {
     const db = await initDB()
     const questionSet = await db.get(STORES.QUESTION_SETS, id)
-    if (questionSet) {
-      console.log(`📦 Question set loaded: ${id}`)
-    }
     return questionSet
   },
 
@@ -102,7 +97,6 @@ export const indexedDBService = {
   async deleteQuestionSet(id) {
     const db = await initDB()
     await db.delete(STORES.QUESTION_SETS, id)
-    console.log(`🗑️ Question set deleted: ${id}`)
   },
 
   /**
@@ -114,7 +108,6 @@ export const indexedDBService = {
       ...attempt,
       updatedAt: Date.now()
     })
-    console.log(`✅ Exam attempt saved: ${attempt.id}`)
   },
 
   /**
@@ -160,7 +153,6 @@ export const indexedDBService = {
   async setExamResult(result) {
     const db = await initDB()
     await db.put(STORES.EXAM_RESULTS, result)
-    console.log(`✅ Exam result saved: ${result.id}`)
   },
 
   /**
@@ -196,7 +188,6 @@ export const indexedDBService = {
     await db.clear(STORES.QUESTION_SETS)
     await db.clear(STORES.EXAM_ATTEMPTS)
     await db.clear(STORES.EXAM_RESULTS)
-    console.log('🗑️ All IndexedDB data cleared')
   },
 
   /**

@@ -4,6 +4,7 @@ import useExamStore from '../stores/examStore'
 import useProgressStore from '../stores/progressStore'
 import useAuthStore from '../stores/authStore'
 import usePurchaseStore from '../stores/purchaseStore'
+import streakService from '../services/streakService'
 
 function ExamInterface() {
   const { slug } = useParams()
@@ -83,31 +84,19 @@ function ExamInterface() {
             return
           }
           
-          // SECURITY: Step 6 - Access granted, log for monitoring
-          console.log('✅ Access granted:', {
-            setId,
-            setName: questionSet.name,
-            userId: user.id,
-            accessType: isFree ? 'free' : 'purchased'
-          })
+          // SECURITY: Step 6 - Access granted
           
           // Start exam
-          let examDuration = questionSet.exam_types?.duration_minutes || 60
+          const fullExamDuration = questionSet.exam_types?.duration_minutes || 60
+          let examDuration = fullExamDuration
           
           // Adjust duration for free samples based on sample_question_count
           if (isFree && questionSet.sample_question_count) {
-            const totalQuestions = questionSet.exam_types?.total_questions || questionSet.question_count
+            const totalQuestions = questionSet.exam_types?.total_questions || questionSet.question_count || 65
             const sampleQuestions = questionSet.sample_question_count
             
             // Calculate proportional time: (sample_questions / total_questions) * full_duration
-            examDuration = Math.ceil((sampleQuestions / totalQuestions) * examDuration)
-            
-            console.log('⏱️ Adjusted duration for free sample:', {
-              sampleQuestions,
-              totalQuestions,
-              originalDuration: questionSet.exam_types?.duration_minutes,
-              adjustedDuration: examDuration
-            })
+            examDuration = Math.ceil((sampleQuestions / totalQuestions) * fullExamDuration)
           }
           
           setDuration(examDuration * 60)
@@ -196,11 +185,6 @@ function ExamInterface() {
       }
       
       await useProgressStore.getState().updateTimer(state.timeElapsed)
-      console.log('💾 Progress saved:', {
-        question: progress.currentQuestionIndex + 1,
-        time: progress.timeElapsed,
-        answers: Object.keys(progress.answers).length
-      })
     }
   }
 
@@ -208,12 +192,9 @@ function ExamInterface() {
   useEffect(() => {
     const handleVisibility = async () => {
       if (document.hidden) {
-        console.log('⏸️ Tab hidden/Phone locked - saving and pausing exam')
         // Save progress immediately
         await saveCurrentProgress()
         await setTimerPaused(true)
-      } else {
-        console.log('👁️ Tab visible - exam can be resumed')
       }
     }
     document.addEventListener('visibilitychange', handleVisibility)
@@ -241,7 +222,6 @@ function ExamInterface() {
   // Page Hide - more reliable than beforeunload for mobile
   useEffect(() => {
     const handlePageHide = async () => {
-      console.log('📤 Page hiding - saving progress')
       await saveCurrentProgress()
     }
     
@@ -253,7 +233,6 @@ function ExamInterface() {
   useEffect(() => {
     const autoSaveInterval = setInterval(async () => {
       if (status === 'in_progress' && !timerPaused) {
-        console.log('⏰ Auto-saving progress...')
         await saveCurrentProgress()
       }
     }, 30000) // 30 seconds
@@ -264,7 +243,6 @@ function ExamInterface() {
   // Navigation blocker - handle react-router navigation
   useEffect(() => {
     const handlePopState = async () => {
-      console.log('🔙 Navigation detected - saving progress')
       await saveCurrentProgress()
     }
     
@@ -286,7 +264,6 @@ function ExamInterface() {
       inactivityRef.current = setInterval(() => {
         const inactiveTime = Date.now() - lastActivityRef.current
         if (inactiveTime > 5 * 60 * 1000) { // 5 minutes
-          console.log('⏸️ Inactivity detected - pausing exam')
           setTimerPaused(true)
         }
       }, 1000)
@@ -408,7 +385,7 @@ function ExamInterface() {
     )
   }
 
-  const handleAnswerSelect = (option) => {
+  const handleAnswerSelect = async (option) => {
     // Get the option text (in case option is an object with { text, correct })
     const optionText = typeof option === 'string' ? option : option.text
     
@@ -429,6 +406,12 @@ function ExamInterface() {
     }
     
     saveAnswer(currentQuestionIndex, newAnswer)
+    
+    // Record streak activity - count this as answering 1 question
+    // The streak service will handle if it's the first question of the day
+    if (user?.id) {
+      await streakService.recordActivity(user.id, 1)
+    }
   }
 
   const calculateResults = () => {
@@ -474,13 +457,6 @@ function ExamInterface() {
       // (correct / sample_questions) * (sample_questions / total_questions) * max_score
       scaledScore = Math.round((correctCount / questions.length) * (sampleQuestions / totalQuestions) * maxScore)
       
-      console.log('📊 Adjusted scoring for free sample:', {
-        correctCount,
-        sampleQuestions,
-        totalQuestions,
-        maxScore,
-        scaledScore
-      })
     } else {
       // Regular scoring: scale to max_score (default 1000)
       scaledScore = Math.round((correctCount / questions.length) * maxScore)
@@ -796,7 +772,6 @@ function ExamInterface() {
             </div>
             <button 
               onClick={async () => {
-                console.log('▶️ Resuming exam')
                 resetInactivity()
                 await setTimerPaused(false)
               }}

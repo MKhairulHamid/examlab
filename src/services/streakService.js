@@ -148,6 +148,7 @@ class StreakService {
 
   /**
    * Record activity and update streak
+   * Now tracks if user answered at least 1 question per day
    */
   async recordActivity(userId, questionsCompleted = 1) {
     const today = new Date().toISOString().split('T')[0]
@@ -156,26 +157,28 @@ class StreakService {
     // Update questions today
     if (streak.lastActivityDate === today) {
       streak.questionsToday += questionsCompleted
-    } else {
-      streak.questionsToday = questionsCompleted
+      // Already counted today, no need to update streak
+      this.saveLocalStreak(streak)
+      return streak
     }
+
+    // New day - update questions count
+    streak.questionsToday = questionsCompleted
 
     // Calculate streak
     const yesterday = new Date()
     yesterday.setDate(yesterday.getDate() - 1)
     const yesterdayStr = yesterday.toISOString().split('T')[0]
 
-    if (streak.lastActivityDate === today) {
-      // Already studied today, just update questions count
-    } else if (streak.lastActivityDate === yesterdayStr) {
-      // Continue streak
+    if (streak.lastActivityDate === yesterdayStr) {
+      // Continue streak - answered yesterday and now today
       streak.currentStreak += 1
       streak.lastActivityDate = today
       if (!streak.studyDates.includes(today)) {
         streak.studyDates.push(today)
       }
-    } else {
-      // Streak broken or first time
+    } else if (!streak.lastActivityDate || streak.lastActivityDate < yesterdayStr) {
+      // Streak broken or first time - start new streak
       streak.currentStreak = 1
       streak.lastActivityDate = today
       if (!streak.studyDates.includes(today)) {

@@ -30,8 +30,6 @@ export const processCheckout = async ({ itemType, itemId, userId, email }) => {
       throw error
     }
 
-    console.log('Edge Function response:', data)
-
     if (data?.error) {
       throw new Error(data.error)
     }

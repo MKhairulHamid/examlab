@@ -24,7 +24,6 @@ export const cacheService = {
     
     try {
       localStorage.setItem(`${CACHE_PREFIX}${key}`, JSON.stringify(item))
-      console.log(`✅ Cached: ${key} (expires in ${expiryMs / 1000 / 60} minutes)`)
       return true
     } catch (error) {
       console.warn('Cache storage failed:', error)
@@ -48,12 +47,10 @@ export const cacheService = {
       
       // Check if expired
       if (age > cached.expiry) {
-        console.log(`⏰ Cache expired: ${key} (age: ${age / 1000 / 60} minutes)`)
         this.remove(key)
         return null
       }
       
-      console.log(`📦 Cache hit: ${key} (age: ${age / 1000 / 60} minutes)`)
       return cached.data
     } catch (error) {
       console.warn('Cache retrieval failed:', error)
@@ -67,7 +64,6 @@ export const cacheService = {
    */
   remove(key) {
     localStorage.removeItem(`${CACHE_PREFIX}${key}`)
-    console.log(`🗑️ Cache removed: ${key}`)
   },
 
   /**
@@ -80,7 +76,6 @@ export const cacheService = {
         localStorage.removeItem(key)
       }
     })
-    console.log('🗑️ All caches cleared')
   },
 
   /**

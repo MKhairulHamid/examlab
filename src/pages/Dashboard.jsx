@@ -89,7 +89,6 @@ function Dashboard() {
       if (error) throw error
       
       setExamDates(updatedDates)
-      console.log('✅ Exam date saved')
     } catch (error) {
       console.error('Error saving exam date:', error)
     }
@@ -109,7 +108,6 @@ function Dashboard() {
       if (error) throw error
       
       setExamDates(updatedDates)
-      console.log('✅ Exam date removed')
     } catch (error) {
       console.error('Error removing exam date:', error)
     }
@@ -782,10 +780,14 @@ function Dashboard() {
           Longest Streak: {longestStreak} days
         </div>
         
-        <div style={{ fontSize: '1rem', color: '#4b5563', marginBottom: '2rem' }}>
+        <div style={{ fontSize: '1rem', color: '#4b5563', marginBottom: '0.5rem' }}>
           {currentStreak > 0 
             ? "Keep it going! Don't break your streak." 
             : "Start your study streak today!"}
+        </div>
+        
+        <div style={{ fontSize: '0.875rem', color: '#9ca3af', marginBottom: '2rem' }}>
+          Answer at least 1 question per day to maintain your streak
         </div>
 
         {/* Mini Calendar - Last 14 Days */}
@@ -793,10 +795,11 @@ function Dashboard() {
           <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.75rem' }}>
             Last 14 Days
           </div>
-          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 2rem)', gap: '0.5rem', justifyContent: 'center' }}>
             {last14Days.map((date, i) => {
               const isStudied = studyDates.includes(date)
               const isToday = date === today
+              const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'short' }).slice(0, 1)
               return (
                 <div 
                   key={i}
@@ -804,7 +807,7 @@ function Dashboard() {
                     width: '2rem',
                     height: '2rem',
                     borderRadius: '0.25rem',
-                    background: isStudied ? (isToday ? '#00D4AA' : '#f59e0b') : '#f3f4f6',
+                    background: isStudied ? (isToday ? '#00D4AA' : '#10b981') : '#f3f4f6',
                     border: isToday ? '2px solid #00D4AA' : '1px solid #e5e7eb',
                     display: 'flex',
                     alignItems: 'center',
@@ -812,9 +815,10 @@ function Dashboard() {
                     fontSize: '0.75rem',
                     color: isStudied ? 'white' : '#9ca3af',
                     fontWeight: isStudied ? '700' : '400',
-                    transition: 'all 0.3s'
+                    transition: 'all 0.3s',
+                    position: 'relative'
                   }}
-                  title={date}
+                  title={`${date} (${dayOfWeek})`}
                 >
                   {isStudied ? '✓' : ''}
                 </div>
@@ -826,10 +830,10 @@ function Dashboard() {
         {/* Daily Goal Progress */}
         <div style={{ paddingTop: '1.5rem', borderTop: '1px solid #e5e7eb' }}>
           <div style={{ fontSize: '0.875rem', color: '#4b5563', marginBottom: '0.5rem', fontWeight: '600' }}>
-            Daily Goal
+            Today's Progress
           </div>
           <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#00D4AA', marginBottom: '0.75rem' }}>
-            {questionsToday} / {dailyGoal} Questions Today
+            {questionsToday} / {dailyGoal} Questions Answered
           </div>
           <div style={{ 
             background: '#e5e7eb', 
@@ -1353,11 +1357,11 @@ function Dashboard() {
 
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 1.5rem' }}>
 
-        {/* Purchase Summary */}
-        {renderPurchasesSummary()}
-
         {/* Exam Countdown */}
         {renderExamCountdown()}
+
+        {/* Study Streak */}
+        {renderStudyStreak()}
 
         {/* My Certifications */}
         {renderMyCertifications()}
@@ -1365,11 +1369,11 @@ function Dashboard() {
         {/* Recent Results */}
         {renderRecentResults()}
 
-        {/* Study Streak */}
-        {renderStudyStreak()}
-
         {/* Explore More */}
         {renderExploreMore()}
+
+        {/* Purchase Summary */}
+        {renderPurchasesSummary()}
 
         {/* Dashboard Footer */}
         {renderDashboardFooter()}

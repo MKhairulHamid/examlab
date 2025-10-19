@@ -20,8 +20,6 @@ export const progressService = {
       const localProgress = cacheService.get(localKey)
       
       if (localProgress) {
-        console.log('📦 Progress loaded from cache')
-        
         // 2. Background: fetch from Supabase and merge
         this.mergeProgressInBackground(examAttemptId, userId, localProgress)
         
@@ -31,14 +29,12 @@ export const progressService = {
       // 3. If no local cache, try IndexedDB
       const dbProgress = await indexedDBService.getExamAttempt(examAttemptId)
       if (dbProgress) {
-        console.log('📦 Progress loaded from IndexedDB')
         // Cache it for faster access
         cacheService.set(localKey, dbProgress, 60 * 60 * 1000) // 1 hour
         return dbProgress
       }
 
       // 4. If nothing local, fetch from Supabase
-      console.log('🔄 Loading progress from Supabase...')
       const supabaseProgress = await this.fetchProgressFromSupabase(examAttemptId, userId)
       
       if (supabaseProgress) {
@@ -95,13 +91,11 @@ export const progressService = {
       
       if (merged.source === 'supabase') {
         // Supabase is newer - update local
-        console.log('📥 Using newer progress from Supabase')
         const localKey = `progress_${examAttemptId}`
         cacheService.set(localKey, merged.data, 60 * 60 * 1000)
         await indexedDBService.setExamAttempt(merged.data)
       } else {
         // Local is newer - sync to Supabase
-        console.log('📤 Syncing newer local progress to Supabase')
         syncService.add('progress', localProgress)
       }
       
@@ -144,13 +138,6 @@ export const progressService = {
       completedAt: progress.completedAt || null,
       updatedAt: new Date().toISOString()
     }
-
-    console.log('💾 Saving progress locally:', {
-      attemptId,
-      userId: cleanProgress.userId,
-      currentQuestion: cleanProgress.currentQuestionIndex,
-      answersCount: Object.keys(cleanProgress.answers).length
-    })
     
     cacheService.set(localKey, cleanProgress, 60 * 60 * 1000) // 1 hour cache
     
@@ -159,8 +146,6 @@ export const progressService = {
     
     // 3. Queue background sync to Supabase (debounced)
     this.queueProgressSync(cleanProgress)
-    
-    console.log('✅ Progress saved locally')
   },
 
   /**
@@ -197,17 +182,9 @@ export const progressService = {
     
     if (remoteTime > localTime) {
       // Remote is newer
-      console.log('🔄 Conflict: Remote is newer', {
-        local: localTime.toISOString(),
-        remote: remoteTime.toISOString()
-      })
       return { data: remote, source: 'supabase' }
     } else {
       // Local is newer or equal
-      console.log('🔄 Conflict: Local is newer or equal', {
-        local: localTime.toISOString(),
-        remote: remoteTime.toISOString()
-      })
       return { data: local, source: 'local' }
     }
   },
@@ -223,8 +200,6 @@ export const progressService = {
     
     // Remove from IndexedDB
     await indexedDBService.deleteExamAttempt(examAttemptId)
-    
-    console.log('🗑️ Progress deleted locally')
   },
 
   /**
@@ -244,12 +219,6 @@ export const progressService = {
       const inProgressAttempt = await indexedDBService.getInProgressAttempt(userId, questionSetId)
       
       if (inProgressAttempt) {
-        console.log('📂 Found in-progress exam:', {
-          attemptId: inProgressAttempt.id || inProgressAttempt.attemptId,
-          questionSetId,
-          currentQuestion: inProgressAttempt.currentQuestionIndex,
-          timeElapsed: inProgressAttempt.timeElapsed
-        })
         return inProgressAttempt
       }
       
@@ -265,7 +234,6 @@ export const progressService = {
         .single()
       
       if (data && !error) {
-        console.log('📂 Found in-progress exam on Supabase')
         // Cache it locally
         await indexedDBService.setExamAttempt(data)
         return data

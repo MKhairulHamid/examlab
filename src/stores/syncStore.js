@@ -42,8 +42,6 @@ export const useSyncStore = create((set, get) => ({
       pendingCount: status.queueLength
     })
 
-    console.log('✅ Sync store initialized')
-
     // Return cleanup function
     return unsubscribe
   },

@@ -192,8 +192,6 @@ export const useExamStore = create((set, get) => ({
       // Try IndexedDB first
       const cached = await indexedDBService.getQuestionSet(questionSetId)
       if (cached && cached.questions_json) {
-        console.log('📦 Question set loaded from IndexedDB')
-        
         // Validate and normalize questions
         const normalized = get().normalizeQuestionSet(cached)
         set({ currentQuestionSet: normalized, loading: false })
@@ -205,7 +203,6 @@ export const useExamStore = create((set, get) => ({
       }
       
       // Fetch from Supabase with related exam_types data
-      console.log('🔄 Fetching question set from Supabase...')
       const { data, error } = await supabase
         .from('question_sets')
         .select('*, exam_types(name, provider, duration_minutes, passing_score, max_score)')
@@ -228,8 +225,6 @@ export const useExamStore = create((set, get) => ({
       await indexedDBService.setQuestionSet(normalized)
       
       set({ currentQuestionSet: normalized, loading: false })
-      
-      console.log(`✅ Loaded ${normalized.questions_json?.questions?.length || 0} questions from: ${data.name}`)
       
       return normalized
     } catch (error) {
@@ -325,8 +320,6 @@ export const useExamStore = create((set, get) => ({
       if (error) throw error
       
       if (data.version_number > localVersion) {
-        console.log('🆕 New version available - updating...')
-        
         // Fetch full question set with related data
         const { data: fullData, error: fetchError } = await supabase
           .from('question_sets')
@@ -343,8 +336,6 @@ export const useExamStore = create((set, get) => ({
         // Update IndexedDB
         await indexedDBService.setQuestionSet(normalized)
         set({ currentQuestionSet: normalized })
-        
-        console.log('✅ Question set updated to version', data.version_number)
       }
     } catch (error) {
       console.error('Version check error:', error)

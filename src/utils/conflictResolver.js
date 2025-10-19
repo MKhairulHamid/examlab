@@ -26,16 +26,9 @@ export function resolveConflict(local, remote) {
   const localTime = getTimestamp(local)
   const remoteTime = getTimestamp(remote)
   
-  console.log('🔄 Resolving conflict:', {
-    local: localTime?.toISOString(),
-    remote: remoteTime?.toISOString()
-  })
-  
   if (remoteTime > localTime) {
-    console.log('✅ Remote is newer')
     return { data: remote, source: 'remote' }
   } else {
-    console.log('✅ Local is newer or equal')
     return { data: local, source: 'local' }
   }
 }
