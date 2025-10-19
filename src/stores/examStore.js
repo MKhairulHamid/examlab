@@ -260,27 +260,45 @@ export const useExamStore = create((set, get) => ({
     
     // Transform questions to ensure correct format
     questions = questions.map((q, index) => {
+      // First, try to get correctAnswers from the question (if explicitly provided)
+      let correctAnswers = q.correctAnswers || q.correct_answers || []
+      
       // Ensure options have the correct structure
       const options = (q.options || []).map(opt => {
         if (typeof opt === 'string') {
           // If option is just a string, determine if it's correct
-          const isCorrect = q.correctAnswers ? q.correctAnswers.includes(opt) : false
+          const isCorrect = correctAnswers.length > 0 ? correctAnswers.includes(opt) : false
           return { text: opt, correct: isCorrect }
         } else if (opt.text !== undefined) {
-          // Option already has the correct structure
+          // Option already has the correct structure (object with text and correct properties)
           return opt
         }
         return { text: String(opt), correct: false }
       })
       
+      // Extract correctAnswers from options that have correct: true
+      // This is the primary method based on the question format provided
+      correctAnswers = options
+        .filter(opt => opt.correct === true)
+        .map(opt => opt.text)
+      
+      // Log warning if no correct answers found
+      if (correctAnswers.length === 0) {
+        console.warn(`⚠️ Question ${index + 1} has no correct answers defined!`, {
+          question: q.question?.substring(0, 100) + '...',
+          optionsCount: options.length
+        })
+      }
+      
       return {
         id: q.id || `q_${index}`,
         question: q.question,
         options: options,
-        type: q.type || 'single',
-        materials: q.materials || q.explanation || 'No additional materials available.',
+        type: q.type || 'Multiple Choice',
+        domain: q.domain || '',
+        materials: q.materials || '',
         explanations: q.explanations || {},
-        correctAnswers: q.correctAnswers || []
+        correctAnswers: correctAnswers
       }
     })
     

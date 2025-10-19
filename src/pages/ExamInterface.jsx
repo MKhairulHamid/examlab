@@ -353,13 +353,6 @@ function ExamInterface() {
   const currentQuestion = questions[currentQuestionIndex]
   const answeredCount = getAnswerCount()
 
-  console.log('📊 Question Set Data:', {
-    hasQuestionSet: !!currentQuestionSet,
-    hasQuestionsJson: !!questionsData,
-    questionsCount: questions.length,
-    currentIndex: currentQuestionIndex
-  })
-
   if (!Array.isArray(questions) || questions.length === 0) {
     return (
       <div className="loading-container">
@@ -402,13 +395,6 @@ function ExamInterface() {
     // Get the option text (in case option is an object with { text, correct })
     const optionText = typeof option === 'string' ? option : option.text
     
-    console.log('🔍 Answer Selection Debug:', {
-      questionType: currentQuestion.type,
-      questionIndex: currentQuestionIndex,
-      selectedOption: optionText,
-      currentAnswers: answers[currentQuestionIndex] || []
-    })
-    
     let newAnswer
     
     // Check if it's a multiple response question (allows multiple selections)
@@ -420,11 +406,9 @@ function ExamInterface() {
       } else {
         newAnswer = [...current, optionText]
       }
-      console.log('✅ Multiple Response - new answer:', newAnswer)
     } else {
       // Multiple Choice - only one selection allowed
       newAnswer = [optionText]
-      console.log('✅ Multiple Choice - new answer:', newAnswer)
     }
     
     saveAnswer(currentQuestionIndex, newAnswer)
@@ -437,9 +421,16 @@ function ExamInterface() {
       const userAnswer = answers[index] || []
       const correctAnswers = question.correctAnswers || []
       
-      // Sort arrays for comparison
-      const sortedUserAnswer = [...userAnswer].sort()
-      const sortedCorrectAnswers = [...correctAnswers].sort()
+      // Normalize answers: trim whitespace and sort for comparison
+      const normalizeAnswers = (answers) => {
+        return answers
+          .map(ans => String(ans).trim()) // Convert to string and trim
+          .filter(ans => ans.length > 0)  // Remove empty strings
+          .sort()
+      }
+      
+      const sortedUserAnswer = normalizeAnswers(userAnswer)
+      const sortedCorrectAnswers = normalizeAnswers(correctAnswers)
       
       // Check if arrays are equal
       if (JSON.stringify(sortedUserAnswer) === JSON.stringify(sortedCorrectAnswers)) {

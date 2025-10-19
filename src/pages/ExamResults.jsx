@@ -97,9 +97,16 @@ function ExamResults() {
     const userAnswer = result.answers[questionIndex] || []
     const correctAnswers = question.correctAnswers || []
     
-    // Sort arrays for comparison
-    const sortedUserAnswer = [...userAnswer].sort()
-    const sortedCorrectAnswers = [...correctAnswers].sort()
+    // Normalize answers: trim whitespace and sort for comparison
+    const normalizeAnswers = (answers) => {
+      return answers
+        .map(ans => String(ans).trim()) // Convert to string and trim
+        .filter(ans => ans.length > 0)  // Remove empty strings
+        .sort()
+    }
+    
+    const sortedUserAnswer = normalizeAnswers(userAnswer)
+    const sortedCorrectAnswers = normalizeAnswers(correctAnswers)
     
     // Check if arrays are equal
     const isCorrect = JSON.stringify(sortedUserAnswer) === JSON.stringify(sortedCorrectAnswers)
@@ -346,8 +353,8 @@ function ExamResults() {
                     })}
                   </div>
 
-                  {/* Explanation Toggle */}
-                  {question.explanation && (
+                  {/* Explanations for each option */}
+                  {question.explanations && Object.keys(question.explanations).length > 0 && (
                     <div>
                       <button
                         onClick={() => toggleExplanation(index)}
@@ -367,22 +374,48 @@ function ExamResults() {
                           alignItems: 'center'
                         }}
                       >
-                        <span>📚 View Explanation</span>
+                        <span>📚 View Explanations</span>
                         <span>{showExplanations[index] ? '▼' : '▶'}</span>
                       </button>
                       
                       {showExplanations[index] && (
                         <div style={{
                           marginTop: '1rem',
-                          padding: '1rem',
-                          background: 'rgba(0,212,170,0.1)',
-                          borderRadius: '0.5rem',
-                          border: '1px solid rgba(0,212,170,0.2)',
-                          color: 'rgba(255,255,255,0.9)',
-                          fontSize: '0.875rem',
-                          lineHeight: '1.6'
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '0.75rem'
                         }}>
-                          {question.explanation}
+                          {question.options?.map((option, optIndex) => {
+                            const optionText = typeof option === 'string' ? option : option.text
+                            const explanation = question.explanations[optionText]
+                            const isCorrectAnswer = correctAnswers.includes(optionText)
+                            
+                            if (!explanation) return null
+                            
+                            return (
+                              <div 
+                                key={optIndex}
+                                style={{
+                                  padding: '1rem',
+                                  background: isCorrectAnswer ? 'rgba(16,185,129,0.1)' : 'rgba(255,255,255,0.05)',
+                                  borderRadius: '0.5rem',
+                                  border: `1px solid ${isCorrectAnswer ? 'rgba(16,185,129,0.2)' : 'rgba(255,255,255,0.1)'}`,
+                                  color: 'rgba(255,255,255,0.9)',
+                                  fontSize: '0.875rem',
+                                  lineHeight: '1.6'
+                                }}
+                              >
+                                <div style={{ 
+                                  fontWeight: '600', 
+                                  marginBottom: '0.5rem',
+                                  color: isCorrectAnswer ? '#10b981' : 'rgba(255,255,255,0.8)'
+                                }}>
+                                  {String.fromCharCode(65 + optIndex)}. {optionText}
+                                </div>
+                                <div>{explanation}</div>
+                              </div>
+                            )
+                          })}
                         </div>
                       )}
                     </div>
