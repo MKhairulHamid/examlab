@@ -1691,15 +1691,26 @@ button:disabled {
   width: 1.5rem;
   height: 1.5rem;
   min-width: 1.5rem;
-  border-radius: 0.25rem;
   border: 2px solid;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.2s ease;
+}
+
+/* Square checkbox for multiple choice */
+.option-checkbox-square {
+  border-radius: 0.25rem;
+}
+
+/* Circle checkbox for single choice (radio button style) */
+.option-checkbox-circle {
+  border-radius: 50%;
 }
 
 .option-checkbox-default {
   border-color: var(--color-gray-400);
+  background-color: transparent;
 }
 
 .option-checkbox-selected {

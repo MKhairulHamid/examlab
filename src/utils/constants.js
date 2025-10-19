@@ -41,6 +41,9 @@ export const CACHE_EXPIRY = {
 
 // Question types
 export const QUESTION_TYPES = {
+  MULTIPLE_CHOICE: 'Multiple Choice', // Only one answer can be selected
+  MULTIPLE_RESPONSE: 'Multiple Response', // Multiple answers can be selected
+  // Legacy support
   SINGLE: 'single',
   MULTIPLE: 'multiple'
 }

@@ -290,7 +290,7 @@ function ExamResults() {
                     </div>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.7)', marginBottom: '0.5rem' }}>
-                        Question {index + 1} • {question.type === 'multiple' ? 'Multiple Choice' : 'Single Choice'}
+                        Question {index + 1} • {question.type === 'Multiple Response' ? 'Multiple Response' : 'Multiple Choice'}
                       </div>
                       <p style={{ fontSize: '1rem', color: 'white', fontWeight: '500', lineHeight: '1.6' }}>
                         {questionText}

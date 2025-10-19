@@ -11,6 +11,13 @@ function ExamInterface() {
   const navigate = useNavigate()
   const setId = searchParams.get('set')
   
+  // Helper function to check if question allows multiple selections
+  const isMultipleResponseQuestion = (questionType) => {
+    return questionType === 'Multiple Response' || 
+           questionType === 'multiple' ||
+           questionType === 'multiple_response'
+  }
+  
   const { user } = useAuthStore()
   const { loadQuestionSet, currentQuestionSet, getExamBySlug } = useExamStore()
   const { hasPurchased, fetchPurchases } = usePurchaseStore()
@@ -395,19 +402,29 @@ function ExamInterface() {
     // Get the option text (in case option is an object with { text, correct })
     const optionText = typeof option === 'string' ? option : option.text
     
+    console.log('🔍 Answer Selection Debug:', {
+      questionType: currentQuestion.type,
+      questionIndex: currentQuestionIndex,
+      selectedOption: optionText,
+      currentAnswers: answers[currentQuestionIndex] || []
+    })
+    
     let newAnswer
     
-    if (currentQuestion.type === 'multiple') {
-      // Multiple choice - toggle selection
+    // Check if it's a multiple response question (allows multiple selections)
+    if (isMultipleResponseQuestion(currentQuestion.type)) {
+      // Multiple Response - toggle selection (can select multiple)
       const current = answers[currentQuestionIndex] || []
       if (current.includes(optionText)) {
         newAnswer = current.filter(a => a !== optionText)
       } else {
         newAnswer = [...current, optionText]
       }
+      console.log('✅ Multiple Response - new answer:', newAnswer)
     } else {
-      // Single choice
+      // Multiple Choice - only one selection allowed
       newAnswer = [optionText]
+      console.log('✅ Multiple Choice - new answer:', newAnswer)
     }
     
     saveAnswer(currentQuestionIndex, newAnswer)
@@ -583,7 +600,11 @@ function ExamInterface() {
         <div className="question-card">
           <div className="question-header">
             <span className="question-badge">
-              Question {currentQuestionIndex + 1} • {currentQuestion.type === 'multiple' ? 'Multiple Choice (select all that apply)' : 'Single Choice'}
+              Question {currentQuestionIndex + 1} • {
+                currentQuestion.type === 'Multiple Response' 
+                  ? '☑️ Multiple Response (select all that apply)' 
+                  : '⭕ Multiple Choice (select one)'
+              }
             </span>
             <p className="question-text">
               {currentQuestion.question}
@@ -596,6 +617,7 @@ function ExamInterface() {
               // Handle both string options and option objects
               const optionText = typeof option === 'string' ? option : option.text
               const isSelected = currentAnswer.includes(optionText)
+              const isMultiple = isMultipleResponseQuestion(currentQuestion.type)
               
               return (
                 <div
@@ -609,6 +631,8 @@ function ExamInterface() {
                 >
                   <div className="option-content">
                     <div className={`option-checkbox ${
+                      isMultiple ? 'option-checkbox-square' : 'option-checkbox-circle'
+                    } ${
                       isSelected
                         ? 'option-checkbox-selected'
                         : 'option-checkbox-default'
