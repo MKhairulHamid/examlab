@@ -4,7 +4,7 @@ import useExamStore from '../stores/examStore'
 import useProgressStore from '../stores/progressStore'
 import useAuthStore from '../stores/authStore'
 import indexedDBService from '../services/indexedDBService'
-import PageLayout from '../components/layout/PageLayout'
+import DashboardHeader from '../components/layout/DashboardHeader'
 
 function ExamResults() {
   const { slug } = useParams()
@@ -57,32 +57,55 @@ function ExamResults() {
 
   if (loading) {
     return (
-      <PageLayout>
-        <div className="loading-container">
-          <div className="loading-content">
+      <>
+        <DashboardHeader />
+        <div style={{ 
+          minHeight: '100vh',
+          background: 'linear-gradient(135deg, #0A2540 0%, #1A3B5C 100%)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <div style={{ textAlign: 'center' }}>
             <div className="spinner"></div>
-            <p>Loading results...</p>
+            <p style={{ color: 'white', marginTop: '1rem' }}>Loading results...</p>
           </div>
         </div>
-      </PageLayout>
+      </>
     )
   }
 
   if (!result) {
     return (
-      <PageLayout>
-        <div className="loading-container">
-          <div className="loading-content text-center">
-            <p>❌ Results not found</p>
+      <>
+        <DashboardHeader />
+        <div style={{ 
+          minHeight: '100vh',
+          background: 'linear-gradient(135deg, #0A2540 0%, #1A3B5C 100%)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <div style={{ textAlign: 'center' }}>
+            <p style={{ color: 'white', fontSize: '1.5rem', marginBottom: '1rem' }}>❌ Results not found</p>
             <button
               onClick={() => navigate('/dashboard')}
-              className="btn-primary mt-4"
+              style={{
+                padding: '0.75rem 1.5rem',
+                background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '0.5rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                fontSize: '1rem'
+              }}
             >
               Back to Dashboard
             </button>
           </div>
         </div>
-      </PageLayout>
+      </>
     )
   }
 
@@ -135,8 +158,14 @@ function ExamResults() {
     : 'Keep practicing! You\'ll get it next time!'
 
   return (
-    <PageLayout>
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem 1.5rem' }}>
+    <>
+      <DashboardHeader />
+      <div style={{ 
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #0A2540 0%, #1A3B5C 100%)',
+        padding: '2rem 0'
+      }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 1.5rem' }}>
         {/* Results Header */}
         <div style={{
           background: 'rgba(255,255,255,0.1)',
@@ -425,8 +454,9 @@ function ExamResults() {
             })}
           </div>
         </div>
+        </div>
       </div>
-    </PageLayout>
+    </>
   )
 }
 

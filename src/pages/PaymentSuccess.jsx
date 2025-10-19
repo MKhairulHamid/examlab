@@ -4,7 +4,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import PageLayout from '../components/layout/PageLayout'
+import DashboardHeader from '../components/layout/DashboardHeader'
 import useAuthStore from '../stores/authStore'
 import usePurchaseStore from '../stores/purchaseStore'
 
@@ -44,13 +44,19 @@ function PaymentSuccess() {
   }
 
   return (
-    <PageLayout>
+    <>
+      <DashboardHeader />
       <div style={{ 
-        maxWidth: '600px', 
-        margin: '0 auto', 
-        padding: '3rem 1rem',
-        textAlign: 'center'
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #0A2540 0%, #1A3B5C 100%)',
+        padding: '3rem 0'
       }}>
+        <div style={{ 
+          maxWidth: '600px', 
+          margin: '0 auto', 
+          padding: '0 1rem',
+          textAlign: 'center'
+        }}>
         <div style={{
           background: 'rgba(255,255,255,0.1)',
           backdropFilter: 'blur(20px)',
@@ -222,8 +228,9 @@ function PaymentSuccess() {
             <span>📧</span> Receipt Emailed
           </div>
         </div>
+        </div>
       </div>
-    </PageLayout>
+    </>
   )
 }
 
