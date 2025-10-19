@@ -46,6 +46,7 @@ function ExamInterface() {
   const [shuffledOptions, setShuffledOptions] = useState({})
   const [navMinimized, setNavMinimized] = useState(false)
   const [showResumeNotification, setShowResumeNotification] = useState(false)
+  const [answeredQuestions, setAnsweredQuestions] = useState(new Set())
 
   useEffect(() => {
     const initialize = async () => {
@@ -112,6 +113,13 @@ function ExamInterface() {
           if (existingProgress) {
             setShowResumeNotification(true)
             setTimeout(() => setShowResumeNotification(false), 5000) // Hide after 5 seconds
+            
+            // Initialize answeredQuestions set with already answered questions
+            const existingAnswers = existingProgress.answers || existingProgress.current_answers_json || {}
+            const answeredIndices = Object.keys(existingAnswers)
+              .filter(key => existingAnswers[key] && existingAnswers[key].length > 0)
+              .map(key => parseInt(key))
+            setAnsweredQuestions(new Set(answeredIndices))
           }
           
           setLoading(false)
@@ -408,8 +416,9 @@ function ExamInterface() {
     saveAnswer(currentQuestionIndex, newAnswer)
     
     // Record streak activity - count this as answering 1 question
-    // The streak service will handle if it's the first question of the day
-    if (user?.id) {
+    // Only record if this is the first time answering this question
+    if (user?.id && !answeredQuestions.has(currentQuestionIndex)) {
+      setAnsweredQuestions(prev => new Set(prev).add(currentQuestionIndex))
       await streakService.recordActivity(user.id, 1)
     }
   }

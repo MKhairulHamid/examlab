@@ -195,6 +195,33 @@ function Dashboard() {
     }
   }, [])
 
+  // Refresh streak stats when page becomes visible (user returns from exam)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && user) {
+        // Page is visible again - refresh streak stats
+        updateStreakStats()
+        loadExamResults()
+      }
+    }
+
+    const handleFocus = () => {
+      if (user) {
+        // Window gained focus - refresh streak stats
+        updateStreakStats()
+        loadExamResults()
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('focus', handleFocus)
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('focus', handleFocus)
+    }
+  }, [user])
+
 
   const renderExamCountdown = () => {
     if (examDates.length === 0) return null
