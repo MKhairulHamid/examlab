@@ -34,6 +34,7 @@ function ExamInterface() {
   const [accessMessage, setAccessMessage] = useState('')
   const [duration, setDuration] = useState(0)
   const [showMaterialsModal, setShowMaterialsModal] = useState(false)
+  const [shuffledOptions, setShuffledOptions] = useState({})
 
   useEffect(() => {
     const initialize = async () => {
@@ -83,6 +84,8 @@ function ExamInterface() {
           // Start exam
           const examDuration = questionSet.exam_types?.duration_minutes || 60
           setDuration(examDuration * 60)
+          
+          // Start new exam (progress is automatically saved to local and synced to Supabase)
           await startExam(setId, user.id, questionSet.question_count || 0)
           setLoading(false)
         } catch (error) {
@@ -97,18 +100,38 @@ function ExamInterface() {
     initialize()
   }, [setId, user, loadQuestionSet, startExam, fetchPurchases, hasPurchased])
 
-  // Timer interval
+  // Timer interval - only runs when not paused
   const timerRef = useRef(null)
+  const lastTickRef = useRef(Date.now())
+  
   useEffect(() => {
-    timerRef.current = setInterval(() => {
-      const state = useProgressStore.getState()
-      if (!state.timerPaused && state.status === 'in_progress') {
-        state.updateTimer(state.timeElapsed + 1)
-      }
-    }, 1000)
+    // Clear any existing interval
+    if (timerRef.current) {
+      clearInterval(timerRef.current)
+    }
 
-    return () => clearInterval(timerRef.current)
-  }, [])
+    // Only start timer if not paused and exam is in progress
+    if (!timerPaused && status === 'in_progress') {
+      lastTickRef.current = Date.now()
+      
+      timerRef.current = setInterval(() => {
+        const now = Date.now()
+        const elapsed = Math.floor((now - lastTickRef.current) / 1000)
+        
+        if (elapsed >= 1) {
+          lastTickRef.current = now
+          const state = useProgressStore.getState()
+          state.updateTimer(state.timeElapsed + elapsed)
+        }
+      }, 1000)
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current)
+      }
+    }
+  }, [timerPaused, status])
 
   // Check time expired
   useEffect(() => {
@@ -117,18 +140,19 @@ function ExamInterface() {
     }
   }, [timeElapsed, duration, status])
 
-  // Visibility change
+  // Visibility change - pause when tab is hidden
   useEffect(() => {
-    const handleVisibility = () => {
+    const handleVisibility = async () => {
       if (document.hidden) {
-        setTimerPaused(true)
+        console.log('⏸️ Tab hidden - pausing exam')
+        await setTimerPaused(true)
       }
     }
     document.addEventListener('visibilitychange', handleVisibility)
     return () => document.removeEventListener('visibilitychange', handleVisibility)
   }, [setTimerPaused])
 
-  // Inactivity detection
+  // Inactivity detection - pause after 5 minutes of no activity
   const lastActivityRef = useRef(Date.now())
   const inactivityRef = useRef(null)
 
@@ -137,20 +161,27 @@ function ExamInterface() {
   }
 
   useEffect(() => {
-    inactivityRef.current = setInterval(() => {
-      if (Date.now() - lastActivityRef.current > 5 * 60 * 1000) {
-        setTimerPaused(true)
+    // Only check for inactivity if exam is running and not paused
+    if (status === 'in_progress' && !timerPaused) {
+      inactivityRef.current = setInterval(() => {
+        const inactiveTime = Date.now() - lastActivityRef.current
+        if (inactiveTime > 5 * 60 * 1000) { // 5 minutes
+          console.log('⏸️ Inactivity detected - pausing exam')
+          setTimerPaused(true)
+        }
+      }, 1000)
+
+      const events = ['mousemove', 'keydown', 'touchstart', 'scroll', 'click']
+      events.forEach(ev => document.addEventListener(ev, resetInactivity, { passive: true }))
+
+      return () => {
+        if (inactivityRef.current) {
+          clearInterval(inactivityRef.current)
+        }
+        events.forEach(ev => document.removeEventListener(ev, resetInactivity))
       }
-    }, 1000)
-
-    const events = ['mousemove', 'keydown', 'touchstart', 'scroll']
-    events.forEach(ev => document.addEventListener(ev, resetInactivity, { passive: true }))
-
-    return () => {
-      clearInterval(inactivityRef.current)
-      events.forEach(ev => document.removeEventListener(ev, resetInactivity))
     }
-  }, [setTimerPaused])
+  }, [setTimerPaused, status, timerPaused])
 
   // Show access denied screen
   if (accessDenied) {
@@ -339,6 +370,36 @@ function ExamInterface() {
 
   const currentAnswer = answers[currentQuestionIndex] || []
 
+  // Shuffle array using Fisher-Yates algorithm
+  const shuffleArray = (array) => {
+    const shuffled = [...array]
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+    }
+    return shuffled
+  }
+
+  // Get or create shuffled options for current question
+  const getShuffledOptions = () => {
+    if (!currentQuestion || !currentQuestion.options) return []
+    
+    // If we already have shuffled options for this question, use them
+    if (shuffledOptions[currentQuestionIndex]) {
+      return shuffledOptions[currentQuestionIndex]
+    }
+    
+    // Otherwise, shuffle and store
+    const shuffled = shuffleArray(currentQuestion.options)
+    setShuffledOptions(prev => ({
+      ...prev,
+      [currentQuestionIndex]: shuffled
+    }))
+    return shuffled
+  }
+
+  const displayOptions = getShuffledOptions()
+
   const formatTime = (secs) => {
     if (secs < 0) return '00:00:00'
     const h = Math.floor(secs / 3600)
@@ -376,12 +437,6 @@ function ExamInterface() {
         <div className="question-navigation">
           <div className="question-nav-header">
             <span className="text-sm text-white/80">Questions:</span>
-            <button
-              onClick={() => setShowMaterialsModal(true)}
-              className="materials-button"
-            >
-              📚 Study Materials
-            </button>
           </div>
           <div className="question-nav-grid">
             {questions.map((_, index) => (
@@ -408,6 +463,15 @@ function ExamInterface() {
           {answeredCount} of {questions.length} questions answered
         </div>
 
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+          <button
+            onClick={() => setShowMaterialsModal(true)}
+            className="materials-button"
+          >
+            📚 Study Materials
+          </button>
+        </div>
+
         {/* Question Card */}
         <div className="question-card">
           <div className="question-header">
@@ -421,14 +485,14 @@ function ExamInterface() {
 
           {/* Options */}
           <div className="options-container">
-            {currentQuestion.options?.map((option, index) => {
+            {displayOptions.map((option, index) => {
               // Handle both string options and option objects
               const optionText = typeof option === 'string' ? option : option.text
               const isSelected = currentAnswer.includes(optionText)
               
               return (
                 <div
-                  key={index}
+                  key={`${currentQuestionIndex}-${index}-${optionText}`}
                   onClick={() => handleAnswerSelect(option)}
                   className={`option ${
                     isSelected
@@ -452,19 +516,6 @@ function ExamInterface() {
               )
             })}
           </div>
-        </div>
-
-        {/* Question Navigation */}
-        <div className="question-navigation">
-          {questions.map((_, index) => (
-            <button
-              key={index}
-              className={`nav-item ${index === currentQuestionIndex ? 'current' : ''} ${isQuestionAnswered(index) ? 'answered' : 'unanswered'}`}
-              onClick={() => goToQuestion(index)}
-            >
-              {index + 1}
-            </button>
-          ))}
         </div>
 
         {/* Navigation */}
@@ -542,16 +593,28 @@ function ExamInterface() {
       {timerPaused && (
         <div className="paused-overlay">
           <div className="paused-modal">
-            <h2>Exam Paused</h2>
-            <p>The exam is paused. Resume when you're ready.</p>
+            <h2>⏸️ Exam Paused</h2>
+            <p>The exam is paused. Your progress and timer have been saved.</p>
+            <div style={{ 
+              fontSize: '0.875rem', 
+              color: 'rgba(10, 37, 64, 0.7)', 
+              marginBottom: '1.5rem',
+              padding: '0.75rem',
+              background: 'rgba(0, 212, 170, 0.1)',
+              borderRadius: '0.5rem'
+            }}>
+              <div>⏱️ Time Elapsed: {formatTime(timeElapsed)}</div>
+              <div>📝 Questions Answered: {answeredCount} of {questions?.length || 0}</div>
+            </div>
             <button 
-              onClick={() => {
-                setTimerPaused(false)
+              onClick={async () => {
+                console.log('▶️ Resuming exam')
                 resetInactivity()
+                await setTimerPaused(false)
               }}
               className="resume-button"
             >
-              Resume
+              ▶️ Resume Exam
             </button>
           </div>
         </div>

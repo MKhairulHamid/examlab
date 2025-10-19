@@ -4,6 +4,7 @@ import useExamStore from '../stores/examStore'
 import useAuthStore from '../stores/authStore'
 import usePurchaseStore from '../stores/purchaseStore'
 import PurchaseModal from '../components/purchase/PurchaseModal'
+import indexedDBService from '../services/indexedDBService'
 
 function ExamDetail() {
   const { slug } = useParams()
@@ -13,6 +14,7 @@ function ExamDetail() {
   const { fetchPurchases, hasPurchased } = usePurchaseStore()
   const [exam, setExam] = useState(null)
   const [showPurchaseModal, setShowPurchaseModal] = useState(false)
+  const [examResults, setExamResults] = useState([])
 
   useEffect(() => {
     const loadExam = async () => {
@@ -25,12 +27,40 @@ function ExamDetail() {
         
         if (user) {
           await fetchPurchases(user.id)
+          await loadExamResults(examData.id)
         }
       }
     }
     
     loadExam()
   }, [slug, user])
+
+  const loadExamResults = async (examTypeId) => {
+    if (!user) return
+    
+    try {
+      // Get all results for this user
+      const allResults = await indexedDBService.getExamResultsByUser(user.id)
+      
+      // Filter results for this specific exam
+      const filteredResults = []
+      for (const result of allResults) {
+        const questionSet = await indexedDBService.getQuestionSet(result.questionSetId)
+        if (questionSet?.exam_type_id === examTypeId) {
+          filteredResults.push({
+            ...result,
+            questionSetName: questionSet.name
+          })
+        }
+      }
+      
+      // Sort by completion date, newest first
+      filteredResults.sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt))
+      setExamResults(filteredResults)
+    } catch (error) {
+      console.error('Error loading exam results:', error)
+    }
+  }
 
   if (!exam) {
     return (
@@ -241,6 +271,101 @@ function ExamDetail() {
             >
               View Bundle Options
             </button>
+          </div>
+        )}
+
+        {/* Exam Attempts History */}
+        {examResults.length > 0 && (
+          <div style={{ marginTop: '3rem' }}>
+            <h2 className="section-title">📊 Your Exam Attempts</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {examResults.map((result) => {
+                const passColor = result.passed ? '#10b981' : '#ef4444'
+                const passIcon = result.passed ? '✓' : '✗'
+                
+                return (
+                  <div
+                    key={result.id}
+                    style={{
+                      background: 'rgba(255,255,255,0.1)',
+                      backdropFilter: 'blur(20px)',
+                      borderRadius: '1rem',
+                      padding: '1.5rem',
+                      border: '1px solid rgba(255,255,255,0.2)',
+                      borderLeft: `4px solid ${passColor}`,
+                      cursor: 'pointer',
+                      transition: 'all 0.3s'
+                    }}
+                    onClick={() => navigate(`/exam/${slug}/results?resultId=${result.id}&set=${result.questionSetId}`)}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'rgba(255,255,255,0.15)'
+                      e.currentTarget.style.transform = 'translateX(4px)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'rgba(255,255,255,0.1)'
+                      e.currentTarget.style.transform = 'translateX(0)'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                      {/* Status Icon */}
+                      <div style={{
+                        width: '3rem',
+                        height: '3rem',
+                        borderRadius: '0.75rem',
+                        background: passColor,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'white',
+                        fontWeight: '700',
+                        fontSize: '1.5rem',
+                        flexShrink: 0
+                      }}>
+                        {passIcon}
+                      </div>
+
+                      {/* Result Details */}
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+                          <h3 style={{ fontSize: '1rem', fontWeight: '700', color: 'white' }}>
+                            {result.questionSetName || 'Practice Exam'}
+                          </h3>
+                          <span style={{
+                            padding: '0.25rem 0.75rem',
+                            background: result.passed ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)',
+                            border: `1px solid ${passColor}`,
+                            borderRadius: '0.5rem',
+                            color: passColor,
+                            fontSize: '0.75rem',
+                            fontWeight: '600'
+                          }}>
+                            {result.passed ? 'PASSED' : 'FAILED'}
+                          </span>
+                        </div>
+                        <div style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.7)' }}>
+                          {new Date(result.completedAt).toLocaleDateString()} • {new Date(result.completedAt).toLocaleTimeString()} • {Math.floor(result.timeSpent / 60)} min
+                        </div>
+                      </div>
+
+                      {/* Score Display */}
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: '2rem', fontWeight: '700', color: passColor }}>
+                          {result.percentageScore}%
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)' }}>
+                          {result.rawScore}/{result.totalQuestions} correct
+                        </div>
+                      </div>
+
+                      {/* View Arrow */}
+                      <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '1.5rem' }}>
+                        →
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
           </div>
         )}
       </div>

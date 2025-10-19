@@ -8,6 +8,7 @@ import PurchaseModal from '../components/purchase/PurchaseModal'
 import streakService from '../services/streakService'
 import progressService from '../services/progressService'
 import indexedDBService from '../services/indexedDBService'
+import supabase from '../services/supabase'
 
 
 function Dashboard() {
@@ -20,6 +21,9 @@ function Dashboard() {
   const [streakStats, setStreakStats] = useState(null)
   const [userCertifications, setUserCertifications] = useState([])
   const [examResults, setExamResults] = useState([])
+  const [examDates, setExamDates] = useState([])
+  const [showExamDateModal, setShowExamDateModal] = useState(false)
+  const [selectedExamForDate, setSelectedExamForDate] = useState(null)
 
   useEffect(() => {
     fetchExams()
@@ -27,6 +31,7 @@ function Dashboard() {
       fetchPurchases(user.id)
       initializeStreak()
       loadExamResults()
+      loadExamDates()
     }
   }, [user])
 
@@ -39,6 +44,87 @@ function Dashboard() {
       )
       setExamResults(sortedResults)
     }
+  }
+
+  const loadExamDates = async () => {
+    if (!user) return
+    
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('exam_dates_json')
+        .eq('id', user.id)
+        .single()
+      
+      if (error) throw error
+      
+      if (data?.exam_dates_json) {
+        setExamDates(data.exam_dates_json)
+      }
+    } catch (error) {
+      console.error('Error loading exam dates:', error)
+    }
+  }
+
+  const saveExamDate = async (examTypeId, examName, examDate) => {
+    if (!user) return
+    
+    try {
+      const newExamDate = {
+        exam_type_id: examTypeId,
+        exam_name: examName,
+        exam_date: examDate,
+        created_at: new Date().toISOString()
+      }
+      
+      // Remove existing date for this exam if any
+      const updatedDates = examDates.filter(d => d.exam_type_id !== examTypeId)
+      updatedDates.push(newExamDate)
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update({ exam_dates_json: updatedDates })
+        .eq('id', user.id)
+      
+      if (error) throw error
+      
+      setExamDates(updatedDates)
+      console.log('✅ Exam date saved')
+    } catch (error) {
+      console.error('Error saving exam date:', error)
+    }
+  }
+
+  const removeExamDate = async (examTypeId) => {
+    if (!user) return
+    
+    try {
+      const updatedDates = examDates.filter(d => d.exam_type_id !== examTypeId)
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update({ exam_dates_json: updatedDates })
+        .eq('id', user.id)
+      
+      if (error) throw error
+      
+      setExamDates(updatedDates)
+      console.log('✅ Exam date removed')
+    } catch (error) {
+      console.error('Error removing exam date:', error)
+    }
+  }
+
+  const calculateDaysUntil = (dateString) => {
+    const examDate = new Date(dateString)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    examDate.setHours(0, 0, 0, 0)
+    
+    const diffTime = examDate - today
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    
+    return diffDays
   }
 
   useEffect(() => {
@@ -111,6 +197,162 @@ function Dashboard() {
     }
   }, [])
 
+
+  const renderExamCountdown = () => {
+    if (examDates.length === 0) return null
+
+    // Sort by closest date first
+    const sortedDates = [...examDates].sort((a, b) => 
+      new Date(a.exam_date) - new Date(b.exam_date)
+    )
+
+    return (
+      <section style={{ padding: '4rem 0', background: 'white' }}>
+        <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+          <div style={{ color: '#00D4AA', fontSize: '0.875rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.025em', marginBottom: '0.75rem' }}>
+            YOUR EXAM SCHEDULE
+          </div>
+          <h2 style={{ fontSize: '2rem', fontWeight: '700', color: '#0A2540', marginBottom: '1rem', lineHeight: '1.3' }}>
+            📅 Exam Countdown
+          </h2>
+        </div>
+
+        <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
+          {sortedDates.map((examDate) => {
+            const daysUntil = calculateDaysUntil(examDate.exam_date)
+            const isToday = daysUntil === 0
+            const isPast = daysUntil < 0
+            const isUrgent = daysUntil > 0 && daysUntil <= 7
+
+            let statusColor = '#00D4AA'
+            let statusBg = 'rgba(0, 212, 170, 0.1)'
+            let statusText = `${daysUntil} days`
+            
+            if (isPast) {
+              statusColor = '#9ca3af'
+              statusBg = 'rgba(156, 163, 175, 0.1)'
+              statusText = 'Past'
+            } else if (isToday) {
+              statusColor = '#f59e0b'
+              statusBg = 'rgba(245, 158, 11, 0.1)'
+              statusText = 'Today!'
+            } else if (isUrgent) {
+              statusColor = '#ef4444'
+              statusBg = 'rgba(239, 68, 68, 0.1)'
+              statusText = `${daysUntil} days`
+            }
+
+            return (
+              <div
+                key={examDate.exam_type_id}
+                style={{
+                  background: 'white',
+                  padding: '1.5rem',
+                  borderRadius: '1rem',
+                  border: `2px solid ${statusColor}`,
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                  position: 'relative'
+                }}
+              >
+                {/* Remove button */}
+                <button
+                  onClick={() => removeExamDate(examDate.exam_type_id)}
+                  style={{
+                    position: 'absolute',
+                    top: '0.75rem',
+                    right: '0.75rem',
+                    background: 'transparent',
+                    border: 'none',
+                    color: '#9ca3af',
+                    cursor: 'pointer',
+                    fontSize: '1.25rem',
+                    padding: '0.25rem',
+                    lineHeight: 1
+                  }}
+                  title="Remove exam date"
+                >
+                  ×
+                </button>
+
+                {/* Countdown Badge */}
+                <div style={{
+                  display: 'inline-block',
+                  padding: '0.5rem 1rem',
+                  background: statusBg,
+                  borderRadius: '0.5rem',
+                  marginBottom: '1rem'
+                }}>
+                  <div style={{ fontSize: '2rem', fontWeight: '700', color: statusColor, lineHeight: 1 }}>
+                    {isPast ? '✓' : isToday ? '🔥' : daysUntil}
+                  </div>
+                  <div style={{ fontSize: '0.75rem', fontWeight: '600', color: statusColor, marginTop: '0.25rem' }}>
+                    {statusText}
+                  </div>
+                </div>
+
+                {/* Exam Info */}
+                <h3 style={{ fontSize: '1.125rem', fontWeight: '700', color: '#0A2540', marginBottom: '0.5rem' }}>
+                  {examDate.exam_name}
+                </h3>
+                <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '1rem' }}>
+                  📅 {new Date(examDate.exam_date).toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                  })}
+                </div>
+
+                {/* Action Buttons */}
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button
+                    onClick={() => {
+                      const exam = exams.find(e => e.id === examDate.exam_type_id)
+                      if (exam) navigate(`/exam/${exam.slug}`)
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: '0.75rem',
+                      background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '0.5rem',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      fontSize: '0.875rem'
+                    }}
+                  >
+                    Practice Now
+                  </button>
+                  <button
+                    onClick={() => {
+                      const exam = exams.find(e => e.id === examDate.exam_type_id)
+                      if (exam) {
+                        setSelectedExamForDate(exam)
+                        setShowExamDateModal(true)
+                      }
+                    }}
+                    style={{
+                      padding: '0.75rem 1rem',
+                      background: 'white',
+                      color: '#374151',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '0.5rem',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      fontSize: '0.875rem'
+                    }}
+                  >
+                    Edit
+                  </button>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </section>
+    )
+  }
 
   const renderMyCertifications = () => (
     <section style={{ padding: '4rem 0', background: '#f9fafb' }}>
@@ -278,56 +520,85 @@ function Dashboard() {
         </div>
 
                 {/* Actions */}
-                <div style={{ display: 'flex', gap: '0.75rem' }}>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      navigate(`/exam/${exam.slug}`)
-                    }}
-                    style={{
-                      flex: 1,
-                      padding: '0.75rem',
-                      background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '0.5rem',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      fontSize: '0.875rem'
-                    }}
-                  >
-                    {isPurchased ? 'Continue Practice' : isStartedOnly ? 'Continue Practice' : 'Try Free Questions'}
-                  </button>
-                  {!isPurchased && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
-                        setSelectedExam(exam)
-                        setShowPurchaseModal(true)
+                        navigate(`/exam/${exam.slug}`)
                       }}
                       style={{
-                        padding: '0.75rem 1rem',
-                        background: 'white',
-                        color: '#374151',
-                        border: '1px solid #d1d5db',
+                        flex: 1,
+                        padding: '0.75rem',
+                        background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
+                        color: 'white',
+                        border: 'none',
                         borderRadius: '0.5rem',
                         fontWeight: '600',
                         cursor: 'pointer',
-                        fontSize: '0.875rem',
-                        transition: 'all 0.2s'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = '#f9fafb'
-                        e.currentTarget.style.borderColor = '#9ca3af'
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = 'white'
-                        e.currentTarget.style.borderColor = '#d1d5db'
+                        fontSize: '0.875rem'
                       }}
                     >
-                      {isStartedOnly ? 'Unlock Full Access' : 'Purchase'}
+                      {isPurchased ? 'Continue Practice' : isStartedOnly ? 'Continue Practice' : 'Try Free Questions'}
                     </button>
-                  )}
+                    {!isPurchased && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setSelectedExam(exam)
+                          setShowPurchaseModal(true)
+                        }}
+                        style={{
+                          padding: '0.75rem 1rem',
+                          background: 'white',
+                          color: '#374151',
+                          border: '1px solid #d1d5db',
+                          borderRadius: '0.5rem',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                          fontSize: '0.875rem',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = '#f9fafb'
+                          e.currentTarget.style.borderColor = '#9ca3af'
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'white'
+                          e.currentTarget.style.borderColor = '#d1d5db'
+                        }}
+                      >
+                        {isStartedOnly ? 'Unlock Full Access' : 'Purchase'}
+                      </button>
+                    )}
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setSelectedExamForDate(exam)
+                      setShowExamDateModal(true)
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '0.5rem',
+                      background: 'rgba(0, 212, 170, 0.1)',
+                      color: '#00D4AA',
+                      border: '1px solid rgba(0, 212, 170, 0.3)',
+                      borderRadius: '0.5rem',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      fontSize: '0.75rem',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'rgba(0, 212, 170, 0.2)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'rgba(0, 212, 170, 0.1)'
+                    }}
+                  >
+                    📅 {examDates.find(d => d.exam_type_id === exam.id) ? 'Update' : 'Set'} Exam Date
+                  </button>
                 </div>
               </div>
             )
@@ -1085,6 +1356,9 @@ function Dashboard() {
         {/* Purchase Summary */}
         {renderPurchasesSummary()}
 
+        {/* Exam Countdown */}
+        {renderExamCountdown()}
+
         {/* My Certifications */}
         {renderMyCertifications()}
 
@@ -1113,6 +1387,81 @@ function Dashboard() {
           examTypeId={selectedExam.id}
           examName={selectedExam.name}
         />
+      )}
+
+      {/* Exam Date Modal */}
+      {showExamDateModal && selectedExamForDate && (
+        <div className="modal-overlay" onClick={() => setShowExamDateModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowExamDateModal(false)}>
+              ×
+            </button>
+            <div className="modal-header">
+              <h2 className="modal-title">📅 Set Exam Date</h2>
+              <p className="modal-description">
+                When are you planning to take {selectedExamForDate.name}?
+              </p>
+            </div>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                const formData = new FormData(e.target)
+                const examDate = formData.get('examDate')
+                if (examDate) {
+                  saveExamDate(selectedExamForDate.id, selectedExamForDate.name, examDate)
+                  setShowExamDateModal(false)
+                  setSelectedExamForDate(null)
+                }
+              }}
+              style={{ marginTop: '1.5rem' }}
+            >
+              <div className="form-group">
+                <label className="form-label" htmlFor="examDate">
+                  Exam Date
+                </label>
+                <input
+                  type="date"
+                  id="examDate"
+                  name="examDate"
+                  className="form-input"
+                  defaultValue={
+                    examDates.find(d => d.exam_type_id === selectedExamForDate.id)?.exam_date || ''
+                  }
+                  min={new Date().toISOString().split('T')[0]}
+                  required
+                />
+              </div>
+              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowExamDateModal(false)
+                    setSelectedExamForDate(null)
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: '0.875rem',
+                    background: 'white',
+                    color: '#374151',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '0.75rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    fontSize: '1rem'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="form-button"
+                >
+                  Save Date
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </>
   )
