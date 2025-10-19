@@ -154,6 +154,11 @@ class StreakService {
     const today = new Date().toISOString().split('T')[0]
     const streak = this.getLocalStreak()
 
+    // Initialize questionsToday if undefined
+    if (typeof streak.questionsToday !== 'number') {
+      streak.questionsToday = 0
+    }
+
     // Update questions today
     if (streak.lastActivityDate === today) {
       streak.questionsToday += questionsCompleted
@@ -273,9 +278,22 @@ class StreakService {
     const currentDate = new Date(today)
     const daysDiff = Math.floor((currentDate - lastDate) / (1000 * 60 * 60 * 24))
 
+    let needsSave = false
+
+    // If it's a new day (not today), reset questionsToday
+    if (streak.lastActivityDate !== today) {
+      streak.questionsToday = 0
+      needsSave = true
+    }
+
     // If more than 1 day has passed, reset streak
     if (daysDiff > 1) {
       streak.currentStreak = 0
+      needsSave = true
+    }
+
+    // Save if changes were made
+    if (needsSave) {
       this.saveLocalStreak(streak)
     }
 
@@ -319,7 +337,7 @@ class StreakService {
       currentStreak: updatedStreak.currentStreak,
       longestStreak: updatedStreak.longestStreak,
       totalStudyDays: updatedStreak.totalStudyDays,
-      questionsToday: updatedStreak.lastActivityDate === today ? updatedStreak.questionsToday : 0,
+      questionsToday: updatedStreak.lastActivityDate === today ? (updatedStreak.questionsToday || 0) : 0,
       dailyGoal: updatedStreak.dailyGoalQuestions,
       studyDates: updatedStreak.studyDates.slice(-14) // Last 14 days
     }
