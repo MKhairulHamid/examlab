@@ -33,6 +33,7 @@ function ExamInterface() {
   const [accessDenied, setAccessDenied] = useState(false)
   const [accessMessage, setAccessMessage] = useState('')
   const [duration, setDuration] = useState(0)
+  const [showMaterialsModal, setShowMaterialsModal] = useState(false)
 
   useEffect(() => {
     const initialize = async () => {
@@ -339,10 +340,11 @@ function ExamInterface() {
   const currentAnswer = answers[currentQuestionIndex] || []
 
   const formatTime = (secs) => {
-    if (secs < 0) return '0:00'
-    const m = Math.floor(secs / 60)
+    if (secs < 0) return '00:00:00'
+    const h = Math.floor(secs / 3600)
+    const m = Math.floor((secs % 3600) / 60)
     const s = secs % 60
-    return `${m}:${s.toString().padStart(2, '0')}`
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
   }
 
   const timeLeft = Math.max(0, duration - timeElapsed)
@@ -353,18 +355,46 @@ function ExamInterface() {
         {/* Header */}
         <div className="exam-header">
           <h1 className="exam-header-title">{currentQuestionSet.name}</h1>
-          <p className="exam-header-progress">Question {currentQuestionIndex + 1} of {questions.length}</p>
-          <div className="exam-timer">
-            Time left: {formatTime(timeLeft)}
+          <div className="exam-timer-display">
+            ⏱️ Time Remaining: {formatTime(timeLeft)}
           </div>
         </div>
 
-        {/* Time Bar */}
+        {/* Time Bar - decreasing */}
         <div className="time-bar-container">
           <div 
             className="time-bar"
-            style={{ width: `${(timeLeft / duration * 100)}%` }}
+            style={{ 
+              width: `${(timeLeft / duration * 100)}%`,
+              backgroundColor: timeLeft < duration * 0.1 ? '#ef4444' : timeLeft < duration * 0.25 ? '#f59e0b' : '#00D4AA',
+              transition: 'width 1s linear, background-color 0.3s'
+            }}
           ></div>
+        </div>
+
+        {/* Question Navigation */}
+        <div className="question-navigation">
+          <div className="question-nav-header">
+            <span className="text-sm text-white/80">Questions:</span>
+            <button
+              onClick={() => setShowMaterialsModal(true)}
+              className="materials-button"
+            >
+              📚 Study Materials
+            </button>
+          </div>
+          <div className="question-nav-grid">
+            {questions.map((_, index) => (
+              <button
+                key={index}
+                className={`question-nav-item ${index === currentQuestionIndex ? 'current' : ''} ${isQuestionAnswered(index) ? 'answered' : 'unanswered'}`}
+                onClick={() => goToQuestion(index)}
+                title={`Question ${index + 1}${isQuestionAnswered(index) ? ' (Answered)' : ' (Not Answered)'}`}
+              >
+                {index + 1}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Progress Bar */}
@@ -373,6 +403,9 @@ function ExamInterface() {
             className="progress-bar"
             style={{ width: `${((answeredCount) / questions.length) * 100}%` }}
           ></div>
+        </div>
+        <div className="progress-text" style={{ marginBottom: '1rem' }}>
+          {answeredCount} of {questions.length} questions answered
         </div>
 
         {/* Question Card */}
@@ -462,6 +495,48 @@ function ExamInterface() {
           {answeredCount} of {questions.length} questions answered
         </div>
       </div>
+
+      {/* Study Materials Modal */}
+      {showMaterialsModal && (
+        <div className="modal-overlay" onClick={() => setShowMaterialsModal(false)}>
+          <div className="modal-content materials-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowMaterialsModal(false)}>
+              ×
+            </button>
+            <div className="modal-header">
+              <h2 className="modal-title">📚 Study Materials</h2>
+              <p className="modal-description">
+                Question {currentQuestionIndex + 1} of {questions.length}
+              </p>
+            </div>
+            <div className="materials-content">
+              <div className="material-item">
+                <h3 className="material-title">📖 Reference Material</h3>
+                <div className="material-text">
+                  {currentQuestion.materials || 'No additional materials available for this question.'}
+                </div>
+              </div>
+              {currentQuestion.explanations && Object.keys(currentQuestion.explanations).length > 0 && (
+                <div className="material-item">
+                  <h3 className="material-title">💡 Answer Explanations</h3>
+                  {Object.entries(currentQuestion.explanations).map(([key, explanation], idx) => (
+                    <div key={idx} className="explanation-item">
+                      <strong>{key}:</strong> {explanation}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <button 
+              className="form-button"
+              onClick={() => setShowMaterialsModal(false)}
+              style={{ marginTop: '1rem' }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Paused Modal */}
       {timerPaused && (
