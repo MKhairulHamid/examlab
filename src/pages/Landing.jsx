@@ -72,6 +72,8 @@ function Landing() {
   const [expandedFAQ, setExpandedFAQ] = useState(null)
   const [demoStep, setDemoStep] = useState(0)
   const [demoSelectedAnswer, setDemoSelectedAnswer] = useState(null)
+  const [showDemoMaterials, setShowDemoMaterials] = useState(false)
+  const [showDemoResults, setShowDemoResults] = useState(false)
   
   // Redirect if already logged in (but not if processing auth tokens)
   useEffect(() => {
@@ -172,7 +174,7 @@ function Landing() {
               color: 'white',
               fontSize: '0.875rem',
               fontWeight: '600'
-            }}>💰 From $5/month</div>
+            }}>💰 From $2.50/month</div>
             <div style={{ 
               padding: '0.5rem 1rem', 
               background: 'rgba(255,255,255,0.1)', 
@@ -180,7 +182,7 @@ function Landing() {
               color: 'white',
               fontSize: '0.875rem',
               fontWeight: '600'
-            }}>📚 195 Questions</div>
+            }}>📚 3 Question Sets Per Exam</div>
             <div style={{ 
               padding: '0.5rem 1rem', 
               background: 'rgba(255,255,255,0.1)', 
@@ -433,41 +435,44 @@ function Landing() {
         <div style={{ maxWidth: '72rem', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
             <h2 style={{ fontSize: '2rem', fontWeight: '700', color: '#0A2540', marginBottom: '1rem' }}>
-              What Makes Our Questions Different
+              Why Our Practice Exams Help You Pass
             </h2>
+            <p style={{ color: '#6b7280', fontSize: '1rem', maxWidth: '42rem', margin: '0 auto' }}>
+              Everything you need to confidently pass your AWS certification exam
+            </p>
           </div>
 
-          <div style={{ display: 'grid', gap: '2rem', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+          <div style={{ display: 'grid', gap: '2rem', gridTemplateColumns: 'repeat(3, 1fr)', maxWidth: '1100px', margin: '0 auto' }}>
             {[
               {
                 icon: '🎯',
-                title: 'Exam-Matched Format',
-                description: 'Question counts and difficulty mirror actual certification exams'
+                title: 'Exam-Realistic Questions',
+                description: 'Practice with questions that match the actual exam format, difficulty, and style'
               },
               {
                 icon: '💡',
-                title: 'Comprehensive Explanations',
-                description: 'Detailed reasoning for correct and incorrect answers'
+                title: 'Deep Explanations',
+                description: 'Understand why each answer is correct or incorrect with detailed explanations'
               },
               {
                 icon: '📖',
-                title: 'Official References',
-                description: 'Links to AWS/Azure/GCP documentation for further study'
+                title: 'Official AWS Documentation',
+                description: 'Direct links to AWS docs for deeper learning on every topic'
               },
               {
                 icon: '📚',
-                title: 'Multiple Practice Sets',
-                description: 'Three distinct question sets per certification for thorough preparation'
+                title: '3 Complete Practice Sets',
+                description: 'Three full-length question sets per certification for thorough preparation'
               },
               {
                 icon: '🌐',
-                title: 'Scenario-Based',
-                description: 'Real-world situations matching actual exam style'
+                title: 'Real-World Scenarios',
+                description: 'Practice with actual development situations you\'ll face on the exam'
               },
               {
                 icon: '📊',
-                title: 'Progress Tracking',
-                description: 'Monitor your performance and identify areas for improvement'
+                title: 'Track Your Progress',
+                description: 'Monitor performance and identify weak areas to focus your study time'
               }
             ].map((feature, index) => (
               <div 
@@ -476,14 +481,26 @@ function Landing() {
                   padding: '1.5rem',
                   background: '#f9fafb',
                   borderRadius: '1rem',
-                  textAlign: 'center'
+                  textAlign: 'center',
+                  border: '1px solid #e5e7eb',
+                  transition: 'all 0.3s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px)'
+                  e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)'
+                  e.currentTarget.style.borderColor = '#00D4AA'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = 'none'
+                  e.currentTarget.style.borderColor = '#e5e7eb'
                 }}
               >
                 <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>{feature.icon}</div>
                 <h3 style={{ fontSize: '1.125rem', fontWeight: '700', color: '#0A2540', marginBottom: '0.5rem' }}>
                   {feature.title}
                 </h3>
-                <p style={{ color: '#6b7280', fontSize: '0.875rem' }}>
+                <p style={{ color: '#6b7280', fontSize: '0.875rem', lineHeight: '1.5' }}>
                   {feature.description}
                 </p>
               </div>
@@ -494,17 +511,17 @@ function Landing() {
 
       {/* Pricing Section */}
       <section style={{ padding: '4rem 1rem', background: 'linear-gradient(135deg, #0A2540 0%, #1A3B5C 100%)' }}>
-        <div style={{ maxWidth: '72rem', margin: '0 auto' }}>
+        <div style={{ maxWidth: '80rem', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
             <h2 style={{ fontSize: '2rem', fontWeight: '700', color: 'white', marginBottom: '1rem' }}>
-              Simple, Flexible Subscription Plans
+              Choose Your Study Plan
             </h2>
             <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: '1rem' }}>
-              Unlimited access to all 195 practice questions • Cancel anytime
+              Unlimited access to all practice questions • Study at your own pace • Cancel anytime
             </p>
           </div>
 
-          <div style={{ display: 'grid', gap: '2rem', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', maxWidth: '1000px', margin: '0 auto' }}>
+          <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(4, 1fr)', maxWidth: '1200px', margin: '0 auto' }}>
             <div style={{ 
               background: 'rgba(255,255,255,0.1)', 
               backdropFilter: 'blur(20px)',
@@ -711,8 +728,11 @@ function Landing() {
           </div>
 
           <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-            <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.875rem' }}>
-              All plans include full access to AWS Developer Associate (DVA-C02) with 195 practice questions
+            <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: '0.95rem', fontWeight: '500' }}>
+              All plans include access to all certifications • Currently: AWS Developer Associate (DVA-C02) • Coming soon: 20+ more certifications
+            </p>
+            <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.875rem', marginTop: '0.5rem' }}>
+              Your subscription automatically includes new certifications as they launch - no extra cost!
             </p>
           </div>
         </div>
@@ -847,6 +867,73 @@ function Landing() {
               <p style={{ fontSize: '0.875rem', color: '#6b7280', textAlign: 'center', margin: 0 }}>
                 1 of 65 questions answered
               </p>
+            </div>
+
+            {/* Action Buttons */}
+            <div style={{ 
+              padding: '1rem', 
+              background: 'white', 
+              borderBottom: '1px solid #e5e7eb',
+              display: 'flex',
+              justifyContent: 'center',
+              gap: '1rem',
+              flexWrap: 'wrap'
+            }}>
+              <button
+                onClick={() => setShowDemoMaterials(true)}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '0.5rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  fontSize: '0.875rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  boxShadow: '0 2px 8px rgba(0,212,170,0.3)',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)'
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,212,170,0.4)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,212,170,0.3)'
+                }}
+              >
+                📚 Study Materials
+              </button>
+              <button
+                onClick={() => setShowDemoResults(true)}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  background: 'white',
+                  color: '#0A2540',
+                  border: '2px solid #0A2540',
+                  borderRadius: '0.5rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  fontSize: '0.875rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#0A2540'
+                  e.currentTarget.style.color = 'white'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'white'
+                  e.currentTarget.style.color = '#0A2540'
+                }}
+              >
+                📊 View Results
+              </button>
             </div>
 
             {/* Question Content */}
@@ -986,6 +1073,284 @@ function Landing() {
             </div>
           </div>
 
+          {/* Study Materials Modal */}
+          {showDemoMaterials && (
+            <div 
+              onClick={() => setShowDemoMaterials(false)}
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'rgba(0,0,0,0.7)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 1000,
+                padding: '1rem'
+              }}
+            >
+              <div 
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  background: 'white',
+                  borderRadius: '1rem',
+                  maxWidth: '700px',
+                  width: '100%',
+                  maxHeight: '80vh',
+                  overflow: 'auto',
+                  boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
+                }}
+              >
+                <div style={{ padding: '2rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '1.5rem' }}>
+                    <div>
+                      <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#0A2540', marginBottom: '0.5rem' }}>
+                        📚 Study Materials
+                      </h3>
+                      <p style={{ color: '#6b7280', fontSize: '0.875rem' }}>
+                        Just-in-time learning resources for this question
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setShowDemoMaterials(false)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        fontSize: '1.5rem',
+                        cursor: 'pointer',
+                        color: '#6b7280',
+                        padding: '0.5rem'
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+
+                  <div style={{ 
+                    background: '#f9fafb', 
+                    padding: '1.5rem', 
+                    borderRadius: '0.75rem',
+                    border: '1px solid #e5e7eb',
+                    marginBottom: '1.5rem'
+                  }}>
+                    <h4 style={{ fontSize: '1rem', fontWeight: '700', color: '#0A2540', marginBottom: '1rem' }}>
+                      📖 AWS Lambda & S3 Event Notifications
+                    </h4>
+                    <p style={{ color: '#4b5563', fontSize: '0.875rem', lineHeight: '1.6', marginBottom: '1rem' }}>
+                      Amazon S3 can publish events (such as object creation, deletion, or restoration) to AWS Lambda, Amazon SNS, Amazon SQS, and Amazon EventBridge. S3 Event Notifications is the most direct and efficient way to trigger Lambda functions when objects are uploaded to an S3 bucket.
+                    </p>
+                    <div style={{ 
+                      background: 'white', 
+                      padding: '1rem', 
+                      borderRadius: '0.5rem',
+                      borderLeft: '4px solid #00D4AA'
+                    }}>
+                      <p style={{ fontSize: '0.875rem', color: '#0A2540', fontWeight: '600', marginBottom: '0.5rem' }}>
+                        💡 Key Concept
+                      </p>
+                      <p style={{ fontSize: '0.875rem', color: '#4b5563', lineHeight: '1.5' }}>
+                        S3 Event Notifications provide a serverless, event-driven architecture that automatically triggers your Lambda function whenever specific events occur in your S3 bucket - no polling required!
+                      </p>
+                    </div>
+                  </div>
+
+                  <div style={{ 
+                    background: '#f0f9ff', 
+                    padding: '1.5rem', 
+                    borderRadius: '0.75rem',
+                    border: '1px solid #bae6fd'
+                  }}>
+                    <h4 style={{ fontSize: '0.875rem', fontWeight: '700', color: '#0369a1', marginBottom: '1rem' }}>
+                      📚 Official AWS Documentation
+                    </h4>
+                    <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                      <li style={{ marginBottom: '0.75rem' }}>
+                        <a 
+                          href="https://docs.aws.amazon.com/lambda/latest/dg/with-s3.html" 
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ 
+                            color: '#0369a1', 
+                            textDecoration: 'none',
+                            fontSize: '0.875rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem'
+                          }}
+                        >
+                          <span>→</span> Using AWS Lambda with Amazon S3
+                        </a>
+                      </li>
+                      <li style={{ marginBottom: '0.75rem' }}>
+                        <a 
+                          href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/NotificationHowTo.html" 
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ 
+                            color: '#0369a1', 
+                            textDecoration: 'none',
+                            fontSize: '0.875rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem'
+                          }}
+                        >
+                          <span>→</span> Configuring S3 Event Notifications
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <button
+                    onClick={() => setShowDemoMaterials(false)}
+                    style={{
+                      width: '100%',
+                      marginTop: '1.5rem',
+                      padding: '0.875rem',
+                      background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '0.5rem',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      fontSize: '1rem'
+                    }}
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Results Modal */}
+          {showDemoResults && (
+            <div 
+              onClick={() => setShowDemoResults(false)}
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'rgba(0,0,0,0.7)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 1000,
+                padding: '1rem'
+              }}
+            >
+              <div 
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  background: 'white',
+                  borderRadius: '1rem',
+                  maxWidth: '600px',
+                  width: '100%',
+                  maxHeight: '80vh',
+                  overflow: 'auto',
+                  boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
+                }}
+              >
+                <div style={{ padding: '2rem' }}>
+                  <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                    <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🎉</div>
+                    <h3 style={{ fontSize: '1.75rem', fontWeight: '700', color: '#0A2540', marginBottom: '0.5rem' }}>
+                      Exam Complete!
+                    </h3>
+                    <p style={{ color: '#6b7280', fontSize: '0.95rem' }}>
+                      AWS Developer Associate - Practice Set 1
+                    </p>
+                  </div>
+
+                  <div style={{ 
+                    background: 'linear-gradient(135deg, #00D4AA15 0%, #00A88415 100%)',
+                    padding: '2rem',
+                    borderRadius: '1rem',
+                    border: '2px solid #00D4AA',
+                    marginBottom: '2rem',
+                    textAlign: 'center'
+                  }}>
+                    <div style={{ fontSize: '3rem', fontWeight: '700', color: '#00D4AA', marginBottom: '0.5rem' }}>
+                      82%
+                    </div>
+                    <div style={{ fontSize: '1.25rem', fontWeight: '600', color: '#0A2540', marginBottom: '0.5rem' }}>
+                      PASSED ✓
+                    </div>
+                    <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+                      53 / 65 questions correct
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gap: '1rem', marginBottom: '2rem' }}>
+                    <div style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between',
+                      padding: '1rem',
+                      background: '#f9fafb',
+                      borderRadius: '0.5rem'
+                    }}>
+                      <span style={{ color: '#6b7280', fontSize: '0.875rem' }}>Score</span>
+                      <span style={{ color: '#0A2540', fontWeight: '600', fontSize: '0.875rem' }}>820 / 1000</span>
+                    </div>
+                    <div style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between',
+                      padding: '1rem',
+                      background: '#f9fafb',
+                      borderRadius: '0.5rem'
+                    }}>
+                      <span style={{ color: '#6b7280', fontSize: '0.875rem' }}>Time Taken</span>
+                      <span style={{ color: '#0A2540', fontWeight: '600', fontSize: '0.875rem' }}>48 minutes</span>
+                    </div>
+                    <div style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between',
+                      padding: '1rem',
+                      background: '#f9fafb',
+                      borderRadius: '0.5rem'
+                    }}>
+                      <span style={{ color: '#6b7280', fontSize: '0.875rem' }}>Passing Score</span>
+                      <span style={{ color: '#0A2540', fontWeight: '600', fontSize: '0.875rem' }}>720 / 1000 (72%)</span>
+                    </div>
+                  </div>
+
+                  <div style={{
+                    background: '#f0f9ff',
+                    padding: '1rem',
+                    borderRadius: '0.75rem',
+                    border: '1px solid #bae6fd',
+                    marginBottom: '1.5rem'
+                  }}>
+                    <p style={{ fontSize: '0.875rem', color: '#0369a1', margin: 0, lineHeight: '1.5' }}>
+                      <strong>💡 Great job!</strong> You're ready for the actual exam. Review the questions you missed to strengthen weak areas.
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={() => setShowDemoResults(false)}
+                    style={{
+                      width: '100%',
+                      padding: '0.875rem',
+                      background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '0.5rem',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      fontSize: '1rem'
+                    }}
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Feature Highlights Below Demo */}
           <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', marginTop: '3rem' }}>
             {[
@@ -1094,18 +1459,21 @@ function Landing() {
         <div style={{ maxWidth: '72rem', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
             <h2 style={{ fontSize: '2rem', fontWeight: '700', color: '#0A2540', marginBottom: '1rem' }}>
-              Platform Features
+              Everything You Need to Pass
             </h2>
+            <p style={{ color: '#6b7280', fontSize: '1rem', maxWidth: '42rem', margin: '0 auto' }}>
+              Your subscription includes powerful features to accelerate your exam preparation
+            </p>
           </div>
 
           <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
             {[
-              { icon: '📊', title: 'Progress Tracking', description: 'Monitor completion across all question sets' },
-              { icon: '📈', title: 'Performance Analytics', description: 'See strengths and weaknesses by exam domain' },
-              { icon: '⚡', title: 'Flexible Practice Modes', description: 'Study mode, timed mode, review mode' },
-              { icon: '🔖', title: 'Question Bookmarking', description: 'Flag questions for later review' },
-              { icon: '📱', title: 'Mobile-Friendly', description: 'Practice anywhere on any device' },
-              { icon: '💰', title: 'No Subscription', description: 'One-time purchase, permanent access' }
+              { icon: '📚', title: 'Just-in-Time Learning', description: 'Access study materials and AWS documentation right when you need them' },
+              { icon: '📊', title: 'Detailed Progress Tracking', description: 'Monitor your performance across all practice sets and identify weak areas' },
+              { icon: '⚡', title: 'Unlimited Practice', description: 'Retake exams as many times as you want - perfect for building confidence' },
+              { icon: '🎯', title: 'Comprehensive Results', description: 'Get detailed score breakdowns and performance insights after each attempt' },
+              { icon: '📱', title: 'Study Anywhere', description: 'Mobile-optimized interface lets you practice on any device, anytime' },
+              { icon: '🔄', title: 'Flexible Subscription', description: 'Cancel anytime - no long-term commitments or hidden fees' }
             ].map((feature, index) => (
               <div 
                 key={index}
@@ -1113,7 +1481,8 @@ function Landing() {
                   padding: '1.5rem',
                   border: '1px solid #e5e7eb',
                   borderRadius: '0.75rem',
-                  transition: 'all 0.3s'
+                  transition: 'all 0.3s',
+                  background: 'white'
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.borderColor = '#00D4AA'
@@ -1130,11 +1499,120 @@ function Landing() {
                 <h3 style={{ fontSize: '1.125rem', fontWeight: '700', color: '#0A2540', marginBottom: '0.5rem' }}>
                   {feature.title}
                 </h3>
-                <p style={{ color: '#6b7280', fontSize: '0.875rem' }}>
+                <p style={{ color: '#6b7280', fontSize: '0.875rem', lineHeight: '1.5' }}>
                   {feature.description}
                 </p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Study Materials - Just-in-Time Learning */}
+      <section style={{ padding: '4rem 1rem', background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)' }}>
+        <div style={{ maxWidth: '72rem', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+            <div style={{ color: '#0369a1', fontSize: '0.875rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.025em', marginBottom: '0.75rem' }}>
+              LEARN SMARTER, NOT HARDER
+            </div>
+            <h2 style={{ fontSize: '2rem', fontWeight: '700', color: '#0A2540', marginBottom: '1rem' }}>
+              Just-in-Time Learning Materials
+            </h2>
+            <p style={{ color: '#4b5563', fontSize: '1.125rem', maxWidth: '42rem', margin: '0 auto', lineHeight: '1.6' }}>
+              Don't waste time reading entire documentation pages. Get targeted study materials exactly when you need them.
+            </p>
+          </div>
+
+          <div style={{ display: 'grid', gap: '2rem', gridTemplateColumns: '1fr 1fr', maxWidth: '1100px', margin: '0 auto', marginBottom: '3rem' }}>
+            <div style={{
+              background: 'white',
+              padding: '2rem',
+              borderRadius: '1rem',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+              border: '1px solid #bae6fd'
+            }}>
+              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📚</div>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: '#0A2540', marginBottom: '1rem' }}>
+                Contextual Learning
+              </h3>
+              <p style={{ color: '#4b5563', fontSize: '0.95rem', lineHeight: '1.6', marginBottom: '1rem' }}>
+                Every question includes curated study materials that explain the concepts you need to understand - right when you're working on that topic.
+              </p>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                <li style={{ display: 'flex', alignItems: 'start', marginBottom: '0.75rem', color: '#4b5563', fontSize: '0.875rem' }}>
+                  <span style={{ marginRight: '0.5rem', color: '#00D4AA' }}>✓</span>
+                  <span>Concept explanations in plain English</span>
+                </li>
+                <li style={{ display: 'flex', alignItems: 'start', marginBottom: '0.75rem', color: '#4b5563', fontSize: '0.875rem' }}>
+                  <span style={{ marginRight: '0.5rem', color: '#00D4AA' }}>✓</span>
+                  <span>Key takeaways highlighted</span>
+                </li>
+                <li style={{ display: 'flex', alignItems: 'start', color: '#4b5563', fontSize: '0.875rem' }}>
+                  <span style={{ marginRight: '0.5rem', color: '#00D4AA' }}>✓</span>
+                  <span>Real-world use cases</span>
+                </li>
+              </ul>
+            </div>
+
+            <div style={{
+              background: 'white',
+              padding: '2rem',
+              borderRadius: '1rem',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+              border: '1px solid #bae6fd'
+            }}>
+              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔗</div>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: '#0A2540', marginBottom: '1rem' }}>
+                Official AWS Documentation
+              </h3>
+              <p style={{ color: '#4b5563', fontSize: '0.95rem', lineHeight: '1.6', marginBottom: '1rem' }}>
+                Direct links to relevant AWS documentation pages for deeper learning. No more searching through hundreds of pages to find what you need.
+              </p>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                <li style={{ display: 'flex', alignItems: 'start', marginBottom: '0.75rem', color: '#4b5563', fontSize: '0.875rem' }}>
+                  <span style={{ marginRight: '0.5rem', color: '#00D4AA' }}>✓</span>
+                  <span>Curated documentation links</span>
+                </li>
+                <li style={{ display: 'flex', alignItems: 'start', marginBottom: '0.75rem', color: '#4b5563', fontSize: '0.875rem' }}>
+                  <span style={{ marginRight: '0.5rem', color: '#00D4AA' }}>✓</span>
+                  <span>Best practices and guidelines</span>
+                </li>
+                <li style={{ display: 'flex', alignItems: 'start', color: '#4b5563', fontSize: '0.875rem' }}>
+                  <span style={{ marginRight: '0.5rem', color: '#00D4AA' }}>✓</span>
+                  <span>Service-specific deep dives</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div style={{
+            background: 'linear-gradient(135deg, #0A2540 0%, #1A3B5C 100%)',
+            padding: '2rem',
+            borderRadius: '1rem',
+            color: 'white',
+            maxWidth: '800px',
+            margin: '0 auto',
+            textAlign: 'center'
+          }}>
+            <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>⚡</div>
+            <h3 style={{ fontSize: '1.5rem', fontWeight: '700', marginBottom: '1rem' }}>
+              Learn While You Practice
+            </h3>
+            <p style={{ fontSize: '1rem', opacity: 0.9, lineHeight: '1.6', marginBottom: '1.5rem' }}>
+              Traditional study methods have you read everything first, then practice. We flip that around. Practice first, learn what you need exactly when you need it. This approach is proven to improve retention and reduce study time by up to 40%.
+            </p>
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              background: 'rgba(0,212,170,0.2)',
+              padding: '0.75rem 1.5rem',
+              borderRadius: '0.5rem',
+              fontSize: '0.875rem',
+              fontWeight: '600'
+            }}>
+              <span>💡</span> Study smarter with just-in-time learning
+            </div>
           </div>
         </div>
       </section>
