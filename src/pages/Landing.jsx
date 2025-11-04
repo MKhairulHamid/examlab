@@ -3,61 +3,61 @@ import { useNavigate } from 'react-router-dom'
 import useAuthStore from '../stores/authStore'
 import AuthModal from '../components/auth/AuthModal'
 
-// Certification data
+// Certification data - DVA-C02 is available, others coming soon
 const CERTIFICATIONS = {
   aws: [
-    { code: 'CLF-C02', name: 'AWS Cloud Practitioner', examQuestions: 65, practiceQuestions: 195, perSet: 65 },
-    { code: 'DVA-C02', name: 'AWS Developer Associate', examQuestions: 65, practiceQuestions: 195, perSet: 65 },
-    { code: 'SAA-C03', name: 'AWS Solutions Architect Associate', examQuestions: 65, practiceQuestions: 195, perSet: 65 },
-    { code: 'SOA-C02', name: 'AWS SysOps Administrator Associate', examQuestions: 65, practiceQuestions: 195, perSet: 65 },
-    { code: 'SAP-C02', name: 'AWS Solutions Architect Professional', examQuestions: 75, practiceQuestions: 225, perSet: 75 },
-    { code: 'DOP-C02', name: 'AWS DevOps Engineer Professional', examQuestions: 75, practiceQuestions: 225, perSet: 75 },
-    { code: 'ANS-C01', name: 'AWS Advanced Networking', examQuestions: 65, practiceQuestions: 195, perSet: 65 },
+    { code: 'DVA-C02', name: 'AWS Developer Associate', examQuestions: 65, practiceQuestions: 195, perSet: 65, available: true },
+    { code: 'CLF-C02', name: 'AWS Cloud Practitioner', examQuestions: 65, practiceQuestions: 195, perSet: 65, available: false },
+    { code: 'SAA-C03', name: 'AWS Solutions Architect Associate', examQuestions: 65, practiceQuestions: 195, perSet: 65, available: false },
+    { code: 'SOA-C02', name: 'AWS SysOps Administrator Associate', examQuestions: 65, practiceQuestions: 195, perSet: 65, available: false },
+    { code: 'SAP-C02', name: 'AWS Solutions Architect Professional', examQuestions: 75, practiceQuestions: 225, perSet: 75, available: false },
+    { code: 'DOP-C02', name: 'AWS DevOps Engineer Professional', examQuestions: 75, practiceQuestions: 225, perSet: 75, available: false },
+    { code: 'ANS-C01', name: 'AWS Advanced Networking', examQuestions: 65, practiceQuestions: 195, perSet: 65, available: false },
   ],
   azure: [
-    { code: 'AZ-900', name: 'Azure Fundamentals', examQuestions: '40-60', practiceQuestions: 150, perSet: 50 },
-    { code: 'AZ-104', name: 'Azure Administrator', examQuestions: '40-60', practiceQuestions: 150, perSet: 50 },
-    { code: 'AZ-204', name: 'Azure Developer Associate', examQuestions: '40-60', practiceQuestions: 150, perSet: 50 },
-    { code: 'AZ-305', name: 'Azure Solutions Architect Expert', examQuestions: '40-60', practiceQuestions: 150, perSet: 50 },
-    { code: 'AZ-400', name: 'Azure DevOps Engineer Expert', examQuestions: '40-60', practiceQuestions: 150, perSet: 50 },
-    { code: 'AZ-500', name: 'Azure Security Engineer Associate', examQuestions: '40-60', practiceQuestions: 150, perSet: 50 },
-    { code: 'AZ-700', name: 'Azure Network Engineer Associate', examQuestions: '40-60', practiceQuestions: 150, perSet: 50 },
+    { code: 'AZ-900', name: 'Azure Fundamentals', examQuestions: '40-60', practiceQuestions: 150, perSet: 50, available: false },
+    { code: 'AZ-104', name: 'Azure Administrator', examQuestions: '40-60', practiceQuestions: 150, perSet: 50, available: false },
+    { code: 'AZ-204', name: 'Azure Developer Associate', examQuestions: '40-60', practiceQuestions: 150, perSet: 50, available: false },
+    { code: 'AZ-305', name: 'Azure Solutions Architect Expert', examQuestions: '40-60', practiceQuestions: 150, perSet: 50, available: false },
+    { code: 'AZ-400', name: 'Azure DevOps Engineer Expert', examQuestions: '40-60', practiceQuestions: 150, perSet: 50, available: false },
+    { code: 'AZ-500', name: 'Azure Security Engineer Associate', examQuestions: '40-60', practiceQuestions: 150, perSet: 50, available: false },
+    { code: 'AZ-700', name: 'Azure Network Engineer Associate', examQuestions: '40-60', practiceQuestions: 150, perSet: 50, available: false },
   ],
   gcp: [
-    { code: 'GCP-ACE', name: 'GCP Associate Cloud Engineer', examQuestions: 50, practiceQuestions: 150, perSet: 50 },
-    { code: 'GCP-PCA', name: 'GCP Professional Cloud Architect', examQuestions: '50-60', practiceQuestions: 165, perSet: 55 },
-    { code: 'GCP-PDE', name: 'GCP Professional Data Engineer', examQuestions: '50-60', practiceQuestions: 165, perSet: 55 },
-    { code: 'GCP-PCD', name: 'GCP Professional Cloud Developer', examQuestions: '50-60', practiceQuestions: 165, perSet: 55 },
-    { code: 'GCP-PCNE', name: 'GCP Professional Cloud Network Engineer', examQuestions: '50-60', practiceQuestions: 165, perSet: 55 },
-    { code: 'GCP-PCSE', name: 'GCP Professional Cloud Security Engineer', examQuestions: '50-60', practiceQuestions: 165, perSet: 55 },
-    { code: 'GCP-PCDO', name: 'GCP Professional Cloud DevOps Engineer', examQuestions: '50-60', practiceQuestions: 165, perSet: 55 },
+    { code: 'GCP-ACE', name: 'GCP Associate Cloud Engineer', examQuestions: 50, practiceQuestions: 150, perSet: 50, available: false },
+    { code: 'GCP-PCA', name: 'GCP Professional Cloud Architect', examQuestions: '50-60', practiceQuestions: 165, perSet: 55, available: false },
+    { code: 'GCP-PDE', name: 'GCP Professional Data Engineer', examQuestions: '50-60', practiceQuestions: 165, perSet: 55, available: false },
+    { code: 'GCP-PCD', name: 'GCP Professional Cloud Developer', examQuestions: '50-60', practiceQuestions: 165, perSet: 55, available: false },
+    { code: 'GCP-PCNE', name: 'GCP Professional Cloud Network Engineer', examQuestions: '50-60', practiceQuestions: 165, perSet: 55, available: false },
+    { code: 'GCP-PCSE', name: 'GCP Professional Cloud Security Engineer', examQuestions: '50-60', practiceQuestions: 165, perSet: 55, available: false },
+    { code: 'GCP-PCDO', name: 'GCP Professional Cloud DevOps Engineer', examQuestions: '50-60', practiceQuestions: 165, perSet: 55, available: false },
   ]
 }
 
 const FAQ_ITEMS = [
   {
-    question: 'Why do different certifications have different question counts?',
-    answer: 'Each cloud provider structures their exams differently. We match the actual exam format for each certification, so you practice with the same number and style of questions you\'ll see on test day.'
+    question: 'How does the subscription work?',
+    answer: 'Choose from monthly ($5), quarterly ($10), or annual ($30) plans. Your subscription gives you unlimited access to all available practice questions and features. Cancel anytime with no commitment.'
   },
   {
-    question: 'Can I purchase sets individually?',
-    answer: 'Yes! You can buy one set for $5 to try it out, then add more sets anytime. Or save $5 by getting all 3 sets in a bundle for $10.'
+    question: 'What\'s included in my subscription?',
+    answer: 'Full access to all 195 AWS Developer Associate practice questions (3 complete sets of 65 questions), detailed explanations, documentation references, progress tracking, and all platform features.'
   },
   {
-    question: 'What\'s included in the free sample?',
-    answer: '10 questions with full explanations, documentation references, and the same quality as our paid sets. Available for every certification with no credit card required.'
+    question: 'Can I try before subscribing?',
+    answer: 'Yes! Start with 10 free sample questions with full explanations and documentation references. No credit card required to try the free sample.'
   },
   {
     question: 'How do your questions compare to the actual exam?',
-    answer: 'Our questions match the format, difficulty, and style of real certification exams. They\'re original practice questions (not actual exam questions) designed to prepare you thoroughly.'
+    answer: 'Our questions match the format, difficulty, and style of the real AWS Developer Associate certification exam. They\'re original practice questions designed to prepare you thoroughly for test day.'
   },
   {
-    question: 'Do purchased sets expire?',
-    answer: 'No! Once you purchase a question set, you have lifetime access. Practice as many times as you want, whenever you want.'
+    question: 'What certifications are available?',
+    answer: 'AWS Developer Associate (DVA-C02) is currently available with 195 practice questions. We\'re actively developing content for 20+ additional certifications across AWS, Azure, and GCP - coming soon!'
   },
   {
-    question: 'Can I switch between certifications?',
-    answer: 'Yes! Each certification is purchased separately, and you can access all your purchased sets from your dashboard anytime.'
+    question: 'Can I cancel my subscription?',
+    answer: 'Yes! You can cancel anytime with no penalties or commitments. Your access continues until the end of your current billing period.'
   }
 ]
 
@@ -70,6 +70,8 @@ function Landing() {
   const [searchTerm, setSearchTerm] = useState('')
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' })
   const [expandedFAQ, setExpandedFAQ] = useState(null)
+  const [demoStep, setDemoStep] = useState(0)
+  const [demoSelectedAnswer, setDemoSelectedAnswer] = useState(null)
   
   // Redirect if already logged in (but not if processing auth tokens)
   useEffect(() => {
@@ -129,15 +131,15 @@ function Landing() {
         
         <div className="hero-content">
           <div className="hero-badge">
-            ☁️ Multi-Cloud Certification Practice
+            🚀 Now Available: AWS Developer Associate
           </div>
           
           <h1 className="hero-title">
-            Practice Questions for AWS, Azure & GCP Certifications
+            Master AWS Developer Associate Certification
           </h1>
           
           <p className="hero-description">
-            Exam-realistic question sets for 21 cloud certifications. Master your certification with practice questions that mirror actual exam format and difficulty.
+            195 exam-realistic practice questions for AWS Developer Associate (DVA-C02). Unlimited access with detailed explanations, progress tracking, and more. Start with 10 free questions!
           </p>
           
           <div className="hero-buttons">
@@ -148,14 +150,14 @@ function Landing() {
               Try 10 Free Questions →
             </button>
             <button
-              onClick={() => scrollToSection('certifications')}
+              onClick={() => scrollToSection('how-it-works-demo')}
               className="btn-secondary"
             >
-              Browse Certifications
+              See How It Works
             </button>
           </div>
 
-          {/* Cloud Provider Badges */}
+          {/* Subscription Info */}
           <div style={{ 
             display: 'flex', 
             gap: '1rem', 
@@ -170,7 +172,7 @@ function Landing() {
               color: 'white',
               fontSize: '0.875rem',
               fontWeight: '600'
-            }}>🔶 AWS (7 certs)</div>
+            }}>💰 From $5/month</div>
             <div style={{ 
               padding: '0.5rem 1rem', 
               background: 'rgba(255,255,255,0.1)', 
@@ -178,7 +180,7 @@ function Landing() {
               color: 'white',
               fontSize: '0.875rem',
               fontWeight: '600'
-            }}>☁️ Azure (7 certs)</div>
+            }}>📚 195 Questions</div>
             <div style={{ 
               padding: '0.5rem 1rem', 
               background: 'rgba(255,255,255,0.1)', 
@@ -186,7 +188,7 @@ function Landing() {
               color: 'white',
               fontSize: '0.875rem',
               fontWeight: '600'
-            }}>🔷 GCP (7 certs)</div>
+            }}>🔄 Cancel Anytime</div>
           </div>
         </div>
       </section>
@@ -196,13 +198,13 @@ function Landing() {
         <div style={{ maxWidth: '72rem', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
             <div style={{ color: '#00D4AA', fontSize: '0.875rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.025em', marginBottom: '0.75rem' }}>
-              21 CERTIFICATIONS AVAILABLE
+              AVAILABLE NOW + 20 MORE COMING SOON
             </div>
             <h2 style={{ fontSize: '2rem', fontWeight: '700', color: '#0A2540', marginBottom: '1rem', lineHeight: '1.3' }}>
-              Choose Your Certification Path
+              Your Certification Journey Starts Here
             </h2>
             <p style={{ color: '#6b7280', fontSize: '1rem', maxWidth: '42rem', margin: '0 auto 2rem' }}>
-              Practice with exam-realistic questions for AWS, Azure, and GCP certifications
+              Start with AWS Developer Associate today. More certifications launching soon across AWS, Azure, and GCP!
             </p>
           </div>
 
@@ -245,20 +247,56 @@ function Landing() {
                   padding: '1.5rem',
                   borderRadius: '1rem',
                   boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
-                  border: '1px solid #e5e7eb',
+                  border: cert.available ? '2px solid #00D4AA' : '1px solid #e5e7eb',
                   transition: 'all 0.3s',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  position: 'relative',
+                  opacity: cert.available ? 1 : 0.75
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)'
-                  e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0,0,0,0.1)'
+                  if (cert.available) {
+                    e.currentTarget.style.transform = 'translateY(-4px)'
+                    e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0,212,170,0.3)'
+                  }
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'translateY(0)'
-                  e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.1)'
+                  e.currentTarget.style.boxShadow = cert.available ? '0 4px 6px -1px rgba(0,212,170,0.2)' : '0 4px 6px -1px rgba(0,0,0,0.1)'
                 }}
               >
-                <div style={{ marginBottom: '1rem' }}>
+                {cert.available && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '-10px',
+                    right: '10px',
+                    background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
+                    color: 'white',
+                    padding: '0.25rem 0.75rem',
+                    borderRadius: '1rem',
+                    fontSize: '0.75rem',
+                    fontWeight: '700',
+                    boxShadow: '0 2px 8px rgba(0,212,170,0.3)'
+                  }}>
+                    ✨ AVAILABLE NOW
+                  </div>
+                )}
+                {!cert.available && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '-10px',
+                    right: '10px',
+                    background: '#6b7280',
+                    color: 'white',
+                    padding: '0.25rem 0.75rem',
+                    borderRadius: '1rem',
+                    fontSize: '0.75rem',
+                    fontWeight: '700'
+                  }}>
+                    🚧 COMING SOON
+                  </div>
+                )}
+                
+                <div style={{ marginBottom: '1rem', marginTop: cert.available || !cert.available ? '0.5rem' : '0' }}>
                   <div style={{ color: '#6b7280', fontSize: '0.75rem', fontWeight: '600', marginBottom: '0.5rem' }}>
                     {cert.code}
                   </div>
@@ -277,29 +315,32 @@ function Landing() {
                 </div>
 
                 <button
-                  onClick={() => setShowAuthModal(true)}
+                  onClick={() => cert.available ? setShowAuthModal(true) : null}
+                  disabled={!cert.available}
                   style={{
                     width: '100%',
                     padding: '0.75rem',
-                    background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
-                    color: 'white',
+                    background: cert.available ? 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)' : '#e5e7eb',
+                    color: cert.available ? 'white' : '#9ca3af',
                     border: 'none',
                     borderRadius: '0.5rem',
                     fontWeight: '600',
-                    cursor: 'pointer',
+                    cursor: cert.available ? 'pointer' : 'not-allowed',
                     transition: 'all 0.2s',
                     fontSize: '0.875rem'
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-2px)'
-                    e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)'
+                    if (cert.available) {
+                      e.currentTarget.style.transform = 'translateY(-2px)'
+                      e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)'
+                    }
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.transform = 'translateY(0)'
                     e.currentTarget.style.boxShadow = 'none'
                   }}
                 >
-                  Try 10 Free Questions
+                  {cert.available ? 'Try 10 Free Questions' : 'Notify Me When Available'}
                 </button>
               </div>
             ))}
@@ -313,10 +354,10 @@ function Landing() {
           <div style={{ display: 'grid', gap: '2rem', gridTemplateColumns: '1fr', alignItems: 'center' }}>
             <div style={{ textAlign: 'center' }}>
               <h2 style={{ fontSize: '2rem', fontWeight: '700', color: '#0A2540', marginBottom: '1rem' }}>
-                Start with 10 Free Practice Questions
+                Try 10 Free AWS Developer Associate Questions
               </h2>
               <p style={{ fontSize: '1.125rem', color: '#4b5563', marginBottom: '1.5rem' }}>
-                Available for <strong>every certification</strong> • No credit card required
+                Experience the full quality before subscribing • No credit card required
               </p>
               
               <div style={{ 
@@ -330,7 +371,7 @@ function Landing() {
                 margin: '0 auto 1.5rem'
               }}>
                 <div style={{ fontSize: '0.875rem', color: '#00D4AA', fontWeight: '600', marginBottom: '1rem' }}>
-                  SAMPLE QUESTION PREVIEW
+                  WHAT'S INCLUDED IN FREE SAMPLE
                 </div>
                 <div style={{ fontSize: '1rem', fontWeight: '600', color: '#0A2540', marginBottom: '1rem' }}>
                   Each question includes:
@@ -338,21 +379,32 @@ function Landing() {
                 <ul style={{ listStyle: 'none', padding: 0 }}>
                   <li style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'start' }}>
                     <span style={{ marginRight: '0.5rem' }}>✓</span>
-                    <span style={{ color: '#4b5563' }}>Real-world scenario description</span>
+                    <span style={{ color: '#4b5563' }}>Real-world AWS development scenarios</span>
                   </li>
                   <li style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'start' }}>
                     <span style={{ marginRight: '0.5rem' }}>✓</span>
-                    <span style={{ color: '#4b5563' }}>Multiple choice options</span>
+                    <span style={{ color: '#4b5563' }}>Exam-realistic multiple choice format</span>
                   </li>
                   <li style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'start' }}>
                     <span style={{ marginRight: '0.5rem' }}>✓</span>
-                    <span style={{ color: '#4b5563' }}>Detailed explanations for all answers</span>
+                    <span style={{ color: '#4b5563' }}>Detailed explanations for correct & incorrect answers</span>
                   </li>
                   <li style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'start' }}>
                     <span style={{ marginRight: '0.5rem' }}>✓</span>
-                    <span style={{ color: '#4b5563' }}>Official documentation references</span>
+                    <span style={{ color: '#4b5563' }}>Links to official AWS documentation</span>
                   </li>
                 </ul>
+                <div style={{ 
+                  marginTop: '1.5rem', 
+                  padding: '1rem', 
+                  background: '#f9fafb', 
+                  borderRadius: '0.5rem',
+                  borderLeft: '4px solid #00D4AA'
+                }}>
+                  <p style={{ fontSize: '0.875rem', color: '#4b5563', margin: 0 }}>
+                    <strong>After trying the free sample,</strong> subscribe for unlimited access to all 195 questions across 3 complete practice sets.
+                  </p>
+                </div>
               </div>
 
               <button
@@ -369,7 +421,7 @@ function Landing() {
                   boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
                 }}
               >
-                Create Free Account to Access
+                Start Free Trial →
               </button>
             </div>
           </div>
@@ -445,14 +497,14 @@ function Landing() {
         <div style={{ maxWidth: '72rem', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
             <h2 style={{ fontSize: '2rem', fontWeight: '700', color: 'white', marginBottom: '1rem' }}>
-              Simple, Transparent Pricing
+              Simple, Flexible Subscription Plans
             </h2>
             <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: '1rem' }}>
-              One-time payment • Lifetime access • No subscription
+              Unlimited access to all 195 practice questions • Cancel anytime
             </p>
           </div>
 
-          <div style={{ display: 'grid', gap: '2rem', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', maxWidth: '900px', margin: '0 auto' }}>
+          <div style={{ display: 'grid', gap: '2rem', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', maxWidth: '1000px', margin: '0 auto' }}>
             <div style={{ 
               background: 'rgba(255,255,255,0.1)', 
               backdropFilter: 'blur(20px)',
@@ -469,17 +521,17 @@ function Landing() {
                 $0
               </div>
               <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
-                10 questions per certification
+                Try before you subscribe
               </p>
               <ul style={{ listStyle: 'none', padding: 0, marginBottom: '1.5rem', textAlign: 'left' }}>
+                <li style={{ color: 'rgba(255,255,255,0.9)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center' }}>
+                  <span style={{ marginRight: '0.5rem' }}>✓</span> 10 sample questions
+                </li>
                 <li style={{ color: 'rgba(255,255,255,0.9)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center' }}>
                   <span style={{ marginRight: '0.5rem' }}>✓</span> Full explanations
                 </li>
                 <li style={{ color: 'rgba(255,255,255,0.9)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center' }}>
-                  <span style={{ marginRight: '0.5rem' }}>✓</span> Documentation links
-                </li>
-                <li style={{ color: 'rgba(255,255,255,0.9)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center' }}>
-                  <span style={{ marginRight: '0.5rem' }}>✓</span> All certifications
+                  <span style={{ marginRight: '0.5rem' }}>✓</span> No credit card required
                 </li>
               </ul>
               <button
@@ -497,6 +549,100 @@ function Landing() {
                 }}
               >
                 Start Free
+              </button>
+            </div>
+
+            <div style={{ 
+              background: 'rgba(255,255,255,0.1)', 
+              backdropFilter: 'blur(20px)',
+              padding: '2rem', 
+              borderRadius: '1rem',
+              border: '1px solid rgba(255,255,255,0.2)',
+              textAlign: 'center'
+            }}>
+              <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>📅</div>
+              <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: 'white', marginBottom: '0.5rem' }}>
+                Monthly
+              </h3>
+              <div style={{ fontSize: '3rem', fontWeight: '700', color: '#00D4AA', marginBottom: '0.5rem' }}>
+                $5
+              </div>
+              <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
+                Per month • Billed monthly
+              </p>
+              <ul style={{ listStyle: 'none', padding: 0, marginBottom: '1.5rem', textAlign: 'left' }}>
+                <li style={{ color: 'rgba(255,255,255,0.9)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center' }}>
+                  <span style={{ marginRight: '0.5rem' }}>✓</span> All 195 questions
+                </li>
+                <li style={{ color: 'rgba(255,255,255,0.9)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center' }}>
+                  <span style={{ marginRight: '0.5rem' }}>✓</span> Unlimited practice
+                </li>
+                <li style={{ color: 'rgba(255,255,255,0.9)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center' }}>
+                  <span style={{ marginRight: '0.5rem' }}>✓</span> Cancel anytime
+                </li>
+              </ul>
+              <button
+                onClick={() => setShowAuthModal(true)}
+                style={{
+                  width: '100%',
+                  padding: '0.875rem',
+                  background: 'rgba(255,255,255,0.2)',
+                  color: 'white',
+                  border: '2px solid rgba(255,255,255,0.3)',
+                  borderRadius: '0.75rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  fontSize: '1rem'
+                }}
+              >
+                Get Started
+              </button>
+            </div>
+
+            <div style={{ 
+              background: 'rgba(255,255,255,0.1)', 
+              backdropFilter: 'blur(20px)',
+              padding: '2rem', 
+              borderRadius: '1rem',
+              border: '1px solid rgba(255,255,255,0.2)',
+              textAlign: 'center'
+            }}>
+              <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>📆</div>
+              <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: 'white', marginBottom: '0.5rem' }}>
+                Quarterly
+              </h3>
+              <div style={{ fontSize: '3rem', fontWeight: '700', color: '#00D4AA', marginBottom: '0.5rem' }}>
+                $10
+              </div>
+              <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
+                3 months • Save $5
+              </p>
+              <ul style={{ listStyle: 'none', padding: 0, marginBottom: '1.5rem', textAlign: 'left' }}>
+                <li style={{ color: 'rgba(255,255,255,0.9)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center' }}>
+                  <span style={{ marginRight: '0.5rem' }}>✓</span> All 195 questions
+                </li>
+                <li style={{ color: 'rgba(255,255,255,0.9)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center' }}>
+                  <span style={{ marginRight: '0.5rem' }}>✓</span> Unlimited practice
+                </li>
+                <li style={{ color: 'rgba(255,255,255,0.9)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center' }}>
+                  <span style={{ marginRight: '0.5rem' }}>✓</span> Cancel anytime
+                </li>
+              </ul>
+              <button
+                onClick={() => setShowAuthModal(true)}
+                style={{
+                  width: '100%',
+                  padding: '0.875rem',
+                  background: 'rgba(255,255,255,0.2)',
+                  color: 'white',
+                  border: '2px solid rgba(255,255,255,0.3)',
+                  borderRadius: '0.75rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  fontSize: '1rem'
+                }}
+              >
+                Get Started
               </button>
             </div>
 
@@ -525,23 +671,23 @@ function Landing() {
               </div>
               <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>🎓</div>
               <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: 'white', marginBottom: '0.5rem' }}>
-                3-Set Bundle
+                Annual
               </h3>
               <div style={{ fontSize: '3rem', fontWeight: '700', color: '#00D4AA', marginBottom: '0.5rem' }}>
-                $10
+                $30
               </div>
               <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
-                Save $5 • All 3 question sets
+                12 months • Save $30
               </p>
               <ul style={{ listStyle: 'none', padding: 0, marginBottom: '1.5rem', textAlign: 'left' }}>
                 <li style={{ color: 'rgba(255,255,255,0.9)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center' }}>
-                  <span style={{ marginRight: '0.5rem' }}>✓</span> 3 complete question sets
+                  <span style={{ marginRight: '0.5rem' }}>✓</span> All 195 questions
                 </li>
                 <li style={{ color: 'rgba(255,255,255,0.9)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center' }}>
-                  <span style={{ marginRight: '0.5rem' }}>✓</span> Full exam simulation
+                  <span style={{ marginRight: '0.5rem' }}>✓</span> Unlimited practice
                 </li>
                 <li style={{ color: 'rgba(255,255,255,0.9)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center' }}>
-                  <span style={{ marginRight: '0.5rem' }}>✓</span> Lifetime access
+                  <span style={{ marginRight: '0.5rem' }}>✓</span> Cancel anytime
                 </li>
               </ul>
               <button
@@ -559,85 +705,340 @@ function Landing() {
                   boxShadow: '0 4px 12px rgba(0,212,170,0.3)'
                 }}
               >
-                Get Bundle
-              </button>
-            </div>
-
-            <div style={{ 
-              background: 'rgba(255,255,255,0.1)', 
-              backdropFilter: 'blur(20px)',
-              padding: '2rem', 
-              borderRadius: '1rem',
-              border: '1px solid rgba(255,255,255,0.2)',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>📝</div>
-              <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: 'white', marginBottom: '0.5rem' }}>
-                Single Set
-              </h3>
-              <div style={{ fontSize: '3rem', fontWeight: '700', color: '#00D4AA', marginBottom: '0.5rem' }}>
-                $5
-              </div>
-              <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
-                Per question set
-              </p>
-              <ul style={{ listStyle: 'none', padding: 0, marginBottom: '1.5rem', textAlign: 'left' }}>
-                <li style={{ color: 'rgba(255,255,255,0.9)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center' }}>
-                  <span style={{ marginRight: '0.5rem' }}>✓</span> One complete set
-                </li>
-                <li style={{ color: 'rgba(255,255,255,0.9)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center' }}>
-                  <span style={{ marginRight: '0.5rem' }}>✓</span> Add more anytime
-                </li>
-                <li style={{ color: 'rgba(255,255,255,0.9)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center' }}>
-                  <span style={{ marginRight: '0.5rem' }}>✓</span> Lifetime access
-                </li>
-              </ul>
-              <button
-                onClick={() => setShowAuthModal(true)}
-                style={{
-                  width: '100%',
-                  padding: '0.875rem',
-                  background: 'rgba(255,255,255,0.2)',
-                  color: 'white',
-                  border: '2px solid rgba(255,255,255,0.3)',
-                  borderRadius: '0.75rem',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  fontSize: '1rem'
-                }}
-              >
-                Buy One Set
+                Get Started
               </button>
             </div>
           </div>
 
           <div style={{ textAlign: 'center', marginTop: '2rem' }}>
             <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.875rem' }}>
-              * Question counts vary by certification.{' '}
-              <button
-                onClick={() => scrollToSection('breakdown')}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#00D4AA',
-                  textDecoration: 'underline',
-                  cursor: 'pointer',
-                  fontSize: '0.875rem'
-                }}
-              >
-                See full breakdown
-              </button>
+              All plans include full access to AWS Developer Associate (DVA-C02) with 195 practice questions
             </p>
           </div>
         </div>
       </section>
 
-      {/* How It Works */}
+      {/* Animated Demo Section - How It Works */}
+      <section id="how-it-works-demo" style={{ padding: '4rem 1rem', background: 'white' }}>
+        <div style={{ maxWidth: '72rem', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+            <div style={{ color: '#00D4AA', fontSize: '0.875rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.025em', marginBottom: '0.75rem' }}>
+              INTERACTIVE DEMO
+            </div>
+            <h2 style={{ fontSize: '2rem', fontWeight: '700', color: '#0A2540', marginBottom: '1rem' }}>
+              Experience the Exam Interface
+            </h2>
+            <p style={{ color: '#6b7280', fontSize: '1rem', maxWidth: '42rem', margin: '0 auto' }}>
+              See exactly how our practice exams work with this interactive demo
+            </p>
+          </div>
+
+          {/* Demo Exam Interface */}
+          <div style={{ 
+            maxWidth: '900px', 
+            margin: '0 auto 3rem',
+            background: '#f9fafb',
+            borderRadius: '1rem',
+            overflow: 'hidden',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+            border: '1px solid #e5e7eb'
+          }}>
+            {/* Demo Header */}
+            <div style={{
+              background: 'linear-gradient(135deg, #0A2540 0%, #1A3B5C 100%)',
+              padding: '1.5rem',
+              color: 'white',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '1rem'
+            }}>
+              <h3 style={{ fontSize: '1.125rem', fontWeight: '600', margin: 0 }}>
+                AWS Developer Associate Practice
+              </h3>
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.5rem',
+                fontSize: '0.875rem',
+                background: 'rgba(255,255,255,0.1)',
+                padding: '0.5rem 1rem',
+                borderRadius: '0.5rem'
+              }}>
+                ⏱️ Time Remaining: 01:30:00
+              </div>
+            </div>
+
+            {/* Time Bar */}
+            <div style={{ 
+              height: '4px', 
+              background: '#e5e7eb',
+              position: 'relative',
+              overflow: 'hidden'
+            }}>
+              <div style={{
+                height: '100%',
+                width: '75%',
+                background: 'linear-gradient(90deg, #00D4AA 0%, #00A884 100%)',
+                transition: 'width 0.5s ease'
+              }}></div>
+            </div>
+
+            {/* Question Navigation */}
+            <div style={{
+              background: 'linear-gradient(135deg, #0A2540 0%, #1A3B5C 100%)',
+              padding: '1rem',
+              borderBottom: '1px solid #e5e7eb'
+            }}>
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '0.75rem',
+                color: 'white',
+                fontSize: '0.875rem'
+              }}>
+                <span>Questions: 1/65</span>
+              </div>
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(auto-fill, minmax(40px, 1fr))',
+                gap: '0.5rem',
+                maxHeight: '120px',
+                overflowY: 'auto'
+              }}>
+                {[...Array(10)].map((_, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      padding: '0.5rem',
+                      background: i === 0 ? '#00D4AA' : 'rgba(255,255,255,0.1)',
+                      color: 'white',
+                      borderRadius: '0.375rem',
+                      textAlign: 'center',
+                      fontSize: '0.875rem',
+                      fontWeight: '600',
+                      border: i === 0 ? '2px solid white' : 'none'
+                    }}
+                  >
+                    {i + 1}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Progress Bar */}
+            <div style={{ padding: '1rem', background: 'white', borderBottom: '1px solid #e5e7eb' }}>
+              <div style={{ 
+                height: '8px', 
+                background: '#e5e7eb',
+                borderRadius: '1rem',
+                overflow: 'hidden',
+                marginBottom: '0.5rem'
+              }}>
+                <div style={{
+                  height: '100%',
+                  width: '15%',
+                  background: 'linear-gradient(90deg, #00D4AA 0%, #00A884 100%)',
+                  transition: 'width 0.5s ease'
+                }}></div>
+              </div>
+              <p style={{ fontSize: '0.875rem', color: '#6b7280', textAlign: 'center', margin: 0 }}>
+                1 of 65 questions answered
+              </p>
+            </div>
+
+            {/* Question Content */}
+            <div style={{ padding: '2rem', background: 'white' }}>
+              <div style={{
+                background: '#f9fafb',
+                padding: '1.5rem',
+                borderRadius: '0.75rem',
+                border: '2px solid #e5e7eb',
+                marginBottom: '1.5rem'
+              }}>
+                <div style={{
+                  display: 'inline-block',
+                  background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
+                  color: 'white',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '0.5rem',
+                  fontSize: '0.75rem',
+                  fontWeight: '600',
+                  marginBottom: '1rem'
+                }}>
+                  Question 1 • ⭕ Multiple Choice (select one)
+                </div>
+                <p style={{ 
+                  fontSize: '1rem', 
+                  color: '#0A2540', 
+                  lineHeight: '1.6',
+                  margin: 0,
+                  fontWeight: '500'
+                }}>
+                  A developer is building a serverless application using AWS Lambda. The application needs to process images uploaded to an S3 bucket. Which AWS service should be used to trigger the Lambda function when a new image is uploaded?
+                </p>
+              </div>
+
+              {/* Answer Options */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {[
+                  'Amazon CloudWatch Events',
+                  'Amazon S3 Event Notifications',
+                  'Amazon SNS',
+                  'AWS Step Functions'
+                ].map((option, index) => (
+                  <div
+                    key={index}
+                    onClick={() => setDemoSelectedAnswer(index)}
+                    style={{
+                      padding: '1rem 1.25rem',
+                      background: demoSelectedAnswer === index ? 'linear-gradient(135deg, #00D4AA15 0%, #00A88415 100%)' : 'white',
+                      border: demoSelectedAnswer === index ? '2px solid #00D4AA' : '2px solid #e5e7eb',
+                      borderRadius: '0.75rem',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '1rem'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (demoSelectedAnswer !== index) {
+                        e.currentTarget.style.borderColor = '#00D4AA'
+                        e.currentTarget.style.transform = 'translateX(4px)'
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (demoSelectedAnswer !== index) {
+                        e.currentTarget.style.borderColor = '#e5e7eb'
+                        e.currentTarget.style.transform = 'translateX(0)'
+                      }
+                    }}
+                  >
+                    <div style={{
+                      width: '24px',
+                      height: '24px',
+                      borderRadius: '50%',
+                      border: demoSelectedAnswer === index ? '2px solid #00D4AA' : '2px solid #d1d5db',
+                      background: demoSelectedAnswer === index ? '#00D4AA' : 'white',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                      transition: 'all 0.2s'
+                    }}>
+                      {demoSelectedAnswer === index && (
+                        <span style={{ color: 'white', fontSize: '0.875rem' }}>✓</span>
+                      )}
+                    </div>
+                    <span style={{ 
+                      color: '#0A2540',
+                      fontSize: '0.95rem',
+                      fontWeight: demoSelectedAnswer === index ? '600' : '400'
+                    }}>
+                      {option}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Navigation Buttons */}
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between',
+                marginTop: '2rem',
+                gap: '1rem',
+                flexWrap: 'wrap'
+              }}>
+                <button
+                  style={{
+                    padding: '0.875rem 1.5rem',
+                    background: '#e5e7eb',
+                    color: '#6b7280',
+                    border: 'none',
+                    borderRadius: '0.5rem',
+                    fontWeight: '600',
+                    cursor: 'not-allowed',
+                    fontSize: '0.95rem',
+                    opacity: 0.5
+                  }}
+                  disabled
+                >
+                  ← Previous
+                </button>
+                <button
+                  style={{
+                    padding: '0.875rem 1.5rem',
+                    background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '0.5rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    fontSize: '0.95rem',
+                    boxShadow: '0 4px 12px rgba(0,212,170,0.3)'
+                  }}
+                >
+                  Next →
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Feature Highlights Below Demo */}
+          <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', marginTop: '3rem' }}>
+            {[
+              {
+                icon: '⏱️',
+                title: 'Timed Practice',
+                description: 'Realistic exam timer to simulate actual test conditions'
+              },
+              {
+                icon: '📊',
+                title: 'Progress Tracking',
+                description: 'Visual indicators show which questions you\'ve answered'
+              },
+              {
+                icon: '💡',
+                title: 'Instant Feedback',
+                description: 'Get detailed explanations after completing each set'
+              },
+              {
+                icon: '🔄',
+                title: 'Resume Anytime',
+                description: 'Your progress is automatically saved - pick up where you left off'
+              }
+            ].map((feature, index) => (
+              <div 
+                key={index}
+                style={{
+                  padding: '1.5rem',
+                  background: '#f9fafb',
+                  borderRadius: '0.75rem',
+                  textAlign: 'center',
+                  border: '1px solid #e5e7eb'
+                }}
+              >
+                <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>{feature.icon}</div>
+                <h3 style={{ fontSize: '1.125rem', fontWeight: '700', color: '#0A2540', marginBottom: '0.5rem' }}>
+                  {feature.title}
+                </h3>
+                <p style={{ color: '#6b7280', fontSize: '0.875rem', lineHeight: '1.5' }}>
+                  {feature.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works Steps */}
       <section style={{ padding: '4rem 1rem', background: '#f9fafb' }}>
         <div style={{ maxWidth: '72rem', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
             <h2 style={{ fontSize: '2rem', fontWeight: '700', color: '#0A2540', marginBottom: '1rem' }}>
-              How It Works
+              Get Started in 3 Easy Steps
             </h2>
           </div>
 
@@ -645,23 +1046,18 @@ function Landing() {
             {[
               {
                 step: '1',
-                title: 'Create Account & Try Free',
-                description: 'Sign up and access 10 free questions for any certification. No credit card needed.'
+                title: 'Create Free Account',
+                description: 'Sign up in seconds and try 10 free questions. No credit card required.'
               },
               {
                 step: '2',
-                title: 'Choose Certification',
-                description: 'Browse 21 certifications across AWS, Azure, and GCP. Start with one set or get the bundle.'
+                title: 'Choose Your Plan',
+                description: 'Select monthly, quarterly, or annual subscription for unlimited access.'
               },
               {
                 step: '3',
-                title: 'Practice with Explanations',
-                description: 'Work through exam-realistic questions with detailed explanations and documentation links.'
-              },
-              {
-                step: '4',
-                title: 'Track Progress',
-                description: 'Monitor your completion and identify areas needing review with our progress tracking.'
+                title: 'Start Practicing',
+                description: 'Access all 195 questions with detailed explanations and track your progress.'
               }
             ].map((item, index) => (
               <div key={index} style={{ position: 'relative' }}>
@@ -747,14 +1143,35 @@ function Landing() {
       <section style={{ padding: '4rem 1rem', background: '#f9fafb' }}>
         <div style={{ maxWidth: '72rem', margin: '0 auto', textAlign: 'center' }}>
           <h2 style={{ fontSize: '2rem', fontWeight: '700', color: '#0A2540', marginBottom: '1rem' }}>
-            How We Structure Our Question Sets
+            Comprehensive AWS Developer Associate Coverage
           </h2>
           <p style={{ fontSize: '1.125rem', color: '#4b5563', marginBottom: '1rem', lineHeight: '1.6' }}>
-            Question counts match or exceed the length of actual exams. Practice with <strong>3× the exam volume</strong> for thorough preparation.
+            195 practice questions across 3 complete sets - <strong>3× the actual exam volume</strong> for thorough preparation.
           </p>
-          <p style={{ fontSize: '0.875rem', color: '#6b7280' }}>
-            Example: AWS Professional certifications have 75 questions on the actual exam, so each of our 3 practice sets contains 75 questions (225 total).
+          <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '2rem' }}>
+            The actual AWS Developer Associate exam has 65 questions. Each of our 3 practice sets contains 65 questions (195 total).
           </p>
+          
+          {/* Coming Soon Banner */}
+          <div style={{
+            background: 'linear-gradient(135deg, #0A2540 0%, #1A3B5C 100%)',
+            padding: '2rem',
+            borderRadius: '1rem',
+            color: 'white',
+            maxWidth: '600px',
+            margin: '0 auto'
+          }}>
+            <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>🚀</div>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: '700', marginBottom: '0.5rem' }}>
+              More Certifications Coming Soon
+            </h3>
+            <p style={{ fontSize: '0.95rem', opacity: 0.9, marginBottom: '1rem' }}>
+              We're actively developing content for 20+ additional certifications across AWS, Azure, and GCP. Your subscription will automatically include access to new certifications as they launch!
+            </p>
+            <div style={{ fontSize: '0.875rem', opacity: 0.8 }}>
+              Next up: AWS Solutions Architect Associate & AWS Cloud Practitioner
+            </div>
+          </div>
         </div>
       </section>
 
@@ -815,10 +1232,10 @@ function Landing() {
       <section style={{ padding: '5rem 1rem', background: 'linear-gradient(135deg, #0A2540 0%, #1A3B5C 100%)', textAlign: 'center' }}>
         <div style={{ maxWidth: '48rem', margin: '0 auto' }}>
           <h2 style={{ fontSize: '2.5rem', fontWeight: '700', color: 'white', marginBottom: '1rem', lineHeight: '1.2' }}>
-            Begin Your Certification Preparation
+            Start Your AWS Developer Associate Journey
           </h2>
           <p style={{ fontSize: '1.25rem', color: 'rgba(255,255,255,0.9)', marginBottom: '2rem' }}>
-            10 free questions for any certification - no credit card
+            Try 10 free questions - no credit card required
           </p>
           
           <button
@@ -856,7 +1273,7 @@ function Landing() {
               <span>⚡</span> Instant Access
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span>💯</span> Money-Back Guarantee
+              <span>🔄</span> Cancel Anytime
             </div>
           </div>
         </div>
@@ -870,63 +1287,63 @@ function Landing() {
             <div>
               <h3 style={{ color: 'white', fontWeight: '700', marginBottom: '1rem' }}>Cloud Exam Lab</h3>
               <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.875rem', lineHeight: '1.6' }}>
-                Practice questions for AWS, Azure & GCP certifications. Exam-realistic preparation for 21 cloud certifications.
+                Subscription-based practice questions for cloud certifications. Currently featuring AWS Developer Associate with 20+ more certifications coming soon.
               </p>
             </div>
 
-            {/* Quick Links - AWS */}
+            {/* Available Now */}
             <div>
-              <h3 style={{ color: 'white', fontWeight: '700', marginBottom: '1rem', fontSize: '0.875rem' }}>AWS Certifications</h3>
-              <ul style={{ listStyle: 'none', padding: 0 }}>
-                {CERTIFICATIONS.aws.slice(0, 4).map((cert, i) => (
-                  <li key={i} style={{ marginBottom: '0.5rem' }}>
-                    <a 
-                      href="#certifications" 
-                      onClick={(e) => { e.preventDefault(); scrollToSection('certifications'); setExpandedProvider('aws'); }}
-                      style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.875rem', textDecoration: 'none', transition: 'color 0.2s' }}
-                      onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
-                      onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
-                    >
-                      {cert.code}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Quick Links - Azure */}
-            <div>
-              <h3 style={{ color: 'white', fontWeight: '700', marginBottom: '1rem', fontSize: '0.875rem' }}>Azure Certifications</h3>
-              <ul style={{ listStyle: 'none', padding: 0 }}>
-                {CERTIFICATIONS.azure.slice(0, 4).map((cert, i) => (
-                  <li key={i} style={{ marginBottom: '0.5rem' }}>
-                    <a 
-                      href="#certifications" 
-                      onClick={(e) => { e.preventDefault(); scrollToSection('certifications'); setExpandedProvider('azure'); }}
-                      style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.875rem', textDecoration: 'none', transition: 'color 0.2s' }}
-                      onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
-                      onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
-                    >
-                      {cert.code}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Quick Links - GCP & Support */}
-            <div>
-              <h3 style={{ color: 'white', fontWeight: '700', marginBottom: '1rem', fontSize: '0.875rem' }}>GCP & Support</h3>
+              <h3 style={{ color: 'white', fontWeight: '700', marginBottom: '1rem', fontSize: '0.875rem' }}>Available Now</h3>
               <ul style={{ listStyle: 'none', padding: 0 }}>
                 <li style={{ marginBottom: '0.5rem' }}>
                   <a 
                     href="#certifications" 
-                    onClick={(e) => { e.preventDefault(); scrollToSection('certifications'); setExpandedProvider('gcp'); }}
-                    style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.875rem', textDecoration: 'none' }}
+                    onClick={(e) => { e.preventDefault(); scrollToSection('certifications'); setExpandedProvider('aws'); }}
+                    style={{ color: '#00D4AA', fontSize: '0.875rem', textDecoration: 'none', transition: 'color 0.2s', fontWeight: '600' }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = '#00D4AA'}
                   >
-                    View GCP Certs
+                    ✨ AWS Developer Associate (DVA-C02)
                   </a>
                 </li>
+                <li style={{ marginBottom: '0.5rem', color: 'rgba(255,255,255,0.5)', fontSize: '0.875rem' }}>
+                  195 practice questions
+                </li>
+                <li style={{ marginBottom: '0.5rem', color: 'rgba(255,255,255,0.5)', fontSize: '0.875rem' }}>
+                  3 complete exam sets
+                </li>
+              </ul>
+            </div>
+
+            {/* Coming Soon */}
+            <div>
+              <h3 style={{ color: 'white', fontWeight: '700', marginBottom: '1rem', fontSize: '0.875rem' }}>Coming Soon</h3>
+              <ul style={{ listStyle: 'none', padding: 0 }}>
+                <li style={{ marginBottom: '0.5rem', color: 'rgba(255,255,255,0.5)', fontSize: '0.875rem' }}>
+                  🚧 AWS Solutions Architect
+                </li>
+                <li style={{ marginBottom: '0.5rem', color: 'rgba(255,255,255,0.5)', fontSize: '0.875rem' }}>
+                  🚧 AWS Cloud Practitioner
+                </li>
+                <li style={{ marginBottom: '0.5rem', color: 'rgba(255,255,255,0.5)', fontSize: '0.875rem' }}>
+                  🚧 Azure & GCP Certifications
+                </li>
+                <li style={{ marginBottom: '0.5rem' }}>
+                  <a 
+                    href="#certifications" 
+                    onClick={(e) => { e.preventDefault(); scrollToSection('certifications'); }}
+                    style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.875rem', textDecoration: 'none' }}
+                  >
+                    View All →
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            {/* Support & Legal */}
+            <div>
+              <h3 style={{ color: 'white', fontWeight: '700', marginBottom: '1rem', fontSize: '0.875rem' }}>Support & Legal</h3>
+              <ul style={{ listStyle: 'none', padding: 0 }}>
                 <li style={{ marginBottom: '0.5rem' }}>
                   <a href="mailto:support@cloudexamlab.com" style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.875rem', textDecoration: 'none' }}>
                     Contact Support
@@ -940,6 +1357,11 @@ function Landing() {
                 <li style={{ marginBottom: '0.5rem' }}>
                   <a href="#" style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.875rem', textDecoration: 'none' }}>
                     Terms of Service
+                  </a>
+                </li>
+                <li style={{ marginBottom: '0.5rem' }}>
+                  <a href="#" style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.875rem', textDecoration: 'none' }}>
+                    Refund Policy
                   </a>
                 </li>
               </ul>
