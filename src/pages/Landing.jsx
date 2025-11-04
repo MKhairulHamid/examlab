@@ -442,7 +442,13 @@ function Landing() {
             </p>
           </div>
 
-          <div style={{ display: 'grid', gap: '2rem', gridTemplateColumns: 'repeat(3, 1fr)', maxWidth: '1100px', margin: '0 auto' }}>
+          <div style={{ 
+            display: 'grid', 
+            gap: '2rem', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
+            maxWidth: '1100px', 
+            margin: '0 auto' 
+          }}>
             {[
               {
                 icon: '🎯',
@@ -521,7 +527,13 @@ function Landing() {
             </p>
           </div>
 
-          <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(4, 1fr)', maxWidth: '1200px', margin: '0 auto' }}>
+          <div style={{ 
+            display: 'grid', 
+            gap: '1.5rem', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', 
+            maxWidth: '1200px', 
+            margin: '0 auto' 
+          }}>
             <div style={{ 
               background: 'rgba(255,255,255,0.1)', 
               backdropFilter: 'blur(20px)',
@@ -1523,7 +1535,14 @@ function Landing() {
             </p>
           </div>
 
-          <div style={{ display: 'grid', gap: '2rem', gridTemplateColumns: '1fr 1fr', maxWidth: '1100px', margin: '0 auto', marginBottom: '3rem' }}>
+          <div style={{ 
+            display: 'grid', 
+            gap: '2rem', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
+            maxWidth: '1100px', 
+            margin: '0 auto', 
+            marginBottom: '3rem' 
+          }}>
             <div style={{
               background: 'white',
               padding: '2rem',
