@@ -43,6 +43,7 @@ function ExamInterface() {
   const [accessMessage, setAccessMessage] = useState('')
   const [duration, setDuration] = useState(0)
   const [showMaterialsModal, setShowMaterialsModal] = useState(false)
+  const [showScoreModal, setShowScoreModal] = useState(false)
   const [shuffledOptions, setShuffledOptions] = useState({})
   const [navMinimized, setNavMinimized] = useState(false)
   const [showResumeNotification, setShowResumeNotification] = useState(false)
@@ -423,6 +424,80 @@ function ExamInterface() {
     }
   }
 
+  const calculateCurrentScore = () => {
+    let correctCount = 0
+    let answeredQuestionsCount = 0
+    
+    questions.forEach((question, index) => {
+      const userAnswer = answers[index] || []
+      
+      // Only calculate for answered questions
+      if (userAnswer.length === 0) {
+        return
+      }
+      
+      answeredQuestionsCount++
+      const correctAnswers = question.correctAnswers || []
+      
+      // Normalize answers: trim whitespace and sort for comparison
+      const normalizeAnswers = (answers) => {
+        return answers
+          .map(ans => String(ans).trim()) // Convert to string and trim
+          .filter(ans => ans.length > 0)  // Remove empty strings
+          .sort()
+      }
+      
+      const sortedUserAnswer = normalizeAnswers(userAnswer)
+      const sortedCorrectAnswers = normalizeAnswers(correctAnswers)
+      
+      // Check if arrays are equal
+      if (JSON.stringify(sortedUserAnswer) === JSON.stringify(sortedCorrectAnswers)) {
+        correctCount++
+      }
+    })
+    
+    // If no questions answered yet, return 0
+    if (answeredQuestionsCount === 0) {
+      return {
+        correctCount: 0,
+        answeredCount: 0,
+        totalQuestions: questions.length,
+        percentage: 0,
+        scaledScore: 0
+      }
+    }
+    
+    const percentage = Math.round((correctCount / answeredQuestionsCount) * 100)
+    
+    // Get max score from exam type (default to 1000)
+    const maxScore = currentQuestionSet.exam_types?.max_score || 1000
+    
+    // Check if this is a free sample
+    const isFree = currentQuestionSet.is_free_sample || currentQuestionSet.price_cents === 0
+    
+    let scaledScore
+    if (isFree && currentQuestionSet.question_count) {
+      // For free samples, scale the score proportionally
+      const totalQuestions = currentQuestionSet.exam_types?.total_questions || 65
+      const sampleQuestions = currentQuestionSet.question_count
+      
+      // Calculate score based on answered questions
+      scaledScore = Math.round((correctCount / answeredQuestionsCount) * (sampleQuestions / totalQuestions) * maxScore)
+      
+    } else {
+      // Regular scoring: scale to max_score (default 1000)
+      scaledScore = Math.round((correctCount / answeredQuestionsCount) * maxScore)
+    }
+    
+    return {
+      correctCount,
+      answeredCount: answeredQuestionsCount,
+      totalQuestions: questions.length,
+      percentage,
+      scaledScore
+    }
+  }
+
   const calculateResults = () => {
     let correctCount = 0
     
@@ -611,12 +686,23 @@ function ExamInterface() {
           {answeredCount} of {questions.length} questions answered
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '0.75rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
           <button
             onClick={() => setShowMaterialsModal(true)}
             className="materials-button"
           >
             📚 Study Materials
+          </button>
+          <button
+            onClick={() => setShowScoreModal(true)}
+            className="materials-button"
+            style={{
+              background: 'rgba(59, 130, 246, 0.2)',
+              color: '#3b82f6',
+              borderColor: '#3b82f6'
+            }}
+          >
+            📊 Current Score
           </button>
         </div>
 
@@ -761,6 +847,118 @@ function ExamInterface() {
           </div>
         </div>
       )}
+
+      {/* Current Score Modal */}
+      {showScoreModal && (() => {
+        const currentScore = calculateCurrentScore()
+        return (
+          <div className="modal-overlay" onClick={() => setShowScoreModal(false)}>
+            <div className="modal-content materials-modal" onClick={(e) => e.stopPropagation()}>
+              <button className="modal-close" onClick={() => setShowScoreModal(false)}>
+                ×
+              </button>
+              <div className="modal-header">
+                <h2 className="modal-title">📊 Current Score</h2>
+                <p className="modal-description">
+                  Based on {currentScore.answeredCount} answered question{currentScore.answeredCount !== 1 ? 's' : ''}
+                </p>
+              </div>
+              <div className="materials-content">
+                {currentScore.answeredCount === 0 ? (
+                  <div style={{
+                    textAlign: 'center',
+                    padding: '2rem',
+                    color: '#6b7280'
+                  }}>
+                    <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📝</div>
+                    <p style={{ fontSize: '1.125rem', fontWeight: '600', marginBottom: '0.5rem' }}>
+                      No Questions Answered Yet
+                    </p>
+                    <p style={{ fontSize: '0.875rem' }}>
+                      Answer some questions to see your current score
+                    </p>
+                  </div>
+                ) : (
+                  <div>
+                    <div style={{
+                      background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                      borderRadius: '1rem',
+                      padding: '2rem',
+                      textAlign: 'center',
+                      color: 'white',
+                      marginBottom: '1.5rem'
+                    }}>
+                      <div style={{ fontSize: '3rem', fontWeight: '700', marginBottom: '0.5rem' }}>
+                        {currentScore.scaledScore}
+                      </div>
+                      <div style={{ fontSize: '1.125rem', opacity: 0.9 }}>
+                        {currentScore.percentage}% Correct
+                      </div>
+                    </div>
+
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(2, 1fr)',
+                      gap: '1rem',
+                      marginBottom: '1rem'
+                    }}>
+                      <div style={{
+                        background: 'rgba(59, 130, 246, 0.1)',
+                        borderRadius: '0.75rem',
+                        padding: '1rem',
+                        textAlign: 'center'
+                      }}>
+                        <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#3b82f6', marginBottom: '0.25rem' }}>
+                          {currentScore.answeredCount}
+                        </div>
+                        <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+                          Answered
+                        </div>
+                      </div>
+                      <div style={{
+                        background: 'rgba(156, 163, 175, 0.1)',
+                        borderRadius: '0.75rem',
+                        padding: '1rem',
+                        textAlign: 'center'
+                      }}>
+                        <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#6b7280', marginBottom: '0.25rem' }}>
+                          {currentScore.totalQuestions - currentScore.answeredCount}
+                        </div>
+                        <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+                          Remaining
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={{
+                      background: 'rgba(251, 191, 36, 0.1)',
+                      borderRadius: '0.75rem',
+                      padding: '1rem',
+                      border: '1px solid rgba(251, 191, 36, 0.3)'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                        <span style={{ fontSize: '1.25rem' }}>ℹ️</span>
+                        <span style={{ fontWeight: '600', color: '#0A2540' }}>Important Note</span>
+                      </div>
+                      <p style={{ fontSize: '0.875rem', color: '#6b7280', lineHeight: '1.5', margin: 0 }}>
+                        This score is calculated based only on the questions you've answered so far. 
+                        You cannot see which questions are correct or incorrect until you complete the exam.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <button 
+                className="form-button"
+                onClick={() => setShowScoreModal(false)}
+                style={{ marginTop: '1rem' }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Paused Modal */}
       {timerPaused && (
