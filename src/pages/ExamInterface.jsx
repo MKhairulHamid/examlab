@@ -212,11 +212,30 @@ function ExamInterface() {
 
   // Before unload - save progress when user navigates away or closes tab
   useEffect(() => {
-    const handleBeforeUnload = (e) => {
+    const handleBeforeUnload = async (e) => {
       const state = useProgressStore.getState()
       if (state.status === 'in_progress') {
-        // Save progress synchronously
-        saveCurrentProgress()
+        // Force immediate sync to Supabase
+        const progressService = await import('../services/progressService')
+        const progress = {
+          attemptId: state.attemptId,
+          questionSetId: state.questionSetId,
+          userId: state.userId,
+          currentQuestionIndex: state.currentQuestionIndex,
+          answers: state.answers,
+          timeElapsed: state.timeElapsed,
+          timerPaused: state.timerPaused,
+          status: state.status,
+          startedAt: state.startedAt,
+          updatedAt: new Date().toISOString()
+        }
+        
+        // Use navigator.sendBeacon for reliable sync on page unload
+        try {
+          await progressService.default.forceSync(progress)
+        } catch (error) {
+          console.error('Failed to sync progress on unload:', error)
+        }
         
         // Show warning message (optional - commented out to avoid annoyance)
         // e.preventDefault()
@@ -231,7 +250,29 @@ function ExamInterface() {
   // Page Hide - more reliable than beforeunload for mobile
   useEffect(() => {
     const handlePageHide = async () => {
-      await saveCurrentProgress()
+      const state = useProgressStore.getState()
+      if (state.status === 'in_progress') {
+        // Force immediate sync to Supabase
+        const progressService = await import('../services/progressService')
+        const progress = {
+          attemptId: state.attemptId,
+          questionSetId: state.questionSetId,
+          userId: state.userId,
+          currentQuestionIndex: state.currentQuestionIndex,
+          answers: state.answers,
+          timeElapsed: state.timeElapsed,
+          timerPaused: state.timerPaused,
+          status: state.status,
+          startedAt: state.startedAt,
+          updatedAt: new Date().toISOString()
+        }
+        
+        try {
+          await progressService.default.forceSync(progress)
+        } catch (error) {
+          console.error('Failed to sync progress on page hide:', error)
+        }
+      }
     }
     
     window.addEventListener('pagehide', handlePageHide)

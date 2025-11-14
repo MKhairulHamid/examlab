@@ -119,15 +119,26 @@ class SyncQueue {
       throw new Error('Missing attempt ID in progress data')
     }
     
+    if (!data.userId) {
+      throw new Error('Missing user ID in progress data')
+    }
+    
+    if (!data.questionSetId) {
+      throw new Error('Missing question set ID in progress data')
+    }
+    
     const { data: result, error } = await supabase
       .from('user_progress')
       .upsert({
         user_id: data.userId,
         exam_attempt_id: attemptId,
+        question_set_id: data.questionSetId,
         current_question_number: data.currentQuestionIndex || data.currentQuestionNumber || 0,
         current_answers_json: data.answers || {},
         time_elapsed_seconds: data.timeElapsed || 0,
         timer_paused: data.timerPaused || false,
+        status: data.status || 'in_progress',
+        started_at: data.startedAt,
         last_synced_at: new Date().toISOString()
       }, {
         onConflict: 'user_id,exam_attempt_id'

@@ -70,7 +70,26 @@ export const progressService = {
       throw error
     }
 
-    return data
+    if (!data) {
+      return null
+    }
+
+    // Map database fields to local format
+    return {
+      id: data.exam_attempt_id,
+      attemptId: data.exam_attempt_id,
+      examAttemptId: data.exam_attempt_id,
+      questionSetId: data.question_set_id,
+      userId: data.user_id,
+      currentQuestionIndex: data.current_question_number || 0,
+      answers: data.current_answers_json || {},
+      timeElapsed: data.time_elapsed_seconds || 0,
+      timerPaused: data.timer_paused || false,
+      status: data.status || 'in_progress',
+      startedAt: data.started_at,
+      completedAt: data.completed_at || null,
+      updatedAt: data.last_synced_at || data.updated_at || new Date().toISOString()
+    }
   },
 
   /**
@@ -158,10 +177,10 @@ export const progressService = {
       // Clear previous timeout
       if (timeout) clearTimeout(timeout)
       
-      // Queue sync after 10 seconds of inactivity
+      // Queue sync after 3 seconds of inactivity (reduced for better cross-device sync)
       timeout = setTimeout(() => {
         syncService.add('progress', progress)
-      }, 10000)
+      }, 3000)
     }
   })(),
 
@@ -234,9 +253,26 @@ export const progressService = {
         .single()
       
       if (data && !error) {
+        // Map database fields to local format
+        const mappedData = {
+          id: data.exam_attempt_id,
+          attemptId: data.exam_attempt_id,
+          examAttemptId: data.exam_attempt_id,
+          questionSetId: data.question_set_id,
+          userId: data.user_id,
+          currentQuestionIndex: data.current_question_number || 0,
+          answers: data.current_answers_json || {},
+          timeElapsed: data.time_elapsed_seconds || 0,
+          timerPaused: data.timer_paused || false,
+          status: data.status || 'in_progress',
+          startedAt: data.started_at,
+          completedAt: data.completed_at || null,
+          updatedAt: data.last_synced_at || data.updated_at || new Date().toISOString()
+        }
+        
         // Cache it locally
-        await indexedDBService.setExamAttempt(data)
-        return data
+        await indexedDBService.setExamAttempt(mappedData)
+        return mappedData
       }
       
       return null

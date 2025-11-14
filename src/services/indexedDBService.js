@@ -104,10 +104,25 @@ export const indexedDBService = {
    */
   async setExamAttempt(attempt) {
     const db = await initDB()
-    await db.put(STORES.EXAM_ATTEMPTS, {
-      ...attempt,
-      updatedAt: Date.now()
-    })
+    
+    // Ensure consistent field names for IndexedDB storage
+    const normalizedAttempt = {
+      id: attempt.id || attempt.attemptId || attempt.examAttemptId,
+      attemptId: attempt.attemptId || attempt.id || attempt.examAttemptId,
+      examAttemptId: attempt.examAttemptId || attempt.attemptId || attempt.id,
+      questionSetId: attempt.questionSetId || attempt.question_set_id,
+      userId: attempt.userId || attempt.user_id,
+      currentQuestionIndex: attempt.currentQuestionIndex !== undefined ? attempt.currentQuestionIndex : (attempt.current_question_number || attempt.current_question_index || 0),
+      answers: attempt.answers || attempt.current_answers_json || {},
+      timeElapsed: attempt.timeElapsed !== undefined ? attempt.timeElapsed : (attempt.time_elapsed_seconds || attempt.time_elapsed || 0),
+      timerPaused: attempt.timerPaused !== undefined ? attempt.timerPaused : (attempt.timer_paused || false),
+      status: attempt.status || 'in_progress',
+      startedAt: attempt.startedAt || attempt.started_at,
+      completedAt: attempt.completedAt || attempt.completed_at || null,
+      updatedAt: attempt.updatedAt || attempt.updated_at || attempt.last_synced_at || new Date().toISOString()
+    }
+    
+    await db.put(STORES.EXAM_ATTEMPTS, normalizedAttempt)
   },
 
   /**
