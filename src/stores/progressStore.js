@@ -1,12 +1,11 @@
 /**
  * Progress Store - Manage current exam progress
- * Implements offline-first with immediate local saves and background sync
+ * Saves progress to Supabase on user actions (navigation, answers)
  */
 
 import { create } from 'zustand'
 import progressService from '../services/progressService'
-import indexedDBService from '../services/indexedDBService'
-import syncService from '../services/syncService'
+import supabase from '../services/supabase'
 
 export const useProgressStore = create((set, get) => ({
   // State
@@ -174,31 +173,15 @@ export const useProgressStore = create((set, get) => ({
   },
 
   /**
-   * Update timer
+   * Update timer (only updates state, doesn't save to DB)
    */
-  updateTimer: async (seconds) => {
-    const state = get()
-    
+  updateTimer: (seconds) => {
     set({
       timeElapsed: seconds,
       updatedAt: new Date().toISOString()
     })
-    
-    // Save progress (debounced via progressService)
-    const progress = {
-      attemptId: state.attemptId,
-      questionSetId: state.questionSetId,
-      userId: state.userId,
-      currentQuestionIndex: state.currentQuestionIndex,
-      answers: state.answers,
-      timeElapsed: seconds,
-      timerPaused: state.timerPaused,
-      status: state.status,
-      startedAt: state.startedAt,
-      updatedAt: new Date().toISOString()
-    }
-    
-    await progressService.saveProgress(progress)
+    // Note: Timer updates don't save to DB to avoid excessive writes
+    // Progress is saved when user navigates or answers questions
   },
 
   /**
@@ -243,38 +226,54 @@ export const useProgressStore = create((set, get) => ({
     
     set(completedState)
     
-    // Save final state
+    // Save final progress state to Supabase
     await progressService.saveProgress(completedState)
     
-    // Force immediate sync to Supabase
-    await progressService.forceSync(completedState)
-    
-    // Save results
+    // Save exam results to exam_attempts table
     const result = {
       id: crypto.randomUUID(),
-      userId: state.userId,
-      questionSetId: state.questionSetId,
-      attemptId: state.attemptId,
-      startedAt: state.startedAt,
-      completedAt: completedState.completedAt,
-      timeSpent: state.timeElapsed,
-      answers: state.answers,
-      rawScore: results.correctCount,
-      percentageScore: results.percentage,
-      scaledScore: results.scaledScore,
+      user_id: state.userId,
+      question_set_id: state.questionSetId,
+      exam_attempt_id: state.attemptId,
+      started_at: state.startedAt,
+      completed_at: completedState.completedAt,
+      time_spent_seconds: state.timeElapsed,
+      answers_json: state.answers,
+      raw_score: results.correctCount,
+      percentage_score: results.percentage,
+      scaled_score: results.scaledScore,
       passed: results.passed,
-      totalQuestions: results.totalQuestions,
-      examName: results.examName || 'Exam',
-      examSlug: results.examSlug || ''
+      total_questions: results.totalQuestions,
+      exam_name: results.examName || 'Exam',
+      exam_slug: results.examSlug || ''
     }
     
-    // Save result to IndexedDB
-    await indexedDBService.setExamResult(result)
+    // Save result to Supabase exam_attempts table
+    const { error } = await supabase
+      .from('exam_attempts')
+      .insert(result)
     
-    // Queue result sync
-    syncService.add('result', result, { priority: 10 })
+    if (error) {
+      console.error('Error saving exam result:', error)
+    }
     
-    return result
+    return {
+      id: result.id,
+      userId: result.user_id,
+      questionSetId: result.question_set_id,
+      attemptId: result.exam_attempt_id,
+      startedAt: result.started_at,
+      completedAt: result.completed_at,
+      timeSpent: result.time_spent_seconds,
+      answers: result.answers_json,
+      rawScore: result.raw_score,
+      percentageScore: result.percentage_score,
+      scaledScore: result.scaled_score,
+      passed: result.passed,
+      totalQuestions: result.total_questions,
+      examName: result.exam_name,
+      examSlug: result.exam_slug
+    }
   },
 
   /**
