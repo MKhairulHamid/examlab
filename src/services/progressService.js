@@ -190,28 +190,35 @@ export const progressService = {
         .eq('status', 'in_progress')
         .order('started_at', { ascending: false })
         .limit(1)
-        .single()
       
-      if (data && !error) {
-        // Map database fields to local format
-        return {
-          id: data.exam_attempt_id,
-          attemptId: data.exam_attempt_id,
-          examAttemptId: data.exam_attempt_id,
-          questionSetId: data.question_set_id,
-          userId: data.user_id,
-          currentQuestionIndex: data.current_question_number || 0,
-          answers: data.current_answers_json || {},
-          timeElapsed: data.time_elapsed_seconds || 0,
-          timerPaused: data.timer_paused || false,
-          status: data.status || 'in_progress',
-          startedAt: data.started_at,
-          completedAt: data.completed_at || null,
-          updatedAt: data.last_synced_at || data.updated_at || new Date().toISOString()
-        }
+      // Handle case where no rows found (PGRST116 error or empty array)
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error finding in-progress exam:', error)
+        return null
       }
       
-      return null
+      // Check if we got any results
+      if (!data || data.length === 0) {
+        return null
+      }
+      
+      // Map the first result to local format
+      const item = data[0]
+      return {
+        id: item.exam_attempt_id,
+        attemptId: item.exam_attempt_id,
+        examAttemptId: item.exam_attempt_id,
+        questionSetId: item.question_set_id,
+        userId: item.user_id,
+        currentQuestionIndex: item.current_question_number || 0,
+        answers: item.current_answers_json || {},
+        timeElapsed: item.time_elapsed_seconds || 0,
+        timerPaused: item.timer_paused || false,
+        status: item.status || 'in_progress',
+        startedAt: item.started_at,
+        completedAt: item.completed_at || null,
+        updatedAt: item.last_synced_at || item.updated_at || new Date().toISOString()
+      }
     } catch (error) {
       console.error('Error finding in-progress exam:', error)
       return null
