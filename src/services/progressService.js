@@ -1,57 +1,22 @@
 /**
- * Progress Service - Manage exam progress with offline-first approach
- * Handles loading, saving, merging, and conflict resolution
+ * Progress Service - Manage exam progress with Supabase-only approach
+ * Handles loading and saving directly to Supabase
  */
 
 import supabase from './supabase'
-import cacheService from './cacheService'
-import indexedDBService from './indexedDBService'
-import syncService from './syncService'
 
 export const progressService = {
   /**
    * Load progress for an exam attempt
-   * Priority: LocalStorage > Supabase (merge if conflict)
+   * Fetches directly from Supabase
    */
   async loadProgress(examAttemptId, userId) {
     try {
-      // 1. Load from localStorage first (instant)
-      const localKey = `progress_${examAttemptId}`
-      const localProgress = cacheService.get(localKey)
-      
-      if (localProgress) {
-        // 2. Background: fetch from Supabase and merge
-        this.mergeProgressInBackground(examAttemptId, userId, localProgress)
-        
-        return localProgress
-      }
-
-      // 3. If no local cache, try IndexedDB
-      const dbProgress = await indexedDBService.getExamAttempt(examAttemptId)
-      if (dbProgress) {
-        // Cache it for faster access
-        cacheService.set(localKey, dbProgress, 60 * 60 * 1000) // 1 hour
-        return dbProgress
-      }
-
-      // 4. If nothing local, fetch from Supabase
       const supabaseProgress = await this.fetchProgressFromSupabase(examAttemptId, userId)
-      
-      if (supabaseProgress) {
-        // Cache it locally
-        cacheService.set(localKey, supabaseProgress, 60 * 60 * 1000)
-        await indexedDBService.setExamAttempt(supabaseProgress)
-        return supabaseProgress
-      }
-
-      // 5. No progress found anywhere - return null
-      return null
-      
+      return supabaseProgress
     } catch (error) {
       console.error('Error loading progress:', error)
-      // Return local progress if available, even if sync fails
-      const localKey = `progress_${examAttemptId}`
-      return cacheService.get(localKey)
+      return null
     }
   },
 
@@ -93,38 +58,7 @@ export const progressService = {
   },
 
   /**
-   * Merge progress in background (non-blocking)
-   */
-  async mergeProgressInBackground(examAttemptId, userId, localProgress) {
-    try {
-      const supabaseProgress = await this.fetchProgressFromSupabase(examAttemptId, userId)
-      
-      if (!supabaseProgress) {
-        // No remote progress - sync local to Supabase
-        syncService.add('progress', localProgress)
-        return
-      }
-
-      // Compare timestamps and use latest
-      const merged = this.resolveConflict(localProgress, supabaseProgress)
-      
-      if (merged.source === 'supabase') {
-        // Supabase is newer - update local
-        const localKey = `progress_${examAttemptId}`
-        cacheService.set(localKey, merged.data, 60 * 60 * 1000)
-        await indexedDBService.setExamAttempt(merged.data)
-      } else {
-        // Local is newer - sync to Supabase
-        syncService.add('progress', localProgress)
-      }
-      
-    } catch (error) {
-      console.error('Background merge error:', error)
-    }
-  },
-
-  /**
-   * Save progress (local immediate, queue Supabase sync)
+   * Save progress directly to Supabase
    */
   async saveProgress(progress) {
     const attemptId = progress.attemptId || progress.examAttemptId || progress.id
@@ -139,109 +73,115 @@ export const progressService = {
       return
     }
     
-    const localKey = `progress_${attemptId}`
-    
-    // Create a clean, serializable copy of progress (no functions or non-clonable data)
-    const cleanProgress = {
-      id: attemptId,
-      attemptId: attemptId,
-      examAttemptId: attemptId,
-      questionSetId: progress.questionSetId,
-      userId: progress.userId,
-      currentQuestionIndex: progress.currentQuestionIndex || 0,
-      answers: progress.answers || {},
-      timeElapsed: progress.timeElapsed || 0,
-      timerPaused: progress.timerPaused || false,
-      status: progress.status || 'in_progress',
-      startedAt: progress.startedAt,
-      completedAt: progress.completedAt || null,
-      updatedAt: new Date().toISOString()
+    try {
+      // Prepare data for Supabase
+      const progressData = {
+        exam_attempt_id: attemptId,
+        question_set_id: progress.questionSetId,
+        user_id: progress.userId,
+        current_question_number: progress.currentQuestionIndex || 0,
+        current_answers_json: progress.answers || {},
+        time_elapsed_seconds: progress.timeElapsed || 0,
+        timer_paused: progress.timerPaused || false,
+        status: progress.status || 'in_progress',
+        started_at: progress.startedAt,
+        completed_at: progress.completedAt || null,
+        last_synced_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+
+      // Upsert to Supabase
+      const { error } = await supabase
+        .from('user_progress')
+        .upsert(progressData, {
+          onConflict: 'exam_attempt_id'
+        })
+
+      if (error) {
+        console.error('Error saving progress to Supabase:', error)
+        throw error
+      }
+
+      console.log('✅ Progress saved to Supabase:', attemptId)
+    } catch (error) {
+      console.error('Failed to save progress:', error)
+      throw error
     }
-    
-    cacheService.set(localKey, cleanProgress, 60 * 60 * 1000) // 1 hour cache
-    
-    // 2. Save to IndexedDB (for persistence)
-    await indexedDBService.setExamAttempt(cleanProgress)
-    
-    // 3. Queue background sync to Supabase (debounced)
-    this.queueProgressSync(cleanProgress)
   },
 
   /**
-   * Queue progress sync (debounced to avoid too many requests)
-   */
-  queueProgressSync: (() => {
-    let timeout = null
-    
-    return function(progress) {
-      // Clear previous timeout
-      if (timeout) clearTimeout(timeout)
-      
-      // Queue sync after 3 seconds of inactivity (reduced for better cross-device sync)
-      timeout = setTimeout(() => {
-        syncService.add('progress', progress)
-      }, 3000)
-    }
-  })(),
-
-  /**
-   * Force immediate sync (e.g., when user completes exam)
+   * Force immediate sync (same as saveProgress now)
    */
   async forceSync(progress) {
-    return syncService.add('progress', progress, { priority: 10 })
+    return this.saveProgress(progress)
   },
 
   /**
-   * Resolve conflict between local and remote progress
-   * Rule: Latest timestamp wins
+   * Delete progress from Supabase
    */
-  resolveConflict(local, remote) {
-    const localTime = new Date(local.updatedAt || local.updated_at || 0)
-    const remoteTime = new Date(remote.updatedAt || remote.updated_at || remote.last_synced_at || 0)
-    
-    if (remoteTime > localTime) {
-      // Remote is newer
-      return { data: remote, source: 'supabase' }
-    } else {
-      // Local is newer or equal
-      return { data: local, source: 'local' }
+  async deleteProgress(examAttemptId) {
+    try {
+      const { error } = await supabase
+        .from('user_progress')
+        .delete()
+        .eq('exam_attempt_id', examAttemptId)
+
+      if (error) {
+        console.error('Error deleting progress from Supabase:', error)
+        throw error
+      }
+
+      console.log('✅ Progress deleted from Supabase:', examAttemptId)
+    } catch (error) {
+      console.error('Failed to delete progress:', error)
+      throw error
     }
   },
 
   /**
-   * Delete progress (local and queue Supabase delete)
-   */
-  async deleteProgress(examAttemptId) {
-    const localKey = `progress_${examAttemptId}`
-    
-    // Remove from cache
-    cacheService.remove(localKey)
-    
-    // Remove from IndexedDB
-    await indexedDBService.deleteExamAttempt(examAttemptId)
-  },
-
-  /**
-   * Get all progress items for a user
+   * Get all progress items for a user from Supabase
    */
   async getAllProgress(userId) {
-    return indexedDBService.getExamAttemptsByUser(userId)
+    try {
+      const { data, error } = await supabase
+        .from('user_progress')
+        .select('*')
+        .eq('user_id', userId)
+        .order('started_at', { ascending: false })
+
+      if (error) {
+        console.error('Error fetching all progress:', error)
+        throw error
+      }
+
+      // Map database fields to local format
+      return (data || []).map(item => ({
+        id: item.exam_attempt_id,
+        attemptId: item.exam_attempt_id,
+        examAttemptId: item.exam_attempt_id,
+        questionSetId: item.question_set_id,
+        userId: item.user_id,
+        currentQuestionIndex: item.current_question_number || 0,
+        answers: item.current_answers_json || {},
+        timeElapsed: item.time_elapsed_seconds || 0,
+        timerPaused: item.timer_paused || false,
+        status: item.status || 'in_progress',
+        startedAt: item.started_at,
+        completedAt: item.completed_at || null,
+        updatedAt: item.last_synced_at || item.updated_at || new Date().toISOString()
+      }))
+    } catch (error) {
+      console.error('Failed to get all progress:', error)
+      return []
+    }
   },
 
   /**
-   * Find in-progress exam for a question set
+   * Find in-progress exam for a question set from Supabase
    * Returns the attempt if found, null otherwise
    */
   async findInProgressExam(userId, questionSetId) {
     try {
-      // Check IndexedDB for in-progress attempt
-      const inProgressAttempt = await indexedDBService.getInProgressAttempt(userId, questionSetId)
-      
-      if (inProgressAttempt) {
-        return inProgressAttempt
-      }
-      
-      // Also check Supabase for in-progress attempts
       const { data, error } = await supabase
         .from('user_progress')
         .select('*')
@@ -254,7 +194,7 @@ export const progressService = {
       
       if (data && !error) {
         // Map database fields to local format
-        const mappedData = {
+        return {
           id: data.exam_attempt_id,
           attemptId: data.exam_attempt_id,
           examAttemptId: data.exam_attempt_id,
@@ -269,10 +209,6 @@ export const progressService = {
           completedAt: data.completed_at || null,
           updatedAt: data.last_synced_at || data.updated_at || new Date().toISOString()
         }
-        
-        // Cache it locally
-        await indexedDBService.setExamAttempt(mappedData)
-        return mappedData
       }
       
       return null
