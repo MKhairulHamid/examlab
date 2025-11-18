@@ -124,6 +124,9 @@ class StreakService {
           study_days_json: { dates: streakData.studyDates },
           daily_goal_questions: streakData.dailyGoalQuestions,
           updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id',
+          ignoreDuplicates: false
         })
 
       if (error) {
