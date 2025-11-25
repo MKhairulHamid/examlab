@@ -4,7 +4,7 @@ import useExamStore from '../stores/examStore'
 import useAuthStore from '../stores/authStore'
 import usePurchaseStore from '../stores/purchaseStore'
 import PurchaseModal from '../components/purchase/PurchaseModal'
-import indexedDBService from '../services/indexedDBService'
+import supabase from '../services/supabase'
 
 function ExamDetail() {
   const { slug } = useParams()
@@ -39,26 +39,44 @@ function ExamDetail() {
     if (!user) return
     
     try {
-      // Get all results for this user
-      const allResults = await indexedDBService.getExamResultsByUser(user.id)
+      // Fetch exam results from Supabase for this specific exam type
+      const { data, error } = await supabase
+        .from('exam_attempts')
+        .select(`
+          *,
+          question_sets (
+            name,
+            exam_type_id
+          )
+        `)
+        .eq('user_id', user.id)
+        .eq('status', 'completed')
+        .eq('question_sets.exam_type_id', examTypeId)
+        .order('completed_at', { ascending: false })
       
-      // Filter results for this specific exam
-      const filteredResults = []
-      for (const result of allResults) {
-        const questionSet = await indexedDBService.getQuestionSet(result.questionSetId)
-        if (questionSet?.exam_type_id === examTypeId) {
-          filteredResults.push({
-            ...result,
-            questionSetName: questionSet.name
-          })
-        }
-      }
+      if (error) throw error
       
-      // Sort by completion date, newest first
-      filteredResults.sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt))
-      setExamResults(filteredResults)
+      // Transform data to expected format
+      const transformedResults = (data || []).map(result => ({
+        id: result.id,
+        userId: result.user_id,
+        questionSetId: result.question_set_id,
+        startedAt: result.started_at,
+        completedAt: result.completed_at,
+        timeSpent: result.time_spent_seconds,
+        answers: result.answers_json,
+        rawScore: result.raw_score,
+        percentageScore: result.percentage_score,
+        scaledScore: result.scaled_score,
+        passed: result.passed,
+        questionSetName: result.question_sets?.name || 'Question Set',
+        totalQuestions: result.answers_json ? Object.keys(result.answers_json).length : 0
+      }))
+      
+      setExamResults(transformedResults)
     } catch (error) {
       console.error('Error loading exam results:', error)
+      setExamResults([])
     }
   }
 

@@ -36,13 +36,52 @@ function Dashboard() {
   }, [user])
 
   const loadExamResults = async () => {
-    if (user) {
-      const results = await indexedDBService.getExamResultsByUser(user.id)
-      // Sort by completion date, newest first
-      const sortedResults = results.sort((a, b) => 
-        new Date(b.completedAt) - new Date(a.completedAt)
-      )
-      setExamResults(sortedResults)
+    if (!user) return
+    
+    try {
+      // Fetch exam results from Supabase
+      const { data, error } = await supabase
+        .from('exam_attempts')
+        .select(`
+          *,
+          question_sets (
+            name,
+            exam_type_id,
+            exam_types (
+              name,
+              slug
+            )
+          )
+        `)
+        .eq('user_id', user.id)
+        .eq('status', 'completed')
+        .order('completed_at', { ascending: false })
+        .limit(10)
+      
+      if (error) throw error
+      
+      // Transform data to match expected format
+      const transformedResults = (data || []).map(result => ({
+        id: result.id,
+        userId: result.user_id,
+        questionSetId: result.question_set_id,
+        startedAt: result.started_at,
+        completedAt: result.completed_at,
+        timeSpent: result.time_spent_seconds,
+        answers: result.answers_json,
+        rawScore: result.raw_score,
+        percentageScore: result.percentage_score,
+        scaledScore: result.scaled_score,
+        passed: result.passed,
+        examName: result.question_sets?.name || 'Exam',
+        examSlug: result.question_sets?.exam_types?.slug || '',
+        totalQuestions: result.answers_json ? Object.keys(result.answers_json).length : 0
+      }))
+      
+      setExamResults(transformedResults)
+    } catch (error) {
+      console.error('Error loading exam results:', error)
+      setExamResults([])
     }
   }
 

@@ -3,7 +3,7 @@ import { useParams, useSearchParams, useNavigate } from 'react-router-dom'
 import useExamStore from '../stores/examStore'
 import useProgressStore from '../stores/progressStore'
 import useAuthStore from '../stores/authStore'
-import indexedDBService from '../services/indexedDBService'
+import supabase from '../services/supabase'
 import DashboardHeader from '../components/layout/DashboardHeader'
 
 function ExamResults() {
@@ -24,13 +24,34 @@ function ExamResults() {
     const loadResultData = async () => {
       if (resultId && user) {
         try {
-          // Load result from IndexedDB
-          const examResult = await indexedDBService.getExamResult(resultId)
+          // Load result from Supabase
+          const { data: examAttempt, error } = await supabase
+            .from('exam_attempts')
+            .select('*')
+            .eq('id', resultId)
+            .eq('user_id', user.id)
+            .single()
           
-          if (!examResult) {
-            console.error('Result not found')
+          if (error || !examAttempt) {
+            console.error('Result not found:', error)
             navigate('/dashboard')
             return
+          }
+          
+          // Transform to expected format
+          const examResult = {
+            id: examAttempt.id,
+            userId: examAttempt.user_id,
+            questionSetId: examAttempt.question_set_id,
+            startedAt: examAttempt.started_at,
+            completedAt: examAttempt.completed_at,
+            timeSpent: examAttempt.time_spent_seconds,
+            answers: examAttempt.answers_json,
+            rawScore: examAttempt.raw_score,
+            percentageScore: examAttempt.percentage_score,
+            scaledScore: examAttempt.scaled_score,
+            passed: examAttempt.passed,
+            totalQuestions: examAttempt.answers_json ? Object.keys(examAttempt.answers_json).length : 0
           }
           
           setResult(examResult)
