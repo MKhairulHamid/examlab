@@ -230,11 +230,11 @@ export const useProgressStore = create((set, get) => ({
     await progressService.saveProgress(completedState)
     
     // Save exam results to exam_attempts table
+    // Use the attemptId as the id (it's already a UUID from user_progress)
     const result = {
-      id: crypto.randomUUID(),
+      id: state.attemptId,
       user_id: state.userId,
       question_set_id: state.questionSetId,
-      exam_attempt_id: state.attemptId,
       started_at: state.startedAt,
       completed_at: completedState.completedAt,
       time_spent_seconds: state.timeElapsed,
@@ -243,9 +243,7 @@ export const useProgressStore = create((set, get) => ({
       percentage_score: results.percentage,
       scaled_score: results.scaledScore,
       passed: results.passed,
-      total_questions: results.totalQuestions,
-      exam_name: results.examName || 'Exam',
-      exam_slug: results.examSlug || ''
+      status: 'completed'
     }
     
     // Save result to Supabase exam_attempts table
@@ -261,7 +259,7 @@ export const useProgressStore = create((set, get) => ({
       id: result.id,
       userId: result.user_id,
       questionSetId: result.question_set_id,
-      attemptId: result.exam_attempt_id,
+      attemptId: result.id,
       startedAt: result.started_at,
       completedAt: result.completed_at,
       timeSpent: result.time_spent_seconds,
@@ -270,9 +268,9 @@ export const useProgressStore = create((set, get) => ({
       percentageScore: result.percentage_score,
       scaledScore: result.scaled_score,
       passed: result.passed,
-      totalQuestions: result.total_questions,
-      examName: result.exam_name,
-      examSlug: result.exam_slug
+      totalQuestions: results.totalQuestions,
+      examName: results.examName || 'Exam',
+      examSlug: results.examSlug || ''
     }
   },
 
