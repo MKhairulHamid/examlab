@@ -243,16 +243,18 @@ export const useProgressStore = create((set, get) => ({
       percentage_score: results.percentage,
       scaled_score: results.scaledScore,
       passed: results.passed,
-      status: 'completed'
+      status: 'completed',
+      updated_at: new Date().toISOString()
     }
     
-    // Save result to Supabase exam_attempts table
+    // Save result to Supabase exam_attempts table (use upsert in case record exists)
     const { error } = await supabase
       .from('exam_attempts')
-      .insert(result)
+      .upsert(result)
     
     if (error) {
       console.error('Error saving exam result:', error)
+      throw error
     }
     
     return {
