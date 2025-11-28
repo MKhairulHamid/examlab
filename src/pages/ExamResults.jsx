@@ -172,6 +172,42 @@ function ExamResults() {
     }
   }
 
+  // Calculate domain-based performance
+  const getDomainPerformance = () => {
+    const domainStats = {}
+    
+    questions.forEach((question, index) => {
+      const domain = question.domain || 'Uncategorized'
+      const { isCorrect } = getAnswerStatus(index, question)
+      
+      if (!domainStats[domain]) {
+        domainStats[domain] = {
+          total: 0,
+          correct: 0,
+          percentage: 0
+        }
+      }
+      
+      domainStats[domain].total += 1
+      if (isCorrect) {
+        domainStats[domain].correct += 1
+      }
+    })
+    
+    // Calculate percentages
+    Object.keys(domainStats).forEach(domain => {
+      const stats = domainStats[domain]
+      stats.percentage = Math.round((stats.correct / stats.total) * 100)
+    })
+    
+    // Sort by percentage (lowest first to highlight weak areas)
+    return Object.entries(domainStats)
+      .sort((a, b) => a[1].percentage - b[1].percentage)
+      .map(([domain, stats]) => ({ domain, ...stats }))
+  }
+
+  const domainPerformance = getDomainPerformance()
+
   const passColor = result.passed ? '#10b981' : '#ef4444'
   const passEmoji = result.passed ? '🎉' : '💪'
   const passMessage = result.passed 
@@ -263,6 +299,94 @@ function ExamResults() {
               </div>
             </div>
           </div>
+
+          {/* Domain Performance Breakdown */}
+          {domainPerformance.length > 0 && (
+            <div style={{ marginTop: '2rem' }}>
+              <h3 style={{ 
+                fontSize: '1.25rem', 
+                fontWeight: '600', 
+                color: 'white', 
+                marginBottom: '1rem',
+                textAlign: 'left'
+              }}>
+                📊 Performance by Domain
+              </h3>
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.75rem'
+              }}>
+                {domainPerformance.map((domain, idx) => {
+                  const performanceColor = 
+                    domain.percentage >= 70 ? '#10b981' : 
+                    domain.percentage >= 50 ? '#f59e0b' : 
+                    '#ef4444'
+                  
+                  return (
+                    <div
+                      key={idx}
+                      style={{
+                        background: 'rgba(255,255,255,0.05)',
+                        padding: '1rem',
+                        borderRadius: '0.5rem',
+                        border: '1px solid rgba(255,255,255,0.1)'
+                      }}
+                    >
+                      <div style={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center',
+                        marginBottom: '0.5rem'
+                      }}>
+                        <span style={{ 
+                          color: 'white', 
+                          fontWeight: '500',
+                          fontSize: '0.95rem'
+                        }}>
+                          {domain.domain}
+                        </span>
+                        <span style={{ 
+                          color: performanceColor, 
+                          fontWeight: '600',
+                          fontSize: '0.95rem'
+                        }}>
+                          {domain.correct}/{domain.total} ({domain.percentage}%)
+                        </span>
+                      </div>
+                      <div style={{
+                        width: '100%',
+                        height: '8px',
+                        background: 'rgba(255,255,255,0.1)',
+                        borderRadius: '4px',
+                        overflow: 'hidden'
+                      }}>
+                        <div style={{
+                          width: `${domain.percentage}%`,
+                          height: '100%',
+                          background: performanceColor,
+                          borderRadius: '4px',
+                          transition: 'width 0.3s ease'
+                        }} />
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+              <div style={{
+                marginTop: '1rem',
+                padding: '0.75rem',
+                background: 'rgba(0,212,170,0.1)',
+                border: '1px solid rgba(0,212,170,0.2)',
+                borderRadius: '0.5rem',
+                fontSize: '0.875rem',
+                color: 'rgba(255,255,255,0.8)',
+                textAlign: 'left'
+              }}>
+                💡 <strong>Tip:</strong> Focus on domains with lower scores to improve your overall performance.
+              </div>
+            </div>
+          )}
 
           {/* Action Buttons */}
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '2rem', flexWrap: 'wrap' }}>
