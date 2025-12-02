@@ -20,24 +20,24 @@ function ExamDetail() {
     const loadExam = async () => {
       const examData = await getExamBySlug(slug)
       setExam(examData)
-      
+
       if (examData) {
         await fetchQuestionSets(examData.id)
         await fetchPackages(examData.id)
-        
+
         if (user) {
           await fetchPurchases(user.id)
           await loadExamResults(examData.id)
         }
       }
     }
-    
+
     loadExam()
   }, [slug, user])
 
   const loadExamResults = async (examTypeId) => {
     if (!user) return
-    
+
     try {
       // Fetch exam results from Supabase for this specific exam type
       const { data, error } = await supabase
@@ -53,9 +53,9 @@ function ExamDetail() {
         .eq('status', 'completed')
         .eq('question_sets.exam_type_id', examTypeId)
         .order('completed_at', { ascending: false })
-      
+
       if (error) throw error
-      
+
       // Transform data to expected format
       const transformedResults = (data || []).map(result => ({
         id: result.id,
@@ -72,7 +72,7 @@ function ExamDetail() {
         questionSetName: result.question_sets?.name || 'Question Set',
         totalQuestions: result.answers_json ? Object.keys(result.answers_json).length : 0
       }))
-      
+
       setExamResults(transformedResults)
     } catch (error) {
       console.error('Error loading exam results:', error)
@@ -117,6 +117,14 @@ function ExamDetail() {
             <span>📝 {exam.total_questions || 'N/A'} Total Questions</span>
             <span>⏱️ {exam.duration_minutes || 'N/A'} minutes</span>
             {exam.passing_score && <span>🎯 Pass: {exam.passing_score}/{exam.max_score || 1000}</span>}
+          </div>
+          <div className="mt-6 pt-6 border-t border-white/10 flex justify-end">
+            <button
+              onClick={() => navigate(`/exam/${slug}/study`)}
+              className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-semibold transition-all flex items-center gap-2 border border-white/20"
+            >
+              📚 View Study Material
+            </button>
           </div>
         </div>
 
@@ -170,7 +178,7 @@ function ExamDetail() {
                     <span>📝 {set.question_count} Questions</span>
                     <span>📊 Set {set.set_number}</span>
                   </div>
-                  
+
                   {(isFree || purchased) ? (
                     <button
                       onClick={() => navigate(`/exam/${slug}/take?set=${set.id}`)}
@@ -247,7 +255,7 @@ function ExamDetail() {
               {examResults.map((result) => {
                 const passColor = result.passed ? '#10b981' : '#ef4444'
                 const passIcon = result.passed ? '✓' : '✗'
-                
+
                 return (
                   <div
                     key={result.id}
