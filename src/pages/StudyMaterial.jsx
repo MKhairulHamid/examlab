@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 
 // Data Structure for Content Domain 1
@@ -16,7 +16,14 @@ const studyData = {
                             name: "Architectural patterns",
                             concept: "Architectural patterns define the structural organization of software systems. Key patterns include Event-driven (decoupled components communicating via events), Microservices (small, independent services), Monolithic (single unified unit), Choreography (decentralized decision making), Orchestration (centralized controller), and Fanout (sending a message to multiple destinations in parallel).",
                             cases: "Using SNS to fanout notifications to multiple SQS queues for parallel processing; Breaking a monolithic e-commerce app into microservices for better scalability.",
-                            distractors: "Confusing Orchestration (central controller) with Choreography (distributed); Assuming Microservices always share a single database (they should have their own)."
+                            distractors: "Confusing Orchestration (central controller) with Choreography (distributed); Assuming Microservices always share a single database (they should have their own).",
+                            quiz: [
+                                {
+                                    question: "Which architectural pattern involves sending a message to multiple destinations in parallel?",
+                                    options: ["Choreography", "Orchestration", "Fanout", "Monolithic"],
+                                    correct: 2
+                                }
+                            ]
                         },
                         {
                             name: "Idempotency",
@@ -278,37 +285,358 @@ const studyData = {
     ]
 }
 
-function TopicItem({ item }) {
+function TopicItem({ item, isBookmarked, onToggleBookmark, onStartQuiz }) {
     const [isOpen, setIsOpen] = useState(false)
+    const [showFlashcard, setShowFlashcard] = useState(false)
+    const [isFlipped, setIsFlipped] = useState(false)
+    const [progress, setProgress] = useState(0)
+
+    useEffect(() => {
+        const savedProgress = localStorage.getItem(`study-progress-${item.name}`)
+        if (savedProgress) {
+            setProgress(parseInt(savedProgress))
+        }
+    }, [item.name])
+
+    const markAsStudied = () => {
+        const newProgress = progress >= 100 ? 0 : 100
+        setProgress(newProgress)
+        localStorage.setItem(`study-progress-${item.name}`, newProgress.toString())
+    }
 
     return (
-        <div className="mb-4 bg-black/20 rounded-xl overflow-hidden border border-white/5 transition-all hover:border-white/20">
+        <div style={{
+            marginBottom: '1rem',
+            background: 'white',
+            borderRadius: '1rem',
+            overflow: 'hidden',
+            border: `2px solid ${isOpen ? '#00D4AA' : '#e5e7eb'}`,
+            transition: 'all 0.3s',
+            boxShadow: isOpen ? '0 10px 25px rgba(0,212,170,0.2)' : '0 2px 8px rgba(0,0,0,0.05)'
+        }}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-full text-left p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
+                style={{
+                    width: '100%',
+                    textAlign: 'left',
+                    padding: '1.25rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    background: isOpen ? 'linear-gradient(135deg, rgba(0,212,170,0.05) 0%, rgba(0,168,132,0.05) 100%)' : 'white',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                }}
             >
-                <span className="font-semibold text-white/90">{item.name}</span>
-                <span className={`transform transition-transform ${isOpen ? 'rotate-180' : ''} text-accent`}>
-                    ▼
+                <span style={{ 
+                    fontWeight: '700', 
+                    color: '#0A2540', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '0.75rem',
+                    fontSize: '1rem',
+                    flex: 1
+                }}>
+                    {progress >= 100 ? '✅' : '📚'} {item.name}
+                    {isBookmarked && <span style={{ color: '#f59e0b' }}>⭐</span>}
                 </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation()
+                            onToggleBookmark(item.name)
+                        }}
+                        style={{
+                            fontSize: '1.25rem',
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            transition: 'transform 0.2s',
+                            padding: '0.25rem'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.2)'}
+                        onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                        title={isBookmarked ? "Remove bookmark" : "Bookmark this topic"}
+                    >
+                        {isBookmarked ? '⭐' : '☆'}
+                    </button>
+                    <span style={{
+                        transform: isOpen ? 'rotate(180deg)' : 'rotate(0)',
+                        transition: 'transform 0.3s',
+                        color: '#00D4AA',
+                        fontSize: '1.25rem'
+                    }}>
+                        ▼
+                    </span>
+                </div>
             </button>
 
             {isOpen && (
-                <div className="p-4 pt-0 border-t border-white/10 bg-black/10">
-                    <div className="mt-4 space-y-4">
-                        <div>
-                            <h5 className="text-sm font-bold text-accent mb-1 uppercase tracking-wide">Key Concept</h5>
-                            <p className="text-sm text-white/80 leading-relaxed">{item.concept}</p>
+                <div style={{
+                    padding: '0 1.25rem 1.25rem',
+                    borderTop: '1px solid #e5e7eb',
+                    background: '#f9fafb',
+                    animation: 'slideDown 0.3s ease'
+                }}>
+                    {/* Action Buttons */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem', margin: '1.25rem 0' }}>
+                        <button
+                            onClick={() => setShowFlashcard(true)}
+                            style={{
+                                padding: '0.875rem 1rem',
+                                background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '0.75rem',
+                                fontSize: '0.875rem',
+                                fontWeight: '700',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                boxShadow: '0 4px 12px rgba(0,212,170,0.3)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '0.5rem'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = 'translateY(-2px)'
+                                e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,212,170,0.4)'
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'translateY(0)'
+                                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,212,170,0.3)'
+                            }}
+                        >
+                            🃏 Flashcard
+                        </button>
+                        <button
+                            onClick={() => onStartQuiz(item)}
+                            style={{
+                                padding: '0.875rem 1rem',
+                                background: '#0A2540',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '0.75rem',
+                                fontSize: '0.875rem',
+                                fontWeight: '700',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '0.5rem'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = 'translateY(-2px)'
+                                e.currentTarget.style.background = '#1A3B5C'
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'translateY(0)'
+                                e.currentTarget.style.background = '#0A2540'
+                            }}
+                        >
+                            📝 Quiz
+                        </button>
+                        <button
+                            onClick={markAsStudied}
+                            style={{
+                                padding: '0.875rem 1rem',
+                                background: progress >= 100 ? 'white' : 'rgba(0,212,170,0.1)',
+                                color: progress >= 100 ? '#00D4AA' : '#00A884',
+                                border: `2px solid ${progress >= 100 ? '#00D4AA' : 'rgba(0,212,170,0.3)'}`,
+                                borderRadius: '0.75rem',
+                                fontSize: '0.875rem',
+                                fontWeight: '700',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '0.5rem'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = 'translateY(-2px)'
+                                e.currentTarget.style.background = progress >= 100 ? '#f9fafb' : 'rgba(0,212,170,0.2)'
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'translateY(0)'
+                                e.currentTarget.style.background = progress >= 100 ? 'white' : 'rgba(0,212,170,0.1)'
+                            }}
+                        >
+                            {progress >= 100 ? '✓ Studied' : '☑ Mark'}
+                        </button>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <div style={{
+                            padding: '1.25rem',
+                            background: 'white',
+                            borderRadius: '0.75rem',
+                            border: '2px solid rgba(0,212,170,0.3)',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+                        }}>
+                            <h5 style={{
+                                fontSize: '0.875rem',
+                                fontWeight: '700',
+                                color: '#00D4AA',
+                                marginBottom: '0.75rem',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.05em',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem'
+                            }}>
+                                💡 Key Concept
+                            </h5>
+                            <p style={{ fontSize: '0.9375rem', color: '#374151', lineHeight: '1.6', margin: 0 }}>
+                                {item.concept}
+                            </p>
                         </div>
 
-                        <div>
-                            <h5 className="text-sm font-bold text-blue-400 mb-1 uppercase tracking-wide">Use Cases</h5>
-                            <p className="text-sm text-white/80 leading-relaxed">{item.cases}</p>
+                        <div style={{
+                            padding: '1.25rem',
+                            background: 'white',
+                            borderRadius: '0.75rem',
+                            border: '2px solid #bae6fd',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+                        }}>
+                            <h5 style={{
+                                fontSize: '0.875rem',
+                                fontWeight: '700',
+                                color: '#0369a1',
+                                marginBottom: '0.75rem',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.05em',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem'
+                            }}>
+                                ✅ Use Cases
+                            </h5>
+                            <p style={{ fontSize: '0.9375rem', color: '#374151', lineHeight: '1.6', margin: 0 }}>
+                                {item.cases}
+                            </p>
                         </div>
 
-                        <div>
-                            <h5 className="text-sm font-bold text-red-400 mb-1 uppercase tracking-wide">Exam Distractors</h5>
-                            <p className="text-sm text-white/80 leading-relaxed">{item.distractors}</p>
+                        <div style={{
+                            padding: '1.25rem',
+                            background: 'white',
+                            borderRadius: '0.75rem',
+                            border: '2px solid #fecaca',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+                        }}>
+                            <h5 style={{
+                                fontSize: '0.875rem',
+                                fontWeight: '700',
+                                color: '#dc2626',
+                                marginBottom: '0.75rem',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.05em',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem'
+                            }}>
+                                ⚠️ Exam Distractors
+                            </h5>
+                            <p style={{ fontSize: '0.9375rem', color: '#374151', lineHeight: '1.6', margin: 0 }}>
+                                {item.distractors}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Flashcard Modal */}
+            {showFlashcard && (
+                <div className="modal-overlay" onClick={() => { setShowFlashcard(false); setIsFlipped(false); }}>
+                    <div className="modal-content" style={{ maxWidth: '600px' }} onClick={(e) => e.stopPropagation()}>
+                        <button className="modal-close" onClick={() => { setShowFlashcard(false); setIsFlipped(false); }}>
+                            ×
+                        </button>
+                        <div className="modal-header">
+                            <h2 className="modal-title">🃏 Flashcard: {item.name}</h2>
+                            <p style={{ color: '#6b7280', fontSize: '0.875rem' }}>Click the card to flip</p>
+                        </div>
+                        
+                        <div 
+                            className="flashcard-container"
+                            style={{
+                                perspective: '1000px',
+                                minHeight: '300px',
+                                marginTop: '1.5rem'
+                            }}
+                        >
+                            <div
+                                onClick={() => setIsFlipped(!isFlipped)}
+                                style={{
+                                    position: 'relative',
+                                    width: '100%',
+                                    minHeight: '300px',
+                                    transformStyle: 'preserve-3d',
+                                    transition: 'transform 0.6s',
+                                    transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0)',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                {/* Front of card */}
+                                <div style={{
+                                    position: 'absolute',
+                                    width: '100%',
+                                    height: '100%',
+                                    backfaceVisibility: 'hidden',
+                                    background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
+                                    borderRadius: '1rem',
+                                    padding: '2rem',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    color: 'white',
+                                    boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
+                                }}>
+                                    <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>❓</div>
+                                    <h3 style={{ fontSize: '1.5rem', fontWeight: '700', textAlign: 'center' }}>
+                                        {item.name}
+                                    </h3>
+                                    <p style={{ fontSize: '0.875rem', marginTop: '1rem', opacity: 0.9 }}>
+                                        Click to reveal answer
+                                    </p>
+                                </div>
+
+                                {/* Back of card */}
+                                <div style={{
+                                    position: 'absolute',
+                                    width: '100%',
+                                    height: '100%',
+                                    backfaceVisibility: 'hidden',
+                                    transform: 'rotateY(180deg)',
+                                    background: 'white',
+                                    borderRadius: '1rem',
+                                    padding: '2rem',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    justifyContent: 'center',
+                                    border: '2px solid #00D4AA',
+                                    boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
+                                    overflowY: 'auto',
+                                    maxHeight: '500px'
+                                }}>
+                                    <div style={{ fontSize: '2rem', marginBottom: '1rem', textAlign: 'center' }}>💡</div>
+                                    <div style={{ color: '#0A2540', fontSize: '0.9375rem', lineHeight: '1.6' }}>
+                                        {item.concept}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style={{ marginTop: '1.5rem', display: 'flex', gap: '0.75rem' }}>
+                            <button
+                                onClick={() => setIsFlipped(!isFlipped)}
+                                className="form-button"
+                            >
+                                {isFlipped ? '🔄 Flip Back' : '🔄 Flip Card'}
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -320,48 +648,410 @@ function TopicItem({ item }) {
 function StudyMaterial() {
     const { slug } = useParams()
     const navigate = useNavigate()
+    const [bookmarkedTopics, setBookmarkedTopics] = useState([])
+    const [quizItem, setQuizItem] = useState(null)
+    const [quizAnswer, setQuizAnswer] = useState(null)
+    const [showQuizResult, setShowQuizResult] = useState(false)
+    const [filterBookmarked, setFilterBookmarked] = useState(false)
+    const [searchTerm, setSearchTerm] = useState('')
+    const [studyStats, setStudyStats] = useState({ total: 0, completed: 0 })
+
+    useEffect(() => {
+        const saved = localStorage.getItem('bookmarked-topics')
+        if (saved) {
+            setBookmarkedTopics(JSON.parse(saved))
+        }
+        updateStudyStats()
+    }, [])
+
+    const updateStudyStats = () => {
+        let total = 0
+        let completed = 0
+        studyData.tasks.forEach(task => {
+            task.sections.forEach(section => {
+                section.items.forEach(item => {
+                    total++
+                    const progress = localStorage.getItem(`study-progress-${item.name}`)
+                    if (progress && parseInt(progress) >= 100) {
+                        completed++
+                    }
+                })
+            })
+        })
+        setStudyStats({ total, completed })
+    }
+
+    const toggleBookmark = (topicName) => {
+        const newBookmarks = bookmarkedTopics.includes(topicName)
+            ? bookmarkedTopics.filter(name => name !== topicName)
+            : [...bookmarkedTopics, topicName]
+        setBookmarkedTopics(newBookmarks)
+        localStorage.setItem('bookmarked-topics', JSON.stringify(newBookmarks))
+    }
+
+    const startQuiz = (item) => {
+        if (item.quiz && item.quiz.length > 0) {
+            setQuizItem(item)
+            setQuizAnswer(null)
+            setShowQuizResult(false)
+        }
+    }
+
+    const checkQuizAnswer = () => {
+        setShowQuizResult(true)
+    }
 
     return (
-        <div className="min-h-screen bg-gradient-primary text-white">
-            <div className="max-w-6xl mx-auto px-4 py-4 sm:p-6">
+        <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #0A2540 0%, #1A3B5C 100%)' }}>
+            <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '1.5rem' }}>
                 {/* Header */}
                 <button
                     onClick={() => navigate(`/exam/${slug}`)}
-                    className="back-button mb-4 sm:mb-6"
+                    style={{
+                        padding: '0.75rem 1.25rem',
+                        background: 'rgba(255,255,255,0.1)',
+                        backdropFilter: 'blur(16px)',
+                        color: 'white',
+                        border: '1px solid rgba(255,255,255,0.2)',
+                        borderRadius: '0.75rem',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        marginBottom: '1.5rem',
+                        transition: 'all 0.2s',
+                        fontSize: '0.9375rem'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
                 >
                     ← Back to Exam Details
                 </button>
 
-                <h1 className="text-3xl font-bold mb-8">Study Material: AWS Developer Associate</h1>
+                {/* Title Section */}
+                <div style={{
+                    textAlign: 'center',
+                    marginBottom: '2.5rem',
+                    padding: '2rem',
+                    background: 'rgba(255,255,255,0.05)',
+                    backdropFilter: 'blur(20px)',
+                    borderRadius: '1.5rem',
+                    border: '1px solid rgba(255,255,255,0.1)'
+                }}>
+                    <h1 style={{
+                        fontSize: '2rem',
+                        fontWeight: '700',
+                        color: 'white',
+                        marginBottom: '0.75rem'
+                    }}>
+                        📚 Interactive Study Material
+                    </h1>
+                    <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '1.125rem' }}>
+                        AWS Developer Associate Certification
+                    </p>
+                </div>
 
-                {/* Content Domain 1 */}
-                <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 mb-8">
-                    <h2 className="text-2xl font-bold mb-6 text-accent">{studyData.title}</h2>
+                {/* Stats & Controls */}
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                    gap: '1rem',
+                    marginBottom: '2rem'
+                }}>
+                    {/* Progress Card */}
+                    <div style={{
+                        background: 'linear-gradient(135deg, rgba(0,212,170,0.15) 0%, rgba(0,168,132,0.15) 100%)',
+                        backdropFilter: 'blur(20px)',
+                        border: '2px solid rgba(0,212,170,0.3)',
+                        borderRadius: '1rem',
+                        padding: '1.5rem',
+                        textAlign: 'center'
+                    }}>
+                        <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>📊</div>
+                        <div style={{ fontSize: '2rem', fontWeight: '700', color: '#00D4AA' }}>
+                            {studyStats.completed}/{studyStats.total}
+                        </div>
+                        <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.875rem' }}>
+                            Topics Completed
+                        </div>
+                        <div style={{
+                            marginTop: '0.75rem',
+                            height: '6px',
+                            background: 'rgba(255,255,255,0.2)',
+                            borderRadius: '9999px',
+                            overflow: 'hidden'
+                        }}>
+                            <div style={{
+                                height: '100%',
+                                width: `${studyStats.total > 0 ? (studyStats.completed / studyStats.total) * 100 : 0}%`,
+                                background: 'linear-gradient(90deg, #00D4AA 0%, #00A884 100%)',
+                                transition: 'width 0.3s'
+                            }}></div>
+                        </div>
+                    </div>
+
+                    {/* Bookmarks Card */}
+                    <div style={{
+                        background: 'rgba(255,255,255,0.08)',
+                        backdropFilter: 'blur(20px)',
+                        border: '1px solid rgba(255,255,255,0.15)',
+                        borderRadius: '1rem',
+                        padding: '1.5rem',
+                        textAlign: 'center'
+                    }}>
+                        <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>⭐</div>
+                        <div style={{ fontSize: '2rem', fontWeight: '700', color: '#f59e0b' }}>
+                            {bookmarkedTopics.length}
+                        </div>
+                        <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.875rem', marginBottom: '0.75rem' }}>
+                            Bookmarked Topics
+                        </div>
+                        <button
+                            onClick={() => setFilterBookmarked(!filterBookmarked)}
+                            style={{
+                                padding: '0.5rem 1rem',
+                                background: filterBookmarked ? 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)' : 'rgba(255,255,255,0.1)',
+                                color: 'white',
+                                border: filterBookmarked ? 'none' : '1px solid rgba(255,255,255,0.2)',
+                                borderRadius: '0.5rem',
+                                fontSize: '0.75rem',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            {filterBookmarked ? '✓ Showing Bookmarked' : 'Show Bookmarked'}
+                        </button>
+                    </div>
+
+                    {/* Search Card */}
+                    <div style={{
+                        background: 'rgba(255,255,255,0.08)',
+                        backdropFilter: 'blur(20px)',
+                        border: '1px solid rgba(255,255,255,0.15)',
+                        borderRadius: '1rem',
+                        padding: '1.5rem'
+                    }}>
+                        <div style={{ fontSize: '1.25rem', marginBottom: '0.75rem' }}>🔍</div>
+                        <input
+                            type="text"
+                            placeholder="Search topics..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            style={{
+                                width: '100%',
+                                padding: '0.75rem 1rem',
+                                background: 'rgba(255,255,255,0.1)',
+                                border: '1px solid rgba(255,255,255,0.2)',
+                                borderRadius: '0.75rem',
+                                color: 'white',
+                                fontSize: '0.9375rem',
+                                outline: 'none'
+                            }}
+                            onFocus={(e) => {
+                                e.currentTarget.style.background = 'rgba(255,255,255,0.15)'
+                                e.currentTarget.style.borderColor = '#00D4AA'
+                            }}
+                            onBlur={(e) => {
+                                e.currentTarget.style.background = 'rgba(255,255,255,0.1)'
+                                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'
+                            }}
+                        />
+                    </div>
+                </div>
+
+                {/* Content Domain */}
+                <div style={{
+                    background: 'white',
+                    borderRadius: '1.5rem',
+                    padding: '2rem',
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
+                }}>
+                    <h2 style={{
+                        fontSize: '1.75rem',
+                        fontWeight: '700',
+                        color: '#0A2540',
+                        marginBottom: '2rem',
+                        paddingBottom: '1rem',
+                        borderBottom: '3px solid #00D4AA'
+                    }}>
+                        {studyData.title}
+                    </h2>
 
                     {studyData.tasks.map((task) => (
-                        <div key={task.id} className="mb-10 last:mb-0">
-                            <h3 className="text-xl font-bold mb-6 text-white/90 border-b border-white/10 pb-2">{task.title}</h3>
+                        <div key={task.id} style={{ marginBottom: '3rem' }}>
+                            <h3 style={{
+                                fontSize: '1.375rem',
+                                fontWeight: '700',
+                                color: '#0A2540',
+                                marginBottom: '1.5rem',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.75rem'
+                            }}>
+                                <span style={{
+                                    width: '2.5rem',
+                                    height: '2.5rem',
+                                    background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
+                                    borderRadius: '50%',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: 'white',
+                                    fontSize: '1rem',
+                                    fontWeight: '700'
+                                }}>
+                                    {task.id.replace('task', '')}
+                                </span>
+                                {task.title}
+                            </h3>
 
-                            <div className="grid md:grid-cols-2 gap-6">
-                                {task.sections.map((section, idx) => (
-                                    <div key={idx} className="bg-white/5 rounded-xl p-5 border border-white/10">
-                                        <h4 className="font-bold mb-4 text-lg text-accent-light flex items-center gap-2">
-                                            {section.type === 'Knowledge' ? '🧠' : '🛠️'} {section.type === 'Knowledge' ? 'Knowledge of:' : 'Skills in:'}
-                                        </h4>
+                            <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(500px, 1fr))',
+                                gap: '1.5rem'
+                            }}>
+                                {task.sections.map((section, idx) => {
+                                    const filteredItems = section.items.filter(item => {
+                                        const matchesSearch = !searchTerm || 
+                                            item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                            item.concept.toLowerCase().includes(searchTerm.toLowerCase())
+                                        const matchesBookmark = !filterBookmarked || bookmarkedTopics.includes(item.name)
+                                        return matchesSearch && matchesBookmark
+                                    })
 
-                                        <div>
-                                            {section.items.map((item, itemIdx) => (
-                                                <TopicItem key={itemIdx} item={item} />
-                                            ))}
+                                    if (filteredItems.length === 0) return null
+
+                                    return (
+                                        <div key={idx} style={{
+                                            background: section.type === 'Knowledge' 
+                                                ? 'linear-gradient(135deg, rgba(0,212,170,0.05) 0%, rgba(0,168,132,0.05) 100%)'
+                                                : 'linear-gradient(135deg, rgba(10,37,64,0.05) 0%, rgba(26,59,92,0.05) 100%)',
+                                            borderRadius: '1rem',
+                                            padding: '1.5rem',
+                                            border: `2px solid ${section.type === 'Knowledge' ? 'rgba(0,212,170,0.2)' : 'rgba(10,37,64,0.2)'}`
+                                        }}>
+                                            <h4 style={{
+                                                fontWeight: '700',
+                                                marginBottom: '1.25rem',
+                                                fontSize: '1.125rem',
+                                                color: section.type === 'Knowledge' ? '#00D4AA' : '#0A2540',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '0.5rem'
+                                            }}>
+                                                {section.type === 'Knowledge' ? '🧠' : '🛠️'} 
+                                                {section.type === 'Knowledge' ? 'Knowledge of:' : 'Skills in:'}
+                                            </h4>
+
+                                            <div>
+                                                {filteredItems.map((item, itemIdx) => (
+                                                    <TopicItem 
+                                                        key={itemIdx} 
+                                                        item={item}
+                                                        isBookmarked={bookmarkedTopics.includes(item.name)}
+                                                        onToggleBookmark={toggleBookmark}
+                                                        onStartQuiz={startQuiz}
+                                                    />
+                                                ))}
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    )
+                                })}
                             </div>
                         </div>
                     ))}
-
                 </div>
             </div>
+
+            {/* Quiz Modal */}
+            {quizItem && quizItem.quiz && (
+                <div className="modal-overlay" onClick={() => setQuizItem(null)}>
+                    <div className="modal-content" style={{ maxWidth: '600px' }} onClick={(e) => e.stopPropagation()}>
+                        <button className="modal-close" onClick={() => setQuizItem(null)}>×</button>
+                        <div className="modal-header">
+                            <h2 className="modal-title">📝 Quick Quiz: {quizItem.name}</h2>
+                        </div>
+
+                        <div style={{ marginTop: '1.5rem' }}>
+                            <p style={{
+                                fontSize: '1.125rem',
+                                fontWeight: '600',
+                                color: '#0A2540',
+                                marginBottom: '1.5rem',
+                                lineHeight: '1.6'
+                            }}>
+                                {quizItem.quiz[0].question}
+                            </p>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem' }}>
+                                {quizItem.quiz[0].options.map((option, idx) => (
+                                    <button
+                                        key={idx}
+                                        onClick={() => setQuizAnswer(idx)}
+                                        disabled={showQuizResult}
+                                        style={{
+                                            padding: '1rem',
+                                            textAlign: 'left',
+                                            background: showQuizResult
+                                                ? (idx === quizItem.quiz[0].correct ? 'rgba(34,197,94,0.1)' : 
+                                                   idx === quizAnswer ? 'rgba(239,68,68,0.1)' : 'white')
+                                                : (quizAnswer === idx ? 'rgba(0,212,170,0.1)' : 'white'),
+                                            border: showQuizResult
+                                                ? (idx === quizItem.quiz[0].correct ? '2px solid #22c55e' :
+                                                   idx === quizAnswer ? '2px solid #ef4444' : '1px solid #e5e7eb')
+                                                : (quizAnswer === idx ? '2px solid #00D4AA' : '1px solid #e5e7eb'),
+                                            borderRadius: '0.75rem',
+                                            color: '#0A2540',
+                                            cursor: showQuizResult ? 'not-allowed' : 'pointer',
+                                            transition: 'all 0.2s',
+                                            fontSize: '0.9375rem',
+                                            fontWeight: quizAnswer === idx ? '600' : '400'
+                                        }}
+                                    >
+                                        {showQuizResult && idx === quizItem.quiz[0].correct && '✅ '}
+                                        {showQuizResult && idx === quizAnswer && idx !== quizItem.quiz[0].correct && '❌ '}
+                                        {option}
+                                    </button>
+                                ))}
+                            </div>
+
+                            {!showQuizResult ? (
+                                <button
+                                    onClick={checkQuizAnswer}
+                                    disabled={quizAnswer === null}
+                                    className="form-button"
+                                    style={{ opacity: quizAnswer === null ? 0.5 : 1 }}
+                                >
+                                    Check Answer
+                                </button>
+                            ) : (
+                                <div style={{
+                                    padding: '1.25rem',
+                                    background: quizAnswer === quizItem.quiz[0].correct 
+                                        ? 'rgba(34,197,94,0.1)' 
+                                        : 'rgba(239,68,68,0.1)',
+                                    border: quizAnswer === quizItem.quiz[0].correct
+                                        ? '2px solid #22c55e'
+                                        : '2px solid #ef4444',
+                                    borderRadius: '0.75rem',
+                                    marginBottom: '1rem'
+                                }}>
+                                    <p style={{
+                                        fontSize: '1.125rem',
+                                        fontWeight: '700',
+                                        color: quizAnswer === quizItem.quiz[0].correct ? '#15803d' : '#991b1b',
+                                        marginBottom: '0.5rem'
+                                    }}>
+                                        {quizAnswer === quizItem.quiz[0].correct ? '🎉 Correct!' : '❌ Incorrect'}
+                                    </p>
+                                    <p style={{ fontSize: '0.9375rem', color: '#374151', lineHeight: '1.6' }}>
+                                        {quizItem.concept}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
