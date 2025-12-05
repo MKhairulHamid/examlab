@@ -660,19 +660,17 @@ function ExamInterface() {
           >
             📚 Study Materials
           </button>
-          {currentQuestion.official_links && currentQuestion.official_links.length > 0 && (
-            <button
-              onClick={() => setShowOfficialLinksModal(true)}
-              className="materials-button"
-              style={{
-                background: 'rgba(59, 130, 246, 0.2)',
-                color: '#3b82f6',
-                borderColor: '#3b82f6'
-              }}
-            >
-              🔗 Official AWS Docs
-            </button>
-          )}
+          <button
+            onClick={() => setShowOfficialLinksModal(true)}
+            className="materials-button"
+            style={{
+              background: 'rgba(59, 130, 246, 0.2)',
+              color: '#3b82f6',
+              borderColor: '#3b82f6'
+            }}
+          >
+            🔗 Official AWS Docs
+          </button>
         </div>
 
         {/* Question Card */}

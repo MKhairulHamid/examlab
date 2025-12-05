@@ -123,6 +123,7 @@ export const useExamStore = create((set, get) => ({
 
   /**
    * Fetch question sets for an exam (cache-first)
+   * Only fetches metadata, not the full questions_json
    */
   fetchQuestionSets: async (examTypeId, forceRefresh = false) => {
     try {
@@ -140,10 +141,10 @@ export const useExamStore = create((set, get) => ({
         }
       }
       
-      // Fetch from Supabase
+      // Fetch from Supabase - ONLY metadata columns (no questions_json)
       const { data, error } = await supabase
         .from('question_sets')
-        .select('*')
+        .select('id, exam_type_id, name, description, set_number, question_count, price_cents, is_free_sample, is_active, created_at, updated_at, version_number')
         .eq('exam_type_id', examTypeId)
         .eq('is_active', true)
         .order('set_number', { ascending: true })
@@ -163,12 +164,13 @@ export const useExamStore = create((set, get) => ({
 
   /**
    * Background refresh for question sets
+   * Only fetches metadata, not the full questions_json
    */
   refreshQuestionSetsInBackground: async (examTypeId) => {
     try {
       const { data, error } = await supabase
         .from('question_sets')
-        .select('*')
+        .select('id, exam_type_id, name, description, set_number, question_count, price_cents, is_free_sample, is_active, created_at, updated_at, version_number')
         .eq('exam_type_id', examTypeId)
         .eq('is_active', true)
         .order('set_number', { ascending: true })
