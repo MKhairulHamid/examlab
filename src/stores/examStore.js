@@ -295,6 +295,7 @@ export const useExamStore = create((set, get) => ({
         domain: q.domain || '',
         materials: q.materials || '',
         explanations: q.explanations || {},
+        official_links: q.official_links || [],
         correctAnswers: correctAnswers
       }
     })
