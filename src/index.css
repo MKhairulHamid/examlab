@@ -585,6 +585,11 @@ button:disabled {
   background-color: var(--color-primary);
 }
 
+footer {
+  width: 100%;
+  box-sizing: border-box;
+}
+
 /* Text Colors */
 .text-white {
   color: var(--color-white);
@@ -1664,6 +1669,8 @@ button:disabled {
   min-height: 3rem;
   display: flex;
   align-items: center;
+  overflow: hidden;
+  word-wrap: break-word;
 }
 
 .option-default {
@@ -1725,6 +1732,10 @@ button:disabled {
   color: var(--color-gray-800);
   font-size: 0.9375rem;
   line-height: 1.5;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  flex: 1;
+  min-width: 0;
 }
 
 .navigation-buttons {

@@ -45,7 +45,7 @@ function ExamInterface() {
   const [showMaterialsModal, setShowMaterialsModal] = useState(false)
   const [showOfficialLinksModal, setShowOfficialLinksModal] = useState(false)
   const [shuffledOptions, setShuffledOptions] = useState({})
-  const [navMinimized, setNavMinimized] = useState(false)
+  const [navMinimized, setNavMinimized] = useState(true)
   const [showResumeNotification, setShowResumeNotification] = useState(false)
   const [answeredQuestions, setAnsweredQuestions] = useState(new Set())
 
@@ -632,7 +632,10 @@ function ExamInterface() {
                 <button
                   key={index}
                   className={`question-nav-item ${index === currentQuestionIndex ? 'current' : ''} ${isQuestionAnswered(index) ? 'answered' : 'unanswered'}`}
-                  onClick={() => goToQuestion(index)}
+                  onClick={() => {
+                    goToQuestion(index)
+                    setNavMinimized(true)
+                  }}
                   title={`Question ${index + 1}${isQuestionAnswered(index) ? ' (Answered)' : ' (Not Answered)'}`}
                 >
                   {index + 1}
@@ -733,7 +736,7 @@ function ExamInterface() {
             disabled={currentQuestionIndex === 0}
             className="nav-button nav-button-prev"
           >
-            ← Previous
+            <span style={{ marginRight: '0.5rem' }}>←</span> Previous
           </button>
           <button
             onClick={() => {
@@ -745,7 +748,11 @@ function ExamInterface() {
             }}
             className="nav-button nav-button-next"
           >
-            {currentQuestionIndex < questions.length - 1 ? 'Next →' : 'Finish'}
+            {currentQuestionIndex < questions.length - 1 ? (
+              <>Next <span style={{ marginLeft: '0.5rem' }}>→</span></>
+            ) : (
+              'Finish'
+            )}
           </button>
         </div>
 

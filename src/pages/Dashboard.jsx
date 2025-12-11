@@ -1147,9 +1147,15 @@ function Dashboard() {
     <footer style={{
       background: '#f9fafb',
       padding: '4rem 0 2rem',
-      borderTop: '1px solid #e5e7eb'
+      borderTop: '1px solid #e5e7eb',
+      width: '100%',
+      marginLeft: 0,
+      marginRight: 0
     }}>
       <div style={{
+        maxWidth: '1200px',
+        margin: '0 auto',
+        padding: '0 1.5rem',
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
         gap: '2rem',
@@ -1362,8 +1368,11 @@ function Dashboard() {
 
       {/* Bottom Bar */}
       <div style={{
+        maxWidth: '1200px',
+        margin: '0 auto',
+        padding: '0 1.5rem',
         paddingTop: '1.5rem',
-        borderTop: '1px solid rgba(255,255,255,0.1)',
+        borderTop: '1px solid #e5e7eb',
         display: 'flex',
         flexDirection: 'column',
         gap: '1rem',
@@ -1460,10 +1469,10 @@ function Dashboard() {
 
         {/* Purchase Summary */}
         {renderPurchasesSummary()}
-
-        {/* Dashboard Footer */}
-        {renderDashboardFooter()}
         </div>
+
+        {/* Dashboard Footer - Outside container to span full width */}
+        {renderDashboardFooter()}
       </div>
 
       {/* Purchase Modal */}
