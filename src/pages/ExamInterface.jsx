@@ -729,6 +729,51 @@ function ExamInterface() {
           </div>
         </div>
 
+        {/* Copy Question for LLM Button */}
+        <div style={{ marginBottom: '1rem' }}>
+          <button
+            onClick={(e) => {
+              const question = currentQuestion.question
+              const options = currentQuestion.options.map((opt, idx) => 
+                `${String.fromCharCode(65 + idx)}. ${opt.text}`
+              ).join('\n')
+              
+              const textToCopy = `Give me lesson to answer this question, dont directly answer the question, explain all service mentioned, and all abbreviation, and make the lesson help me to answer future question similiar to this
+
+Question:
+${question}
+
+Options:
+${options}`
+
+              navigator.clipboard.writeText(textToCopy).then(() => {
+                // Show success feedback
+                const btn = e.currentTarget
+                const originalText = btn.textContent
+                const originalBg = btn.style.background
+                btn.textContent = '✓ Copied!'
+                btn.style.background = 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)'
+                setTimeout(() => {
+                  btn.textContent = originalText
+                  btn.style.background = originalBg
+                }, 2000)
+              }).catch(err => {
+                console.error('Failed to copy:', err)
+                alert('Failed to copy to clipboard')
+              })
+            }}
+            className="nav-button"
+            style={{
+              width: '100%',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              color: 'white',
+              marginBottom: '0.5rem'
+            }}
+          >
+            📋 Copy Question for AI Learning
+          </button>
+        </div>
+
         {/* Navigation */}
         <div className="navigation-buttons">
           <button
