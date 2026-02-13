@@ -4,7 +4,7 @@ import useAuthStore from '../stores/authStore'
 import useExamStore from '../stores/examStore'
 import usePurchaseStore from '../stores/purchaseStore'
 import DashboardHeader from '../components/layout/DashboardHeader'
-import PurchaseModal from '../components/purchase/PurchaseModal'
+import EnrollmentModal from '../components/enrollment/EnrollmentModal'
 import streakService from '../services/streakService'
 import progressService from '../services/progressService'
 import indexedDBService from '../services/indexedDBService'
@@ -15,8 +15,8 @@ function Dashboard() {
   const navigate = useNavigate()
   const { user, profile } = useAuthStore()
   const { exams, fetchExams } = useExamStore()
-  const { purchases, fetchPurchases } = usePurchaseStore()
-  const [showPurchaseModal, setShowPurchaseModal] = useState(false)
+  const { purchases, fetchPurchases, isSubscribed, fetchSubscription } = usePurchaseStore()
+  const [showEnrollmentModal, setShowEnrollmentModal] = useState(false)
   const [selectedExam, setSelectedExam] = useState(null)
   const [streakStats, setStreakStats] = useState(null)
   const [userCertifications, setUserCertifications] = useState([])
@@ -29,6 +29,7 @@ function Dashboard() {
     fetchExams()
     if (user) {
       fetchPurchases(user.id)
+      fetchSubscription(user.id)
       initializeStreak()
       loadExamResults()
       loadExamDates()
@@ -182,7 +183,10 @@ function Dashboard() {
         }
         
         const userExams = exams.filter(exam => {
-          // Check if user has purchased any sets for this exam
+          // If user has active subscription, they have access to all exams
+          if (isSubscribed) return true
+          
+          // Check if user has purchased any sets for this exam (legacy)
           const hasPurchased = purchases.some(purchase => {
             if (purchase.question_sets?.exam_type_id === exam.id) return true
             if (purchase.packages?.exam_type_id === exam.id) return true
@@ -200,7 +204,7 @@ function Dashboard() {
     }
     
     loadUserCertifications()
-  }, [exams, purchases, user])
+  }, [exams, purchases, user, isSubscribed])
 
   const userName = profile?.full_name || user?.email?.split('@')[0] || 'Student'
 
@@ -494,12 +498,12 @@ function Dashboard() {
       ) : (
         <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))' }}>
           {userCertifications.map((exam) => {
-            const isPurchased = purchases.some(p => 
+            const isPurchased = isSubscribed || purchases.some(p => 
               p.question_sets?.exam_type_id === exam.id || 
               p.packages?.exam_type_id === exam.id
             )
             
-            // Check if exam is started (has progress) but not purchased
+            // Check if exam is started (has progress) but not purchased/subscribed
             const isStartedOnly = !isPurchased
             
             return (
@@ -552,7 +556,7 @@ function Dashboard() {
                       fontSize: '0.75rem',
                       fontWeight: '600'
                     }}>
-                      ✓ Purchased
+                      ✓ {isSubscribed ? 'Enrolled' : 'Purchased'}
                     </div>
                   ) : isStartedOnly ? (
                     <div style={{ 
@@ -609,8 +613,7 @@ function Dashboard() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation()
-                          setSelectedExam(exam)
-                          setShowPurchaseModal(true)
+                          setShowEnrollmentModal(true)
                         }}
                         style={{
                           padding: '0.75rem 1rem',
@@ -632,7 +635,7 @@ function Dashboard() {
                           e.currentTarget.style.borderColor = '#d1d5db'
                         }}
                       >
-                        {isStartedOnly ? 'Unlock Full Access' : 'Purchase'}
+                        Enroll
                       </button>
                     )}
                   </div>
@@ -1029,8 +1032,7 @@ function Dashboard() {
               <button
                 onClick={(e) => {
                   e.stopPropagation()
-                  setSelectedExam(exam)
-                  setShowPurchaseModal(true)
+                  setShowEnrollmentModal(true)
                 }}
                 style={{
                   flex: 1,
@@ -1044,7 +1046,7 @@ function Dashboard() {
                   fontSize: '0.75rem'
                 }}
               >
-                Purchase
+                Enroll
               </button>
             </div>
           </div>
@@ -1089,56 +1091,100 @@ function Dashboard() {
     </section>
   )
 
-  const renderPurchasesSummary = () => {
-    if (purchases.length === 0) return null
+  const renderSubscriptionSummary = () => {
+    const { subscription } = usePurchaseStore.getState()
+    
+    if (!isSubscribed && purchases.length === 0) return null
 
     return (
       <section style={{ padding: '2rem 0' }}>
-        <div style={{
-          background: 'white',
-          borderRadius: '1rem',
-          padding: '1.5rem',
-          border: '1px solid #e5e7eb',
-          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-          marginBottom: '2rem'
-        }}>
-          <h3 style={{ fontSize: '1.125rem', fontWeight: '700', color: '#0A2540', marginBottom: '1rem' }}>
-            💳 Your Purchases
-          </h3>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          {purchases.slice(0, 5).map((purchase, index) => (
-            <div 
-              key={index}
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: '0.75rem',
-                background: '#f9fafb',
-                borderRadius: '0.5rem',
-                border: '1px solid #e5e7eb'
-              }}
-            >
+        {/* Active Subscription */}
+        {isSubscribed && subscription && (
+          <div style={{
+            background: 'white',
+            borderRadius: '1rem',
+            padding: '1.5rem',
+            border: '2px solid #00D4AA',
+            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+            marginBottom: '1rem'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <div style={{ color: '#0A2540', fontWeight: '600', fontSize: '0.875rem' }}>
-                  {purchase.question_sets?.name || purchase.packages?.name || 'Purchase'}
-                </div>
-                <div style={{ color: '#6b7280', fontSize: '0.75rem' }}>
-                  {new Date(purchase.purchased_at).toLocaleDateString()}
-                </div>
+                <h3 style={{ fontSize: '1.125rem', fontWeight: '700', color: '#0A2540', marginBottom: '0.25rem' }}>
+                  ✅ Active Subscription
+                </h3>
+                <p style={{ color: '#6b7280', fontSize: '0.875rem' }}>
+                  {subscription.subscription_plans?.name || 'Plan'} — Full access to all exams
+                </p>
+                {subscription.current_period_end && (
+                  <p style={{ color: '#9ca3af', fontSize: '0.75rem', marginTop: '0.25rem' }}>
+                    Next billing: {new Date(subscription.current_period_end).toLocaleDateString()}
+                  </p>
+                )}
               </div>
-              <div style={{ color: '#00D4AA', fontWeight: '600', fontSize: '0.875rem' }}>
-                ${(purchase.amount_cents / 100).toFixed(2)}
+              <div style={{
+                padding: '0.5rem 1rem',
+                background: '#d1fae5',
+                border: '1px solid #6ee7b7',
+                borderRadius: '0.5rem',
+                color: '#065f46',
+                fontSize: '0.875rem',
+                fontWeight: '600'
+              }}>
+                Active
               </div>
             </div>
-          ))}
-        </div>
-        {purchases.length > 5 && (
-          <div style={{ marginTop: '0.75rem', textAlign: 'center', color: '#6b7280', fontSize: '0.875rem' }}>
-            + {purchases.length - 5} more purchases
           </div>
         )}
-        </div>
+
+        {/* Legacy Purchases */}
+        {purchases.length > 0 && (
+          <div style={{
+            background: 'white',
+            borderRadius: '1rem',
+            padding: '1.5rem',
+            border: '1px solid #e5e7eb',
+            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+            marginBottom: '2rem'
+          }}>
+            <h3 style={{ fontSize: '1.125rem', fontWeight: '700', color: '#0A2540', marginBottom: '1rem' }}>
+              💳 Purchase History
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {purchases.slice(0, 5).map((purchase, index) => (
+                <div 
+                  key={index}
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '0.75rem',
+                    background: '#f9fafb',
+                    borderRadius: '0.5rem',
+                    border: '1px solid #e5e7eb'
+                  }}
+                >
+                  <div>
+                    <div style={{ color: '#0A2540', fontWeight: '600', fontSize: '0.875rem' }}>
+                      {purchase.question_sets?.name || purchase.packages?.name || 'Purchase'}
+                    </div>
+                    <div style={{ color: '#6b7280', fontSize: '0.75rem' }}>
+                      {new Date(purchase.purchased_at).toLocaleDateString()}
+                    </div>
+                  </div>
+                  <div style={{ color: '#00D4AA', fontWeight: '600', fontSize: '0.875rem' }}>
+                    ${(purchase.amount_cents / 100).toFixed(2)}
+                  </div>
+                </div>
+              ))}
+            </div>
+            {purchases.length > 5 && (
+              <div style={{ marginTop: '0.75rem', textAlign: 'center', color: '#6b7280', fontSize: '0.875rem' }}>
+                + {purchases.length - 5} more purchases
+              </div>
+            )}
+          </div>
+        )}
       </section>
     )
   }
@@ -1467,26 +1513,22 @@ function Dashboard() {
         {/* Explore More */}
         {renderExploreMore()}
 
-        {/* Purchase Summary */}
-        {renderPurchasesSummary()}
+        {/* Subscription & Purchase Summary */}
+        {renderSubscriptionSummary()}
         </div>
 
         {/* Dashboard Footer - Outside container to span full width */}
         {renderDashboardFooter()}
       </div>
 
-      {/* Purchase Modal */}
-      {showPurchaseModal && selectedExam && (
-        <PurchaseModal
-          isOpen={showPurchaseModal}
-          onClose={() => {
-            setShowPurchaseModal(false)
-            setSelectedExam(null)
-          }}
-          examTypeId={selectedExam.id}
-          examName={selectedExam.name}
-        />
-      )}
+      {/* Enrollment Modal */}
+      <EnrollmentModal
+        isOpen={showEnrollmentModal}
+        onClose={() => {
+          setShowEnrollmentModal(false)
+          setSelectedExam(null)
+        }}
+      />
 
       {/* Exam Date Modal */}
       {showExamDateModal && selectedExamForDate && (

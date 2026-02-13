@@ -21,7 +21,7 @@ function ExamInterface() {
   
   const { user } = useAuthStore()
   const { loadQuestionSet, currentQuestionSet, getExamBySlug } = useExamStore()
-  const { hasPurchased, fetchPurchases } = usePurchaseStore()
+  const { hasPurchased, fetchPurchases, isSubscribed, fetchSubscription } = usePurchaseStore()
   const { 
     startExam,
     startOrResumeExam,
@@ -53,8 +53,9 @@ function ExamInterface() {
     const initialize = async () => {
       if (setId && user) {
         try {
-          // SECURITY: Step 1 - Fetch user's purchases
+          // SECURITY: Step 1 - Fetch user's purchases and subscription
           await fetchPurchases(user.id)
+          await fetchSubscription(user.id)
           
           // SECURITY: Step 2 - Load question set metadata
           const questionSet = await loadQuestionSet(setId)
@@ -69,11 +70,12 @@ function ExamInterface() {
           // SECURITY: Step 3 - Check if it's a free sample
           const isFree = questionSet.is_free_sample || questionSet.price_cents === 0
           
-          // SECURITY: Step 4 - Check if user has purchased
+          // SECURITY: Step 4 - Check if user has purchased or has active subscription
           const purchased = hasPurchased(setId)
+          const { isSubscribed: subscribed } = usePurchaseStore.getState()
           
-          // SECURITY: Step 5 - Verify access
-          if (!isFree && !purchased) {
+          // SECURITY: Step 5 - Verify access (subscription OR purchase OR free)
+          if (!isFree && !purchased && !subscribed) {
             console.warn('🔒 Access denied: Question set not purchased', {
               setId,
               userId: user.id,

@@ -1,5 +1,5 @@
 /**
- * Payment Success Page - Confirmation page after successful payment
+ * Payment Success Page - Confirmation page after successful payment or subscription
  */
 
 import React, { useEffect, useState } from 'react'
@@ -12,9 +12,10 @@ function PaymentSuccess() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { user } = useAuthStore()
-  const { fetchPurchases } = usePurchaseStore()
+  const { fetchPurchases, fetchSubscription } = usePurchaseStore()
   const [loading, setLoading] = useState(true)
   const [success, setSuccess] = useState(false)
+  const [isSubscription, setIsSubscription] = useState(false)
 
   useEffect(() => {
     if (user) {
@@ -24,12 +25,24 @@ function PaymentSuccess() {
 
   const verifyPayment = async () => {
     try {
-      // Get session ID from URL
-      const sessionId = searchParams.get('session_id')
-      
-      if (sessionId) {
-        // Refresh purchases to get the new purchase
+      const type = searchParams.get('type')
+      const subscriptionId = searchParams.get('subscription_id')
+      const token = searchParams.get('token')
+
+      if (type === 'subscription' || subscriptionId) {
+        // Subscription flow - PayPal redirects with subscription_id and ba_token
+        setIsSubscription(true)
+        // Refresh subscription status (webhook may take a moment)
+        await fetchSubscription(user.id)
+        setSuccess(true)
+      } else if (token) {
+        // Legacy PayPal order flow (token param)
         await fetchPurchases(user.id)
+        setSuccess(true)
+      } else {
+        // Fallback - refresh both
+        await fetchPurchases(user.id)
+        await fetchSubscription(user.id)
         setSuccess(true)
       }
     } catch (error) {
@@ -68,17 +81,19 @@ function PaymentSuccess() {
             <>
               <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>⏳</div>
               <h1 style={{ fontSize: '2rem', fontWeight: '700', color: 'white', marginBottom: '1rem' }}>
-                Processing Payment...
+                {isSubscription ? 'Activating Subscription...' : 'Processing Payment...'}
               </h1>
               <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '1rem' }}>
-                Please wait while we confirm your purchase.
+                {isSubscription 
+                  ? 'Please wait while we activate your subscription.'
+                  : 'Please wait while we confirm your payment.'}
               </p>
             </>
           ) : success ? (
             <>
               <div style={{ fontSize: '5rem', marginBottom: '1.5rem' }}>✅</div>
               <h1 style={{ fontSize: '2.5rem', fontWeight: '700', color: 'white', marginBottom: '1rem' }}>
-                Payment Successful!
+                {isSubscription ? 'Subscription Activated!' : 'Payment Successful!'}
               </h1>
               <p style={{ 
                 color: 'rgba(255,255,255,0.9)', 
@@ -86,7 +101,9 @@ function PaymentSuccess() {
                 marginBottom: '2rem',
                 lineHeight: '1.6'
               }}>
-                Thank you for your purchase! You now have instant access to your question sets.
+                {isSubscription
+                  ? 'Welcome! You now have unlimited access to all practice exams and question sets.'
+                  : 'Thank you for your purchase! You now have instant access to your question sets.'}
               </p>
 
               <div style={{
@@ -111,22 +128,45 @@ function PaymentSuccess() {
                   color: 'rgba(255,255,255,0.9)',
                   fontSize: '0.875rem'
                 }}>
-                  <li style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'start' }}>
-                    <span style={{ marginRight: '0.75rem' }}>📚</span>
-                    <span>Your question sets are now available in your dashboard</span>
-                  </li>
-                  <li style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'start' }}>
-                    <span style={{ marginRight: '0.75rem' }}>⚡</span>
-                    <span>Start practicing immediately - no waiting required</span>
-                  </li>
-                  <li style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'start' }}>
-                    <span style={{ marginRight: '0.75rem' }}>🔄</span>
-                    <span>Access your purchases from any device, anytime</span>
-                  </li>
-                  <li style={{ display: 'flex', alignItems: 'start' }}>
-                    <span style={{ marginRight: '0.75rem' }}>📧</span>
-                    <span>Receipt sent to your email</span>
-                  </li>
+                  {isSubscription ? (
+                    <>
+                      <li style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'start' }}>
+                        <span style={{ marginRight: '0.75rem' }}>📚</span>
+                        <span>All exams and question sets are now unlocked</span>
+                      </li>
+                      <li style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'start' }}>
+                        <span style={{ marginRight: '0.75rem' }}>⚡</span>
+                        <span>Start any practice exam right away</span>
+                      </li>
+                      <li style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'start' }}>
+                        <span style={{ marginRight: '0.75rem' }}>🔄</span>
+                        <span>Your subscription auto-renews — cancel anytime</span>
+                      </li>
+                      <li style={{ display: 'flex', alignItems: 'start' }}>
+                        <span style={{ marginRight: '0.75rem' }}>🎓</span>
+                        <span>New certifications included as they launch</span>
+                      </li>
+                    </>
+                  ) : (
+                    <>
+                      <li style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'start' }}>
+                        <span style={{ marginRight: '0.75rem' }}>📚</span>
+                        <span>Your question sets are now available in your dashboard</span>
+                      </li>
+                      <li style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'start' }}>
+                        <span style={{ marginRight: '0.75rem' }}>⚡</span>
+                        <span>Start practicing immediately - no waiting required</span>
+                      </li>
+                      <li style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'start' }}>
+                        <span style={{ marginRight: '0.75rem' }}>🔄</span>
+                        <span>Access your purchases from any device, anytime</span>
+                      </li>
+                      <li style={{ display: 'flex', alignItems: 'start' }}>
+                        <span style={{ marginRight: '0.75rem' }}>📧</span>
+                        <span>Receipt sent to your email</span>
+                      </li>
+                    </>
+                  )}
                 </ul>
               </div>
 
@@ -216,13 +256,14 @@ function PaymentSuccess() {
           justifyContent: 'center', 
           marginTop: '2rem',
           color: 'rgba(255,255,255,0.6)',
-          fontSize: '0.875rem'
+          fontSize: '0.875rem',
+          flexWrap: 'wrap'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <span>🔒</span> Secure Payment
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span>💳</span> Powered by Stripe
+            <span>💳</span> Powered by PayPal
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <span>📧</span> Receipt Emailed

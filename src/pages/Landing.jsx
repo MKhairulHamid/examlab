@@ -611,7 +611,7 @@ function Landing() {
                 </li>
               </ul>
               <button
-                onClick={() => setShowAuthModal(true)}
+                onClick={() => user ? navigate('/dashboard') : setShowAuthModal(true)}
                 style={{
                   width: '100%',
                   padding: '0.875rem',
@@ -624,7 +624,7 @@ function Landing() {
                   fontSize: '1rem'
                 }}
               >
-                Get Started
+                {user ? 'Enroll Now' : 'Get Started'}
               </button>
             </div>
 
@@ -658,7 +658,7 @@ function Landing() {
                 </li>
               </ul>
               <button
-                onClick={() => setShowAuthModal(true)}
+                onClick={() => user ? navigate('/dashboard') : setShowAuthModal(true)}
                 style={{
                   width: '100%',
                   padding: '0.875rem',
@@ -671,7 +671,7 @@ function Landing() {
                   fontSize: '1rem'
                 }}
               >
-                Get Started
+                {user ? 'Enroll Now' : 'Get Started'}
               </button>
             </div>
 
@@ -720,7 +720,7 @@ function Landing() {
                 </li>
               </ul>
               <button
-                onClick={() => setShowAuthModal(true)}
+                onClick={() => user ? navigate('/dashboard') : setShowAuthModal(true)}
                 style={{
                   width: '100%',
                   padding: '0.875rem',
@@ -734,7 +734,7 @@ function Landing() {
                   boxShadow: '0 4px 12px rgba(0,212,170,0.3)'
                 }}
               >
-                Get Started
+                {user ? 'Enroll Now' : 'Get Started'}
               </button>
             </div>
           </div>

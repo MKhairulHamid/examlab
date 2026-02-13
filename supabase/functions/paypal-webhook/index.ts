@@ -143,8 +143,211 @@ serve(async (req) => {
 
     // Handle different event types
     switch (event.event_type) {
+      // ===== SUBSCRIPTION EVENTS =====
+
+      case 'BILLING.SUBSCRIPTION.ACTIVATED': {
+        const subscriptionId = event.resource?.id
+        const customId = event.resource?.custom_id // user_id passed during creation
+
+        if (!subscriptionId) {
+          console.error('❌ No subscription ID in ACTIVATED event')
+          break
+        }
+
+        console.log(`📬 Subscription activated: ${subscriptionId}, custom_id: ${customId}`)
+
+        // Calculate period dates based on plan
+        const startTime = event.resource?.start_time || new Date().toISOString()
+        const billingInfo = event.resource?.billing_info
+        const nextBillingTime = billingInfo?.next_billing_time
+
+        // Try to find existing pending subscription record
+        const { data: existingSub } = await supabaseAdmin
+          .from('user_subscriptions')
+          .select('id, user_id')
+          .eq('paypal_subscription_id', subscriptionId)
+          .maybeSingle()
+
+        if (existingSub) {
+          // Update existing record to active
+          const { error: updateError } = await supabaseAdmin
+            .from('user_subscriptions')
+            .update({
+              status: 'active',
+              current_period_start: startTime,
+              current_period_end: nextBillingTime || null,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', existingSub.id)
+
+          if (updateError) {
+            console.error('❌ Error activating subscription:', updateError)
+          } else {
+            console.log(`✅ Subscription activated for user ${existingSub.user_id}`)
+          }
+        } else if (customId) {
+          // No pending record found - create one (e.g., if insert failed during creation)
+          // Look up plan from PayPal plan_id
+          const paypalPlanId = event.resource?.plan_id
+          const { data: plan } = await supabaseAdmin
+            .from('subscription_plans')
+            .select('id')
+            .eq('paypal_plan_id', paypalPlanId)
+            .maybeSingle()
+
+          if (plan) {
+            const { error: insertError } = await supabaseAdmin
+              .from('user_subscriptions')
+              .insert({
+                user_id: customId,
+                plan_id: plan.id,
+                paypal_subscription_id: subscriptionId,
+                status: 'active',
+                current_period_start: startTime,
+                current_period_end: nextBillingTime || null,
+              })
+
+            if (insertError) {
+              console.error('❌ Error inserting active subscription:', insertError)
+            } else {
+              console.log(`✅ Subscription created and activated for user ${customId}`)
+            }
+          } else {
+            console.error('❌ Could not find plan for PayPal plan_id:', paypalPlanId)
+          }
+        } else {
+          console.error('❌ Cannot match subscription to user - no existing record or custom_id')
+        }
+        break
+      }
+
+      case 'BILLING.SUBSCRIPTION.CANCELLED': {
+        const subscriptionId = event.resource?.id
+
+        if (!subscriptionId) {
+          console.error('❌ No subscription ID in CANCELLED event')
+          break
+        }
+
+        const { error: updateError } = await supabaseAdmin
+          .from('user_subscriptions')
+          .update({
+            status: 'cancelled',
+            cancelled_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .eq('paypal_subscription_id', subscriptionId)
+
+        if (updateError) {
+          console.error('❌ Error cancelling subscription:', updateError)
+        } else {
+          console.log(`✅ Subscription cancelled: ${subscriptionId}`)
+        }
+        break
+      }
+
+      case 'BILLING.SUBSCRIPTION.SUSPENDED': {
+        const subscriptionId = event.resource?.id
+
+        if (!subscriptionId) {
+          console.error('❌ No subscription ID in SUSPENDED event')
+          break
+        }
+
+        const { error: updateError } = await supabaseAdmin
+          .from('user_subscriptions')
+          .update({
+            status: 'suspended',
+            updated_at: new Date().toISOString(),
+          })
+          .eq('paypal_subscription_id', subscriptionId)
+
+        if (updateError) {
+          console.error('❌ Error suspending subscription:', updateError)
+        } else {
+          console.log(`✅ Subscription suspended: ${subscriptionId}`)
+        }
+        break
+      }
+
+      case 'BILLING.SUBSCRIPTION.EXPIRED': {
+        const subscriptionId = event.resource?.id
+
+        if (!subscriptionId) {
+          console.error('❌ No subscription ID in EXPIRED event')
+          break
+        }
+
+        const { error: updateError } = await supabaseAdmin
+          .from('user_subscriptions')
+          .update({
+            status: 'expired',
+            updated_at: new Date().toISOString(),
+          })
+          .eq('paypal_subscription_id', subscriptionId)
+
+        if (updateError) {
+          console.error('❌ Error expiring subscription:', updateError)
+        } else {
+          console.log(`✅ Subscription expired: ${subscriptionId}`)
+        }
+        break
+      }
+
+      case 'PAYMENT.SALE.COMPLETED': {
+        // Recurring payment completed - update the subscription period
+        const billingAgreementId = event.resource?.billing_agreement_id
+
+        if (!billingAgreementId) {
+          console.log('ℹ️ PAYMENT.SALE.COMPLETED without billing_agreement_id - may be a one-time payment')
+          break
+        }
+
+        // Get subscription details from PayPal to find next billing time
+        try {
+          const subResponse = await fetch(`${PAYPAL_API_BASE}/v1/billing/subscriptions/${billingAgreementId}`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+            },
+          })
+
+          if (subResponse.ok) {
+            const subDetails = await subResponse.json()
+            const nextBillingTime = subDetails.billing_info?.next_billing_time
+
+            const { error: updateError } = await supabaseAdmin
+              .from('user_subscriptions')
+              .update({
+                status: 'active',
+                current_period_end: nextBillingTime || null,
+                updated_at: new Date().toISOString(),
+              })
+              .eq('paypal_subscription_id', billingAgreementId)
+
+            if (updateError) {
+              console.error('❌ Error updating subscription period:', updateError)
+            } else {
+              console.log(`✅ Subscription renewed: ${billingAgreementId}, next billing: ${nextBillingTime}`)
+            }
+          }
+        } catch (subError) {
+          console.error('❌ Error fetching subscription details for renewal:', subError)
+        }
+        break
+      }
+
+      // ===== LEGACY ORDER/PURCHASE EVENTS =====
+
       case 'CHECKOUT.ORDER.APPROVED':
       case 'PAYMENT.CAPTURE.COMPLETED': {
+        // Check if this is a subscription-related sale (already handled above via PAYMENT.SALE.COMPLETED)
+        if (event.resource?.billing_agreement_id) {
+          console.log('ℹ️ Skipping PAYMENT.CAPTURE.COMPLETED for subscription (handled by PAYMENT.SALE.COMPLETED)')
+          break
+        }
+
         // Get order details
         const orderId = event.resource?.id || event.resource?.supplementary_data?.related_ids?.order_id
         
@@ -177,13 +380,14 @@ serve(async (req) => {
         const currency = purchaseUnit?.amount?.currency_code
 
         // Find user by email (since we can't pass custom metadata directly in PayPal Orders API v2)
-        const { data: userData, error: userError } = await supabaseAdmin
+        let userData: any = null
+        const { data: profileData, error: profileError } = await supabaseAdmin
           .from('profiles')
           .select('id')
           .eq('email', payerEmail)
           .maybeSingle()
 
-        if (userError || !userData) {
+        if (profileError || !profileData) {
           console.error('❌ User not found for email:', payerEmail)
           // Try to find by looking at recent auth users
           const { data: authUser } = await supabaseAdmin.auth.admin.listUsers()
@@ -194,7 +398,9 @@ serve(async (req) => {
             break
           }
           
-          userData.id = matchedUser.id
+          userData = { id: matchedUser.id }
+        } else {
+          userData = profileData
         }
 
         const userId = userData.id

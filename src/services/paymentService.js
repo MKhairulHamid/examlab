@@ -1,5 +1,5 @@
 /**
- * Payment Service - Handle PayPal payments and purchase processing
+ * Payment Service - Handle PayPal subscriptions, payments, and purchase processing
  */
 
 import supabase from './supabase'
@@ -7,8 +7,147 @@ import supabase from './supabase'
 // PayPal configuration
 const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID || ''
 
+// ===== SUBSCRIPTION FUNCTIONS =====
+
 /**
- * Process checkout with PayPal
+ * Get available subscription plans
+ */
+export const getSubscriptionPlans = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('subscription_plans')
+      .select('*')
+      .eq('is_active', true)
+      .order('display_order', { ascending: true })
+
+    if (error) throw error
+    return { success: true, plans: data || [] }
+  } catch (error) {
+    console.error('Error fetching subscription plans:', error)
+    return { success: false, plans: [], error: error.message }
+  }
+}
+
+/**
+ * Create a PayPal subscription for the user
+ */
+export const createSubscription = async (planSlug, userId, email) => {
+  try {
+    const { data, error } = await supabase.functions.invoke('create-paypal-subscription', {
+      body: {
+        planSlug,
+        returnUrl: `${window.location.origin}/payment-success?type=subscription`,
+        cancelUrl: `${window.location.origin}/dashboard`,
+      }
+    })
+
+    if (error) {
+      console.error('Edge Function error:', error)
+      throw error
+    }
+
+    if (data?.error) {
+      throw new Error(data.error)
+    }
+
+    if (!data?.approvalUrl) {
+      throw new Error('No approval URL received from PayPal')
+    }
+
+    // Redirect to PayPal for subscription approval
+    window.location.href = data.approvalUrl
+
+    return { success: true }
+  } catch (error) {
+    console.error('Subscription creation error:', error)
+    return { success: false, error: error.message || 'Unknown error occurred' }
+  }
+}
+
+/**
+ * Get user's active subscription
+ */
+export const getUserSubscription = async (userId) => {
+  try {
+    const { data, error } = await supabase
+      .from('user_subscriptions')
+      .select(`
+        *,
+        subscription_plans:plan_id (*)
+      `)
+      .eq('user_id', userId)
+      .in('status', ['active', 'pending'])
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (error && error.code !== 'PGRST116') throw error
+    return { success: true, subscription: data || null }
+  } catch (error) {
+    console.error('Error fetching subscription:', error)
+    return { success: false, subscription: null, error: error.message }
+  }
+}
+
+/**
+ * Check if user has an active subscription
+ */
+export const hasActiveSubscription = async (userId) => {
+  try {
+    const { data, error } = await supabase
+      .from('user_subscriptions')
+      .select('id, status')
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .maybeSingle()
+
+    if (error && error.code !== 'PGRST116') throw error
+    return { success: true, active: !!data }
+  } catch (error) {
+    console.error('Error checking subscription:', error)
+    return { success: false, active: false }
+  }
+}
+
+/**
+ * Mock subscription for development
+ */
+export const mockSubscription = async (userId, planSlug) => {
+  try {
+    // Get the plan
+    const { data: plan, error: planError } = await supabase
+      .from('subscription_plans')
+      .select('id')
+      .eq('slug', planSlug)
+      .single()
+
+    if (planError || !plan) throw new Error('Plan not found')
+
+    const { data, error } = await supabase
+      .from('user_subscriptions')
+      .insert({
+        user_id: userId,
+        plan_id: plan.id,
+        paypal_subscription_id: `mock_sub_${Date.now()}`,
+        status: 'active',
+        current_period_start: new Date().toISOString(),
+        current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      })
+      .select()
+      .single()
+
+    if (error) throw error
+    return { success: true, subscription: data }
+  } catch (error) {
+    console.error('Mock subscription error:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+// ===== LEGACY PURCHASE FUNCTIONS (backward compatibility) =====
+
+/**
+ * Process checkout with PayPal (legacy - one-time purchases)
  */
 export const processCheckout = async ({ itemType, itemId, userId, email }) => {
   try {
@@ -50,7 +189,7 @@ export const processCheckout = async ({ itemType, itemId, userId, email }) => {
 }
 
 /**
- * Get user's purchases
+ * Get user's purchases (legacy)
  */
 export const getUserPurchases = async (userId) => {
   try {
@@ -75,7 +214,7 @@ export const getUserPurchases = async (userId) => {
 }
 
 /**
- * Check if user has purchased a specific question set
+ * Check if user has purchased a specific question set (legacy)
  */
 export const hasUserPurchased = async (userId, questionSetId) => {
   try {
@@ -98,7 +237,7 @@ export const hasUserPurchased = async (userId, questionSetId) => {
 }
 
 /**
- * Get purchased question set IDs for a user
+ * Get purchased question set IDs for a user (legacy)
  */
 export const getPurchasedQuestionSetIds = async (userId) => {
   try {
@@ -172,6 +311,13 @@ export const mockPurchase = async (userId, itemType, itemId) => {
 }
 
 export default {
+  // Subscription
+  getSubscriptionPlans,
+  createSubscription,
+  getUserSubscription,
+  hasActiveSubscription,
+  mockSubscription,
+  // Legacy purchases
   processCheckout,
   getUserPurchases,
   hasUserPurchased,

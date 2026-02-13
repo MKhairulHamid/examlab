@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import useExamStore from '../stores/examStore'
 import useAuthStore from '../stores/authStore'
 import usePurchaseStore from '../stores/purchaseStore'
-import PurchaseModal from '../components/purchase/PurchaseModal'
+import EnrollmentModal from '../components/enrollment/EnrollmentModal'
 import supabase from '../services/supabase'
 
 function ExamDetail() {
@@ -11,7 +11,7 @@ function ExamDetail() {
   const navigate = useNavigate()
   const { getExamBySlug, fetchQuestionSets, questionSets, packages, fetchPackages } = useExamStore()
   const { user } = useAuthStore()
-  const { fetchPurchases, hasPurchased } = usePurchaseStore()
+  const { fetchPurchases, hasPurchased, isSubscribed, fetchSubscription } = usePurchaseStore()
   const [exam, setExam] = useState(null)
   const [showPurchaseModal, setShowPurchaseModal] = useState(false)
   const [examResults, setExamResults] = useState([])
@@ -27,6 +27,7 @@ function ExamDetail() {
 
         if (user) {
           await fetchPurchases(user.id)
+          await fetchSubscription(user.id)
           await loadExamResults(examData.id)
         }
       }
@@ -88,9 +89,9 @@ function ExamDetail() {
     )
   }
 
-  // Check if user has purchased sets
-  const isPurchased = (setId) => hasPurchased(setId)
-  const hasAnyPurchase = questionSets.some(set => isPurchased(set.id))
+  // Check if user has access (subscription or legacy purchase)
+  const isPurchased = (setId) => isSubscribed || hasPurchased(setId)
+  const hasAnyPurchase = isSubscribed || questionSets.some(set => hasPurchased(set.id))
   const freeSet = questionSets.find(set => set.is_free_sample || set.price_cents === 0)
   const paidSets = questionSets.filter(set => !set.is_free_sample && set.price_cents > 0)
 
@@ -165,7 +166,7 @@ function ExamDetail() {
                         fontSize: '0.875rem',
                         fontWeight: '600'
                       }}>
-                        ✓ Purchased
+                        ✓ {isSubscribed ? 'Enrolled' : 'Purchased'}
                       </span>
                     ) : (
                       <span className="badge-locked">
@@ -202,7 +203,7 @@ function ExamDetail() {
                         transition: 'all 0.2s'
                       }}
                     >
-                      🔒 Purchase to Unlock
+                      🔒 Enroll to Unlock
                     </button>
                   )}
                 </div>
@@ -211,8 +212,8 @@ function ExamDetail() {
           )}
         </div>
 
-        {/* Bundle Offer */}
-        {paidSets.length > 1 && !hasAnyPurchase && (
+        {/* Enrollment CTA */}
+        {paidSets.length > 0 && !hasAnyPurchase && (
           <div style={{
             marginTop: '3rem',
             background: 'rgba(255,255,255,0.1)',
@@ -223,10 +224,10 @@ function ExamDetail() {
             textAlign: 'center'
           }}>
             <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: 'white', marginBottom: '1rem' }}>
-              💰 Save with Bundle Pricing
+              🎓 Get Full Access
             </h3>
             <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '1rem', marginBottom: '1.5rem' }}>
-              Get all {paidSets.length} question sets for ${((paidSets.length * 5) - 5).toFixed(0)} instead of ${(paidSets.length * 5).toFixed(0)} when purchased separately
+              Enroll to unlock all {paidSets.length} question sets and every exam on the platform. Plans start at $5/month.
             </p>
             <button
               onClick={() => setShowPurchaseModal(true)}
@@ -242,7 +243,7 @@ function ExamDetail() {
                 boxShadow: '0 4px 12px rgba(0,212,170,0.3)'
               }}
             >
-              View Bundle Options
+              View Plans
             </button>
           </div>
         )}
@@ -343,12 +344,10 @@ function ExamDetail() {
         )}
       </div>
 
-      {/* Purchase Modal */}
-      <PurchaseModal
+      {/* Enrollment Modal */}
+      <EnrollmentModal
         isOpen={showPurchaseModal}
         onClose={() => setShowPurchaseModal(false)}
-        examTypeId={exam?.id}
-        examName={exam?.name}
       />
     </div>
   )
