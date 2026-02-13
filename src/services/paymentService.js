@@ -144,6 +144,75 @@ export const mockSubscription = async (userId, planSlug) => {
   }
 }
 
+// ===== ENROLLMENT FUNCTIONS =====
+
+/**
+ * Enroll user in an exam (free action, requires active subscription)
+ */
+export const enrollInExam = async (userId, examTypeId) => {
+  try {
+    const { data, error } = await supabase
+      .from('user_enrollments')
+      .insert({
+        user_id: userId,
+        exam_type_id: examTypeId,
+      })
+      .select()
+      .single()
+
+    if (error) {
+      // Unique constraint violation means already enrolled
+      if (error.code === '23505') {
+        return { success: true, alreadyEnrolled: true }
+      }
+      throw error
+    }
+    return { success: true, enrollment: data }
+  } catch (error) {
+    console.error('Error enrolling in exam:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+/**
+ * Get all exam type IDs the user is enrolled in
+ */
+export const getUserEnrollments = async (userId) => {
+  try {
+    const { data, error } = await supabase
+      .from('user_enrollments')
+      .select('exam_type_id')
+      .eq('user_id', userId)
+
+    if (error) throw error
+    const examTypeIds = (data || []).map(e => e.exam_type_id)
+    return { success: true, examTypeIds }
+  } catch (error) {
+    console.error('Error fetching enrollments:', error)
+    return { success: false, examTypeIds: [], error: error.message }
+  }
+}
+
+/**
+ * Check if user is enrolled in a specific exam
+ */
+export const isEnrolledInExam = async (userId, examTypeId) => {
+  try {
+    const { data, error } = await supabase
+      .from('user_enrollments')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('exam_type_id', examTypeId)
+      .maybeSingle()
+
+    if (error && error.code !== 'PGRST116') throw error
+    return { success: true, enrolled: !!data }
+  } catch (error) {
+    console.error('Error checking enrollment:', error)
+    return { success: false, enrolled: false }
+  }
+}
+
 // ===== LEGACY PURCHASE FUNCTIONS (backward compatibility) =====
 
 /**
@@ -317,6 +386,10 @@ export default {
   getUserSubscription,
   hasActiveSubscription,
   mockSubscription,
+  // Enrollment
+  enrollInExam,
+  getUserEnrollments,
+  isEnrolledInExam,
   // Legacy purchases
   processCheckout,
   getUserPurchases,

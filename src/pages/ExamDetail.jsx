@@ -166,7 +166,7 @@ function ExamDetail() {
                         fontSize: '0.875rem',
                         fontWeight: '600'
                       }}>
-                        ✓ {isSubscribed ? 'Enrolled' : 'Purchased'}
+                        ✓ {isSubscribed ? 'Subscribed' : 'Purchased'}
                       </span>
                     ) : (
                       <span className="badge-locked">
@@ -203,7 +203,7 @@ function ExamDetail() {
                         transition: 'all 0.2s'
                       }}
                     >
-                      🔒 Enroll to Unlock
+                      🔒 Subscribe to Unlock
                     </button>
                   )}
                 </div>
@@ -227,7 +227,7 @@ function ExamDetail() {
               🎓 Get Full Access
             </h3>
             <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '1rem', marginBottom: '1.5rem' }}>
-              Enroll to unlock all {paidSets.length} question sets and every exam on the platform. Plans start at $5/month.
+              Subscribe to unlock all {paidSets.length} question sets and every exam on the platform. Plans start at $5/month.
             </p>
             <button
               onClick={() => setShowPurchaseModal(true)}

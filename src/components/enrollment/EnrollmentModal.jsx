@@ -163,7 +163,7 @@ const EnrollmentModal = ({ isOpen, onClose }) => {
             ×
           </button>
           <h2 style={{ fontSize: '1.75rem', fontWeight: '700', color: 'white', marginBottom: '0.5rem' }}>
-            Choose Your Study Plan
+            Subscribe to Cloud Exam Lab
           </h2>
           <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '1rem' }}>
             Unlimited access to all practice questions \u2022 Study at your own pace \u2022 Cancel anytime

@@ -15,9 +15,10 @@ function Dashboard() {
   const navigate = useNavigate()
   const { user, profile } = useAuthStore()
   const { exams, fetchExams } = useExamStore()
-  const { purchases, fetchPurchases, isSubscribed, fetchSubscription } = usePurchaseStore()
+  const { purchases, fetchPurchases, isSubscribed, fetchSubscription, enrolledExamIds, fetchEnrollments, enrollInExam, isEnrolled } = usePurchaseStore()
   const [showEnrollmentModal, setShowEnrollmentModal] = useState(false)
   const [selectedExam, setSelectedExam] = useState(null)
+  const [enrollingExamId, setEnrollingExamId] = useState(null)
   const [streakStats, setStreakStats] = useState(null)
   const [userCertifications, setUserCertifications] = useState([])
   const [examResults, setExamResults] = useState([])
@@ -30,6 +31,7 @@ function Dashboard() {
     if (user) {
       fetchPurchases(user.id)
       fetchSubscription(user.id)
+      fetchEnrollments(user.id)
       initializeStreak()
       loadExamResults()
       loadExamDates()
@@ -166,9 +168,9 @@ function Dashboard() {
   }
 
   useEffect(() => {
-    // Get user's certifications (purchased or started)
+    // Get user's certifications based on enrollments
     const loadUserCertifications = async () => {
-      if (exams.length > 0 && purchases.length >= 0 && user) {
+      if (exams.length > 0 && user) {
         // Get all exam attempts from progress
         const userAttempts = await progressService.getAllProgress(user.id)
         
@@ -183,8 +185,8 @@ function Dashboard() {
         }
         
         const userExams = exams.filter(exam => {
-          // If user has active subscription, they have access to all exams
-          if (isSubscribed) return true
+          // Show exams the user has explicitly enrolled in
+          if (enrolledExamIds.includes(exam.id)) return true
           
           // Check if user has purchased any sets for this exam (legacy)
           const hasPurchased = purchases.some(purchase => {
@@ -204,7 +206,7 @@ function Dashboard() {
     }
     
     loadUserCertifications()
-  }, [exams, purchases, user, isSubscribed])
+  }, [exams, purchases, user, isSubscribed, enrolledExamIds])
 
   const userName = profile?.full_name || user?.email?.split('@')[0] || 'Student'
 
@@ -498,10 +500,12 @@ function Dashboard() {
       ) : (
         <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))' }}>
           {userCertifications.map((exam) => {
-            const isPurchased = isSubscribed || purchases.some(p => 
+            const isExamEnrolled = enrolledExamIds.includes(exam.id)
+            const hasLegacyPurchase = purchases.some(p => 
               p.question_sets?.exam_type_id === exam.id || 
               p.packages?.exam_type_id === exam.id
             )
+            const isPurchased = isSubscribed || hasLegacyPurchase || isExamEnrolled
             
             // Check if exam is started (has progress) but not purchased/subscribed
             const isStartedOnly = !isPurchased
@@ -556,7 +560,7 @@ function Dashboard() {
                       fontSize: '0.75rem',
                       fontWeight: '600'
                     }}>
-                      ✓ {isSubscribed ? 'Enrolled' : 'Purchased'}
+                      ✓ {isExamEnrolled ? 'Enrolled' : hasLegacyPurchase ? 'Purchased' : 'Subscribed'}
                     </div>
                   ) : isStartedOnly ? (
                     <div style={{ 
@@ -1030,23 +1034,44 @@ function Dashboard() {
                 Try Free
               </button>
               <button
-                onClick={(e) => {
+                onClick={async (e) => {
                   e.stopPropagation()
-                  setShowEnrollmentModal(true)
+                  if (isSubscribed) {
+                    // Enroll directly (free action)
+                    setEnrollingExamId(exam.id)
+                    const result = await enrollInExam(exam.id, user.id)
+                    setEnrollingExamId(null)
+                    if (!result.success && result.needsSubscription) {
+                      setShowEnrollmentModal(true)
+                    }
+                  } else {
+                    // Need to subscribe first
+                    setShowEnrollmentModal(true)
+                  }
                 }}
+                disabled={enrollingExamId === exam.id || enrolledExamIds.includes(exam.id)}
                 style={{
                   flex: 1,
                   padding: '0.5rem',
-                  background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
-                  color: 'white',
-                  border: 'none',
+                  background: enrolledExamIds.includes(exam.id) 
+                    ? '#d1fae5'
+                    : 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
+                  color: enrolledExamIds.includes(exam.id) ? '#065f46' : 'white',
+                  border: enrolledExamIds.includes(exam.id) ? '1px solid #6ee7b7' : 'none',
                   borderRadius: '0.5rem',
                   fontWeight: '600',
-                  cursor: 'pointer',
-                  fontSize: '0.75rem'
+                  cursor: enrolledExamIds.includes(exam.id) ? 'default' : 'pointer',
+                  fontSize: '0.75rem',
+                  opacity: enrollingExamId === exam.id ? 0.7 : 1
                 }}
               >
-                Enroll
+                {enrolledExamIds.includes(exam.id) 
+                  ? '✓ Enrolled' 
+                  : enrollingExamId === exam.id 
+                    ? 'Enrolling...' 
+                    : isSubscribed 
+                      ? 'Enroll' 
+                      : 'Subscribe'}
               </button>
             </div>
           </div>
@@ -1493,6 +1518,36 @@ function Dashboard() {
             <p style={{ fontSize: '1.125rem', color: 'rgba(255,255,255,0.9)', maxWidth: '600px', margin: '0 auto' }}>
               Ready to continue your certification journey? Let's make today count!
             </p>
+
+            {/* Subscribe CTA if no active subscription */}
+            {!isSubscribed && (
+              <button
+                onClick={() => setShowEnrollmentModal(true)}
+                style={{
+                  marginTop: '1.5rem',
+                  padding: '0.875rem 2rem',
+                  background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '0.75rem',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  fontSize: '1rem',
+                  boxShadow: '0 4px 15px rgba(0, 212, 170, 0.4)',
+                  transition: 'all 0.3s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)'
+                  e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 212, 170, 0.5)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 212, 170, 0.4)'
+                }}
+              >
+                Subscribe to Get Full Access
+              </button>
+            )}
           </div>
         </section>
 

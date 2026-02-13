@@ -51,12 +51,13 @@ serve(async (req) => {
   }
 
   try {
-    // Debug: Log environment and auth header presence
+    // Extract JWT token from Authorization header
     const authHeader = req.headers.get('Authorization')
-    console.log('🔍 Auth header present:', !!authHeader)
-    console.log('🔍 Auth header prefix:', authHeader?.substring(0, 20))
-    console.log('🔍 SUPABASE_URL:', Deno.env.get('SUPABASE_URL')?.substring(0, 30))
-    console.log('🔍 SUPABASE_ANON_KEY present:', !!Deno.env.get('SUPABASE_ANON_KEY'))
+    const token = authHeader?.replace('Bearer ', '')
+
+    if (!token) {
+      throw new Error('No authorization token provided')
+    }
 
     // Initialize Supabase client with user's auth token
     const supabaseClient = createClient(
@@ -64,18 +65,16 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       {
         global: {
-          headers: { Authorization: authHeader ?? '' },
+          headers: { Authorization: authHeader },
         },
       }
     )
 
-    // Get user from auth token
+    // Get user from auth token - pass token directly to avoid "Auth session missing" error
     const {
       data: { user },
       error: userError,
-    } = await supabaseClient.auth.getUser()
-
-    console.log('🔍 getUser result - user:', !!user, 'error:', userError?.message || 'none')
+    } = await supabaseClient.auth.getUser(token)
 
     if (userError || !user) {
       throw new Error(`Unauthorized: ${userError?.message || 'No user returned'}`)

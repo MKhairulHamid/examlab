@@ -13,6 +13,7 @@ const usePurchaseStore = create((set, get) => ({
   subscription: null,
   subscriptionPlans: [],
   isSubscribed: false,
+  enrolledExamIds: [],
   loading: false,
   error: null,
   checkoutLoading: false,
@@ -132,6 +133,86 @@ const usePurchaseStore = create((set, get) => ({
   hasAccess: (questionSetId) => {
     const { isSubscribed, purchasedQuestionSetIds } = get()
     return isSubscribed || purchasedQuestionSetIds.includes(questionSetId)
+  },
+
+  // ===== ENROLLMENT ACTIONS =====
+
+  /**
+   * Fetch user's enrolled exam IDs
+   */
+  fetchEnrollments: async (userId) => {
+    try {
+      const cached = cacheService.get(`enrollments_${userId}`)
+      if (cached) {
+        set({ enrolledExamIds: cached.examTypeIds })
+        // Background refresh
+        get().refreshEnrollmentsInBackground(userId)
+        return
+      }
+
+      const result = await paymentService.getUserEnrollments(userId)
+      if (result.success) {
+        set({ enrolledExamIds: result.examTypeIds })
+        cacheService.set(`enrollments_${userId}`, {
+          examTypeIds: result.examTypeIds
+        }, 5 * 60 * 1000)
+      }
+    } catch (error) {
+      console.error('Error fetching enrollments:', error)
+    }
+  },
+
+  /**
+   * Background refresh enrollments
+   */
+  refreshEnrollmentsInBackground: async (userId) => {
+    try {
+      const result = await paymentService.getUserEnrollments(userId)
+      if (result.success) {
+        set({ enrolledExamIds: result.examTypeIds })
+        cacheService.set(`enrollments_${userId}`, {
+          examTypeIds: result.examTypeIds
+        }, 5 * 60 * 1000)
+      }
+    } catch (error) {
+      console.error('Background enrollment refresh error:', error)
+    }
+  },
+
+  /**
+   * Enroll in an exam (requires active subscription)
+   */
+  enrollInExam: async (examTypeId, userId) => {
+    const { isSubscribed } = get()
+    if (!isSubscribed) {
+      return { success: false, error: 'Subscription required', needsSubscription: true }
+    }
+
+    try {
+      const result = await paymentService.enrollInExam(userId, examTypeId)
+      if (result.success) {
+        // Update local state immediately
+        set(state => ({
+          enrolledExamIds: state.enrolledExamIds.includes(examTypeId)
+            ? state.enrolledExamIds
+            : [...state.enrolledExamIds, examTypeId]
+        }))
+        // Invalidate cache
+        cacheService.remove(`enrollments_${userId}`)
+      }
+      return result
+    } catch (error) {
+      console.error('Enrollment error:', error)
+      return { success: false, error: error.message }
+    }
+  },
+
+  /**
+   * Check if user is enrolled in a specific exam
+   */
+  isEnrolled: (examTypeId) => {
+    const { enrolledExamIds } = get()
+    return enrolledExamIds.includes(examTypeId)
   },
 
   // ===== LEGACY PURCHASE ACTIONS =====
@@ -271,7 +352,8 @@ const usePurchaseStore = create((set, get) => ({
   clearCache: (userId) => {
     cacheService.remove(`purchases_${userId}`)
     cacheService.remove(`subscription_${userId}`)
-    set({ purchases: [], purchasedQuestionSetIds: [], subscription: null, isSubscribed: false })
+    cacheService.remove(`enrollments_${userId}`)
+    set({ purchases: [], purchasedQuestionSetIds: [], subscription: null, isSubscribed: false, enrolledExamIds: [] })
   }
 }))
 
