@@ -51,13 +51,20 @@ serve(async (req) => {
   }
 
   try {
+    // Debug: Log environment and auth header presence
+    const authHeader = req.headers.get('Authorization')
+    console.log('🔍 Auth header present:', !!authHeader)
+    console.log('🔍 Auth header prefix:', authHeader?.substring(0, 20))
+    console.log('🔍 SUPABASE_URL:', Deno.env.get('SUPABASE_URL')?.substring(0, 30))
+    console.log('🔍 SUPABASE_ANON_KEY present:', !!Deno.env.get('SUPABASE_ANON_KEY'))
+
     // Initialize Supabase client with user's auth token
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       {
         global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
+          headers: { Authorization: authHeader ?? '' },
         },
       }
     )
@@ -68,8 +75,10 @@ serve(async (req) => {
       error: userError,
     } = await supabaseClient.auth.getUser()
 
+    console.log('🔍 getUser result - user:', !!user, 'error:', userError?.message || 'none')
+
     if (userError || !user) {
-      throw new Error('Unauthorized')
+      throw new Error(`Unauthorized: ${userError?.message || 'No user returned'}`)
     }
 
     // Parse request body
