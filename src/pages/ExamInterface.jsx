@@ -21,7 +21,7 @@ function ExamInterface() {
   
   const { user } = useAuthStore()
   const { loadQuestionSet, currentQuestionSet, getExamBySlug } = useExamStore()
-  const { hasPurchased, fetchPurchases, isSubscribed, fetchSubscription } = usePurchaseStore()
+  const { isSubscribed, fetchSubscription } = usePurchaseStore()
   const { 
     startExam,
     startOrResumeExam,
@@ -53,10 +53,9 @@ function ExamInterface() {
     const initialize = async () => {
       if (setId && user) {
         try {
-          // SECURITY: Step 1 - Fetch user's purchases and subscription
-          await fetchPurchases(user.id)
+          // SECURITY: Step 1 - Fetch user's subscription
           await fetchSubscription(user.id)
-          
+
           // SECURITY: Step 2 - Load question set metadata
           const questionSet = await loadQuestionSet(setId)
           
@@ -69,21 +68,13 @@ function ExamInterface() {
           
           // SECURITY: Step 3 - Check if it's a free sample
           const isFree = questionSet.is_free_sample || questionSet.price_cents === 0
-          
-          // SECURITY: Step 4 - Check if user has purchased or has active subscription
-          const purchased = hasPurchased(setId)
+
+          // SECURITY: Step 4 - Verify access (subscription OR free)
           const { isSubscribed: subscribed } = usePurchaseStore.getState()
-          
-          // SECURITY: Step 5 - Verify access (subscription OR purchase OR free)
-          if (!isFree && !purchased && !subscribed) {
-            console.warn('🔒 Access denied: Question set not purchased', {
-              setId,
-              userId: user.id,
-              isFree,
-              purchased
-            })
+          if (!isFree && !subscribed) {
+            console.warn('🔒 Access denied: Subscription required', { setId, userId: user.id, isFree })
             setAccessDenied(true)
-            setAccessMessage('This question set requires a purchase to access.')
+            setAccessMessage('This question set requires an active subscription to access.')
             setLoading(false)
             return
           }
@@ -136,7 +127,7 @@ function ExamInterface() {
     }
     
     initialize()
-  }, [setId, user, loadQuestionSet, startOrResumeExam, fetchPurchases, hasPurchased])
+  }, [setId, user, loadQuestionSet, startOrResumeExam, fetchSubscription])
 
   // Timer interval - only runs when not paused
   const timerRef = useRef(null)

@@ -1,5 +1,5 @@
 /**
- * Exam Store - Manage exams, question sets, and packages
+ * Exam Store - Manage exams and question sets
  * Implements offline-first pattern with background sync
  */
 
@@ -14,7 +14,6 @@ export const useExamStore = create((set, get) => ({
   currentExam: null,
   questionSets: [],
   currentQuestionSet: null,
-  packages: [],
   loading: false,
   error: null,
 
@@ -342,35 +341,6 @@ export const useExamStore = create((set, get) => ({
       }
     } catch (error) {
       console.error('Version check error:', error)
-    }
-  },
-
-  /**
-   * Fetch packages for an exam
-   */
-  fetchPackages: async (examTypeId) => {
-    try {
-      const cached = cacheService.get(`packages_${examTypeId}`)
-      if (cached) {
-        set({ packages: cached })
-        return cached
-      }
-      
-      const { data, error } = await supabase
-        .from('packages')
-        .select('*')
-        .eq('exam_type_id', examTypeId)
-        .eq('is_active', true)
-      
-      if (error) throw error
-      
-      set({ packages: data || [] })
-      cacheService.set(`packages_${examTypeId}`, data || [], 24 * 60 * 60 * 1000)
-      
-      return data || []
-    } catch (error) {
-      console.error('Error fetching packages:', error)
-      return []
     }
   },
 

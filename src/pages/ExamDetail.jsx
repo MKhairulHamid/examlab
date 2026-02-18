@@ -9,9 +9,9 @@ import supabase from '../services/supabase'
 function ExamDetail() {
   const { slug } = useParams()
   const navigate = useNavigate()
-  const { getExamBySlug, fetchQuestionSets, questionSets, packages, fetchPackages } = useExamStore()
+  const { getExamBySlug, fetchQuestionSets, questionSets } = useExamStore()
   const { user } = useAuthStore()
-  const { fetchPurchases, hasPurchased, isSubscribed, fetchSubscription } = usePurchaseStore()
+  const { isSubscribed, fetchSubscription } = usePurchaseStore()
   const [exam, setExam] = useState(null)
   const [showPurchaseModal, setShowPurchaseModal] = useState(false)
   const [examResults, setExamResults] = useState([])
@@ -23,10 +23,8 @@ function ExamDetail() {
 
       if (examData) {
         await fetchQuestionSets(examData.id)
-        await fetchPackages(examData.id)
 
         if (user) {
-          await fetchPurchases(user.id)
           await fetchSubscription(user.id)
           await loadExamResults(examData.id)
         }
@@ -89,9 +87,8 @@ function ExamDetail() {
     )
   }
 
-  // Check if user has access (subscription or legacy purchase)
-  const isPurchased = (setId) => isSubscribed || hasPurchased(setId)
-  const hasAnyPurchase = isSubscribed || questionSets.some(set => hasPurchased(set.id))
+  // Check if user has access (subscription grants full access)
+  const hasAccess = isSubscribed
   const freeSet = questionSets.find(set => set.is_free_sample || set.price_cents === 0)
   const paidSets = questionSets.filter(set => !set.is_free_sample && set.price_cents > 0)
 
@@ -139,9 +136,8 @@ function ExamDetail() {
             </div>
           ) : (
             questionSets.map(set => {
-              const purchased = isPurchased(set.id)
               const isFree = set.is_free_sample || set.price_cents === 0
-              const isLocked = !isFree && !purchased
+              const isLocked = !isFree && !hasAccess
 
               return (
                 <div
@@ -157,7 +153,7 @@ function ExamDetail() {
                       <span className="badge-free">
                         ✓ Free
                       </span>
-                    ) : purchased ? (
+                    ) : hasAccess ? (
                       <span style={{
                         padding: '0.25rem 0.75rem',
                         background: 'rgba(0,212,170,0.2)',
@@ -166,11 +162,11 @@ function ExamDetail() {
                         fontSize: '0.875rem',
                         fontWeight: '600'
                       }}>
-                        ✓ {isSubscribed ? 'Subscribed' : 'Purchased'}
+                        ✓ Subscribed
                       </span>
                     ) : (
                       <span className="badge-locked">
-                        🔒 ${(set.price_cents / 100).toFixed(0)}
+                        🔒 Subscribe
                       </span>
                     )}
                   </div>
@@ -180,7 +176,7 @@ function ExamDetail() {
                     <span>📊 Set {set.set_number}</span>
                   </div>
 
-                  {(isFree || purchased) ? (
+                  {(isFree || hasAccess) ? (
                     <button
                       onClick={() => navigate(`/exam/${slug}/take?set=${set.id}`)}
                       className="start-exam-button"
@@ -213,7 +209,7 @@ function ExamDetail() {
         </div>
 
         {/* Enrollment CTA */}
-        {paidSets.length > 0 && !hasAnyPurchase && (
+        {paidSets.length > 0 && !hasAccess && (
           <div style={{
             marginTop: '3rem',
             background: 'rgba(255,255,255,0.1)',

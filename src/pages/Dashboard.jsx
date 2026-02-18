@@ -15,7 +15,7 @@ function Dashboard() {
   const navigate = useNavigate()
   const { user, profile } = useAuthStore()
   const { exams, fetchExams } = useExamStore()
-  const { purchases, fetchPurchases, isSubscribed, fetchSubscription, enrolledExamIds, fetchEnrollments, enrollInExam, isEnrolled } = usePurchaseStore()
+  const { isSubscribed, fetchSubscription, enrolledExamIds, fetchEnrollments, enrollInExam, isEnrolled } = usePurchaseStore()
   const [showEnrollmentModal, setShowEnrollmentModal] = useState(false)
   const [selectedExam, setSelectedExam] = useState(null)
   const [enrollingExamId, setEnrollingExamId] = useState(null)
@@ -30,7 +30,6 @@ function Dashboard() {
   useEffect(() => {
     fetchExams()
     if (user) {
-      fetchPurchases(user.id)
       fetchSubscription(user.id)
       fetchEnrollments(user.id)
       initializeStreak()
@@ -180,16 +179,8 @@ function Dashboard() {
         
         const userExams = exams.filter(exam => {
           if (enrolledExamIds.includes(exam.id)) return true
-          
-          const hasPurchased = purchases.some(purchase => {
-            if (purchase.question_sets?.exam_type_id === exam.id) return true
-            if (purchase.packages?.exam_type_id === exam.id) return true
-            return false
-          })
-          
           const hasStarted = attemptedExamIds.has(exam.id)
-          
-          return hasPurchased || hasStarted
+          return isSubscribed || hasStarted
         })
         
         setUserCertifications(userExams)
@@ -197,7 +188,7 @@ function Dashboard() {
     }
     
     loadUserCertifications()
-  }, [exams, purchases, user, isSubscribed, enrolledExamIds])
+  }, [exams, user, isSubscribed, enrolledExamIds])
 
   const userName = profile?.full_name || user?.email?.split('@')[0] || 'Student'
 
@@ -496,11 +487,7 @@ function Dashboard() {
           <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))' }}>
             {userCertifications.map((exam) => {
               const isExamEnrolled = enrolledExamIds.includes(exam.id)
-              const hasLegacyPurchase = purchases.some(p => 
-                p.question_sets?.exam_type_id === exam.id || 
-                p.packages?.exam_type_id === exam.id
-              )
-              const isPurchased = isSubscribed || hasLegacyPurchase || isExamEnrolled
+              const isPurchased = isSubscribed || isExamEnrolled
               const isStartedOnly = !isPurchased
               const scheduled = examDates.find(d => d.exam_type_id === exam.id)
               
@@ -542,7 +529,7 @@ function Dashboard() {
                         borderRadius: '9999px', color: '#065f46',
                         fontSize: '0.6875rem', fontWeight: '600'
                       }}>
-                        {isExamEnrolled ? 'Enrolled' : hasLegacyPurchase ? 'Purchased' : 'Subscribed'}
+                        {isExamEnrolled ? 'Enrolled' : 'Subscribed'}
                       </span>
                     ) : isStartedOnly ? (
                       <span style={{ 
@@ -949,24 +936,22 @@ function Dashboard() {
   // ─── Render: Subscription Summary ─────────────────────────────
   const renderSubscriptionSummary = () => {
     const { subscription } = usePurchaseStore.getState()
-    
-    if (!isSubscribed && purchases.length === 0) return null
+
+    if (!isSubscribed) return null
 
     return (
       <section style={{ ...sectionPad, background: 'white' }}>
         <div style={containerStyle}>
           <div style={{ marginBottom: '2rem' }}>
             <div style={sectionLabelStyle}>ACCOUNT</div>
-            <h2 style={sectionHeadingStyle}>Subscription & Purchases</h2>
+            <h2 style={sectionHeadingStyle}>Subscription</h2>
           </div>
 
-          {/* Active Subscription */}
-          {isSubscribed && subscription && (
+          {subscription && (
             <div style={{
               ...cardStyle,
               padding: '1.25rem',
-              border: '2px solid #00D4AA',
-              marginBottom: '1rem'
+              border: '2px solid #00D4AA'
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
                 <div>
@@ -990,44 +975,6 @@ function Dashboard() {
                   Active
                 </span>
               </div>
-            </div>
-          )}
-
-          {/* Purchase history */}
-          {purchases.length > 0 && (
-            <div style={{ ...cardStyle, padding: '1.25rem' }}>
-              <h3 style={{ fontSize: '1rem', fontWeight: '700', color: '#0A2540', marginBottom: '1rem' }}>
-                Purchase History
-              </h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                {purchases.slice(0, 5).map((purchase, index) => (
-                  <div 
-                    key={index}
-                    style={{
-                      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                      padding: '0.75rem', background: '#f9fafb',
-                      borderRadius: '0.5rem', border: '1px solid #f3f4f6'
-                    }}
-                  >
-                    <div>
-                      <div style={{ color: '#0A2540', fontWeight: '600', fontSize: '0.8125rem' }}>
-                        {purchase.question_sets?.name || purchase.packages?.name || 'Purchase'}
-                      </div>
-                      <div style={{ color: '#9ca3af', fontSize: '0.75rem' }}>
-                        {new Date(purchase.purchased_at).toLocaleDateString()}
-                      </div>
-                    </div>
-                    <div style={{ color: '#00D4AA', fontWeight: '600', fontSize: '0.875rem' }}>
-                      ${(purchase.amount_cents / 100).toFixed(2)}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              {purchases.length > 5 && (
-                <div style={{ marginTop: '0.75rem', textAlign: 'center', color: '#9ca3af', fontSize: '0.75rem' }}>
-                  + {purchases.length - 5} more purchases
-                </div>
-              )}
             </div>
           )}
         </div>
