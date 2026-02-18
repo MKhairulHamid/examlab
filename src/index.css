@@ -8,6 +8,12 @@
 html {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+  overflow-x: hidden;
+}
+
+html, body {
+  overflow-x: hidden;
+  width: 100%;
 }
 
 :root {
@@ -56,6 +62,10 @@ body {
   color: var(--color-gray-900);
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
 /* Global button cursor */
@@ -2462,4 +2472,210 @@ footer {
     min-height: 3rem;
     font-size: 1rem;
   }
+}
+
+/* ─── Mobile-First Enhancements ─────────────────────────────── */
+
+/* Ensure all images, iframes, and embedded content stay within bounds */
+img, iframe, video, embed, object {
+  max-width: 100%;
+}
+
+/* Better touch targets for all interactive elements on mobile */
+@media (max-width: 640px) {
+  .back-button {
+    min-height: 2.75rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .logout-button {
+    min-height: 2.75rem;
+    padding: 0.625rem 1rem;
+  }
+
+  /* Fix modal content for mobile keyboards */
+  .modal-content {
+    max-height: calc(100vh - 2rem);
+    max-height: calc(100dvh - 2rem);
+    margin: 0.5rem;
+  }
+
+  .modal-overlay {
+    padding: 0.5rem;
+    align-items: flex-start;
+    padding-top: 2rem;
+  }
+
+  /* Prevent exam interface from being too cramped */
+  .exam-interface {
+    padding: 0.5rem;
+    padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+  }
+
+  .exam-interface-container {
+    padding-top: 0.25rem;
+  }
+
+  /* Smaller question badge on mobile */
+  .question-badge {
+    font-size: 0.6875rem;
+    padding: 0.2rem 0.625rem;
+  }
+
+  /* Stack navigation buttons better */
+  .navigation-buttons {
+    gap: 0.5rem;
+  }
+
+  .nav-button {
+    min-height: 2.75rem;
+    font-size: 0.875rem;
+    padding: 0.75rem 0.5rem;
+  }
+
+  /* Fix option touch targets */
+  .option {
+    min-height: 3rem;
+    padding: 0.75rem;
+  }
+
+  .option-text {
+    font-size: 0.875rem;
+  }
+
+  /* Improve materials button group */
+  .materials-button {
+    flex: 1;
+    text-align: center;
+    justify-content: center;
+    min-height: 2.5rem;
+  }
+
+  /* Fix resume notification on small screens */
+  .resume-notification-mobile {
+    left: 0.75rem !important;
+    right: 0.75rem !important;
+    max-width: none !important;
+  }
+
+  /* Fix header button overlap with content */
+  .header-button {
+    padding: 0.75rem;
+  }
+
+  .header-button button {
+    padding: 0.5rem 1rem;
+    font-size: 0.8125rem;
+  }
+
+  /* Fix exam header card spacing */
+  .exam-header-card {
+    padding: 1.25rem;
+  }
+
+  .exam-header-title {
+    font-size: 1.25rem;
+  }
+
+  .exam-header-meta {
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+  }
+
+  .exam-header-meta span {
+    font-size: 0.8125rem;
+  }
+
+  /* Fix section title */
+  .section-title {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+  }
+
+  /* Question set cards on mobile */
+  .question-set-card {
+    padding: 1rem;
+  }
+
+  .question-set-title {
+    font-size: 1rem;
+  }
+
+  .start-exam-button {
+    min-height: 2.75rem;
+    font-size: 0.875rem;
+  }
+
+  /* Paused modal improvements */
+  .paused-modal {
+    padding: 1.5rem;
+    margin: 0.75rem;
+    border-radius: 1rem;
+  }
+
+  .paused-modal h2 {
+    font-size: 1.375rem;
+  }
+
+  .paused-modal p {
+    font-size: 0.9375rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .resume-button {
+    padding: 0.875rem 2rem;
+    font-size: 1rem;
+    width: 100%;
+  }
+
+  /* Dashboard header - show icons instead of text on small mobile */
+  .dashboard-header-nav-icon {
+    display: inline !important;
+    font-size: 1.125rem;
+  }
+
+  .dashboard-header-nav-text {
+    display: none !important;
+  }
+}
+
+/* Show text labels above 480px */
+@media (min-width: 480px) {
+  .dashboard-header-nav-icon {
+    display: none !important;
+  }
+  
+  .dashboard-header-nav-text {
+    display: inline !important;
+  }
+}
+
+/* Use dvh for modals on mobile for better keyboard handling */
+@supports (height: 100dvh) {
+  @media (max-width: 640px) {
+    .modal-content {
+      max-height: calc(100dvh - 2rem);
+    }
+
+    .loading-container {
+      min-height: 100dvh;
+    }
+  }
+}
+
+/* Dashboard progress row - stack on mobile, side-by-side on tablet+ */
+@media (min-width: 768px) {
+  .dashboard-progress-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) !important;
+  }
+}
+
+/* Sticky header fix for iOS rubber-banding */
+.sticky {
+  position: sticky;
+  position: -webkit-sticky;
+}
+
+.top-0 {
+  top: 0;
 }

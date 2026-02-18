@@ -149,23 +149,23 @@ const EnrollmentModal = ({ isOpen, onClose }) => {
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div style={{ padding: '2rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+        <div style={{ padding: 'clamp(1.25rem, 4vw, 2rem)', paddingRight: '3.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
           <button
             onClick={onClose}
             style={{
-              position: 'absolute', top: '1rem', right: '1rem',
+              position: 'absolute', top: '0.75rem', right: '0.75rem',
               background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white',
-              fontSize: '1.5rem', width: '2.5rem', height: '2.5rem',
+              fontSize: '1.25rem', width: '2.25rem', height: '2.25rem',
               borderRadius: '50%', cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}
           >
             ×
           </button>
-          <h2 style={{ fontSize: '1.75rem', fontWeight: '700', color: 'white', marginBottom: '0.5rem' }}>
+          <h2 style={{ fontSize: 'clamp(1.25rem, 4vw, 1.75rem)', fontWeight: '700', color: 'white', marginBottom: '0.5rem' }}>
             Subscribe to Cloud Exam Lab
           </h2>
-          <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '1rem' }}>
+          <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: 'clamp(0.8125rem, 2.5vw, 1rem)' }}>
             Unlimited access to all practice questions \u2022 Study at your own pace \u2022 Cancel anytime
           </p>
         </div>
@@ -176,12 +176,12 @@ const EnrollmentModal = ({ isOpen, onClose }) => {
             <div>Loading plans...</div>
           </div>
         ) : (
-          <div style={{ padding: '2rem' }}>
+          <div style={{ padding: 'clamp(1rem, 4vw, 2rem)' }}>
             {/* Plan Cards */}
             <div style={{
               display: 'grid',
-              gap: '1.5rem',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+              gap: '1rem',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))',
               marginBottom: '2rem',
             }}>
               {(subscriptionPlans.length > 0 ? subscriptionPlans : [
@@ -260,7 +260,7 @@ const EnrollmentModal = ({ isOpen, onClose }) => {
               <h3 style={{ fontSize: '1rem', fontWeight: '600', color: 'white', marginBottom: '1rem' }}>
                 ✨ What's Included
               </h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))', gap: '0.75rem' }}>
                 {[
                   'All certification exams',
                   'Full question explanations',
@@ -277,18 +277,20 @@ const EnrollmentModal = ({ isOpen, onClose }) => {
             </div>
 
             {/* Action Buttons */}
-            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
               <button
                 onClick={onClose}
                 style={{
-                  padding: '1rem 2rem',
+                  padding: '0.875rem 1.5rem',
                   background: 'rgba(255,255,255,0.1)',
                   color: 'white',
                   border: '2px solid rgba(255,255,255,0.3)',
                   borderRadius: '0.75rem',
                   fontWeight: '600',
                   cursor: 'pointer',
-                  fontSize: '1rem',
+                  fontSize: '0.9375rem',
+                  flex: '1 1 auto',
+                  minWidth: '120px'
                 }}
               >
                 Cancel
@@ -297,7 +299,7 @@ const EnrollmentModal = ({ isOpen, onClose }) => {
                 onClick={handleSubscribe}
                 disabled={!selectedPlan || checkoutLoading}
                 style={{
-                  padding: '1rem 2rem',
+                  padding: '0.875rem 1.5rem',
                   background: selectedPlan && !checkoutLoading
                     ? 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)'
                     : 'rgba(255,255,255,0.2)',
@@ -306,8 +308,10 @@ const EnrollmentModal = ({ isOpen, onClose }) => {
                   borderRadius: '0.75rem',
                   fontWeight: '600',
                   cursor: selectedPlan && !checkoutLoading ? 'pointer' : 'not-allowed',
-                  fontSize: '1rem',
+                  fontSize: '0.9375rem',
                   opacity: selectedPlan && !checkoutLoading ? 1 : 0.5,
+                  flex: '1 1 auto',
+                  minWidth: '160px'
                 }}
               >
                 {checkoutLoading

@@ -243,7 +243,7 @@ function Dashboard() {
   }, [user])
 
   // ─── Shared styles ────────────────────────────────────────────
-  const containerStyle = { maxWidth: '1200px', margin: '0 auto', padding: '0 1.5rem' }
+  const containerStyle = { maxWidth: '1200px', margin: '0 auto', padding: '0 clamp(1rem, 3vw, 1.5rem)' }
   const sectionPad = { padding: '3rem 0' }
   const sectionHeadingStyle = { fontSize: '1.5rem', fontWeight: '700', color: '#0A2540', marginBottom: '0.5rem', lineHeight: '1.3' }
   const sectionLabelStyle = { color: '#00D4AA', fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.5rem' }
@@ -296,8 +296,8 @@ function Dashboard() {
     return (
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-        gap: '1rem',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 120px), 1fr))',
+        gap: '0.75rem',
         marginTop: '-2rem',
         position: 'relative',
         zIndex: 2
@@ -341,7 +341,7 @@ function Dashboard() {
             <h2 style={sectionHeadingStyle}>Exam Countdown</h2>
           </div>
 
-          <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
+          <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))' }}>
             {sortedDates.map((examDate) => {
               const daysUntil = calculateDaysUntil(examDate.exam_date)
               const isToday = daysUntil === 0
@@ -484,7 +484,7 @@ function Dashboard() {
             </button>
           </div>
         ) : (
-          <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))' }}>
+          <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 320px), 1fr))' }}>
             {userCertifications.map((exam) => {
               const isExamEnrolled = enrolledExamIds.includes(exam.id)
               const isPurchased = isSubscribed || isExamEnrolled
@@ -808,10 +808,12 @@ function Dashboard() {
       <div style={containerStyle}>
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.5fr)',
+          gridTemplateColumns: 'minmax(0, 1fr)',
           gap: '1.5rem',
           alignItems: 'stretch'
-        }}>
+        }}
+        className="dashboard-progress-row"
+        >
           {renderStudyStreak()}
           {renderRecentResults()}
         </div>
@@ -834,7 +836,7 @@ function Dashboard() {
             <h2 style={sectionHeadingStyle}>Explore Certifications</h2>
           </div>
 
-          <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
+          <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))' }}>
             {displayExams.map(exam => {
               const alreadyEnrolled = enrolledExamIds.includes(exam.id)
 
@@ -988,7 +990,7 @@ function Dashboard() {
       <div style={{
         ...containerStyle,
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))',
         gap: '2rem',
         marginBottom: '2rem'
       }}>
@@ -1126,7 +1128,7 @@ function Dashboard() {
         {/* ── Hero ─────────────────────────────────────────────── */}
         <section style={{
           background: 'linear-gradient(135deg, #0A2540 0%, #1A3B5C 100%)',
-          padding: '3rem 1.5rem 4rem',
+          padding: 'clamp(2rem, 5vw, 3rem) clamp(1rem, 3vw, 1.5rem) clamp(3rem, 6vw, 4rem)',
           position: 'relative',
           overflow: 'hidden'
         }}>
@@ -1150,7 +1152,7 @@ function Dashboard() {
             }}>
               DASHBOARD
             </div>
-            <h1 style={{ fontSize: '2rem', fontWeight: '700', color: 'white', marginBottom: '0.5rem', lineHeight: '1.2' }}>
+            <h1 style={{ fontSize: 'clamp(1.5rem, 5vw, 2rem)', fontWeight: '700', color: 'white', marginBottom: '0.5rem', lineHeight: '1.2' }}>
               Welcome back, {userName}!
             </h1>
             <p style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.7)', maxWidth: '500px', margin: '0 auto' }}>

@@ -116,10 +116,25 @@ function ExamDetail() {
             <span>⏱️ {exam.duration_minutes || 'N/A'} minutes</span>
             {exam.passing_score && <span>🎯 Pass: {exam.passing_score}/{exam.max_score || 1000}</span>}
           </div>
-          <div className="mt-6 pt-6 border-t border-white/10 flex justify-end">
+          <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'flex-end' }}>
             <button
               onClick={() => navigate(`/exam/${slug}/study`)}
-              className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-semibold transition-all flex items-center gap-2 border border-white/20"
+              style={{
+                padding: '0.75rem 1.25rem',
+                background: 'rgba(255,255,255,0.1)',
+                color: 'white',
+                borderRadius: '0.75rem',
+                fontWeight: '600',
+                transition: 'all 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                border: '1px solid rgba(255,255,255,0.2)',
+                cursor: 'pointer',
+                fontSize: '0.9375rem',
+                width: '100%',
+                justifyContent: 'center'
+              }}
             >
               📚 View Study Material
             </button>
@@ -260,7 +275,7 @@ function ExamDetail() {
                       background: 'rgba(255,255,255,0.1)',
                       backdropFilter: 'blur(20px)',
                       borderRadius: '1rem',
-                      padding: '1.5rem',
+                      padding: 'clamp(1rem, 3vw, 1.5rem)',
                       border: '1px solid rgba(255,255,255,0.2)',
                       borderLeft: `4px solid ${passColor}`,
                       cursor: 'pointer',
@@ -276,60 +291,62 @@ function ExamDetail() {
                       e.currentTarget.style.transform = 'translateX(0)'
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-                      {/* Status Icon */}
-                      <div style={{
-                        width: '3rem',
-                        height: '3rem',
-                        borderRadius: '0.75rem',
-                        background: passColor,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'white',
-                        fontWeight: '700',
-                        fontSize: '1.5rem',
-                        flexShrink: 0
-                      }}>
-                        {passIcon}
-                      </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                      {/* Status Icon + Result Details */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: '1 1 auto', minWidth: 0 }}>
+                        <div style={{
+                          width: '2.5rem',
+                          height: '2.5rem',
+                          borderRadius: '0.625rem',
+                          background: passColor,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'white',
+                          fontWeight: '700',
+                          fontSize: '1.25rem',
+                          flexShrink: 0
+                        }}>
+                          {passIcon}
+                        </div>
 
-                      {/* Result Details */}
-                      <div style={{ flex: 1 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
-                          <h3 style={{ fontSize: '1rem', fontWeight: '700', color: 'white' }}>
-                            {result.questionSetName || 'Practice Exam'}
-                          </h3>
-                          <span style={{
-                            padding: '0.25rem 0.75rem',
-                            background: result.passed ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)',
-                            border: `1px solid ${passColor}`,
-                            borderRadius: '0.5rem',
-                            color: passColor,
-                            fontSize: '0.75rem',
-                            fontWeight: '600'
-                          }}>
-                            {result.passed ? 'PASSED' : 'FAILED'}
-                          </span>
-                        </div>
-                        <div style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.7)' }}>
-                          {new Date(result.completedAt).toLocaleDateString()} • {new Date(result.completedAt).toLocaleTimeString()} • {Math.floor(result.timeSpent / 60)} min
-                        </div>
-                      </div>
-
-                      {/* Score Display */}
-                      <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: '2rem', fontWeight: '700', color: passColor }}>
-                          {result.percentageScore}%
-                        </div>
-                        <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)' }}>
-                          {result.rawScore}/{result.totalQuestions} correct
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem', flexWrap: 'wrap' }}>
+                            <h3 style={{ fontSize: '0.9375rem', fontWeight: '700', color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>
+                              {result.questionSetName || 'Practice Exam'}
+                            </h3>
+                            <span style={{
+                              padding: '0.125rem 0.5rem',
+                              background: result.passed ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)',
+                              border: `1px solid ${passColor}`,
+                              borderRadius: '0.375rem',
+                              color: passColor,
+                              fontSize: '0.6875rem',
+                              fontWeight: '600',
+                              flexShrink: 0
+                            }}>
+                              {result.passed ? 'PASSED' : 'FAILED'}
+                            </span>
+                          </div>
+                          <div style={{ fontSize: '0.8125rem', color: 'rgba(255,255,255,0.7)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {new Date(result.completedAt).toLocaleDateString()} • {Math.floor(result.timeSpent / 60)} min
+                          </div>
                         </div>
                       </div>
 
-                      {/* View Arrow */}
-                      <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '1.5rem' }}>
-                        →
+                      {/* Score Display + Arrow */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0 }}>
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontSize: '1.5rem', fontWeight: '700', color: passColor }}>
+                            {result.percentageScore}%
+                          </div>
+                          <div style={{ fontSize: '0.6875rem', color: 'rgba(255,255,255,0.7)' }}>
+                            {result.rawScore}/{result.totalQuestions}
+                          </div>
+                        </div>
+                        <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '1.25rem' }}>
+                          →
+                        </div>
                       </div>
                     </div>
                   </div>

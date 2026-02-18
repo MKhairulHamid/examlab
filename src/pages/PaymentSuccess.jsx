@@ -54,14 +54,14 @@ function PaymentSuccess() {
         <div style={{
           background: 'rgba(255,255,255,0.1)',
           backdropFilter: 'blur(20px)',
-          padding: '3rem 2rem',
+          padding: 'clamp(1.5rem, 4vw, 3rem) clamp(1rem, 3vw, 2rem)',
           borderRadius: '1rem',
           border: '1px solid rgba(255,255,255,0.2)'
         }}>
           {loading ? (
             <>
-              <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>⏳</div>
-              <h1 style={{ fontSize: '2rem', fontWeight: '700', color: 'white', marginBottom: '1rem' }}>
+              <div style={{ fontSize: 'clamp(2.5rem, 7vw, 4rem)', marginBottom: '1rem' }}>⏳</div>
+              <h1 style={{ fontSize: 'clamp(1.375rem, 4vw, 2rem)', fontWeight: '700', color: 'white', marginBottom: '1rem' }}>
                 Activating Subscription...
               </h1>
               <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '1rem' }}>
@@ -70,14 +70,14 @@ function PaymentSuccess() {
             </>
           ) : success ? (
             <>
-              <div style={{ fontSize: '5rem', marginBottom: '1.5rem' }}>✅</div>
-              <h1 style={{ fontSize: '2.5rem', fontWeight: '700', color: 'white', marginBottom: '1rem' }}>
+              <div style={{ fontSize: 'clamp(3rem, 8vw, 5rem)', marginBottom: '1rem' }}>✅</div>
+              <h1 style={{ fontSize: 'clamp(1.5rem, 5vw, 2.5rem)', fontWeight: '700', color: 'white', marginBottom: '1rem' }}>
                 Subscription Activated!
               </h1>
               <p style={{
                 color: 'rgba(255,255,255,0.9)',
-                fontSize: '1.125rem',
-                marginBottom: '2rem',
+                fontSize: 'clamp(0.9375rem, 2.5vw, 1.125rem)',
+                marginBottom: '1.5rem',
                 lineHeight: '1.6'
               }}>
                 Welcome! You now have unlimited access to all practice exams and question sets.
@@ -177,8 +177,8 @@ function PaymentSuccess() {
             </>
           ) : (
             <>
-              <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>❌</div>
-              <h1 style={{ fontSize: '2rem', fontWeight: '700', color: 'white', marginBottom: '1rem' }}>
+              <div style={{ fontSize: 'clamp(2.5rem, 7vw, 4rem)', marginBottom: '1rem' }}>❌</div>
+              <h1 style={{ fontSize: 'clamp(1.375rem, 4vw, 2rem)', fontWeight: '700', color: 'white', marginBottom: '1rem' }}>
                 Payment Verification Failed
               </h1>
               <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '1rem', marginBottom: '2rem' }}>
@@ -206,11 +206,11 @@ function PaymentSuccess() {
         {/* Trust Indicators */}
         <div style={{ 
           display: 'flex', 
-          gap: '2rem', 
+          gap: '1rem', 
           justifyContent: 'center', 
-          marginTop: '2rem',
+          marginTop: '1.5rem',
           color: 'rgba(255,255,255,0.6)',
-          fontSize: '0.875rem',
+          fontSize: '0.8125rem',
           flexWrap: 'wrap'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>

@@ -649,7 +649,7 @@ function ExamInterface() {
           {answeredCount} of {questions.length} questions answered
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '0.75rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
           <button
             onClick={() => setShowMaterialsModal(true)}
             className="materials-button"
@@ -723,7 +723,7 @@ function ExamInterface() {
         </div>
 
         {/* Copy Question for LLM Button */}
-        <div style={{ marginBottom: '1rem' }}>
+        <div style={{ marginBottom: '0.75rem' }}>
           <button
             onClick={(e) => {
               const btn = e.currentTarget
@@ -811,25 +811,28 @@ ${options}`
       {showResumeNotification && (
         <div style={{
           position: 'fixed',
-          top: '20px',
-          right: '20px',
+          top: '12px',
+          left: '12px',
+          right: '12px',
           background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
           color: 'white',
-          padding: '1rem 1.5rem',
+          padding: '0.875rem 1rem',
           borderRadius: '0.75rem',
           boxShadow: '0 10px 25px rgba(0, 212, 170, 0.3)',
           zIndex: 10000,
           display: 'flex',
           alignItems: 'center',
-          gap: '0.75rem',
-          animation: 'slideInRight 0.3s ease-out',
-          maxWidth: '400px'
+          gap: '0.625rem',
+          animation: 'slideDown 0.3s ease-out',
+          maxWidth: '400px',
+          marginLeft: 'auto',
+          marginRight: 'auto'
         }}>
-          <span style={{ fontSize: '1.5rem' }}>🔄</span>
-          <div>
-            <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>Exam Resumed</div>
-            <div style={{ fontSize: '0.875rem', opacity: 0.9 }}>
-              Welcome back! Your progress has been restored.
+          <span style={{ fontSize: '1.25rem', flexShrink: 0 }}>🔄</span>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontWeight: '600', fontSize: '0.875rem' }}>Exam Resumed</div>
+            <div style={{ fontSize: '0.8125rem', opacity: 0.9 }}>
+              Your progress has been restored.
             </div>
           </div>
         </div>

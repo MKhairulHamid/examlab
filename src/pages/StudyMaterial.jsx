@@ -380,16 +380,16 @@ function TopicItem({ item, isBookmarked, onToggleBookmark, onStartQuiz }) {
                     animation: 'slideDown 0.3s ease'
                 }}>
                     {/* Action Buttons */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem', margin: '1.25rem 0' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem', margin: '1rem 0' }}>
                         <button
                             onClick={() => setShowFlashcard(true)}
                             style={{
-                                padding: '0.875rem 1rem',
+                                padding: '0.625rem 0.5rem',
                                 background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
                                 color: 'white',
                                 border: 'none',
-                                borderRadius: '0.75rem',
-                                fontSize: '0.875rem',
+                                borderRadius: '0.625rem',
+                                fontSize: '0.8125rem',
                                 fontWeight: '700',
                                 cursor: 'pointer',
                                 transition: 'all 0.2s',
@@ -397,7 +397,7 @@ function TopicItem({ item, isBookmarked, onToggleBookmark, onStartQuiz }) {
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                gap: '0.5rem'
+                                gap: '0.375rem'
                             }}
                             onMouseEnter={(e) => {
                                 e.currentTarget.style.transform = 'translateY(-2px)'
@@ -413,12 +413,12 @@ function TopicItem({ item, isBookmarked, onToggleBookmark, onStartQuiz }) {
                         <button
                             onClick={() => onStartQuiz(item)}
                             style={{
-                                padding: '0.875rem 1rem',
+                                padding: '0.625rem 0.5rem',
                                 background: '#0A2540',
                                 color: 'white',
                                 border: 'none',
-                                borderRadius: '0.75rem',
-                                fontSize: '0.875rem',
+                                borderRadius: '0.625rem',
+                                fontSize: '0.8125rem',
                                 fontWeight: '700',
                                 cursor: 'pointer',
                                 transition: 'all 0.2s',
@@ -441,12 +441,12 @@ function TopicItem({ item, isBookmarked, onToggleBookmark, onStartQuiz }) {
                         <button
                             onClick={markAsStudied}
                             style={{
-                                padding: '0.875rem 1rem',
+                                padding: '0.625rem 0.5rem',
                                 background: progress >= 100 ? 'white' : 'rgba(0,212,170,0.1)',
                                 color: progress >= 100 ? '#00D4AA' : '#00A884',
                                 border: `2px solid ${progress >= 100 ? '#00D4AA' : 'rgba(0,212,170,0.3)'}`,
-                                borderRadius: '0.75rem',
-                                fontSize: '0.875rem',
+                                borderRadius: '0.625rem',
+                                fontSize: '0.8125rem',
                                 fontWeight: '700',
                                 cursor: 'pointer',
                                 transition: 'all 0.2s',
@@ -737,14 +737,14 @@ function StudyMaterial() {
                     border: '1px solid rgba(255,255,255,0.1)'
                 }}>
                     <h1 style={{
-                        fontSize: '2rem',
+                        fontSize: 'clamp(1.375rem, 4vw, 2rem)',
                         fontWeight: '700',
                         color: 'white',
                         marginBottom: '0.75rem'
                     }}>
                         📚 Interactive Study Material
                     </h1>
-                    <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '1.125rem' }}>
+                    <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: 'clamp(0.9375rem, 2.5vw, 1.125rem)' }}>
                         AWS Developer Associate Certification
                     </p>
                 </div>
@@ -752,7 +752,7 @@ function StudyMaterial() {
                 {/* Stats & Controls */}
                 <div style={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))',
                     gap: '1rem',
                     marginBottom: '2rem'
                 }}>
@@ -861,15 +861,15 @@ function StudyMaterial() {
                 {/* Content Domain */}
                 <div style={{
                     background: 'white',
-                    borderRadius: '1.5rem',
-                    padding: '2rem',
+                    borderRadius: '1rem',
+                    padding: 'clamp(1rem, 3vw, 2rem)',
                     boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
                 }}>
                     <h2 style={{
-                        fontSize: '1.75rem',
+                        fontSize: 'clamp(1.25rem, 3.5vw, 1.75rem)',
                         fontWeight: '700',
                         color: '#0A2540',
-                        marginBottom: '2rem',
+                        marginBottom: '1.5rem',
                         paddingBottom: '1rem',
                         borderBottom: '3px solid #00D4AA'
                     }}>
@@ -879,17 +879,18 @@ function StudyMaterial() {
                     {studyData.tasks.map((task) => (
                         <div key={task.id} style={{ marginBottom: '3rem' }}>
                             <h3 style={{
-                                fontSize: '1.375rem',
+                                fontSize: 'clamp(1.0625rem, 3vw, 1.375rem)',
                                 fontWeight: '700',
                                 color: '#0A2540',
-                                marginBottom: '1.5rem',
+                                marginBottom: '1.25rem',
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '0.75rem'
+                                gap: '0.5rem'
                             }}>
                                 <span style={{
-                                    width: '2.5rem',
-                                    height: '2.5rem',
+                                    width: '2rem',
+                                    height: '2rem',
+                                    minWidth: '2rem',
                                     background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
                                     borderRadius: '50%',
                                     display: 'flex',
@@ -906,7 +907,7 @@ function StudyMaterial() {
 
                             <div style={{
                                 display: 'grid',
-                                gridTemplateColumns: 'repeat(auto-fit, minmax(500px, 1fr))',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 500px), 1fr))',
                                 gap: '1.5rem'
                             }}>
                                 {task.sections.map((section, idx) => {

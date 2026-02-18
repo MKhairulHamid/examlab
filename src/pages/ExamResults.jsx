@@ -220,31 +220,31 @@ function ExamResults() {
       <div style={{ 
         minHeight: '100vh',
         background: 'linear-gradient(135deg, #0A2540 0%, #1A3B5C 100%)',
-        padding: '2rem 0'
+        padding: 'clamp(1rem, 3vw, 2rem) 0'
       }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 1.5rem' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 clamp(0.75rem, 3vw, 1.5rem)' }}>
         {/* Results Header */}
         <div style={{
           background: 'rgba(255,255,255,0.1)',
           backdropFilter: 'blur(20px)',
-          padding: '2rem',
+          padding: 'clamp(1.25rem, 4vw, 2rem)',
           borderRadius: '1rem',
           border: '1px solid rgba(255,255,255,0.2)',
-          marginBottom: '2rem',
+          marginBottom: '1.5rem',
           textAlign: 'center'
         }}>
-          <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>{passEmoji}</div>
-          <h1 style={{ fontSize: '2rem', fontWeight: '700', color: 'white', marginBottom: '0.5rem' }}>
+          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>{passEmoji}</div>
+          <h1 style={{ fontSize: 'clamp(1.5rem, 5vw, 2rem)', fontWeight: '700', color: 'white', marginBottom: '0.5rem' }}>
             Exam Results
           </h1>
-          <p style={{ fontSize: '1.25rem', color: passColor, fontWeight: '600', marginBottom: '1.5rem' }}>
+          <p style={{ fontSize: 'clamp(1rem, 3vw, 1.25rem)', color: passColor, fontWeight: '600', marginBottom: '1.5rem' }}>
             {passMessage}
           </p>
           
           {/* Score Display */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))',
             gap: '1rem',
             marginTop: '2rem'
           }}>
@@ -257,10 +257,10 @@ function ExamResults() {
               <div style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.7)', marginBottom: '0.5rem' }}>
                 Score
               </div>
-              <div style={{ fontSize: '2rem', fontWeight: '700', color: passColor }}>
+              <div style={{ fontSize: 'clamp(1.5rem, 5vw, 2rem)', fontWeight: '700', color: passColor }}>
                 {result.percentageScore}%
               </div>
-              <div style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.6)', marginTop: '0.25rem' }}>
+              <div style={{ fontSize: '0.8125rem', color: 'rgba(255,255,255,0.6)', marginTop: '0.25rem' }}>
                 {result.rawScore} / {result.totalQuestions} correct
               </div>
             </div>
@@ -274,7 +274,7 @@ function ExamResults() {
               <div style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.7)', marginBottom: '0.5rem' }}>
                 Time Spent
               </div>
-              <div style={{ fontSize: '2rem', fontWeight: '700', color: '#00D4AA' }}>
+              <div style={{ fontSize: 'clamp(1.25rem, 4vw, 2rem)', fontWeight: '700', color: '#00D4AA' }}>
                 {formatTime(result.timeSpent)}
               </div>
               <div style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.6)', marginTop: '0.25rem' }}>
@@ -291,7 +291,7 @@ function ExamResults() {
               <div style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.7)', marginBottom: '0.5rem' }}>
                 Status
               </div>
-              <div style={{ fontSize: '2rem', fontWeight: '700', color: passColor }}>
+              <div style={{ fontSize: 'clamp(1.5rem, 5vw, 2rem)', fontWeight: '700', color: passColor }}>
                 {result.passed ? 'PASSED' : 'FAILED'}
               </div>
               <div style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.6)', marginTop: '0.25rem' }}>
@@ -427,11 +427,11 @@ function ExamResults() {
         <div style={{
           background: 'rgba(255,255,255,0.1)',
           backdropFilter: 'blur(20px)',
-          padding: '2rem',
+          padding: 'clamp(1rem, 3vw, 2rem)',
           borderRadius: '1rem',
           border: '1px solid rgba(255,255,255,0.2)'
         }}>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: '700', color: 'white', marginBottom: '1.5rem' }}>
+          <h2 style={{ fontSize: 'clamp(1.25rem, 4vw, 1.5rem)', fontWeight: '700', color: 'white', marginBottom: '1.5rem' }}>
             📝 Question Review
           </h2>
 
@@ -447,7 +447,7 @@ function ExamResults() {
                   key={index}
                   style={{
                     background: 'rgba(255,255,255,0.05)',
-                    padding: '1.5rem',
+                    padding: 'clamp(1rem, 3vw, 1.5rem)',
                     borderRadius: '0.75rem',
                     border: `2px solid ${isCorrect ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}`
                   }}
@@ -504,21 +504,21 @@ function ExamResults() {
                       
                       return (
                         <div key={optIndex} style={optionStyle}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                            <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.875rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                            <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.8125rem', flexShrink: 0, marginTop: '0.125rem' }}>
                               {String.fromCharCode(65 + optIndex)}.
                             </span>
-                            <span style={{ color: 'white', fontSize: '0.875rem' }}>
+                            <span style={{ color: 'white', fontSize: '0.8125rem', flex: 1, minWidth: 0, lineHeight: '1.5', wordBreak: 'break-word' }}>
                               {optionText}
                             </span>
                             {isCorrectAnswer && (
-                              <span style={{ marginLeft: 'auto', color: '#10b981', fontWeight: '600', fontSize: '0.875rem' }}>
+                              <span style={{ color: '#10b981', fontWeight: '600', fontSize: '0.6875rem', flexShrink: 0, whiteSpace: 'nowrap', marginTop: '0.125rem' }}>
                                 ✓ Correct
                               </span>
                             )}
                             {isUserAnswer && !isCorrectAnswer && (
-                              <span style={{ marginLeft: 'auto', color: '#ef4444', fontWeight: '600', fontSize: '0.875rem' }}>
-                                Your Answer
+                              <span style={{ color: '#ef4444', fontWeight: '600', fontSize: '0.6875rem', flexShrink: 0, whiteSpace: 'nowrap', marginTop: '0.125rem' }}>
+                                ✗ Yours
                               </span>
                             )}
                           </div>

@@ -202,7 +202,7 @@ function Landing() {
             <div style={{ color: '#00D4AA', fontSize: '0.875rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.025em', marginBottom: '0.75rem' }}>
               AVAILABLE NOW + 20 MORE COMING SOON
             </div>
-            <h2 style={{ fontSize: '2rem', fontWeight: '700', color: '#0A2540', marginBottom: '1rem', lineHeight: '1.3' }}>
+            <h2 style={{ fontSize: 'clamp(1.5rem, 4vw, 2rem)', fontWeight: '700', color: '#0A2540', marginBottom: '1rem', lineHeight: '1.3' }}>
               Your Certification Journey Starts Here
             </h2>
             <p style={{ color: '#6b7280', fontSize: '1rem', maxWidth: '42rem', margin: '0 auto 2rem' }}>
@@ -220,7 +220,7 @@ function Landing() {
                   setSelectedProvider(provider)
                 }}
                 style={{
-                  padding: '0.75rem 1.5rem',
+                  padding: '0.625rem 1.25rem',
                   background: expandedProvider === provider ? '#0A2540' : 'white',
                   color: expandedProvider === provider ? 'white' : '#0A2540',
                   border: '2px solid #0A2540',
@@ -229,7 +229,11 @@ function Landing() {
                   cursor: 'pointer',
                   transition: 'all 0.2s',
                   textTransform: 'uppercase',
-                  fontSize: '0.875rem'
+                  fontSize: '0.8125rem',
+                  flex: '1 1 auto',
+                  maxWidth: '140px',
+                  minWidth: '90px',
+                  textAlign: 'center'
                 }}
               >
                 {provider === 'aws' && '🔶 AWS'}
@@ -240,7 +244,7 @@ function Landing() {
           </div>
 
           {/* Certification Cards */}
-          <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
+          <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))' }}>
             {CERTIFICATIONS[expandedProvider].map((cert, index) => (
               <div 
                 key={index}
@@ -445,7 +449,7 @@ function Landing() {
           <div style={{ 
             display: 'grid', 
             gap: '2rem', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', 
             maxWidth: '1100px', 
             margin: '0 auto' 
           }}>
@@ -530,7 +534,7 @@ function Landing() {
           <div style={{ 
             display: 'grid', 
             gap: '1.5rem', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', 
             maxWidth: '1200px', 
             margin: '0 auto' 
           }}>
@@ -546,7 +550,7 @@ function Landing() {
               <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: 'white', marginBottom: '0.5rem' }}>
                 Free Sample
               </h3>
-              <div style={{ fontSize: '3rem', fontWeight: '700', color: '#00D4AA', marginBottom: '0.5rem' }}>
+              <div style={{ fontSize: 'clamp(2rem, 6vw, 3rem)', fontWeight: '700', color: '#00D4AA', marginBottom: '0.5rem' }}>
                 $0
               </div>
               <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
@@ -593,7 +597,7 @@ function Landing() {
               <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: 'white', marginBottom: '0.5rem' }}>
                 Monthly
               </h3>
-              <div style={{ fontSize: '3rem', fontWeight: '700', color: '#00D4AA', marginBottom: '0.5rem' }}>
+              <div style={{ fontSize: 'clamp(2rem, 6vw, 3rem)', fontWeight: '700', color: '#00D4AA', marginBottom: '0.5rem' }}>
                 $5
               </div>
               <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
@@ -640,7 +644,7 @@ function Landing() {
               <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: 'white', marginBottom: '0.5rem' }}>
                 Quarterly
               </h3>
-              <div style={{ fontSize: '3rem', fontWeight: '700', color: '#00D4AA', marginBottom: '0.5rem' }}>
+              <div style={{ fontSize: 'clamp(2rem, 6vw, 3rem)', fontWeight: '700', color: '#00D4AA', marginBottom: '0.5rem' }}>
                 $10
               </div>
               <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
@@ -702,7 +706,7 @@ function Landing() {
               <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: 'white', marginBottom: '0.5rem' }}>
                 Annual
               </h3>
-              <div style={{ fontSize: '3rem', fontWeight: '700', color: '#00D4AA', marginBottom: '0.5rem' }}>
+              <div style={{ fontSize: 'clamp(2rem, 6vw, 3rem)', fontWeight: '700', color: '#00D4AA', marginBottom: '0.5rem' }}>
                 $30
               </div>
               <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
@@ -835,8 +839,8 @@ function Landing() {
               </div>
               <div style={{ 
                 display: 'grid', 
-                gridTemplateColumns: 'repeat(auto-fill, minmax(40px, 1fr))',
-                gap: '0.5rem',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(36px, 1fr))',
+                gap: '0.375rem',
                 maxHeight: '120px',
                 overflowY: 'auto'
               }}>
@@ -949,7 +953,7 @@ function Landing() {
             </div>
 
             {/* Question Content */}
-            <div style={{ padding: '2rem', background: 'white' }}>
+            <div style={{ padding: 'clamp(1rem, 4vw, 2rem)', background: 'white' }}>
               <div style={{
                 background: '#f9fafb',
                 padding: '1.5rem',
@@ -1115,10 +1119,10 @@ function Landing() {
                   boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
                 }}
               >
-                <div style={{ padding: '2rem' }}>
+                <div style={{ padding: 'clamp(1.25rem, 4vw, 2rem)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '1.5rem' }}>
                     <div>
-                      <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#0A2540', marginBottom: '0.5rem' }}>
+                      <h3 style={{ fontSize: 'clamp(1.125rem, 3vw, 1.5rem)', fontWeight: '700', color: '#0A2540', marginBottom: '0.5rem' }}>
                         📚 Study Materials
                       </h3>
                       <p style={{ color: '#6b7280', fontSize: '0.875rem' }}>
@@ -1267,10 +1271,10 @@ function Landing() {
                   boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
                 }}
               >
-                <div style={{ padding: '2rem' }}>
+                <div style={{ padding: 'clamp(1.25rem, 4vw, 2rem)' }}>
                   <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-                    <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🎉</div>
-                    <h3 style={{ fontSize: '1.75rem', fontWeight: '700', color: '#0A2540', marginBottom: '0.5rem' }}>
+                    <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🎉</div>
+                    <h3 style={{ fontSize: 'clamp(1.25rem, 4vw, 1.75rem)', fontWeight: '700', color: '#0A2540', marginBottom: '0.5rem' }}>
                       Exam Complete!
                     </h3>
                     <p style={{ color: '#6b7280', fontSize: '0.95rem' }}>
@@ -1286,7 +1290,7 @@ function Landing() {
                     marginBottom: '2rem',
                     textAlign: 'center'
                   }}>
-                    <div style={{ fontSize: '3rem', fontWeight: '700', color: '#00D4AA', marginBottom: '0.5rem' }}>
+                    <div style={{ fontSize: 'clamp(2rem, 6vw, 3rem)', fontWeight: '700', color: '#00D4AA', marginBottom: '0.5rem' }}>
                       82%
                     </div>
                     <div style={{ fontSize: '1.25rem', fontWeight: '600', color: '#0A2540', marginBottom: '0.5rem' }}>
@@ -1364,7 +1368,7 @@ function Landing() {
           )}
 
           {/* Feature Highlights Below Demo */}
-          <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', marginTop: '3rem' }}>
+          <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 250px), 1fr))', marginTop: '3rem' }}>
             {[
               {
                 icon: '⏱️',
@@ -1419,7 +1423,7 @@ function Landing() {
             </h2>
           </div>
 
-          <div style={{ display: 'grid', gap: '2rem', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+          <div style={{ display: 'grid', gap: '2rem', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 250px), 1fr))' }}>
             {[
               {
                 step: '1',
@@ -1478,7 +1482,7 @@ function Landing() {
             </p>
           </div>
 
-          <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
+          <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))' }}>
             {[
               { icon: '📚', title: 'Just-in-Time Learning', description: 'Access study materials and AWS documentation right when you need them' },
               { icon: '📊', title: 'Detailed Progress Tracking', description: 'Monitor your performance across all practice sets and identify weak areas' },
@@ -1538,7 +1542,7 @@ function Landing() {
           <div style={{ 
             display: 'grid', 
             gap: '2rem', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', 
             maxWidth: '1100px', 
             margin: '0 auto', 
             marginBottom: '3rem' 
@@ -1728,10 +1732,10 @@ function Landing() {
       {/* Final CTA Section */}
       <section style={{ padding: '5rem 1rem', background: 'linear-gradient(135deg, #0A2540 0%, #1A3B5C 100%)', textAlign: 'center' }}>
         <div style={{ maxWidth: '48rem', margin: '0 auto' }}>
-          <h2 style={{ fontSize: '2.5rem', fontWeight: '700', color: 'white', marginBottom: '1rem', lineHeight: '1.2' }}>
+          <h2 style={{ fontSize: 'clamp(1.75rem, 5vw, 2.5rem)', fontWeight: '700', color: 'white', marginBottom: '1rem', lineHeight: '1.2' }}>
             Start Your AWS Developer Associate Journey
           </h2>
-          <p style={{ fontSize: '1.25rem', color: 'rgba(255,255,255,0.9)', marginBottom: '2rem' }}>
+          <p style={{ fontSize: 'clamp(1rem, 3vw, 1.25rem)', color: 'rgba(255,255,255,0.9)', marginBottom: '2rem' }}>
             Try 10 free questions - no credit card required
           </p>
           
@@ -1779,7 +1783,7 @@ function Landing() {
       {/* Enhanced Footer */}
       <footer style={{ background: '#0A2540', padding: '3rem 1rem 1.5rem' }}>
         <div style={{ maxWidth: '72rem', margin: '0 auto' }}>
-          <div style={{ display: 'grid', gap: '2rem', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', marginBottom: '2rem' }}>
+          <div style={{ display: 'grid', gap: '2rem', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', marginBottom: '2rem' }}>
             {/* About */}
             <div>
               <h3 style={{ color: 'white', fontWeight: '700', marginBottom: '1rem' }}>Cloud Exam Lab</h3>
