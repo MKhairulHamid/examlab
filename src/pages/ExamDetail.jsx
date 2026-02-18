@@ -15,9 +15,11 @@ function ExamDetail() {
   const [exam, setExam] = useState(null)
   const [showPurchaseModal, setShowPurchaseModal] = useState(false)
   const [examResults, setExamResults] = useState([])
+  const [loadingQuestionSets, setLoadingQuestionSets] = useState(true)
 
   useEffect(() => {
     const loadExam = async () => {
+      setLoadingQuestionSets(true)
       const examData = await getExamBySlug(slug)
       setExam(examData)
 
@@ -29,6 +31,7 @@ function ExamDetail() {
           await loadExamResults(examData.id)
         }
       }
+      setLoadingQuestionSets(false)
     }
 
     loadExam()
@@ -145,9 +148,47 @@ function ExamDetail() {
         {/* Question Sets */}
         <h2 className="section-title">📝 Question Sets</h2>
         <div className="question-sets-grid">
-          {questionSets.length === 0 ? (
+          {loadingQuestionSets ? (
             <div className="col-span-full empty-state">
               <div>Loading question sets...</div>
+            </div>
+          ) : questionSets.length === 0 && !isSubscribed ? (
+            <div className="col-span-full" style={{
+              background: 'rgba(255,255,255,0.08)',
+              backdropFilter: 'blur(20px)',
+              borderRadius: '1rem',
+              padding: '2.5rem 1.5rem',
+              border: '1px solid rgba(255,255,255,0.15)',
+              textAlign: 'center'
+            }}>
+              <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>🔒</div>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: 'white', marginBottom: '0.5rem' }}>
+                Subscribe to Access Question Sets
+              </h3>
+              <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9375rem', marginBottom: '1.5rem', maxWidth: '400px', margin: '0 auto 1.5rem' }}>
+                Get full access to all practice exams and question sets with an active subscription.
+              </p>
+              <button
+                onClick={() => setShowPurchaseModal(true)}
+                style={{
+                  padding: '0.75rem 2rem',
+                  background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '0.75rem',
+                  fontWeight: '700',
+                  fontSize: '1rem',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 12px rgba(0,212,170,0.3)',
+                  transition: 'all 0.2s'
+                }}
+              >
+                View Plans
+              </button>
+            </div>
+          ) : questionSets.length === 0 ? (
+            <div className="col-span-full empty-state">
+              <div>No question sets available yet.</div>
             </div>
           ) : (
             questionSets.map(set => {

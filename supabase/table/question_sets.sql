@@ -42,3 +42,22 @@ execute FUNCTION increment_question_set_version ();
 create trigger update_question_sets_updated_at BEFORE
 update on question_sets for EACH row
 execute FUNCTION update_updated_at_column ();
+
+-- RLS: Free samples for everyone, paid sets for active subscribers only
+alter table public.question_sets enable row level security;
+
+create policy "Anyone can read free sample question sets"
+  on public.question_sets
+  for select
+  using (is_free_sample = true);
+
+create policy "Subscribed users can read paid question sets"
+  on public.question_sets
+  for select
+  using (
+    exists (
+      select 1 from public.user_subscriptions
+      where user_subscriptions.user_id = auth.uid()
+        and user_subscriptions.status = 'active'
+    )
+  );
