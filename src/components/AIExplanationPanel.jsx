@@ -268,9 +268,17 @@ export default function AIExplanationPanel({ question, onClose }) {
     }
   }
 
+  const [previewExpanded, setPreviewExpanded] = useState(true)
+
+  // Auto-collapse the question preview once a response arrives so the
+  // response area gets as much vertical space as possible.
+  useEffect(() => {
+    if (response) setPreviewExpanded(false)
+  }, [response])
+
   const questionPreview = question?.question
-    ? question.question.length > 120
-      ? question.question.slice(0, 120) + '…'
+    ? question.question.length > 160
+      ? question.question.slice(0, 160) + '…'
       : question.question
     : ''
 
@@ -294,7 +302,7 @@ export default function AIExplanationPanel({ question, onClose }) {
         style={{
           width: '100%',
           maxWidth: '680px',
-          maxHeight: '90vh',
+          height: '96vh',
           background: 'linear-gradient(180deg, #0f2a45 0%, #0a1e32 100%)',
           border: '1px solid rgba(255,255,255,0.15)',
           borderRadius: '1.25rem 1.25rem 0 0',
@@ -340,21 +348,53 @@ export default function AIExplanationPanel({ question, onClose }) {
           </button>
         </div>
 
-        {/* Question preview */}
+        {/* Question preview — collapsible */}
         <div style={{
-          padding: '0.75rem 1.25rem',
           borderBottom: '1px solid rgba(255,255,255,0.08)',
           flexShrink: 0
         }}>
-          <p style={{
-            color: 'rgba(255,255,255,0.55)',
-            fontSize: '0.8rem',
-            fontStyle: 'italic',
-            lineHeight: '1.5',
-            margin: 0
-          }}>
-            {questionPreview}
-          </p>
+          {/* Toggle row */}
+          <button
+            onClick={() => setPreviewExpanded((v) => !v)}
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '0.45rem 1.25rem',
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              color: 'rgba(255,255,255,0.35)',
+              fontSize: '0.7rem',
+              fontWeight: '500',
+              letterSpacing: '0.04em',
+              textTransform: 'uppercase',
+              gap: '0.5rem'
+            }}
+          >
+            <span>Question</span>
+            <span style={{
+              fontSize: '0.65rem',
+              transition: 'transform 0.2s',
+              transform: previewExpanded ? 'rotate(0deg)' : 'rotate(-90deg)',
+              display: 'inline-block'
+            }}>▼</span>
+          </button>
+
+          {previewExpanded && (
+            <div style={{ padding: '0 1.25rem 0.625rem' }}>
+              <p style={{
+                color: 'rgba(255,255,255,0.55)',
+                fontSize: '0.8rem',
+                fontStyle: 'italic',
+                lineHeight: '1.5',
+                margin: 0
+              }}>
+                {questionPreview}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Predefined quick buttons */}
@@ -401,7 +441,7 @@ export default function AIExplanationPanel({ question, onClose }) {
           flex: 1,
           overflowY: 'auto',
           padding: '0.75rem 1.25rem',
-          minHeight: '120px'
+          minHeight: 0
         }}>
           {/* Loading state */}
           {loading && (
