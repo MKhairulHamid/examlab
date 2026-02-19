@@ -954,9 +954,13 @@ footer {
 .header-button {
   position: fixed;
   top: 0;
+  left: 0;
   right: 0;
+  width: 100%;
   z-index: 50;
   padding: 1rem;
+  background: rgba(10, 37, 64, 0.95);
+  backdrop-filter: blur(8px);
 }
 
 .header-button button {
@@ -975,6 +979,20 @@ footer {
 .header-button button:hover {
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   transform: translateY(-2px);
+}
+
+.header-button .nav-link {
+  background: none !important;
+  box-shadow: none !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  text-decoration: none;
+  padding: 0.5rem 0.75rem !important;
+}
+
+.header-button .nav-link:hover {
+  color: white !important;
+  text-decoration: underline;
+  transform: none !important;
 }
 
 @media (min-width: 640px) {
