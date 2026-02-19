@@ -1,14 +1,21 @@
 // Supabase Edge Function: ai-explanation
 // Handles AI explanation requests for exam questions using Gemini API.
-// Predefined prompt types (concept_guide, explanations, official_links) are
-// cached in question_items.ai_cache to avoid redundant API calls.
+//
+// Access rules:
+//   Free users  – predefined prompts only (concept_guide, explanations,
+//                 official_links). Cached responses are returned for free.
+//                 Custom prompts → 403 upgrade_required.
+//   Paid users  – all prompt types; max 200 non-cached Gemini calls per day.
+//                 Cached predefined responses do NOT count toward the limit.
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.0'
 
 const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY') || ''
 const GEMINI_API_URL =
-  'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent'
+  'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent'
+
+const DAILY_LIMIT = 200
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -68,6 +75,13 @@ function buildPrompt(
   }
 }
 
+function jsonResponse(body: unknown, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  })
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -77,25 +91,37 @@ serve(async (req) => {
     const { question_id, prompt_type, custom_query } = await req.json()
 
     if (!question_id || !prompt_type) {
-      return new Response(
-        JSON.stringify({ error: 'question_id and prompt_type are required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      return jsonResponse({ error: 'question_id and prompt_type are required' }, 400)
     }
 
     if (!GEMINI_API_KEY) {
-      return new Response(
-        JSON.stringify({ error: 'AI service is not configured.' }),
-        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      return jsonResponse({ error: 'AI service is not configured.' }, 503)
     }
 
-    // Service role client bypasses RLS so we can update ai_cache
+    // ── Authentication ──────────────────────────────────────────────────────
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      return jsonResponse({ error: 'Authentication required.', code: 'unauthenticated' }, 401)
+    }
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL') || ''
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || ''
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') || ''
+
+    // Service-role client for all DB writes / admin reads
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    // Fetch question row
+    // User-context client to verify the caller's JWT
+    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    })
+
+    const { data: { user }, error: authError } = await userClient.auth.getUser()
+    if (authError || !user) {
+      return jsonResponse({ error: 'Invalid or expired session.', code: 'unauthenticated' }, 401)
+    }
+
+    // ── Fetch question row ──────────────────────────────────────────────────
     const { data: question, error: fetchError } = await supabase
       .from('question_items')
       .select('id, question_text, options, ai_cache')
@@ -103,23 +129,63 @@ serve(async (req) => {
       .single()
 
     if (fetchError || !question) {
-      return new Response(
-        JSON.stringify({ error: 'Question not found' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      return jsonResponse({ error: 'Question not found.' }, 404)
     }
 
     const isPredefined = ['concept_guide', 'explanations', 'official_links'].includes(prompt_type)
 
-    // Return cached response immediately for predefined types
+    // ── Cache hit — return immediately, no limits apply ─────────────────────
     if (isPredefined && question.ai_cache?.[prompt_type]) {
-      return new Response(
-        JSON.stringify({ response: question.ai_cache[prompt_type], cached: true }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      return jsonResponse({ response: question.ai_cache[prompt_type], cached: true })
+    }
+
+    // ── Subscription check ──────────────────────────────────────────────────
+    const { data: subscription } = await supabase
+      .from('user_subscriptions')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('status', 'active')
+      .gte('current_period_end', new Date().toISOString())
+      .maybeSingle()
+
+    const isPaidUser = !!subscription
+
+    // Free users cannot send custom prompts
+    if (!isPaidUser && prompt_type === 'custom') {
+      return jsonResponse(
+        {
+          error: 'Custom questions are a premium feature. Upgrade your plan to ask anything.',
+          code: 'upgrade_required',
+        },
+        403
       )
     }
 
-    // Build prompt and call Gemini
+    // ── Daily rate-limit check (paid users only) ────────────────────────────
+    if (isPaidUser) {
+      const today = new Date().toISOString().split('T')[0]
+      const { data: usage } = await supabase
+        .from('ai_usage')
+        .select('call_count')
+        .eq('user_id', user.id)
+        .eq('usage_date', today)
+        .maybeSingle()
+
+      const usedToday = usage?.call_count ?? 0
+      if (usedToday >= DAILY_LIMIT) {
+        return jsonResponse(
+          {
+            error: `You have used all ${DAILY_LIMIT} AI calls for today. Your limit resets at midnight UTC.`,
+            code: 'rate_limit_exceeded',
+            limit: DAILY_LIMIT,
+            used: usedToday,
+          },
+          429
+        )
+      }
+    }
+
+    // ── Build prompt and call Gemini ────────────────────────────────────────
     const prompt = buildPrompt(
       prompt_type as PromptType,
       question.question_text,
@@ -142,24 +208,17 @@ serve(async (req) => {
     if (!geminiResponse.ok) {
       const errBody = await geminiResponse.text()
       console.error('Gemini API error:', geminiResponse.status, errBody)
-      return new Response(
-        JSON.stringify({ error: 'AI service unavailable. Please try again later.' }),
-        { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      return jsonResponse({ error: 'AI service unavailable. Please try again later.' }, 502)
     }
 
     const geminiData = await geminiResponse.json()
-    const responseText: string =
-      geminiData.candidates?.[0]?.content?.parts?.[0]?.text || ''
+    const responseText: string = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || ''
 
     if (!responseText) {
-      return new Response(
-        JSON.stringify({ error: 'No response received from AI service.' }),
-        { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      return jsonResponse({ error: 'No response received from AI service.' }, 502)
     }
 
-    // Write response to ai_cache for predefined types (shared across all users)
+    // ── Cache predefined responses (shared across all users) ────────────────
     if (isPredefined) {
       const updatedCache = { ...(question.ai_cache || {}), [prompt_type]: responseText }
       await supabase
@@ -168,15 +227,14 @@ serve(async (req) => {
         .eq('id', question_id)
     }
 
-    return new Response(
-      JSON.stringify({ response: responseText, cached: false }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+    // ── Increment daily usage counter (paid users, non-cached calls only) ───
+    if (isPaidUser) {
+      await supabase.rpc('increment_ai_usage', { p_user_id: user.id })
+    }
+
+    return jsonResponse({ response: responseText, cached: false })
   } catch (err) {
     console.error('Edge function error:', err)
-    return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+    return jsonResponse({ error: 'Internal server error.' }, 500)
   }
 })
