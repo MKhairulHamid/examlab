@@ -185,42 +185,66 @@ export const useExamStore = create((set, get) => ({
 
   /**
    * Load question set with full questions (IndexedDB first, then Supabase)
+   * Questions are fetched from question_items table (normalized rows).
    */
-  loadQuestionSet: async (questionSetId) => {
+  loadQuestionSet: async (questionSetId, forceRefresh = false) => {
     try {
       set({ loading: true, error: null })
       
-      // Try IndexedDB first
-      const cached = await indexedDBService.getQuestionSet(questionSetId)
-      if (cached && cached.questions_json) {
-        // Validate and normalize questions
-        const normalized = get().normalizeQuestionSet(cached)
-        set({ currentQuestionSet: normalized, loading: false })
-        
-        // Background: check for version update
-        get().checkQuestionSetVersion(questionSetId, cached.version_number)
-        
-        return normalized
+      // Try IndexedDB first (skip when forcing a refresh)
+      if (!forceRefresh) {
+        const cached = await indexedDBService.getQuestionSet(questionSetId)
+        if (cached && cached.questions_json) {
+          const normalized = get().normalizeQuestionSet(cached)
+          set({ currentQuestionSet: normalized, loading: false })
+          
+          // Background: check for version update
+          get().checkQuestionSetVersion(questionSetId, cached.version_number)
+          
+          return normalized
+        }
       }
       
-      // Fetch from Supabase with related exam_types data
-      const { data, error } = await supabase
+      // Fetch question set metadata (no questions_json column after migration)
+      const { data: questionSet, error: setError } = await supabase
         .from('question_sets')
         .select('*, exam_types(name, provider, duration_minutes, passing_score, max_score)')
         .eq('id', questionSetId)
         .eq('is_active', true)
         .single()
       
-      if (error) throw error
+      if (setError) throw setError
       
-      // Validate questions_json exists
-      if (!data || !data.questions_json) {
-        console.error('❌ No questions found in database')
+      // Fetch individual question rows from question_items
+      const { data: items, error: itemsError } = await supabase
+        .from('question_items')
+        .select('id, question_number, question_text, question_type, domain, options, correct_answers, tags')
+        .eq('question_set_id', questionSetId)
+        .order('question_number', { ascending: true })
+      
+      if (itemsError) throw itemsError
+      
+      if (!items || items.length === 0) {
+        console.error('❌ No questions found in question_items for set', questionSetId)
         throw new Error('No questions available for this exam.')
       }
       
-      // Normalize question set
-      const normalized = get().normalizeQuestionSet(data)
+      // Assemble into the shape normalizeQuestionSet expects
+      const assembledData = {
+        ...questionSet,
+        questions_json: items.map(item => ({
+          id: item.question_number,
+          question_item_id: item.id,
+          question: item.question_text,
+          type: item.question_type,
+          domain: item.domain || '',
+          options: item.options,
+          correct_answers: item.correct_answers,
+          tags: item.tags || []
+        }))
+      }
+      
+      const normalized = get().normalizeQuestionSet(assembledData)
       
       // Save to IndexedDB for offline use
       await indexedDBService.setQuestionSet(normalized)
@@ -236,17 +260,17 @@ export const useExamStore = create((set, get) => ({
   },
 
   /**
-   * Normalize question set to ensure consistent format
+   * Normalize question set to ensure consistent format.
+   * Accepts data where questions_json is either:
+   *   - An array of question objects (new question_items shape)
+   *   - An object with a 'questions' array key (legacy shape)
    */
   normalizeQuestionSet: (data) => {
     if (!data || !data.questions_json) {
       return data
     }
     
-    // Parse questions from JSON
     const questionsData = data.questions_json
-    
-    // Check if questions_json has a 'questions' array or is the array itself
     let questions = questionsData.questions || questionsData
     
     if (!Array.isArray(questions)) {
@@ -254,31 +278,24 @@ export const useExamStore = create((set, get) => ({
       questions = []
     }
     
-    // Transform questions to ensure correct format
     questions = questions.map((q, index) => {
-      // First, try to get correctAnswers from the question (if explicitly provided)
       let correctAnswers = q.correctAnswers || q.correct_answers || []
       
-      // Ensure options have the correct structure
       const options = (q.options || []).map(opt => {
         if (typeof opt === 'string') {
-          // If option is just a string, determine if it's correct
           const isCorrect = correctAnswers.length > 0 ? correctAnswers.includes(opt) : false
           return { text: opt, correct: isCorrect }
         } else if (opt.text !== undefined) {
-          // Option already has the correct structure (object with text and correct properties)
           return opt
         }
         return { text: String(opt), correct: false }
       })
       
-      // Extract correctAnswers from options that have correct: true
-      // This is the primary method based on the question format provided
+      // Primary: derive correct answers from options with correct: true
       correctAnswers = options
         .filter(opt => opt.correct === true)
         .map(opt => opt.text)
       
-      // Log warning if no correct answers found
       if (correctAnswers.length === 0) {
         console.warn(`⚠️ Question ${index + 1} has no correct answers defined!`, {
           question: q.question?.substring(0, 100) + '...',
@@ -288,18 +305,16 @@ export const useExamStore = create((set, get) => ({
       
       return {
         id: q.id || `q_${index}`,
+        question_item_id: q.question_item_id || null,
         question: q.question,
         options: options,
         type: q.type || 'Multiple Choice',
         domain: q.domain || '',
-        materials: q.materials || '',
-        explanations: q.explanations || {},
-        official_links: q.official_links || [],
+        tags: q.tags || [],
         correctAnswers: correctAnswers
       }
     })
     
-    // Return normalized data with questions in standard format
     return {
       ...data,
       questions_json: {
@@ -309,7 +324,8 @@ export const useExamStore = create((set, get) => ({
   },
 
   /**
-   * Check if question set has been updated (version check)
+   * Check if question set has been updated (version check).
+   * If a newer version exists, re-fetches from question_items.
    */
   checkQuestionSetVersion: async (questionSetId, localVersion) => {
     try {
@@ -322,22 +338,11 @@ export const useExamStore = create((set, get) => ({
       if (error) throw error
       
       if (data.version_number > localVersion) {
-        // Fetch full question set with related data
-        const { data: fullData, error: fetchError } = await supabase
-          .from('question_sets')
-          .select('*, exam_types(name, provider, duration_minutes, passing_score, max_score)')
-          .eq('id', questionSetId)
-          .eq('is_active', true)
-          .single()
-        
-        if (fetchError) throw fetchError
-        
-        // Normalize the data
-        const normalized = get().normalizeQuestionSet(fullData)
-        
-        // Update IndexedDB
-        await indexedDBService.setQuestionSet(normalized)
-        set({ currentQuestionSet: normalized })
+        // Force refresh pulls fresh question_items rows and updates IndexedDB
+        const normalized = await get().loadQuestionSet(questionSetId, true)
+        if (normalized) {
+          set({ currentQuestionSet: normalized })
+        }
       }
     } catch (error) {
       console.error('Version check error:', error)

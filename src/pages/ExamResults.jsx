@@ -5,6 +5,7 @@ import useProgressStore from '../stores/progressStore'
 import useAuthStore from '../stores/authStore'
 import supabase from '../services/supabase'
 import DashboardHeader from '../components/layout/DashboardHeader'
+import AIExplanationPanel from '../components/AIExplanationPanel'
 
 function ExamResults() {
   const { slug } = useParams()
@@ -18,7 +19,7 @@ function ExamResults() {
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(true)
   const [questions, setQuestions] = useState([])
-  const [showExplanations, setShowExplanations] = useState({})
+  const [aiPanelQuestion, setAiPanelQuestion] = useState(null)
 
   useEffect(() => {
     const loadResultData = async () => {
@@ -128,13 +129,6 @@ function ExamResults() {
         </div>
       </>
     )
-  }
-
-  const toggleExplanation = (index) => {
-    setShowExplanations(prev => ({
-      ...prev,
-      [index]: !prev[index]
-    }))
   }
 
   const getAnswerStatus = (questionIndex, question) => {
@@ -527,73 +521,28 @@ function ExamResults() {
                     })}
                   </div>
 
-                  {/* Explanations for each option */}
-                  {question.explanations && Object.keys(question.explanations).length > 0 && (
-                    <div>
-                      <button
-                        onClick={() => toggleExplanation(index)}
-                        style={{
-                          padding: '0.5rem 1rem',
-                          background: 'rgba(0,212,170,0.2)',
-                          color: '#00D4AA',
-                          border: '1px solid rgba(0,212,170,0.3)',
-                          borderRadius: '0.5rem',
-                          fontWeight: '600',
-                          cursor: 'pointer',
-                          fontSize: '0.875rem',
-                          width: '100%',
-                          textAlign: 'left',
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center'
-                        }}
-                      >
-                        <span>📚 View Explanations</span>
-                        <span>{showExplanations[index] ? '▼' : '▶'}</span>
-                      </button>
-                      
-                      {showExplanations[index] && (
-                        <div style={{
-                          marginTop: '1rem',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '0.75rem'
-                        }}>
-                          {question.options?.map((option, optIndex) => {
-                            const optionText = typeof option === 'string' ? option : option.text
-                            const explanation = question.explanations[optionText]
-                            const isCorrectAnswer = correctAnswers.includes(optionText)
-                            
-                            if (!explanation) return null
-                            
-                            return (
-                              <div 
-                                key={optIndex}
-                                style={{
-                                  padding: '1rem',
-                                  background: isCorrectAnswer ? 'rgba(16,185,129,0.1)' : 'rgba(255,255,255,0.05)',
-                                  borderRadius: '0.5rem',
-                                  border: `1px solid ${isCorrectAnswer ? 'rgba(16,185,129,0.2)' : 'rgba(255,255,255,0.1)'}`,
-                                  color: 'rgba(255,255,255,0.9)',
-                                  fontSize: '0.875rem',
-                                  lineHeight: '1.6'
-                                }}
-                              >
-                                <div style={{ 
-                                  fontWeight: '600', 
-                                  marginBottom: '0.5rem',
-                                  color: isCorrectAnswer ? '#10b981' : 'rgba(255,255,255,0.8)'
-                                }}>
-                                  {String.fromCharCode(65 + optIndex)}. {optionText}
-                                </div>
-                                <div>{explanation}</div>
-                              </div>
-                            )
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  )}
+                  {/* Ask AI button */}
+                  <button
+                    onClick={() => setAiPanelQuestion(question)}
+                    style={{
+                      padding: '0.5rem 1rem',
+                      background: 'rgba(0,212,170,0.15)',
+                      color: '#00D4AA',
+                      border: '1px solid rgba(0,212,170,0.3)',
+                      borderRadius: '0.5rem',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      fontSize: '0.875rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.375rem',
+                      transition: 'background 0.2s'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(0,212,170,0.25)'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(0,212,170,0.15)'}
+                  >
+                    🤖 Ask AI
+                  </button>
                 </div>
               )
             })}
@@ -601,6 +550,14 @@ function ExamResults() {
         </div>
         </div>
       </div>
+
+      {/* AI Explanation Panel */}
+      {aiPanelQuestion && (
+        <AIExplanationPanel
+          question={aiPanelQuestion}
+          onClose={() => setAiPanelQuestion(null)}
+        />
+      )}
     </>
   )
 }

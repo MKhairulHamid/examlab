@@ -5,6 +5,7 @@ import useProgressStore from '../stores/progressStore'
 import useAuthStore from '../stores/authStore'
 import usePurchaseStore from '../stores/purchaseStore'
 import streakService from '../services/streakService'
+import AIExplanationPanel from '../components/AIExplanationPanel'
 
 function ExamInterface() {
   const { slug } = useParams()
@@ -42,8 +43,7 @@ function ExamInterface() {
   const [accessDenied, setAccessDenied] = useState(false)
   const [accessMessage, setAccessMessage] = useState('')
   const [duration, setDuration] = useState(0)
-  const [showMaterialsModal, setShowMaterialsModal] = useState(false)
-  const [showOfficialLinksModal, setShowOfficialLinksModal] = useState(false)
+  const [showAIPanel, setShowAIPanel] = useState(false)
   const [shuffledOptions, setShuffledOptions] = useState({})
   const [navMinimized, setNavMinimized] = useState(true)
   const [showResumeNotification, setShowResumeNotification] = useState(false)
@@ -649,23 +649,20 @@ function ExamInterface() {
           {answeredCount} of {questions.length} questions answered
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.75rem' }}>
           <button
-            onClick={() => setShowMaterialsModal(true)}
-            className="materials-button"
-          >
-            📚 Study Materials
-          </button>
-          <button
-            onClick={() => setShowOfficialLinksModal(true)}
+            onClick={() => setShowAIPanel(true)}
             className="materials-button"
             style={{
-              background: 'rgba(59, 130, 246, 0.2)',
-              color: '#3b82f6',
-              borderColor: '#3b82f6'
+              background: 'rgba(0,212,170,0.15)',
+              color: '#00D4AA',
+              borderColor: '#00D4AA',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.375rem'
             }}
           >
-            🔗 Official AWS Docs
+            🤖 Ask AI
           </button>
         </div>
 
@@ -720,58 +717,6 @@ function ExamInterface() {
               )
             })}
           </div>
-        </div>
-
-        {/* Copy Question for LLM Button */}
-        <div style={{ marginBottom: '0.75rem' }}>
-          <button
-            onClick={(e) => {
-              const btn = e.currentTarget
-              if (!btn) return
-              
-              try {
-                const question = currentQuestion.question
-                const options = currentQuestion.options.map((opt, idx) => 
-                  `${String.fromCharCode(65 + idx)}. ${opt.text}`
-                ).join('\n')
-                
-                const textToCopy = `Give me lesson to answer this question, dont directly answer the question, explain all service mentioned, and all abbreviation, and make the lesson help me to answer future question similiar to this
-
-Question:
-${question}
-
-Options:
-${options}`
-
-                navigator.clipboard.writeText(textToCopy).then(() => {
-                  // Show success feedback
-                  const originalText = btn.innerHTML
-                  btn.innerHTML = '✓ Copied!'
-                  btn.style.background = 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)'
-                  setTimeout(() => {
-                    btn.innerHTML = originalText
-                    btn.style.background = 'rgba(255, 255, 255, 0.1)'
-                  }, 2000)
-                }).catch(err => {
-                  console.error('Failed to copy:', err)
-                  const originalText = btn.innerHTML
-                  btn.innerHTML = '❌ Copy Failed'
-                  setTimeout(() => {
-                    btn.innerHTML = originalText
-                  }, 2000)
-                })
-              } catch (err) {
-                console.error('Error preparing copy:', err)
-              }
-            }}
-            className="nav-button nav-button-prev"
-            style={{
-              width: '100%',
-              marginBottom: '0.5rem'
-            }}
-          >
-            📋 Copy Question for AI Learning
-          </button>
         </div>
 
         {/* Navigation */}
@@ -838,155 +783,12 @@ ${options}`
         </div>
       )}
 
-      {/* Study Materials Modal */}
-      {showMaterialsModal && (
-        <div className="modal-overlay" onClick={() => setShowMaterialsModal(false)}>
-          <div className="modal-content materials-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setShowMaterialsModal(false)}>
-              ×
-            </button>
-            <div className="modal-header">
-              <h2 className="modal-title">📚 Study Materials</h2>
-              <p className="modal-description">
-                Question {currentQuestionIndex + 1} of {questions.length}
-              </p>
-            </div>
-            <div className="materials-content">
-              <div className="material-item">
-                <h3 className="material-title">📖 Reference Material</h3>
-                <div className="material-text">
-                  {currentQuestion.materials || 'No additional materials available for this question.'}
-                </div>
-              </div>
-            </div>
-            <button 
-              className="form-button"
-              onClick={() => setShowMaterialsModal(false)}
-              style={{ marginTop: '1rem' }}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Official Links Modal */}
-      {showOfficialLinksModal && (
-        <div className="modal-overlay" onClick={() => setShowOfficialLinksModal(false)}>
-          <div className="modal-content materials-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setShowOfficialLinksModal(false)}>
-              ×
-            </button>
-            <div className="modal-header">
-              <h2 className="modal-title">🔗 Official AWS Documentation</h2>
-              <p className="modal-description">
-                Question {currentQuestionIndex + 1} of {questions.length}
-              </p>
-            </div>
-            <div className="materials-content">
-              {currentQuestion.official_links && currentQuestion.official_links.length > 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  {currentQuestion.official_links.map((link, index) => {
-                    // Extract a readable name from the URL
-                    const getReadableName = (url) => {
-                      try {
-                        const urlObj = new URL(url)
-                        const pathname = urlObj.pathname
-                        const parts = pathname.split('/').filter(p => p)
-                        const lastPart = parts[parts.length - 1] || 'Documentation'
-                        return lastPart
-                          .replace(/-/g, ' ')
-                          .replace(/\.html?$/, '')
-                          .split(' ')
-                          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                          .join(' ')
-                      } catch {
-                        return `AWS Documentation ${index + 1}`
-                      }
-                    }
-                    
-                    return (
-                      <div 
-                        key={index}
-                        style={{
-                          padding: '1rem',
-                          background: 'rgba(59,130,246,0.1)',
-                          borderRadius: '0.75rem',
-                          border: '1px solid rgba(59,130,246,0.3)'
-                        }}
-                      >
-                        <div style={{ 
-                          fontSize: '1rem',
-                          fontWeight: '600',
-                          color: '#3b82f6',
-                          marginBottom: '0.75rem',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '0.5rem'
-                        }}>
-                          <span>📄</span>
-                          <span>{getReadableName(link)}</span>
-                        </div>
-                        
-                        {/* Iframe to display the documentation */}
-                        <iframe
-                          src={link}
-                          style={{
-                            width: '100%',
-                            height: '400px',
-                            border: '1px solid rgba(59,130,246,0.2)',
-                            borderRadius: '0.5rem',
-                            background: 'white'
-                          }}
-                          title={`AWS Documentation ${index + 1}`}
-                        />
-                        
-                        <a
-                          href={link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '0.5rem',
-                            marginTop: '0.75rem',
-                            padding: '0.5rem 1rem',
-                            background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '0.5rem',
-                            fontWeight: '600',
-                            cursor: 'pointer',
-                            fontSize: '0.875rem',
-                            textDecoration: 'none',
-                            transition: 'transform 0.2s'
-                          }}
-                          onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
-                          onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
-                        >
-                          <span>🔗</span>
-                          <span>Open in New Tab</span>
-                        </a>
-                      </div>
-                    )
-                  })}
-                </div>
-              ) : (
-                <div style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>
-                  <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📚</div>
-                  <p>No official documentation links available for this question.</p>
-                </div>
-              )}
-            </div>
-            <button 
-              className="form-button"
-              onClick={() => setShowOfficialLinksModal(false)}
-              style={{ marginTop: '1rem' }}
-            >
-              Close
-            </button>
-          </div>
-        </div>
+      {/* AI Explanation Panel */}
+      {showAIPanel && (
+        <AIExplanationPanel
+          question={currentQuestion}
+          onClose={() => setShowAIPanel(false)}
+        />
       )}
 
       {/* Paused Modal */}
