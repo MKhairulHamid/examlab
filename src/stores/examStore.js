@@ -196,12 +196,23 @@ export const useExamStore = create((set, get) => ({
         const cached = await indexedDBService.getQuestionSet(questionSetId)
         if (cached && cached.questions_json) {
           const normalized = get().normalizeQuestionSet(cached)
-          set({ currentQuestionSet: normalized, loading: false })
-          
-          // Background: check for version update
-          get().checkQuestionSetVersion(questionSetId, cached.version_number)
-          
-          return normalized
+
+          // Validate that cached questions have question_item_id (UUID from
+          // question_items table). If missing, the cache pre-dates the migration
+          // and must be discarded so we fetch fresh data.
+          const cachedQuestions = normalized?.questions_json?.questions || []
+          const hasMigrated = cachedQuestions.length > 0 && !!cachedQuestions[0]?.question_item_id
+          if (!hasMigrated) {
+            console.info('⚠️ Cached questions missing question_item_id — forcing refresh from question_items')
+            await indexedDBService.deleteQuestionSet?.(questionSetId)
+          } else {
+            set({ currentQuestionSet: normalized, loading: false })
+
+            // Background: check for version update
+            get().checkQuestionSetVersion(questionSetId, cached.version_number)
+
+            return normalized
+          }
         }
       }
       
