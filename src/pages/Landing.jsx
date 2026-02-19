@@ -116,14 +116,14 @@ function Landing() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="header-button" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
-        <nav style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', fontSize: '0.875rem', alignItems: 'center' }}>
-          <button onClick={() => scrollToSection('value')} className="nav-link">Why It Matters</button>
-          <button onClick={() => scrollToSection('how-it-works-demo')} className="nav-link">See It</button>
-          <button onClick={() => scrollToSection('certifications')} className="nav-link">Certifications</button>
-          <button onClick={() => scrollToSection('pricing')} className="nav-link">Pricing</button>
+      <header className="header-button">
+        <nav className="header-nav">
+          <button type="button" onClick={() => scrollToSection('value')} className="nav-link">Why It Matters</button>
+          <button type="button" onClick={() => scrollToSection('how-it-works-demo')} className="nav-link">See It</button>
+          <button type="button" onClick={() => scrollToSection('certifications')} className="nav-link">Certifications</button>
+          <button type="button" onClick={() => scrollToSection('pricing')} className="nav-link">Pricing</button>
         </nav>
-        <button onClick={() => setShowAuthModal(true)}>
+        <button type="button" onClick={() => setShowAuthModal(true)} className="header-cta">
           Login / Sign Up
         </button>
       </header>
