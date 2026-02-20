@@ -90,6 +90,8 @@ function FAQItem({ question, answer }) {
 }
 
 function ExamLandingSection({ landing }) {
+  const [expanded, setExpanded] = useState(true)
+
   if (!landing) return null
 
   const {
@@ -117,10 +119,58 @@ function ExamLandingSection({ landing }) {
   ].filter(Boolean) : []
 
   return (
-    <div style={{ marginBottom: '0.5rem' }}>
+    <div style={{ marginBottom: '1.25rem' }}>
+      {/* Toggle Header */}
+      <button
+        onClick={() => setExpanded(prev => !prev)}
+        style={{
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          background: 'rgba(255,255,255,0.08)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255,255,255,0.15)',
+          borderRadius: expanded ? '1rem 1rem 0 0' : '1rem',
+          padding: '1rem 1.25rem',
+          cursor: 'pointer',
+          color: 'white',
+          marginBottom: expanded ? '0' : '0',
+          transition: 'border-radius 0.2s',
+        }}
+      >
+        <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: '700', fontSize: '1rem' }}>
+          <span>📖</span> About This Certification
+        </span>
+        <span style={{
+          color: '#00D4AA',
+          fontSize: '1.125rem',
+          fontWeight: '700',
+          transition: 'transform 0.25s',
+          transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+          display: 'inline-block',
+          lineHeight: 1,
+        }}>
+          ▾
+        </span>
+      </button>
+
+      {/* Collapsible Content */}
+      {expanded && (
+        <div style={{
+          background: 'rgba(255,255,255,0.04)',
+          border: '1px solid rgba(255,255,255,0.15)',
+          borderTop: 'none',
+          borderRadius: '0 0 1rem 1rem',
+          padding: '1.25rem',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '1.25rem',
+        }}>
+
       {/* Tagline / Overview */}
       {(tagline || overview) && (
-        <div style={{ ...glassCard, marginBottom: '1.25rem' }}>
+        <div style={glassCard}>
           {tagline && (
             <p style={{
               fontSize: '1rem',
@@ -142,7 +192,7 @@ function ExamLandingSection({ landing }) {
 
       {/* Exam At A Glance */}
       {glanceStats.length > 0 && (
-        <div style={{ ...glassCard, marginBottom: '1.25rem' }}>
+        <div style={glassCard}>
           <h3 style={sectionHeading}>
             <span>📊</span> Exam At A Glance
           </h3>
@@ -167,7 +217,6 @@ function ExamLandingSection({ landing }) {
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
           gap: '1.25rem',
-          marginBottom: '1.25rem',
         }}>
           {why_get_certified?.length > 0 && (
             <div style={glassCard}>
@@ -218,7 +267,7 @@ function ExamLandingSection({ landing }) {
 
       {/* What's Next */}
       {next_steps?.length > 0 && (
-        <div style={{ ...glassCard, marginBottom: '1.25rem' }}>
+        <div style={glassCard}>
           <h3 style={sectionHeading}>
             <span>🚀</span> What's Next After This Certification?
           </h3>
@@ -242,7 +291,7 @@ function ExamLandingSection({ landing }) {
 
       {/* FAQs */}
       {faqs?.length > 0 && (
-        <div style={{ ...glassCard, marginBottom: '0.5rem' }}>
+        <div style={glassCard}>
           <h3 style={sectionHeading}>
             <span>❓</span> Key FAQs
           </h3>
@@ -251,6 +300,9 @@ function ExamLandingSection({ landing }) {
               <FAQItem key={i} question={faq.q} answer={faq.a} />
             ))}
           </div>
+        </div>
+      )}
+
         </div>
       )}
     </div>
