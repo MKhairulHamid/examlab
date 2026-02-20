@@ -4,6 +4,7 @@ import useExamStore from '../stores/examStore'
 import useAuthStore from '../stores/authStore'
 import usePurchaseStore from '../stores/purchaseStore'
 import EnrollmentModal from '../components/enrollment/EnrollmentModal'
+import ExamLandingSection from '../components/exam/ExamLandingSection'
 import supabase from '../services/supabase'
 
 function ExamDetail() {
@@ -144,6 +145,9 @@ function ExamDetail() {
           </div>
         </div>
 
+
+        {/* Certification Landing Info */}
+        <ExamLandingSection landing={exam.landing_content} />
 
         {/* Question Sets */}
         <h2 className="section-title">📝 Question Sets</h2>
