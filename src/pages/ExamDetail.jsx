@@ -150,7 +150,7 @@ function ExamDetail() {
         <ExamLandingSection landing={exam.landing_content} />
 
         {/* Question Sets */}
-        <h2 className="section-title">📝 Question Sets</h2>
+        <h2 className="section-title" style={{ marginTop: '2rem' }}>📝 Question Sets</h2>
         <div className="question-sets-grid">
           {loadingQuestionSets ? (
             <div className="col-span-full empty-state">

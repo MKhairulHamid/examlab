@@ -90,7 +90,7 @@ function FAQItem({ question, answer }) {
 }
 
 function ExamLandingSection({ landing }) {
-  const [expanded, setExpanded] = useState(true)
+  const [expanded, setExpanded] = useState(false)
 
   if (!landing) return null
 
@@ -142,17 +142,25 @@ function ExamLandingSection({ landing }) {
         <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: '700', fontSize: '1rem' }}>
           <span>📖</span> About This Certification
         </span>
-        <span style={{
-          color: '#00D4AA',
-          fontSize: '1.125rem',
-          fontWeight: '700',
-          transition: 'transform 0.25s',
-          transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
-          display: 'inline-block',
-          lineHeight: 1,
-        }}>
-          ▾
-        </span>
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 20 20"
+          fill="none"
+          style={{
+            flexShrink: 0,
+            transition: 'transform 0.25s ease',
+            transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+          }}
+        >
+          <path
+            d="M5 7.5L10 12.5L15 7.5"
+            stroke="#00D4AA"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
       </button>
 
       {/* Collapsible Content */}
