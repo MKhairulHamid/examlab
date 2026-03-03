@@ -662,7 +662,7 @@ function ExamInterface() {
               gap: '0.375rem'
             }}
           >
-            🤖 Ask AI
+            🤖 AI Learning Guide
           </button>
         </div>
 

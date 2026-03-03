@@ -541,7 +541,7 @@ function ExamResults() {
                     onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(0,212,170,0.25)'}
                     onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(0,212,170,0.15)'}
                   >
-                    🤖 Ask AI
+                    🤖 AI Learning Guide
                   </button>
                 </div>
               )

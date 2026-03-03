@@ -7,7 +7,6 @@ import DashboardHeader from '../components/layout/DashboardHeader'
 import EnrollmentModal from '../components/enrollment/EnrollmentModal'
 import streakService from '../services/streakService'
 import progressService from '../services/progressService'
-import indexedDBService from '../services/indexedDBService'
 import supabase from '../services/supabase'
 
 
@@ -171,7 +170,11 @@ function Dashboard() {
         
         const attemptedExamIds = new Set()
         for (const attempt of userAttempts) {
-          const questionSet = await indexedDBService.getQuestionSet(attempt.questionSetId)
+          const { data: questionSet } = await supabase
+            .from('question_sets')
+            .select('exam_type_id')
+            .eq('id', attempt.questionSetId)
+            .single()
           if (questionSet?.exam_type_id) {
             attemptedExamIds.add(questionSet.exam_type_id)
           }
@@ -756,7 +759,11 @@ function Dashboard() {
                   if (result.examSlug) {
                     navigate(`/exam/${result.examSlug}/results?resultId=${result.id}&set=${result.questionSetId}`)
                   } else {
-                    const questionSet = await indexedDBService.getQuestionSet(result.questionSetId)
+                    const { data: questionSet } = await supabase
+                      .from('question_sets')
+                      .select('exam_type_id')
+                      .eq('id', result.questionSetId)
+                      .single()
                     if (questionSet?.exam_type_id) {
                       const exam = exams.find(e => e.id === questionSet.exam_type_id)
                       if (exam) {

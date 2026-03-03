@@ -216,6 +216,19 @@ export default function AIExplanationPanel({ question, onClose }) {
       return
     }
 
+    const isPredefined = ['concept_guide', 'explanations', 'official_links'].includes(promptType)
+
+    // DB-level cache — populated by any previous user's request, already
+    // stored on the question_item row and fetched with the question set.
+    if (isPredefined && question.ai_cache?.[promptType]) {
+      setResponse(question.ai_cache[promptType])
+      setActiveType(promptType)
+      setCached(true)
+      setError(null)
+      setErrorCode(null)
+      return
+    }
+
     setLoading(true)
     setError(null)
     setErrorCode(null)
@@ -238,8 +251,14 @@ export default function AIExplanationPanel({ question, onClose }) {
         setError(data.error)
         setErrorCode(data?.code || null)
       } else {
-        setResponse(data?.response || '')
+        const text = data?.response || ''
+        setResponse(text)
         setCached(data?.cached || false)
+        // Mirror into question.ai_cache so re-opening this panel for the
+        // same question immediately hits the DB cache check.
+        if (isPredefined && text && question.ai_cache) {
+          question.ai_cache[promptType] = text
+        }
       }
     } catch (err) {
       console.error('AI explanation error:', err)
@@ -323,7 +342,7 @@ export default function AIExplanationPanel({ question, onClose }) {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <span style={{ fontSize: '1.25rem' }}>🤖</span>
-            <span style={{ color: 'white', fontWeight: '700', fontSize: '1rem' }}>Ask AI</span>
+            <span style={{ color: 'white', fontWeight: '700', fontSize: '1rem' }}>AI Learning Guide</span>
           </div>
           <button
             onClick={onClose}

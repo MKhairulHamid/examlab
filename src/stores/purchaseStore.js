@@ -4,7 +4,6 @@
 
 import { create } from 'zustand'
 import paymentService from '../services/paymentService'
-import cacheService from '../services/cacheService'
 
 const usePurchaseStore = create((set, get) => ({
   // State
@@ -39,48 +38,15 @@ const usePurchaseStore = create((set, get) => ({
    */
   fetchSubscription: async (userId) => {
     try {
-      const cached = cacheService.get(`subscription_${userId}`)
-      if (cached) {
-        set({
-          subscription: cached.subscription,
-          isSubscribed: cached.subscription?.status === 'active'
-        })
-        get().refreshSubscriptionInBackground(userId)
-        return
-      }
-
       const result = await paymentService.getUserSubscription(userId)
       if (result.success) {
         set({
           subscription: result.subscription,
           isSubscribed: result.subscription?.status === 'active'
         })
-        cacheService.set(`subscription_${userId}`, {
-          subscription: result.subscription
-        }, 5 * 60 * 1000)
       }
     } catch (error) {
       console.error('Error fetching subscription:', error)
-    }
-  },
-
-  /**
-   * Background refresh subscription
-   */
-  refreshSubscriptionInBackground: async (userId) => {
-    try {
-      const result = await paymentService.getUserSubscription(userId)
-      if (result.success) {
-        set({
-          subscription: result.subscription,
-          isSubscribed: result.subscription?.status === 'active'
-        })
-        cacheService.set(`subscription_${userId}`, {
-          subscription: result.subscription
-        }, 5 * 60 * 1000)
-      }
-    } catch (error) {
-      console.error('Background subscription refresh error:', error)
     }
   },
 
@@ -135,39 +101,12 @@ const usePurchaseStore = create((set, get) => ({
    */
   fetchEnrollments: async (userId) => {
     try {
-      const cached = cacheService.get(`enrollments_${userId}`)
-      if (cached) {
-        set({ enrolledExamIds: cached.examTypeIds })
-        get().refreshEnrollmentsInBackground(userId)
-        return
-      }
-
       const result = await paymentService.getUserEnrollments(userId)
       if (result.success) {
         set({ enrolledExamIds: result.examTypeIds })
-        cacheService.set(`enrollments_${userId}`, {
-          examTypeIds: result.examTypeIds
-        }, 5 * 60 * 1000)
       }
     } catch (error) {
       console.error('Error fetching enrollments:', error)
-    }
-  },
-
-  /**
-   * Background refresh enrollments
-   */
-  refreshEnrollmentsInBackground: async (userId) => {
-    try {
-      const result = await paymentService.getUserEnrollments(userId)
-      if (result.success) {
-        set({ enrolledExamIds: result.examTypeIds })
-        cacheService.set(`enrollments_${userId}`, {
-          examTypeIds: result.examTypeIds
-        }, 5 * 60 * 1000)
-      }
-    } catch (error) {
-      console.error('Background enrollment refresh error:', error)
     }
   },
 
@@ -188,7 +127,6 @@ const usePurchaseStore = create((set, get) => ({
             ? state.enrolledExamIds
             : [...state.enrolledExamIds, examTypeId]
         }))
-        cacheService.remove(`enrollments_${userId}`)
       }
       return result
     } catch (error) {
@@ -206,11 +144,9 @@ const usePurchaseStore = create((set, get) => ({
   },
 
   /**
-   * Clear all caches
+   * Clear subscription and enrollment state
    */
-  clearCache: (userId) => {
-    cacheService.remove(`subscription_${userId}`)
-    cacheService.remove(`enrollments_${userId}`)
+  clearCache: () => {
     set({ subscription: null, isSubscribed: false, enrolledExamIds: [] })
   }
 }))
