@@ -13,6 +13,7 @@ import ExamResults from './pages/ExamResults'
 import ResetPassword from './pages/ResetPassword'
 import PaymentSuccess from './pages/PaymentSuccess'
 import StudyMaterial from './pages/StudyMaterial'
+import AdminPage from './pages/AdminPage'
 
 // Protected Route wrapper
 function ProtectedRoute({ children }) {
@@ -122,6 +123,15 @@ function App() {
           element={
             <ProtectedRoute>
               <StudyMaterial />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute>
+              <AdminPage />
             </ProtectedRoute>
           }
         />

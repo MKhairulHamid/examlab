@@ -106,18 +106,15 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL') || ''
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || ''
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') || ''
 
     // Service-role client for all DB writes / admin reads
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    // User-context client to verify the caller's JWT
-    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } },
-    })
-
-    const { data: { user }, error: authError } = await userClient.auth.getUser()
+    // Verify caller's JWT by passing the token directly
+    const token = authHeader.replace(/^Bearer\s+/i, '')
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
     if (authError || !user) {
+      console.error('Auth error:', authError?.message)
       return jsonResponse({ error: 'Invalid or expired session.', code: 'unauthenticated' }, 401)
     }
 

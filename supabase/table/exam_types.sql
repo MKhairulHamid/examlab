@@ -11,6 +11,7 @@ create table public.exam_types (
   max_score integer null default 1000,
   is_active boolean null default true,
   display_order integer null default 0,
+  landing_content jsonb null,
   created_at timestamp with time zone not null default timezone ('utc'::text, now()),
   updated_at timestamp with time zone not null default timezone ('utc'::text, now()),
   constraint exam_types_pkey primary key (id),

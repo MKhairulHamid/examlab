@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Verification – Cloud Exam Lab</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Arial, sans-serif;">
+
+    <!-- Outer wrapper -->
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f1f5f9; padding: 48px 20px;">
+        <tr>
+            <td align="center">
+
+                <!-- Card -->
+                <table width="600" cellpadding="0" cellspacing="0" border="0"
+                    style="max-width: 600px; width: 100%; background-color: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 8px 32px rgba(10, 37, 64, 0.12);">
+
+                    <!-- ─── Header ─────────────────────────────────────────── -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #0A2540 0%, #1A3B5C 100%); padding: 44px 40px 36px; text-align: center;">
+
+                            <!-- Logo / wordmark -->
+                            <table cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto 24px;">
+                                <tr>
+                                    <td style="background: linear-gradient(135deg, #00D4AA 0%, #00A884 100%); border-radius: 12px; padding: 10px 18px;">
+                                        <span style="color: #ffffff; font-size: 15px; font-weight: 700; letter-spacing: 0.5px; white-space: nowrap;">Cloud Exam Lab</span>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <h1 style="color: #ffffff; margin: 0 0 8px; font-size: 26px; font-weight: 700; line-height: 1.3;">
+                                Account Verification
+                            </h1>
+                            <p style="color: rgba(255,255,255,0.65); margin: 0; font-size: 15px; line-height: 1.5;">
+                                A quick confirmation before we proceed
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- ─── Body ───────────────────────────────────────────── -->
+                    <tr>
+                        <td style="padding: 40px 40px 32px;">
+
+                            <p style="color: #0A2540; font-size: 16px; line-height: 1.7; margin: 0 0 12px;">
+                                Hi there,
+                            </p>
+                            <p style="color: #4b5563; font-size: 15px; line-height: 1.7; margin: 0 0 32px;">
+                                We need to confirm it's you before completing a protected action on your <strong style="color: #0A2540;">Cloud Exam Lab</strong> account. Click the button below to continue.
+                            </p>
+
+                            <!-- CTA button -->
+                            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                                <tr>
+                                    <td align="center" style="padding: 4px 0 36px;">
+                                        <a href="{{ .ConfirmationURL }}"
+                                            style="display: inline-block; background: linear-gradient(135deg, #00D4AA 0%, #00A884 100%); color: #ffffff; text-decoration: none; padding: 15px 44px; border-radius: 12px; font-size: 16px; font-weight: 600; letter-spacing: 0.2px; box-shadow: 0 4px 15px rgba(0, 212, 170, 0.35);">
+                                            Verify &amp; Continue
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Divider -->
+                            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 28px;">
+                                <tr>
+                                    <td style="border-top: 1px solid #e5e7eb;"></td>
+                                </tr>
+                            </table>
+
+                            <!-- Why are we asking box -->
+                            <table width="100%" cellpadding="0" cellspacing="0" border="0"
+                                style="background-color: #eff6ff; border-radius: 14px; border: 1.5px solid rgba(59, 130, 246, 0.35); margin-bottom: 20px;">
+                                <tr>
+                                    <td style="padding: 24px 28px;">
+                                        <p style="color: #0A2540; font-size: 15px; font-weight: 700; margin: 0 0 14px; letter-spacing: 0.1px;">
+                                            Why are we asking?
+                                        </p>
+                                        <p style="color: #374151; font-size: 14px; line-height: 1.7; margin: 0 0 14px;">
+                                            To keep your account safe, we require re-confirmation before:
+                                        </p>
+                                        <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                                            <tr>
+                                                <td style="padding: 4px 0;">
+                                                    <table cellpadding="0" cellspacing="0" border="0">
+                                                        <tr>
+                                                            <td style="width: 22px; vertical-align: top; padding-top: 1px;">
+                                                                <span style="display: inline-block; width: 6px; height: 6px; background-color: #3b82f6; border-radius: 50%; margin-top: 6px;"></span>
+                                                            </td>
+                                                            <td style="padding-left: 10px; color: #374151; font-size: 14px; line-height: 1.6;">Changing your email address</td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 4px 0;">
+                                                    <table cellpadding="0" cellspacing="0" border="0">
+                                                        <tr>
+                                                            <td style="width: 22px; vertical-align: top; padding-top: 1px;">
+                                                                <span style="display: inline-block; width: 6px; height: 6px; background-color: #3b82f6; border-radius: 50%; margin-top: 6px;"></span>
+                                                            </td>
+                                                            <td style="padding-left: 10px; color: #374151; font-size: 14px; line-height: 1.6;">Updating billing details</td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 4px 0;">
+                                                    <table cellpadding="0" cellspacing="0" border="0">
+                                                        <tr>
+                                                            <td style="width: 22px; vertical-align: top; padding-top: 1px;">
+                                                                <span style="display: inline-block; width: 6px; height: 6px; background-color: #3b82f6; border-radius: 50%; margin-top: 6px;"></span>
+                                                            </td>
+                                                            <td style="padding-left: 10px; color: #374151; font-size: 14px; line-height: 1.6;">Deleting your account</td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 4px 0;">
+                                                    <table cellpadding="0" cellspacing="0" border="0">
+                                                        <tr>
+                                                            <td style="width: 22px; vertical-align: top; padding-top: 1px;">
+                                                                <span style="display: inline-block; width: 6px; height: 6px; background-color: #3b82f6; border-radius: 50%; margin-top: 6px;"></span>
+                                                            </td>
+                                                            <td style="padding-left: 10px; color: #374151; font-size: 14px; line-height: 1.6;">Modifying account settings</td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- This wasn't you box -->
+                            <table width="100%" cellpadding="0" cellspacing="0" border="0"
+                                style="background-color: #fef2f2; border-radius: 14px; border: 1.5px solid rgba(239, 68, 68, 0.35); margin-bottom: 20px;">
+                                <tr>
+                                    <td style="padding: 24px 28px;">
+                                        <p style="color: #0A2540; font-size: 15px; font-weight: 700; margin: 0 0 14px; letter-spacing: 0.1px;">
+                                            This wasn't you?
+                                        </p>
+                                        <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                                            <tr>
+                                                <td style="padding: 4px 0;">
+                                                    <table cellpadding="0" cellspacing="0" border="0">
+                                                        <tr>
+                                                            <td style="width: 22px; vertical-align: top; padding-top: 2px;">
+                                                                <span style="display: inline-block; width: 18px; height: 18px; background-color: #ef4444; border-radius: 50%; text-align: center; line-height: 18px; font-size: 11px; color: #fff; font-weight: 700;">1</span>
+                                                            </td>
+                                                            <td style="padding-left: 10px; color: #374151; font-size: 14px; line-height: 1.6;">Do <strong style="color: #0A2540;">not</strong> click the verification link above</td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 4px 0;">
+                                                    <table cellpadding="0" cellspacing="0" border="0">
+                                                        <tr>
+                                                            <td style="width: 22px; vertical-align: top; padding-top: 2px;">
+                                                                <span style="display: inline-block; width: 18px; height: 18px; background-color: #ef4444; border-radius: 50%; text-align: center; line-height: 18px; font-size: 11px; color: #fff; font-weight: 700;">2</span>
+                                                            </td>
+                                                            <td style="padding-left: 10px; color: #374151; font-size: 14px; line-height: 1.6;">Update your sign-in credentials right away</td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 4px 0;">
+                                                    <table cellpadding="0" cellspacing="0" border="0">
+                                                        <tr>
+                                                            <td style="width: 22px; vertical-align: top; padding-top: 2px;">
+                                                                <span style="display: inline-block; width: 18px; height: 18px; background-color: #ef4444; border-radius: 50%; text-align: center; line-height: 18px; font-size: 11px; color: #fff; font-weight: 700;">3</span>
+                                                            </td>
+                                                            <td style="padding-left: 10px; color: #374151; font-size: 14px; line-height: 1.6;">Reply to this email to report unexpected activity</td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Link details box -->
+                            <table width="100%" cellpadding="0" cellspacing="0" border="0"
+                                style="background-color: #f8fafc; border-radius: 14px; border: 1.5px solid #e5e7eb; margin-bottom: 28px;">
+                                <tr>
+                                    <td style="padding: 20px 28px;">
+                                        <p style="color: #0A2540; font-size: 14px; font-weight: 700; margin: 0 0 12px; letter-spacing: 0.1px;">
+                                            Link details
+                                        </p>
+                                        <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                                            <tr>
+                                                <td style="padding: 3px 0;">
+                                                    <table cellpadding="0" cellspacing="0" border="0">
+                                                        <tr>
+                                                            <td style="width: 22px; vertical-align: top; padding-top: 1px;">
+                                                                <span style="display: inline-block; width: 6px; height: 6px; background-color: #9ca3af; border-radius: 50%; margin-top: 6px;"></span>
+                                                            </td>
+                                                            <td style="padding-left: 10px; color: #374151; font-size: 13px; line-height: 1.6;">Expires in: <strong style="color: #0A2540;">15 minutes</strong></td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 3px 0;">
+                                                    <table cellpadding="0" cellspacing="0" border="0">
+                                                        <tr>
+                                                            <td style="width: 22px; vertical-align: top; padding-top: 1px;">
+                                                                <span style="display: inline-block; width: 6px; height: 6px; background-color: #9ca3af; border-radius: 50%; margin-top: 6px;"></span>
+                                                            </td>
+                                                            <td style="padding-left: 10px; color: #374151; font-size: 13px; line-height: 1.6;">Single use only</td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 3px 0;">
+                                                    <table cellpadding="0" cellspacing="0" border="0">
+                                                        <tr>
+                                                            <td style="width: 22px; vertical-align: top; padding-top: 1px;">
+                                                                <span style="display: inline-block; width: 6px; height: 6px; background-color: #9ca3af; border-radius: 50%; margin-top: 6px;"></span>
+                                                            </td>
+                                                            <td style="padding-left: 10px; color: #374151; font-size: 13px; line-height: 1.6;">Account: <strong style="color: #0A2540;">{{ .Email }}</strong></td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Fallback URL -->
+                            <p style="color: #9ca3af; font-size: 12px; line-height: 1.6; margin: 0; word-break: break-all;">
+                                If the button doesn't work, copy and paste this link into your browser:<br>
+                                <a href="{{ .ConfirmationURL }}" style="color: #00A884; text-decoration: underline;">{{ .ConfirmationURL }}</a>
+                            </p>
+
+                        </td>
+                    </tr>
+
+                    <!-- ─── Footer ─────────────────────────────────────────── -->
+                    <tr>
+                        <td style="background-color: #f8fafc; border-top: 1px solid #e5e7eb; padding: 28px 40px; text-align: center; border-radius: 0 0 20px 20px;">
+                            <p style="color: #0A2540; font-size: 14px; font-weight: 600; margin: 0 0 6px;">
+                                Best regards,
+                            </p>
+                            <p style="color: #6b7280; font-size: 14px; margin: 0 0 18px;">
+                                The Cloud Exam Lab Team
+                            </p>
+                            <p style="color: #9ca3af; font-size: 12px; margin: 0; line-height: 1.6;">
+                                This is an automated message.<br>
+                                If you didn't initiate this action, please contact us right away.
+                            </p>
+                        </td>
+                    </tr>
+
+                </table>
+                <!-- / Card -->
+
+            </td>
+        </tr>
+    </table>
+
+</body>
+</html>
