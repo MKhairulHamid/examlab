@@ -183,6 +183,27 @@ export const useAuthStore = create((set, get) => ({
   },
 
   /**
+   * Sign in with Google OAuth
+   */
+  signInWithGoogle: async () => {
+    try {
+      set({ loading: true, error: null })
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`,
+        },
+      })
+      if (error) throw error
+      // Redirect happens automatically — no need to set loading: false
+    } catch (error) {
+      console.error('Google sign-in error:', error)
+      set({ error: error.message, loading: false })
+      return { success: false, error: error.message }
+    }
+  },
+
+  /**
    * Sign in with magic link
    */
   signInWithMagicLink: async (email, metadata = {}) => {
