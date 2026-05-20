@@ -8,6 +8,7 @@ import EnrollmentModal from '../components/enrollment/EnrollmentModal'
 import streakService from '../services/streakService'
 import progressService from '../services/progressService'
 import supabase from '../services/supabase'
+import { PATHS, computeTimeline } from '../components/pathfinder/PathFinderModal'
 
 
 function Dashboard() {
@@ -24,6 +25,9 @@ function Dashboard() {
   const [examDates, setExamDates] = useState([])
   const [showExamDateModal, setShowExamDateModal] = useState(false)
   const [selectedExamForDate, setSelectedExamForDate] = useState(null)
+  const [pathAnswers, setPathAnswers] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('cloudexamlab_path_answers')) } catch { return null }
+  })
   const exploreRef = useRef(null)
 
   useEffect(() => {
@@ -287,6 +291,268 @@ function Dashboard() {
   const resetCard = (e) => {
     e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.04)'
     e.currentTarget.style.transform = 'translateY(0)'
+  }
+
+  // ─── Render: My Path ─────────────────────────────────────────
+  const renderMyPath = () => {
+    // No quiz answers yet → prompt card
+    if (!pathAnswers || !pathAnswers.role || !PATHS[pathAnswers.role]) {
+      return (
+        <section style={{ ...sectionPad, background: 'white' }}>
+          <div style={containerStyle}>
+            <div style={{
+              ...cardStyle,
+              padding: 'clamp(2rem, 5vw, 3rem)',
+              background: 'linear-gradient(135deg, #0A2540 0%, #1A3B5C 100%)',
+              border: 'none',
+              textAlign: 'center',
+              position: 'relative',
+              overflow: 'hidden'
+            }}>
+              {/* Decorative orb */}
+              <div style={{
+                position: 'absolute', width: '18rem', height: '18rem',
+                background: 'rgba(0,212,170,0.08)', borderRadius: '9999px',
+                filter: 'blur(60px)', top: '-4rem', right: '-4rem'
+              }} />
+              <div style={{ position: 'relative', zIndex: 1 }}>
+                <div style={{ fontSize: '3rem', marginBottom: '0.75rem' }}>🗺️</div>
+                <div style={{ color: '#00D4AA', fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.5rem' }}>
+                  YOUR CERTIFICATION JOURNEY
+                </div>
+                <h2 style={{ fontSize: 'clamp(1.25rem, 3vw, 1.75rem)', fontWeight: '700', color: 'white', marginBottom: '0.75rem' }}>
+                  Discover Your AWS Path
+                </h2>
+                <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.9375rem', maxWidth: '480px', margin: '0 auto 1.75rem', lineHeight: '1.6' }}>
+                  Answer 3 quick questions and we'll build your personalized AWS certification roadmap — with timeline, salary data, and step-by-step guidance.
+                </p>
+                <button
+                  onClick={() => navigate('/')}
+                  style={{
+                    padding: '0.875rem 2rem',
+                    background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
+                    color: 'white', border: 'none', borderRadius: '0.625rem',
+                    fontWeight: '700', fontSize: '1rem', cursor: 'pointer',
+                    boxShadow: '0 4px 15px rgba(0,212,170,0.3)',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)'
+                    e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,212,170,0.4)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)'
+                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,212,170,0.3)'
+                  }}
+                >
+                  Find My Certification Path →
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      )
+    }
+
+    // Has quiz answers → show full path
+    const { experience = 'beginner', role, depth = 'role' } = pathAnswers
+    const path = PATHS[role]
+    const timeline = computeTimeline(path, experience, depth)
+    const visibleCerts = path.certs.slice(0, timeline.count)
+
+    const expLabels = { beginner: 'Beginner', it_background: 'IT Background', some_aws: 'Some AWS', experienced: 'Experienced' }
+    const depthLabels = { quick: 'Quick Win', role: 'Role Ready', senior: 'Senior Level', expert: 'Expert' }
+
+    const levelColors = {
+      Foundational: { bg: '#ecfdf5', text: '#065f46', border: '#a7f3d0' },
+      Associate:    { bg: '#eff6ff', text: '#1e40af', border: '#bfdbfe' },
+      Professional: { bg: '#faf5ff', text: '#6b21a8', border: '#d8b4fe' },
+      Specialty:    { bg: '#fff7ed', text: '#9a3412', border: '#fed7aa' },
+    }
+
+    return (
+      <section style={{ ...sectionPad, background: 'white' }}>
+        <div style={containerStyle}>
+          {/* Section header */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+            <div>
+              <div style={sectionLabelStyle}>YOUR CERTIFICATION JOURNEY</div>
+              <h2 style={sectionHeadingStyle}>My Path — {path.name}</h2>
+            </div>
+            <button
+              onClick={() => navigate('/')}
+              style={{ ...outlineBtnStyle, fontSize: '0.8125rem', display: 'flex', alignItems: 'center', gap: '0.375rem' }}
+            >
+              ✏️ Retake Quiz
+            </button>
+          </div>
+
+          {/* Path hero card */}
+          <div style={{
+            borderRadius: '1rem',
+            background: `linear-gradient(135deg, ${path.color}18 0%, ${path.color}08 100%)`,
+            border: `1px solid ${path.color}30`,
+            padding: 'clamp(1.25rem, 3vw, 2rem)',
+            marginBottom: '1.5rem',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              position: 'absolute', width: '16rem', height: '16rem',
+              background: `${path.color}10`, borderRadius: '9999px',
+              filter: 'blur(50px)', top: '-3rem', right: '-3rem'
+            }} />
+            <div style={{ position: 'relative', zIndex: 1 }}>
+              {/* Top row: emoji + title + stats */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
+                <div style={{
+                  fontSize: '2.5rem', width: '3.5rem', height: '3.5rem',
+                  background: `${path.color}20`, borderRadius: '0.875rem',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                }}>
+                  {path.emoji}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: '0.75rem', fontWeight: '700', color: path.color, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.25rem' }}>
+                    {path.targetRole}
+                  </div>
+                  <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: '#0A2540', margin: 0 }}>
+                    {path.name} Path
+                  </h3>
+                </div>
+              </div>
+
+              {/* Stats row */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 140px), 1fr))', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                {[
+                  { label: 'Est. Timeline', value: `${timeline.months} months`, icon: '⏱️' },
+                  { label: 'Certifications', value: `${timeline.count} certs`, icon: '🏆' },
+                  { label: 'Avg Salary', value: path.avgSalary, icon: '💰' },
+                  { label: 'Job Demand', value: path.jobDemand.split(' ').slice(0,2).join(' '), icon: '📈' },
+                ].map((s, i) => (
+                  <div key={i} style={{
+                    background: 'rgba(255,255,255,0.7)', borderRadius: '0.625rem',
+                    padding: '0.875rem 1rem', border: '1px solid rgba(255,255,255,0.8)'
+                  }}>
+                    <div style={{ fontSize: '1.25rem', marginBottom: '0.25rem' }}>{s.icon}</div>
+                    <div style={{ fontSize: '1rem', fontWeight: '700', color: '#0A2540', lineHeight: 1.2 }}>{s.value}</div>
+                    <div style={{ fontSize: '0.6875rem', color: '#6b7280', marginTop: '0.125rem' }}>{s.label}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Tags */}
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '1rem' }}>
+                {[expLabels[experience], depthLabels[depth]].map((tag, i) => (
+                  <span key={i} style={{
+                    padding: '0.2rem 0.625rem', borderRadius: '9999px',
+                    background: `${path.color}18`, color: path.color,
+                    fontSize: '0.6875rem', fontWeight: '700', border: `1px solid ${path.color}30`
+                  }}>
+                    {tag}
+                  </span>
+                ))}
+                <span style={{
+                  padding: '0.2rem 0.625rem', borderRadius: '9999px',
+                  background: '#f3f4f6', color: '#6b7280',
+                  fontSize: '0.6875rem', fontWeight: '600', border: '1px solid #e5e7eb'
+                }}>
+                  Salary range: {path.salaryRange}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Cert journey */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {visibleCerts.map((cert, idx) => {
+              const colors = levelColors[cert.level] || levelColors.Associate
+              const cumulativeHours = visibleCerts.slice(0, idx + 1).reduce((s, c) => {
+                const mult = { beginner: 1.0, it_background: 0.75, some_aws: 0.5, experienced: 0.35 }[experience] ?? 1.0
+                return s + c.baseHours * mult
+              }, 0)
+              const weeksToThisCert = Math.round(cumulativeHours / 10)
+
+              return (
+                <div
+                  key={cert.code}
+                  style={{
+                    ...cardStyle,
+                    display: 'flex', alignItems: 'flex-start', gap: '1rem',
+                    padding: '1rem 1.25rem',
+                    borderLeft: `4px solid ${path.color}`
+                  }}
+                >
+                  {/* Step number */}
+                  <div style={{
+                    width: '2rem', height: '2rem', borderRadius: '9999px',
+                    background: `${path.color}18`, color: path.color,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontWeight: '700', fontSize: '0.875rem', flexShrink: 0, marginTop: '0.125rem'
+                  }}>
+                    {idx + 1}
+                  </div>
+
+                  {/* Main content */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.25rem' }}>
+                      <span style={{
+                        padding: '0.125rem 0.5rem', borderRadius: '9999px',
+                        background: colors.bg, color: colors.text, border: `1px solid ${colors.border}`,
+                        fontSize: '0.625rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.04em'
+                      }}>
+                        {cert.level}
+                      </span>
+                      <span style={{ fontSize: '0.6875rem', color: '#9ca3af', fontWeight: '500' }}>
+                        {cert.code}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: '0.9375rem', fontWeight: '700', color: '#0A2540', marginBottom: '0.25rem' }}>
+                      {cert.name}
+                    </div>
+                    {cert.unlocks && (
+                      <div style={{ fontSize: '0.8125rem', color: '#6b7280', lineHeight: '1.4' }}>
+                        {cert.unlocks}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right meta */}
+                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                    <div style={{ fontSize: '0.875rem', fontWeight: '700', color: '#0A2540' }}>
+                      ~{weeksToThisCert}w
+                    </div>
+                    <div style={{ fontSize: '0.6875rem', color: '#9ca3af' }}>
+                      ${cert.cost} exam
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Bottom CTA */}
+          <div style={{ marginTop: '1.5rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <button
+              onClick={() => {
+                if (exploreRef.current) exploreRef.current.scrollIntoView({ behavior: 'smooth' })
+              }}
+              style={{ ...primaryBtnStyle, padding: '0.75rem 1.5rem', fontSize: '0.9375rem', fontWeight: '700' }}
+            >
+              Start Practicing →
+            </button>
+            {!isSubscribed && (
+              <button
+                onClick={() => setShowEnrollmentModal(true)}
+                style={{ ...outlineBtnStyle, padding: '0.75rem 1.5rem', fontSize: '0.9375rem' }}
+              >
+                Unlock Full Access
+              </button>
+            )}
+          </div>
+        </div>
+      </section>
+    )
   }
 
   // ─── Render: Quick Stats ──────────────────────────────────────
@@ -1197,6 +1463,9 @@ function Dashboard() {
         <div style={{ ...containerStyle, marginBottom: '-1rem' }}>
           {renderQuickStats()}
         </div>
+
+        {/* ── My Path ──────────────────────────────────────────── */}
+        {renderMyPath()}
 
         {/* ── Exam Countdown ───────────────────────────────────── */}
         {renderExamCountdown()}
