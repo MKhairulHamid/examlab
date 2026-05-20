@@ -59,22 +59,17 @@ serve(async (req) => {
       throw new Error('No authorization token provided')
     }
 
-    // Initialize Supabase client with user's auth token
-    const supabaseClient = createClient(
+    // Use service role key to verify the user's JWT — it is always auto-injected
+    // and has the correct apikey header required by the auth service.
+    const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: { Authorization: authHeader },
-        },
-      }
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Get user from auth token - pass token directly to avoid "Auth session missing" error
     const {
       data: { user },
       error: userError,
-    } = await supabaseClient.auth.getUser(token)
+    } = await supabaseAdmin.auth.getUser(token)
 
     if (userError || !user) {
       throw new Error(`Unauthorized: ${userError?.message || 'No user returned'}`)
@@ -88,7 +83,7 @@ serve(async (req) => {
     }
 
     // Look up the subscription plan from the database
-    const { data: plan, error: planError } = await supabaseClient
+    const { data: plan, error: planError } = await supabaseAdmin
       .from('subscription_plans')
       .select('*')
       .eq('slug', planSlug)
@@ -98,12 +93,6 @@ serve(async (req) => {
     if (planError || !plan) {
       throw new Error('Subscription plan not found')
     }
-
-    // Initialize admin client for writing subscription records
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
 
     // Check if user already has an active subscription
     const { data: existingSub } = await supabaseAdmin
