@@ -1040,7 +1040,7 @@ function Dashboard() {
             {[
               { label: 'Browse Exams', action: () => navigate('/') },
               { label: 'Dashboard', action: () => window.scrollTo({ top: 0, behavior: 'smooth' }) },
-              { label: 'Support', href: 'mailto:support@cloudexamlab.com' }
+              { label: 'Support', href: 'mailto:cloudexamlab@gmail.com' }
             ].map((item, i) => (
               <li key={i}>
                 {item.href ? (

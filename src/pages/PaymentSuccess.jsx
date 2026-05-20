@@ -163,7 +163,7 @@ function PaymentSuccess() {
                   Need help?
                 </p>
                 <a 
-                  href="mailto:support@cloudexamlab.com"
+                  href="mailto:cloudexamlab@gmail.com"
                   style={{
                     color: '#00D4AA',
                     textDecoration: 'none',

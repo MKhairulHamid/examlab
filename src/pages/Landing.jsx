@@ -1779,7 +1779,7 @@ function Landing() {
               <h3 style={{ color: 'white', fontWeight: '700', marginBottom: '1rem', fontSize: '0.875rem' }}>Support & Legal</h3>
               <ul style={{ listStyle: 'none', padding: 0 }}>
                 <li style={{ marginBottom: '0.5rem' }}>
-                  <a href="mailto:support@cloudexamlab.com" style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.875rem', textDecoration: 'none' }}>
+                  <a href="mailto:cloudexamlab@gmail.com" style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.875rem', textDecoration: 'none' }}>
                     Contact Support
                   </a>
                 </li>
