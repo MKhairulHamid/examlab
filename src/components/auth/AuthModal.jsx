@@ -2,8 +2,11 @@ import React, { useState } from 'react'
 import LoginForm from './LoginForm'
 import SignupForm from './SignupForm'
 
-function AuthModal({ isOpen, onClose }) {
-  const [mode, setMode] = useState('login') // 'login' or 'signup'
+function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
+  const [mode, setMode] = useState(initialMode)
+
+  // Sync mode when initialMode changes (e.g. opened from different CTAs)
+  React.useEffect(() => { if (isOpen) setMode(initialMode) }, [isOpen, initialMode])
 
   if (!isOpen) return null
 

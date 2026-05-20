@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import useAuthStore from '../stores/authStore'
 import AuthModal from '../components/auth/AuthModal'
+import PathFinderModal from '../components/pathfinder/PathFinderModal'
 
 const CERTIFICATIONS = {
   aws: [
@@ -83,15 +84,29 @@ const TESTIMONIALS = [
   }
 ]
 
+const PATH_PREVIEWS = [
+  { key: 'architect', emoji: '🌩️', name: 'Cloud Architect',   salary: '$153K–$165K', color: '#0EA5E9', roles: '2,000+ roles' },
+  { key: 'devops',    emoji: '🛠️', name: 'DevOps Engineer',   salary: '$131K–$151K', color: '#10B981', roles: '1,000+ roles' },
+  { key: 'data',      emoji: '📊', name: 'Data Engineer',     salary: '$137K–$165K', color: '#F59E0B', roles: '2,000+ roles' },
+  { key: 'aiml',      emoji: '🤖', name: 'AI / ML Engineer',  salary: '$154K–$188K', color: '#8B5CF6', roles: '33,000+ roles' },
+  { key: 'security',  emoji: '🔒', name: 'Security Specialist',salary: '$132K–$202K', color: '#EF4444', roles: '+73% YoY demand' },
+  { key: 'network',   emoji: '🌐', name: 'Network Specialist', salary: '$127K–$153K', color: '#06B6D4', roles: '1,000+ roles' },
+]
+
 function Landing() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
-  const [showAuthModal, setShowAuthModal] = useState(false)
+  const [showAuthModal, setShowAuthModal]     = useState(false)
+  const [authModalMode, setAuthModalMode]     = useState('signup')
+  const [showPathFinder, setShowPathFinder]   = useState(false)
   const [expandedProvider, setExpandedProvider] = useState('aws')
-  const [expandedFAQ, setExpandedFAQ] = useState(null)
+  const [expandedFAQ, setExpandedFAQ]         = useState(null)
   const [demoSelectedAnswer, setDemoSelectedAnswer] = useState(null)
-  const [showDemoMaterials, setShowDemoMaterials] = useState(false)
-  const [showDemoResults, setShowDemoResults] = useState(false)
+  const [showDemoMaterials, setShowDemoMaterials]   = useState(false)
+  const [showDemoResults, setShowDemoResults]       = useState(false)
+
+  const openSignup = () => { setAuthModalMode('signup'); setShowAuthModal(true) }
+  const openLogin  = () => { setAuthModalMode('login');  setShowAuthModal(true) }
 
   useEffect(() => {
     const hasAuthTokens = window.location.hash.includes('access_token') ||
@@ -139,7 +154,7 @@ function Landing() {
             {/* Left — copy */}
             <div>
               <div className="hero-badge" style={{ marginBottom: '1.5rem', display: 'inline-block' }}>
-                Now Available: AWS Developer Associate (DVA-C02)
+                🗺️ All 13 AWS Certifications — 6 Career Paths
               </div>
 
               <h1 style={{
@@ -150,8 +165,8 @@ function Landing() {
                 marginBottom: '1.5rem',
                 letterSpacing: '-0.03em'
               }}>
-                Pass Your Cloud Cert.<br />
-                <span style={{ color: '#00D4AA' }}>First Try.</span>
+                Your AWS Certification<br />
+                <span style={{ color: '#00D4AA' }}>Path Starts Here.</span>
               </h1>
 
               <p style={{
@@ -161,12 +176,16 @@ function Landing() {
                 marginBottom: '2.5rem',
                 maxWidth: '38rem'
               }}>
-                195 exam-realistic practice questions for AWS Developer Associate. Detailed explanations, official doc links, and progress tracking — start free, no credit card needed.
+                Answer 3 quick questions. Get a personalized certification roadmap — with your timeline, target salary, and exam-realistic practice to get you there.
               </p>
 
               <div className="hero-buttons" style={{ marginBottom: '2rem' }}>
-                <button onClick={() => setShowAuthModal(true)} className="btn-primary" style={{ fontSize: '1.0625rem', padding: '1rem 2rem' }}>
-                  Try 10 Free Questions →
+                <button
+                  onClick={() => setShowPathFinder(true)}
+                  className="btn-primary"
+                  style={{ fontSize: '1.0625rem', padding: '1rem 2rem' }}
+                >
+                  Find My Path →
                 </button>
                 <button onClick={() => scrollToSection('demo')} className="btn-secondary" style={{ fontSize: '0.9375rem', padding: '1rem 1.5rem' }}>
                   See It in Action
@@ -174,9 +193,9 @@ function Landing() {
               </div>
 
               <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', color: 'rgba(255,255,255,0.65)', fontSize: '0.875rem' }}>
+                <span>✓ Personalized roadmap</span>
+                <span>✓ Salary & timeline data</span>
                 <span>✓ From $8.25/month</span>
-                <span>✓ 3 complete exam sets</span>
-                <span>✓ Cancel anytime</span>
               </div>
             </div>
 
@@ -297,6 +316,68 @@ function Landing() {
               </div>
             </div>
 
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════
+          PATH PREVIEWS
+      ═══════════════════════════════════════ */}
+      <section style={{ padding: '4rem 1.5rem', background: '#f8fafc' }}>
+        <div style={{ maxWidth: '72rem', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+            <div style={{ color: '#00D4AA', fontSize: '0.8125rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>
+              6 CERTIFICATION PATHS
+            </div>
+            <h2 style={{ fontSize: 'clamp(1.5rem, 3.5vw, 2.25rem)', fontWeight: '800', color: '#0A2540', letterSpacing: '-0.02em', marginBottom: '0.75rem' }}>
+              Pick your direction. We'll show you how to get there.
+            </h2>
+            <p style={{ color: '#6b7280', fontSize: '1rem', maxWidth: '36rem', margin: '0 auto' }}>
+              Every path comes with a personalized timeline, salary benchmarks, and practice questions mapped to each cert.
+            </p>
+          </div>
+
+          <div style={{ display: 'grid', gap: '0.875rem', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 240px), 1fr))', marginBottom: '2.5rem' }}>
+            {PATH_PREVIEWS.map(p => (
+              <button
+                key={p.key}
+                onClick={() => setShowPathFinder(true)}
+                style={{
+                  background: 'white', borderRadius: '1rem', padding: '1.375rem',
+                  border: '1px solid #e5e7eb', cursor: 'pointer', textAlign: 'left',
+                  transition: 'all 0.2s', position: 'relative', overflow: 'hidden',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.borderColor = p.color; e.currentTarget.style.boxShadow = `0 8px 24px ${p.color}22` }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.borderColor = '#e5e7eb'; e.currentTarget.style.boxShadow = 'none' }}
+              >
+                {/* Color accent top bar */}
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: p.color, opacity: 0.7 }} />
+                <div style={{ fontSize: '1.75rem', marginBottom: '0.625rem' }}>{p.emoji}</div>
+                <div style={{ fontWeight: '700', color: '#0A2540', fontSize: '0.9375rem', marginBottom: '0.25rem' }}>{p.name}</div>
+                <div style={{ fontWeight: '800', color: p.color, fontSize: '1rem', marginBottom: '0.25rem' }}>{p.salary}<span style={{ fontWeight: '500', color: '#9ca3af', fontSize: '0.75rem' }}>/yr</span></div>
+                <div style={{ color: '#9ca3af', fontSize: '0.75rem' }}>{p.roles}</div>
+              </button>
+            ))}
+          </div>
+
+          <div style={{ textAlign: 'center' }}>
+            <button
+              onClick={() => setShowPathFinder(true)}
+              style={{
+                padding: '1rem 2.5rem',
+                background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
+                color: 'white', border: 'none', borderRadius: '0.875rem',
+                fontWeight: '700', fontSize: '1.0625rem', cursor: 'pointer',
+                boxShadow: '0 8px 24px rgba(0,212,170,0.35)', transition: 'all 0.2s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 12px 32px rgba(0,212,170,0.45)' }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,212,170,0.35)' }}
+            >
+              Find My Path — 3 Quick Questions →
+            </button>
+            <p style={{ color: '#9ca3af', fontSize: '0.8125rem', marginTop: '0.75rem' }}>
+              Takes 30 seconds • No sign-up required to see your path
+            </p>
           </div>
         </div>
       </section>
@@ -601,7 +682,7 @@ function Landing() {
 
           <div style={{ textAlign: 'center', marginTop: '3.5rem' }}>
             <button
-              onClick={() => setShowAuthModal(true)}
+              onClick={() => setShowPathFinder(true)}
               style={{
                 padding: '1.125rem 2.5rem',
                 background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
@@ -617,7 +698,7 @@ function Landing() {
               onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 12px 32px rgba(0,212,170,0.45)' }}
               onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,212,170,0.35)' }}
             >
-              Create Free Account — No Credit Card →
+              Find My Certification Path →
             </button>
           </div>
         </div>
@@ -786,14 +867,20 @@ function Landing() {
             </div>
           </div>
 
-          <div style={{ textAlign: 'center' }}>
+          <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
             <button
-              onClick={() => setShowAuthModal(true)}
-              style={{ padding: '0.875rem 2rem', background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)', color: 'white', border: 'none', borderRadius: '0.75rem', fontWeight: '600', cursor: 'pointer', fontSize: '1rem', boxShadow: '0 4px 12px rgba(0,212,170,0.3)', transition: 'all 0.2s' }}
+              onClick={() => setShowPathFinder(true)}
+              style={{ padding: '0.875rem 2rem', background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)', color: 'white', border: 'none', borderRadius: '0.75rem', fontWeight: '700', cursor: 'pointer', fontSize: '1rem', boxShadow: '0 4px 12px rgba(0,212,170,0.3)', transition: 'all 0.2s' }}
               onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,212,170,0.4)' }}
               onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,212,170,0.3)' }}
             >
-              Start with 10 Free Questions →
+              Find My Certification Path →
+            </button>
+            <button
+              onClick={openSignup}
+              style={{ background: 'none', border: 'none', color: '#9ca3af', fontSize: '0.875rem', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
+            >
+              or start with 10 free questions
             </button>
           </div>
         </div>
@@ -1152,7 +1239,7 @@ function Landing() {
           </p>
 
           <button
-            onClick={() => setShowAuthModal(true)}
+            onClick={() => setShowPathFinder(true)}
             style={{
               padding: '1.25rem 3rem',
               background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
@@ -1164,14 +1251,22 @@ function Landing() {
               cursor: 'pointer',
               boxShadow: '0 8px 28px rgba(0,212,170,0.4)',
               transition: 'all 0.25s',
-              marginBottom: '2rem',
+              marginBottom: '1rem',
               display: 'inline-block'
             }}
             onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 14px 36px rgba(0,212,170,0.5)' }}
             onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 28px rgba(0,212,170,0.4)' }}
           >
-            Create Free Account →
+            Find My Certification Path →
           </button>
+          <div style={{ marginBottom: '1.5rem' }}>
+            <button
+              onClick={openLogin}
+              style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.45)', fontSize: '0.875rem', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
+            >
+              Already a member? Sign in
+            </button>
+          </div>
 
           <div style={{ display: 'flex', gap: '2rem', justifyContent: 'center', flexWrap: 'wrap', color: 'rgba(255,255,255,0.55)', fontSize: '0.875rem' }}>
             <span>🔒 Secure payment</span>
@@ -1335,7 +1430,18 @@ function Landing() {
         </div>
       )}
 
-      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        initialMode={authModalMode}
+      />
+
+      <PathFinderModal
+        isOpen={showPathFinder}
+        onClose={() => setShowPathFinder(false)}
+        onSignup={(mode) => { setShowPathFinder(false); openSignup() }}
+        onLogin={() => { setShowPathFinder(false); openLogin() }}
+      />
     </div>
   )
 }
