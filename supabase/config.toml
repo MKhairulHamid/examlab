@@ -73,13 +73,13 @@ enable_confirmations = false
 # The verify_jwt option can be used to disable the JWT verification for individual functions.
 
 [functions.admin-api]
-verify_jwt = true
+verify_jwt = false
 
 [functions.ai-explanation]
-verify_jwt = true
+verify_jwt = false
 
 [functions.create-paypal-subscription]
-verify_jwt = true
+verify_jwt = false
 
 [functions.paypal-webhook]
 # PayPal calls this endpoint directly — no Supabase JWT
