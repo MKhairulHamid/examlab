@@ -8,7 +8,32 @@ import EnrollmentModal from '../components/enrollment/EnrollmentModal'
 import streakService from '../services/streakService'
 import progressService from '../services/progressService'
 import supabase from '../services/supabase'
-import { PATHS, computeTimeline } from '../components/pathfinder/PathFinderModal'
+import CloudCertificationJourneyModal, { PATHS, computeTimeline } from '../components/journey/CloudCertificationJourneyModal'
+
+// Maps a journey cert code to keywords that may appear in an exam type's slug or name,
+// so "start free" can route to the matching exam regardless of naming convention.
+const CERT_EXAM_KEYWORDS = {
+  'CLF-C02':   ['clf', 'cloud-practitioner', 'cloud practitioner'],
+  'AIF-C01':   ['aif', 'ai-practitioner', 'ai practitioner'],
+  'SAA-C03':   ['saa', 'solutions-architect-associate', 'solutions architect'],
+  'DVA-C02':   ['dva', 'developer'],
+  'CloudOps':  ['cloudops', 'sysops', 'soa'],
+  'DEA-C01':   ['dea', 'data-engineer', 'data engineer'],
+  'MLA-C01':   ['mla', 'machine-learning', 'ml-engineer', 'ml engineer'],
+  'SAP-C02':   ['sap', 'solutions-architect-professional'],
+  'DOP-C02':   ['dop', 'devops'],
+  'GenAI-Pro': ['genai', 'generative'],
+  'SCS-C02':   ['scs', 'security'],
+  'ANS-C01':   ['ans', 'networking', 'advanced-networking'],
+}
+
+function findExamForCert(certCode, exams) {
+  const keywords = CERT_EXAM_KEYWORDS[certCode] || [certCode.toLowerCase()]
+  return exams.find(ex => {
+    const haystack = `${ex.slug || ''} ${ex.name || ''}`.toLowerCase()
+    return keywords.some(k => haystack.includes(k))
+  }) || null
+}
 
 
 function Dashboard() {
@@ -28,7 +53,14 @@ function Dashboard() {
   const [pathAnswers, setPathAnswers] = useState(() => {
     try { return JSON.parse(localStorage.getItem('cloudexamlab_path_answers')) } catch { return null }
   })
+  const [showJourney, setShowJourney] = useState(false)
   const exploreRef = useRef(null)
+
+  const refreshPathAnswers = () => {
+    try { setPathAnswers(JSON.parse(localStorage.getItem('cloudexamlab_path_answers'))) } catch { setPathAnswers(null) }
+  }
+
+  const journeyComplete = !!(pathAnswers && pathAnswers.role && pathAnswers.completed)
 
   useEffect(() => {
     fetchExams()
@@ -40,6 +72,31 @@ function Dashboard() {
       loadExamDates()
     }
   }, [user])
+
+  // Prompt the journey quiz once per session for users who haven't completed it.
+  useEffect(() => {
+    if (!user || journeyComplete) return
+    if (sessionStorage.getItem('cloudexamlab_journey_prompted')) return
+    sessionStorage.setItem('cloudexamlab_journey_prompted', '1')
+    setShowJourney(true)
+  }, [user, journeyComplete])
+
+  // Route the user to the free practice set for the first cert on their path.
+  const startFreeOnPath = (ans) => {
+    setShowJourney(false)
+    refreshPathAnswers()
+    const path = PATHS[ans?.role]
+    if (!path) {
+      exploreRef.current?.scrollIntoView({ behavior: 'smooth' })
+      return
+    }
+    const certs = ans?.skipFoundation && path.certs.length > 1 && path.certs[0].level === 'Foundational'
+      ? path.certs.slice(1)
+      : path.certs
+    const exam = findExamForCert(certs[0].code, exams)
+    if (exam) navigate(`/exam/${exam.slug}`)
+    else exploreRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
 
   const loadExamResults = async () => {
     if (!user) return
@@ -295,8 +352,8 @@ function Dashboard() {
 
   // ─── Render: My Path ─────────────────────────────────────────
   const renderMyPath = () => {
-    // No quiz answers yet → prompt card
-    if (!pathAnswers || !pathAnswers.role || !PATHS[pathAnswers.role]) {
+    // Quiz not completed → persistent prompt card
+    if (!journeyComplete || !PATHS[pathAnswers.role]) {
       return (
         <section style={{ ...sectionPad, background: 'white' }}>
           <div style={containerStyle}>
@@ -321,13 +378,13 @@ function Dashboard() {
                   YOUR CERTIFICATION JOURNEY
                 </div>
                 <h2 style={{ fontSize: 'clamp(1.25rem, 3vw, 1.75rem)', fontWeight: '700', color: 'white', marginBottom: '0.75rem' }}>
-                  Discover Your AWS Path
+                  Map Your Cloud Certification Journey
                 </h2>
                 <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.9375rem', maxWidth: '480px', margin: '0 auto 1.75rem', lineHeight: '1.6' }}>
-                  Answer 3 quick questions and we'll build your personalized AWS certification roadmap — with timeline, salary data, and step-by-step guidance.
+                  Tell us about your career and we'll build a personalized roadmap — from your current role to your target role, with timeline, salary, and step-by-step certs.
                 </p>
                 <button
-                  onClick={() => navigate('/')}
+                  onClick={() => setShowJourney(true)}
                   style={{
                     padding: '0.875rem 2rem',
                     background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
@@ -345,7 +402,7 @@ function Dashboard() {
                     e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,212,170,0.3)'
                   }}
                 >
-                  Find My Certification Path →
+                  Start My Cloud Certification Journey →
                 </button>
               </div>
             </div>
@@ -355,10 +412,10 @@ function Dashboard() {
     }
 
     // Has quiz answers → show full path
-    const { experience = 'beginner', role, depth = 'role' } = pathAnswers
+    const { experience = 'beginner', role, depth = 'role', hoursPerWeek = 10, skipFoundation = false } = pathAnswers
     const path = PATHS[role]
-    const timeline = computeTimeline(path, experience, depth)
-    const visibleCerts = path.certs.slice(0, timeline.count)
+    const timeline = computeTimeline(path, experience, depth, hoursPerWeek, skipFoundation)
+    const visibleCerts = timeline.certs
 
     const expLabels = { beginner: 'Beginner', it_background: 'IT Background', some_aws: 'Some AWS', experienced: 'Experienced' }
     const depthLabels = { quick: 'Quick Win', role: 'Role Ready', senior: 'Senior Level', expert: 'Expert' }
@@ -380,7 +437,7 @@ function Dashboard() {
               <h2 style={sectionHeadingStyle}>My Path — {path.name}</h2>
             </div>
             <button
-              onClick={() => navigate('/')}
+              onClick={() => setShowJourney(true)}
               style={{ ...outlineBtnStyle, fontSize: '0.8125rem', display: 'flex', alignItems: 'center', gap: '0.375rem' }}
             >
               ✏️ Retake Quiz
@@ -467,11 +524,7 @@ function Dashboard() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             {visibleCerts.map((cert, idx) => {
               const colors = levelColors[cert.level] || levelColors.Associate
-              const cumulativeHours = visibleCerts.slice(0, idx + 1).reduce((s, c) => {
-                const mult = { beginner: 1.0, it_background: 0.75, some_aws: 0.5, experienced: 0.35 }[experience] ?? 1.0
-                return s + c.baseHours * mult
-              }, 0)
-              const weeksToThisCert = Math.round(cumulativeHours / 10)
+              const weeksToThisCert = timeline.markers[idx]
 
               return (
                 <div
@@ -535,7 +588,9 @@ function Dashboard() {
           <div style={{ marginTop: '1.5rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
             <button
               onClick={() => {
-                if (exploreRef.current) exploreRef.current.scrollIntoView({ behavior: 'smooth' })
+                const exam = findExamForCert(visibleCerts[0].code, exams)
+                if (exam) navigate(`/exam/${exam.slug}`)
+                else exploreRef.current?.scrollIntoView({ behavior: 'smooth' })
               }}
               style={{ ...primaryBtnStyle, padding: '0.75rem 1.5rem', fontSize: '0.9375rem', fontWeight: '700' }}
             >
@@ -1485,6 +1540,14 @@ function Dashboard() {
         {/* ── Footer ───────────────────────────────────────────── */}
         {renderDashboardFooter()}
       </div>
+
+      {/* Cloud Certification Journey */}
+      <CloudCertificationJourneyModal
+        isOpen={showJourney}
+        onClose={() => { setShowJourney(false); refreshPathAnswers() }}
+        onStartFree={startFreeOnPath}
+        onSubscribe={(ans) => { setShowJourney(false); refreshPathAnswers(); setShowEnrollmentModal(true) }}
+      />
 
       {/* Enrollment Modal */}
       <EnrollmentModal

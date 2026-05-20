@@ -7,6 +7,7 @@ const PATHS = {
     name: 'Cloud Architect',
     emoji: '🌩️',
     tagline: 'Design resilient, cost-optimized AWS architectures at enterprise scale.',
+    currentRole: 'Systems / Infrastructure Designer',
     targetRole: 'Solutions Architect / Cloud Architect',
     avgSalary: '$153K–$165K/yr',
     salaryRange: '$100K–$233K',
@@ -28,6 +29,7 @@ const PATHS = {
     name: 'DevOps Engineer',
     emoji: '🛠️',
     tagline: 'Build CI/CD pipelines, automate infrastructure, and operate distributed systems.',
+    currentRole: 'Developer / Operations Engineer',
     targetRole: 'Senior DevOps / Platform Engineer',
     avgSalary: '$131K–$151K/yr',
     salaryRange: '$85K–$205K',
@@ -49,6 +51,7 @@ const PATHS = {
     name: 'Data Engineer',
     emoji: '📊',
     tagline: 'Build data pipelines, data lakes, and analytics platforms on AWS.',
+    currentRole: 'Data / Analytics Engineer',
     targetRole: 'Data Engineer / Analytics Engineer',
     avgSalary: '$137K–$165K/yr',
     salaryRange: '$89K–$211K',
@@ -70,6 +73,7 @@ const PATHS = {
     name: 'AI / ML Engineer',
     emoji: '🤖',
     tagline: 'Build and deploy production ML systems and generative AI solutions on AWS.',
+    currentRole: 'ML / AI Developer',
     targetRole: 'ML Engineer / Generative AI Developer',
     avgSalary: '$154K–$188K/yr',
     salaryRange: '$114K–$310K',
@@ -90,6 +94,7 @@ const PATHS = {
     name: 'Security Specialist',
     emoji: '🔒',
     tagline: 'Secure AWS environments at scale — IAM, encryption, threat detection, compliance.',
+    currentRole: 'Security / Compliance Analyst',
     targetRole: 'Cloud Security Engineer / Architect',
     avgSalary: '$132K–$202K/yr',
     salaryRange: '$87K–$202K',
@@ -110,6 +115,7 @@ const PATHS = {
     name: 'Network Specialist',
     emoji: '🌐',
     tagline: 'Design hybrid and cloud-native networks — BGP, Direct Connect, VPCs at scale.',
+    currentRole: 'Network Engineer',
     targetRole: 'Cloud Network Architect',
     avgSalary: '$127K–$153K/yr',
     salaryRange: '$70K–$188K',
@@ -127,46 +133,63 @@ const PATHS = {
   },
 }
 
+// AWS familiarity drives the study-hour multiplier (replaces the old single "experience" question)
+const FAMILIARITY_MULTIPLIERS = { never: 1.0, a_little: 0.75, regularly: 0.5, extensively: 0.35 }
+// Kept for backward compatibility with Dashboard's `experience` key
 const EXP_MULTIPLIERS = { beginner: 1.0, it_background: 0.75, some_aws: 0.5, experienced: 0.35 }
+const FAMILIARITY_TO_EXP = { never: 'beginner', a_little: 'it_background', regularly: 'some_aws', extensively: 'experienced' }
 const DEPTH_LIMITS    = { quick: 1, role: 2, senior: 3, expert: 4 }
 const LEVEL_COLOR     = { Foundational: '#6366F1', Associate: '#0EA5E9', Professional: '#8B5CF6', Specialty: '#EC4899' }
 
-function computeTimeline(path, experience, depth) {
-  const mult  = EXP_MULTIPLIERS[experience] ?? 1.0
+// A user is "past foundation" if they already hold an AWS cert or use AWS extensively.
+function isPastFoundation({ existingCerts, awsFamiliarity }) {
+  return ['aws_foundational', 'aws_associate', 'aws_pro'].includes(existingCerts) || awsFamiliarity === 'extensively'
+}
+
+// Returns the certs that make up the user's journey, after dropping the foundation cert if they're past it.
+function journeyCerts(path, depth, skipFoundation) {
   const limit = DEPTH_LIMITS[depth] ?? path.certs.length
-  const certs = path.certs.slice(0, Math.min(limit, path.certs.length))
+  let certs = path.certs.slice(0, Math.min(limit, path.certs.length))
+  if (skipFoundation && certs.length > 1 && certs[0].level === 'Foundational') {
+    certs = certs.slice(1)
+  }
+  return certs
+}
+
+// experience: one of EXP_MULTIPLIERS keys. hoursPerWeek defaults to 10. skipFoundation drops the Foundational cert.
+function computeTimeline(path, experience, depth, hoursPerWeek = 10, skipFoundation = false) {
+  const mult  = EXP_MULTIPLIERS[experience] ?? 1.0
+  const hpw   = hoursPerWeek > 0 ? hoursPerWeek : 10
+  const certs = journeyCerts(path, depth, skipFoundation)
   const hours = certs.reduce((s, c) => s + c.baseHours * mult, 0)
-  const weeks = Math.round(hours / 10)
-  return { weeks, months: (weeks / 4.3).toFixed(1), count: certs.length }
+  const weeks = Math.max(1, Math.round(hours / hpw))
+  // Per-cert cumulative week markers
+  let cumulative = 0
+  const markers = certs.map(c => {
+    cumulative += Math.max(1, Math.round((c.baseHours * mult) / hpw))
+    return cumulative
+  })
+  return { weeks, months: (weeks / 4.3).toFixed(1), count: certs.length, certs, markers }
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
+const STEP_LABELS = ['Role', 'Experience', 'AWS', 'Certs', 'Goal', 'Depth', 'Timeline', 'Hours']
+const TOTAL_STEPS = STEP_LABELS.length
+
 function ProgressBar({ step }) {
-  const steps = ['Experience', 'Focus', 'Goal']
+  const pct = Math.round((step / TOTAL_STEPS) * 100)
   return (
-    <div style={{ display: 'flex', gap: '0.375rem', alignItems: 'center', marginBottom: '2rem' }}>
-      {steps.map((label, i) => (
-        <React.Fragment key={i}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
-            <div style={{
-              width: '28px', height: '28px', borderRadius: '50%',
-              background: i < step ? '#00D4AA' : i === step - 1 ? 'linear-gradient(135deg,#00D4AA,#00A884)' : '#e5e7eb',
-              border: i === step - 1 ? '2px solid #00A884' : 'none',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '0.75rem', fontWeight: '700',
-              color: i < step || i === step - 1 ? 'white' : '#9ca3af',
-              transition: 'all 0.3s',
-            }}>
-              {i < step - 1 ? '✓' : i + 1}
-            </div>
-            <span style={{ fontSize: '0.6875rem', color: i < step ? '#00A884' : '#9ca3af', fontWeight: i === step - 1 ? '700' : '500' }}>{label}</span>
-          </div>
-          {i < steps.length - 1 && (
-            <div style={{ flex: 1, height: '2px', background: i < step - 1 ? '#00D4AA' : '#e5e7eb', borderRadius: '1px', marginBottom: '18px', transition: 'background 0.3s' }} />
-          )}
-        </React.Fragment>
-      ))}
+    <div style={{ marginBottom: '1.5rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+        <span style={{ color: '#00A884', fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+          Step {step} of {TOTAL_STEPS} — {STEP_LABELS[step - 1]}
+        </span>
+        <span style={{ color: '#9ca3af', fontSize: '0.75rem', fontWeight: '600' }}>{pct}%</span>
+      </div>
+      <div style={{ height: '6px', background: '#e5e7eb', borderRadius: '3px', overflow: 'hidden' }}>
+        <div style={{ width: `${pct}%`, height: '100%', background: 'linear-gradient(90deg,#00D4AA,#00A884)', borderRadius: '3px', transition: 'width 0.3s' }} />
+      </div>
     </div>
   )
 }
@@ -186,10 +209,10 @@ function OptionCard({ icon, title, desc, selected, onClick }) {
       onMouseEnter={e => { if (!selected) e.currentTarget.style.borderColor = '#00D4AA' }}
       onMouseLeave={e => { if (!selected) e.currentTarget.style.borderColor = '#e5e7eb' }}
     >
-      <span style={{ fontSize: '1.5rem', flexShrink: 0 }}>{icon}</span>
+      {icon && <span style={{ fontSize: '1.5rem', flexShrink: 0 }}>{icon}</span>}
       <div>
-        <div style={{ fontWeight: '700', color: '#0A2540', fontSize: '0.9375rem', marginBottom: '0.125rem' }}>{title}</div>
-        <div style={{ color: '#6b7280', fontSize: '0.8125rem', lineHeight: '1.4' }}>{desc}</div>
+        <div style={{ fontWeight: '700', color: '#0A2540', fontSize: '0.9375rem', marginBottom: desc ? '0.125rem' : 0 }}>{title}</div>
+        {desc && <div style={{ color: '#6b7280', fontSize: '0.8125rem', lineHeight: '1.4' }}>{desc}</div>}
       </div>
       {selected && (
         <div style={{ marginLeft: 'auto', width: '20px', height: '20px', borderRadius: '50%', background: '#00D4AA', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -200,94 +223,127 @@ function OptionCard({ icon, title, desc, selected, onClick }) {
   )
 }
 
-// ─── Steps ────────────────────────────────────────────────────────────────────
-
-function Step1({ answers, onAnswer }) {
-  const opts = [
-    { value: 'beginner',     icon: '🌱', title: 'Brand New',       desc: 'No cloud or IT background yet' },
-    { value: 'it_background',icon: '💻', title: 'IT Background',   desc: 'Systems / IT experience, no AWS yet' },
-    { value: 'some_aws',     icon: '☁️', title: 'AWS User',        desc: '~1 year of hands-on AWS experience' },
-    { value: 'experienced',  icon: '⚡', title: 'AWS Professional', desc: '2+ years of solid AWS experience' },
-  ]
+function QuestionStep({ title, subtitle, options, value, optKey, onAnswer, gap = '0.625rem' }) {
   return (
     <div>
-      <div style={{ color: '#00D4AA', fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.375rem' }}>
-        STEP 1 OF 3
-      </div>
-      <h3 style={{ fontSize: '1.25rem', fontWeight: '800', color: '#0A2540', marginBottom: '0.375rem' }}>
-        What's your cloud background?
-      </h3>
-      <p style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
-        This helps us set your starting point and estimate your timeline.
-      </p>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
-        {opts.map(o => (
-          <OptionCard key={o.value} {...o} selected={answers.experience === o.value} onClick={() => onAnswer('experience', o.value)} />
+      <h3 style={{ fontSize: '1.25rem', fontWeight: '800', color: '#0A2540', marginBottom: '0.375rem' }}>{title}</h3>
+      <p style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '1.25rem' }}>{subtitle}</p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap }}>
+        {options.map(o => (
+          <OptionCard key={o.value} icon={o.icon} title={o.title} desc={o.desc}
+            selected={value === o.value} onClick={() => onAnswer(optKey, o.value)} />
         ))}
       </div>
     </div>
   )
 }
 
-function Step2({ answers, onAnswer }) {
-  const opts = [
-    { value: 'architect', icon: '🌩️', title: 'Cloud Architect',    desc: 'I design systems, infrastructure, and cloud architecture' },
-    { value: 'devops',    icon: '🛠️', title: 'DevOps / Developer',  desc: 'I build apps, CI/CD pipelines, and automate infrastructure' },
-    { value: 'data',      icon: '📊', title: 'Data Engineer',       desc: 'I build data pipelines, ETL workflows, and analytics platforms' },
-    { value: 'aiml',      icon: '🤖', title: 'AI / ML Engineer',    desc: 'I build or work with machine learning and AI systems' },
-    { value: 'security',  icon: '🔒', title: 'Security Specialist',  desc: 'I handle cloud security, IAM, and compliance' },
-    { value: 'network',   icon: '🌐', title: 'Network Specialist',   desc: 'I manage networks, VPCs, and cloud connectivity' },
-  ]
-  return (
-    <div>
-      <div style={{ color: '#00D4AA', fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.375rem' }}>
-        STEP 2 OF 3
-      </div>
-      <h3 style={{ fontSize: '1.25rem', fontWeight: '800', color: '#0A2540', marginBottom: '0.375rem' }}>
-        What best describes your work?
-      </h3>
-      <p style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
-        This picks your certification track.
-      </p>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-        {opts.map(o => (
-          <OptionCard key={o.value} {...o} selected={answers.role === o.value} onClick={() => onAnswer('role', o.value)} />
-        ))}
-      </div>
-    </div>
-  )
+// ─── Question definitions ───────────────────────────────────────────────────
+
+const QUESTIONS = {
+  role: {
+    title: "What's your current role?",
+    subtitle: 'This identifies you and sets your certification track.',
+    optKey: 'role',
+    options: [
+      { value: 'architect', icon: '🌩️', title: 'Cloud Architect',     desc: 'I design systems, infrastructure, and cloud architecture' },
+      { value: 'devops',    icon: '🛠️', title: 'Developer / DevOps',   desc: 'I build apps, CI/CD pipelines, and automate infrastructure' },
+      { value: 'data',      icon: '📊', title: 'Data Engineer',        desc: 'I build data pipelines, ETL workflows, and analytics' },
+      { value: 'aiml',      icon: '🤖', title: 'AI / ML Engineer',     desc: 'I build or work with machine learning and AI systems' },
+      { value: 'security',  icon: '🔒', title: 'Security Specialist',   desc: 'I handle cloud security, IAM, and compliance' },
+      { value: 'network',   icon: '🌐', title: 'Network Specialist',    desc: 'I manage networks, VPCs, and cloud connectivity' },
+    ],
+    gap: '0.5rem',
+  },
+  years: {
+    title: 'How many years of professional experience do you have?',
+    subtitle: 'Counts your total time in tech, not just on AWS.',
+    optKey: 'years',
+    options: [
+      { value: '0_1',  icon: '🌱', title: '0–1 years',  desc: 'Just getting started or studying' },
+      { value: '2_4',  icon: '💼', title: '2–4 years',  desc: 'Solid working experience' },
+      { value: '5_9',  icon: '📈', title: '5–9 years',  desc: 'Seasoned professional' },
+      { value: '10p',  icon: '⭐', title: '10+ years',  desc: 'Senior / lead level' },
+    ],
+  },
+  awsFamiliarity: {
+    title: 'How familiar are you with AWS?',
+    subtitle: 'This sets your starting point and study estimate.',
+    optKey: 'awsFamiliarity',
+    options: [
+      { value: 'never',       icon: '🌱', title: 'Never used it',   desc: 'New to AWS' },
+      { value: 'a_little',    icon: '💻', title: 'Used it a little', desc: 'Tried a few services' },
+      { value: 'regularly',   icon: '☁️', title: 'Use it regularly', desc: '~1 year hands-on' },
+      { value: 'extensively', icon: '⚡', title: 'Use it extensively', desc: '2+ years hands-on' },
+    ],
+  },
+  existingCerts: {
+    title: 'Do you already hold any certifications?',
+    subtitle: "We'll skip what you've already earned.",
+    optKey: 'existingCerts',
+    options: [
+      { value: 'none',             icon: '📭', title: 'None yet',           desc: 'Starting fresh' },
+      { value: 'aws_foundational', icon: '🥉', title: 'AWS Foundational',   desc: 'Cloud Practitioner or AI Practitioner' },
+      { value: 'aws_associate',    icon: '🥈', title: 'AWS Associate',      desc: 'SAA, DVA, SOA, DEA, or MLA' },
+      { value: 'aws_pro',          icon: '🥇', title: 'AWS Pro / Specialty', desc: 'Professional or Specialty level' },
+      { value: 'other_cloud',      icon: '🔷', title: 'Other cloud certs',  desc: 'Azure, GCP, or similar' },
+    ],
+    gap: '0.5rem',
+  },
+  goal: {
+    title: "What's your primary goal?",
+    subtitle: 'This shapes how we frame your journey.',
+    optKey: 'goal',
+    options: [
+      { value: 'higher_pay',    icon: '💰', title: 'Get a higher-paying job', desc: 'Increase my earning potential' },
+      { value: 'promotion',     icon: '🚀', title: 'Get promoted',            desc: 'Advance at my current company' },
+      { value: 'career_change', icon: '🔄', title: 'Change careers',          desc: 'Move into cloud from another field' },
+      { value: 'requirement',   icon: '📋', title: 'Meet a requirement',      desc: 'My employer or project needs it' },
+      { value: 'validate',      icon: '✅', title: 'Validate my skills',      desc: 'Prove what I already know' },
+    ],
+    gap: '0.5rem',
+  },
+  depth: {
+    title: 'How far do you want to go?',
+    subtitle: 'This defines how many certifications are in your path.',
+    optKey: 'depth',
+    options: [
+      { value: 'quick',  icon: '🎯', title: 'Quick Win',       desc: 'A baseline credential to get started fast' },
+      { value: 'role',   icon: '✅', title: 'Fully Validated', desc: 'A solid cert that proves my role expertise' },
+      { value: 'senior', icon: '🚀', title: 'Senior-Level',    desc: 'Advanced credentials for senior roles' },
+      { value: 'expert', icon: '🏆', title: 'Domain Expert',   desc: 'Deep specialty — #1 in my domain' },
+    ],
+  },
+  targetTimeline: {
+    title: 'When do you want to be certified?',
+    subtitle: 'We use this to set a realistic pace.',
+    optKey: 'targetTimeline',
+    options: [
+      { value: 'under_3',  icon: '🔥', title: 'Under 3 months', desc: 'I want to move fast' },
+      { value: '3_6',      icon: '📅', title: '3–6 months',      desc: 'A steady, focused pace' },
+      { value: '6_12',     icon: '🗓️', title: '6–12 months',     desc: 'Spread out alongside work' },
+      { value: 'flexible', icon: '🌊', title: 'Flexible',        desc: 'No fixed deadline' },
+    ],
+  },
+  hoursPerWeek: {
+    title: 'How many hours per week can you study?',
+    subtitle: 'This calculates your personal timeline.',
+    optKey: 'hoursPerWeek',
+    options: [
+      { value: 5,  icon: '🐢', title: '~5 hours',  desc: 'Casual — alongside a busy schedule' },
+      { value: 10, icon: '🚶', title: '~10 hours', desc: 'Part-time — evenings & weekends' },
+      { value: 15, icon: '🏃', title: '~15 hours', desc: 'Committed — a daily habit' },
+      { value: 20, icon: '⚡', title: '20+ hours', desc: 'Intensive — bootcamp pace' },
+    ],
+  },
 }
 
-function Step3({ answers, onAnswer }) {
-  const opts = [
-    { value: 'quick',  icon: '🎯', title: 'Quick Win',        desc: 'Just a baseline credential to get started fast' },
-    { value: 'role',   icon: '✅', title: 'Fully Validated',  desc: 'Solid technical cert that proves my role expertise' },
-    { value: 'senior', icon: '🚀', title: 'Senior-Level',     desc: 'Advanced professional credentials for senior roles' },
-    { value: 'expert', icon: '🏆', title: 'Domain Expert',    desc: 'Deep specialty certification — #1 in my domain' },
-  ]
-  return (
-    <div>
-      <div style={{ color: '#00D4AA', fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.375rem' }}>
-        STEP 3 OF 3
-      </div>
-      <h3 style={{ fontSize: '1.25rem', fontWeight: '800', color: '#0A2540', marginBottom: '0.375rem' }}>
-        How far do you want to go?
-      </h3>
-      <p style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
-        This defines how many certifications are in your path.
-      </p>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
-        {opts.map(o => (
-          <OptionCard key={o.value} {...o} selected={answers.depth === o.value} onClick={() => onAnswer('depth', o.value)} />
-        ))}
-      </div>
-    </div>
-  )
-}
+// Order steps are shown in (region is captured passively, not as a blocking step)
+const STEP_ORDER = ['role', 'years', 'awsFamiliarity', 'existingCerts', 'goal', 'depth', 'targetTimeline', 'hoursPerWeek']
 
 // ─── Result Screen ────────────────────────────────────────────────────────────
 
-function CertRow({ cert, index, pathColor, visible, blurred, locked }) {
+function CertRow({ cert, index, pathColor, weekMarker, visible, blurred, locked }) {
   const levelColor = LEVEL_COLOR[cert.level] ?? '#6366F1'
   return (
     <div style={{ position: 'relative' }}>
@@ -301,7 +357,6 @@ function CertRow({ cert, index, pathColor, visible, blurred, locked }) {
         userSelect: locked || blurred ? 'none' : 'auto',
         transition: 'filter 0.2s',
       }}>
-        {/* Step number */}
         <div style={{
           width: '28px', height: '28px', borderRadius: '50%', flexShrink: 0,
           background: visible ? pathColor : '#e5e7eb',
@@ -328,12 +383,11 @@ function CertRow({ cert, index, pathColor, visible, blurred, locked }) {
         </div>
         {visible && (
           <div style={{ textAlign: 'right', flexShrink: 0 }}>
-            <div style={{ fontSize: '0.75rem', color: '#9ca3af' }}>exam</div>
-            <div style={{ fontSize: '0.875rem', fontWeight: '700', color: '#374151' }}>${cert.cost}</div>
+            <div style={{ fontSize: '0.75rem', color: '#9ca3af' }}>ready in</div>
+            <div style={{ fontSize: '0.875rem', fontWeight: '700', color: '#374151' }}>~{weekMarker} wks</div>
           </div>
         )}
       </div>
-      {/* Lock overlay */}
       {locked && (
         <div style={{
           position: 'absolute', inset: 0, borderRadius: '0.75rem',
@@ -350,20 +404,28 @@ function CertRow({ cert, index, pathColor, visible, blurred, locked }) {
   )
 }
 
-function ResultScreen({ path, timeline, answers, onSignup, onLogin, onBack }) {
-  const certsToShow = path.certs.slice(0, DEPTH_LIMITS[answers.depth] ?? path.certs.length)
+function ResultScreen({ path, timeline, answers, onStartFree, onSubscribe, onBack }) {
+  const certs = timeline.certs
+  const firstCert = certs[0]
 
   return (
     <div>
       {/* Header */}
-      <div style={{
-        background: 'linear-gradient(135deg, #0A2540 0%, #1A3B5C 100%)',
-        padding: '1.5rem',
-        borderRadius: '1.25rem 1.25rem 0 0',
-      }}>
+      <div style={{ background: 'linear-gradient(135deg, #0A2540 0%, #1A3B5C 100%)', padding: '1.5rem', borderRadius: '1.25rem 1.25rem 0 0' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', marginBottom: '1rem' }}>
           <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#00D4AA', animation: 'pulse 2s infinite' }} />
-          <span style={{ color: '#00D4AA', fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Your Path Is Ready</span>
+          <span style={{ color: '#00D4AA', fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Your Cloud Certification Journey</span>
+        </div>
+
+        {/* Role transformation line */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+          <div style={{ fontSize: '0.8125rem', color: 'rgba(255,255,255,0.65)' }}>
+            {path.currentRole}
+          </div>
+          <div style={{ color: '#00D4AA', fontSize: '1rem' }}>→</div>
+          <div style={{ fontSize: '0.9375rem', fontWeight: '800', color: 'white' }}>
+            {path.targetRole.split(' / ')[0]}
+          </div>
         </div>
 
         {/* Path name + emoji */}
@@ -378,9 +440,9 @@ function ResultScreen({ path, timeline, answers, onSignup, onLogin, onBack }) {
         {/* Stats row */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem' }}>
           {[
-            { label: 'Target Role', value: path.targetRole.split(' / ')[0] },
-            { label: 'Avg Salary',  value: path.avgSalary.split('–')[0] + '+' },
-            { label: 'Journey',     value: `~${timeline.months} mo` },
+            { label: 'Target Salary', value: path.avgSalary.split('–')[0] + '+' },
+            { label: 'Certs',         value: `${timeline.count}` },
+            { label: 'Journey',       value: `~${timeline.months} mo` },
           ].map((stat, i) => (
             <div key={i} style={{ background: 'rgba(255,255,255,0.08)', borderRadius: '0.625rem', padding: '0.625rem 0.75rem', textAlign: 'center' }}>
               <div style={{ fontSize: '1rem', fontWeight: '800', color: '#00D4AA', lineHeight: 1, marginBottom: '0.2rem' }}>{stat.value}</div>
@@ -392,20 +454,28 @@ function ResultScreen({ path, timeline, answers, onSignup, onLogin, onBack }) {
 
       {/* Body */}
       <div style={{ padding: '1.25rem' }}>
+        {/* Promise line */}
+        <div style={{ background: path.accentBg, border: `1px solid ${path.accentBorder}`, borderRadius: '0.75rem', padding: '0.875rem 1rem', marginBottom: '1.25rem' }}>
+          <div style={{ fontSize: '0.9rem', color: '#0A2540', fontWeight: '600', lineHeight: 1.5 }}>
+            In <strong>~{timeline.months} months</strong> at your pace, you could be earning <strong>{path.avgSalary}</strong> as a {path.targetRole.split(' / ')[0]}.
+          </div>
+          <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.375rem' }}>{path.jobDemand}</div>
+        </div>
 
         {/* Cert Journey */}
         <div style={{ marginBottom: '1.25rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-            <span style={{ fontWeight: '700', color: '#0A2540', fontSize: '0.875rem' }}>Your Certification Journey</span>
-            <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>{certsToShow.length} certs · ~{timeline.weeks} weeks</span>
+            <span style={{ fontWeight: '700', color: '#0A2540', fontSize: '0.875rem' }}>Your Certification Sequence</span>
+            <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>{timeline.count} certs · ~{timeline.weeks} weeks</span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            {certsToShow.map((cert, i) => (
+            {certs.map((cert, i) => (
               <CertRow
                 key={cert.code}
                 cert={cert}
                 index={i}
                 pathColor={path.color}
+                weekMarker={timeline.markers[i]}
                 visible={i === 0}
                 blurred={i === 1}
                 locked={i >= 2}
@@ -414,56 +484,25 @@ function ResultScreen({ path, timeline, answers, onSignup, onLogin, onBack }) {
           </div>
         </div>
 
-        {/* Salary teaser */}
-        <div style={{
-          background: path.accentBg,
-          border: `1px solid ${path.accentBorder}`,
-          borderRadius: '0.75rem',
-          padding: '0.875rem 1rem',
-          marginBottom: '1.25rem',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem',
-        }}>
-          <div>
-            <div style={{ fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.125rem' }}>Target role avg salary</div>
-            <div style={{ fontSize: '1.25rem', fontWeight: '800', color: '#0A2540' }}>{path.avgSalary}</div>
-            <div style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '0.125rem' }}>{path.jobDemand}</div>
-          </div>
-          <div style={{ textAlign: 'right', opacity: 0.4 }}>
-            <div style={{ fontSize: '0.7rem', color: '#6b7280', marginBottom: '0.25rem' }}>Full career timeline</div>
-            <div style={{ fontSize: '0.875rem', background: '#e5e7eb', borderRadius: '0.5rem', padding: '0.25rem 0.75rem', filter: 'blur(3px)', userSelect: 'none' }}>
-              █████████████
-            </div>
-          </div>
-        </div>
-
-        {/* ─── CTA Section ─── */}
-        {/* Primary: Pay */}
+        {/* Primary CTA: start free on the first cert */}
         <button
-          onClick={onSignup}
+          onClick={onStartFree}
           style={{
             width: '100%', padding: '1rem',
             background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
             color: 'white', border: 'none', borderRadius: '0.875rem',
             fontWeight: '800', fontSize: '1.0625rem', cursor: 'pointer',
-            boxShadow: '0 6px 20px rgba(0,212,170,0.35)',
-            transition: 'all 0.2s', marginBottom: '0.75rem',
+            boxShadow: '0 6px 20px rgba(0,212,170,0.35)', transition: 'all 0.2s', marginBottom: '0.75rem',
           }}
           onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 10px 28px rgba(0,212,170,0.45)' }}
           onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,212,170,0.35)' }}
         >
-          Unlock Full Path + Start Practicing →
+          Try 10 free questions on {firstCert.name} →
         </button>
 
-        {/* Value reminder */}
-        <div style={{ textAlign: 'center', marginBottom: '1rem', display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-          {['📍 Full path with timeline', '📚 Practice questions', '🔄 Cancel anytime'].map((t, i) => (
-            <span key={i} style={{ fontSize: '0.75rem', color: '#6b7280' }}>{t}</span>
-          ))}
-        </div>
-
-        {/* Secondary: Free */}
+        {/* Secondary CTA: subscribe */}
         <button
-          onClick={() => onSignup('free')}
+          onClick={onSubscribe}
           style={{
             width: '100%', padding: '0.75rem',
             background: 'white', color: '#0A2540',
@@ -474,22 +513,10 @@ function ResultScreen({ path, timeline, answers, onSignup, onLogin, onBack }) {
           onMouseEnter={e => e.currentTarget.style.borderColor = '#0A2540'}
           onMouseLeave={e => e.currentTarget.style.borderColor = '#e5e7eb'}
         >
-          Start with 10 free questions instead →
+          Unlock my full journey — subscribe →
         </button>
 
-        {/* Tertiary: Login — intentionally subtle */}
-        <p style={{ textAlign: 'center', margin: 0, fontSize: '0.8rem', color: '#9ca3af' }}>
-          Already a member?{' '}
-          <button
-            onClick={onLogin}
-            style={{ background: 'none', border: 'none', color: '#9ca3af', textDecoration: 'underline', cursor: 'pointer', fontSize: '0.8rem', padding: 0 }}
-          >
-            Sign in
-          </button>
-        </p>
-
-        {/* Back link */}
-        <div style={{ textAlign: 'center', marginTop: '0.875rem' }}>
+        <div style={{ textAlign: 'center' }}>
           <button
             onClick={onBack}
             style={{ background: 'none', border: 'none', color: '#9ca3af', fontSize: '0.75rem', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
@@ -504,95 +531,85 @@ function ResultScreen({ path, timeline, answers, onSignup, onLogin, onBack }) {
 
 // ─── Main Modal ───────────────────────────────────────────────────────────────
 
-export default function PathFinderModal({ isOpen, onClose, onSignup, onLogin }) {
+const STORAGE_KEY = 'cloudexamlab_path_answers'
+
+const INITIAL_ANSWERS = {
+  role: null, years: null, awsFamiliarity: null, existingCerts: null,
+  goal: null, depth: null, targetTimeline: null, hoursPerWeek: null,
+}
+
+// onStartFree(answers) — route user to the foundation/first-cert free sample.
+// onSubscribe(answers) — open enrollment/subscription.
+export default function CloudCertificationJourneyModal({ isOpen, onClose, onStartFree, onSubscribe }) {
   const [step, setStep]       = useState(1)
-  const [answers, setAnswers] = useState({ experience: null, role: null, depth: null })
+  const [answers, setAnswers] = useState(INITIAL_ANSWERS)
 
   if (!isOpen) return null
 
-  const path     = answers.role     ? PATHS[answers.role]                                       : null
-  const timeline = path && answers.experience && answers.depth
-    ? computeTimeline(path, answers.experience, answers.depth)
+  const path     = answers.role ? PATHS[answers.role] : null
+  const skipFoundation = isPastFoundation(answers)
+  const experience = FAMILIARITY_TO_EXP[answers.awsFamiliarity] ?? 'beginner'
+  const timeline = path && answers.depth && answers.hoursPerWeek
+    ? computeTimeline(path, experience, answers.depth, answers.hoursPerWeek, skipFoundation)
     : null
+
+  const persist = (data) => {
+    // Persist new keys + a derived `experience` key for backward compatibility.
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      ...data,
+      experience: FAMILIARITY_TO_EXP[data.awsFamiliarity] ?? 'beginner',
+      skipFoundation: isPastFoundation(data),
+      completed: data.hoursPerWeek != null,
+    }))
+  }
 
   const handleAnswer = (key, value) => {
     const updated = { ...answers, [key]: value }
     setAnswers(updated)
-    // Save progress to localStorage so dashboard can read it
-    localStorage.setItem('cloudexamlab_path_answers', JSON.stringify(updated))
-    // Auto-advance
+    persist(updated)
     setTimeout(() => {
-      if (key === 'experience') setStep(2)
-      else if (key === 'role')   setStep(3)
-      else if (key === 'depth')  setStep('result')
+      if (step < TOTAL_STEPS) setStep(step + 1)
+      else setStep('result')
     }, 180)
   }
 
-  const handleClose = () => {
+  const reset = () => {
     setStep(1)
-    setAnswers({ experience: null, role: null, depth: null })
-    onClose()
+    setAnswers(INITIAL_ANSWERS)
   }
 
-  const handleSignup = (mode) => {
-    handleClose()
-    onSignup(mode)
-  }
-
-  const handleLogin = () => {
-    handleClose()
-    onLogin()
-  }
+  const handleClose = () => { onClose() }
 
   const isResultStep = step === 'result'
+  const currentKey = !isResultStep ? STEP_ORDER[step - 1] : null
+  const q = currentKey ? QUESTIONS[currentKey] : null
 
   return (
     <div
       onClick={handleClose}
-      style={{
-        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        zIndex: 1000, padding: '1rem',
-      }}
+      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}
     >
       <div
         onClick={e => e.stopPropagation()}
         style={{
-          background: isResultStep ? 'white' : 'white',
-          borderRadius: '1.25rem',
+          background: 'white', borderRadius: '1.25rem',
           maxWidth: isResultStep ? '520px' : '480px',
           width: '100%', maxHeight: '92vh', overflow: 'auto',
-          boxShadow: '0 24px 80px rgba(0,0,0,0.4)',
-          position: 'relative',
+          boxShadow: '0 24px 80px rgba(0,0,0,0.4)', position: 'relative',
         }}
       >
         {/* Close button */}
-        {!isResultStep && (
-          <button
-            onClick={handleClose}
-            style={{
-              position: 'absolute', top: '1rem', right: '1rem', zIndex: 10,
-              background: '#f3f4f6', border: 'none', color: '#6b7280',
-              width: '30px', height: '30px', borderRadius: '50%',
-              fontSize: '1.125rem', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}
-          >×</button>
-        )}
-
-        {/* Close on result */}
-        {isResultStep && (
-          <button
-            onClick={handleClose}
-            style={{
-              position: 'absolute', top: '1rem', right: '1rem', zIndex: 10,
-              background: 'rgba(255,255,255,0.15)', border: 'none', color: 'white',
-              width: '30px', height: '30px', borderRadius: '50%',
-              fontSize: '1.125rem', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}
-          >×</button>
-        )}
+        <button
+          onClick={handleClose}
+          style={{
+            position: 'absolute', top: '1rem', right: '1rem', zIndex: 10,
+            background: isResultStep ? 'rgba(255,255,255,0.15)' : '#f3f4f6',
+            border: 'none', color: isResultStep ? 'white' : '#6b7280',
+            width: '30px', height: '30px', borderRadius: '50%',
+            fontSize: '1.125rem', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}
+        >×</button>
 
         {/* Steps */}
         {!isResultStep && (
@@ -602,17 +619,23 @@ export default function PathFinderModal({ isOpen, onClose, onSignup, onLogin }) 
         )}
 
         <div style={{ padding: isResultStep ? 0 : '0 1.5rem 1.5rem' }}>
-          {step === 1 && <Step1 answers={answers} onAnswer={handleAnswer} />}
-          {step === 2 && (
+          {!isResultStep && q && (
             <div>
-              <Step2 answers={answers} onAnswer={handleAnswer} />
-              <button onClick={() => setStep(1)} style={{ marginTop: '0.75rem', background: 'none', border: 'none', color: '#9ca3af', fontSize: '0.8125rem', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}>← Back</button>
-            </div>
-          )}
-          {step === 3 && (
-            <div>
-              <Step3 answers={answers} onAnswer={handleAnswer} />
-              <button onClick={() => setStep(2)} style={{ marginTop: '0.75rem', background: 'none', border: 'none', color: '#9ca3af', fontSize: '0.8125rem', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}>← Back</button>
+              <QuestionStep
+                title={q.title}
+                subtitle={q.subtitle}
+                options={q.options}
+                value={answers[q.optKey]}
+                optKey={q.optKey}
+                onAnswer={handleAnswer}
+                gap={q.gap}
+              />
+              {step > 1 && (
+                <button
+                  onClick={() => setStep(step - 1)}
+                  style={{ marginTop: '0.75rem', background: 'none', border: 'none', color: '#9ca3af', fontSize: '0.8125rem', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+                >← Back</button>
+              )}
             </div>
           )}
           {isResultStep && path && timeline && (
@@ -620,9 +643,9 @@ export default function PathFinderModal({ isOpen, onClose, onSignup, onLogin }) 
               path={path}
               timeline={timeline}
               answers={answers}
-              onSignup={handleSignup}
-              onLogin={handleLogin}
-              onBack={() => setStep(3)}
+              onStartFree={() => { onStartFree && onStartFree({ ...answers, skipFoundation, path: path.key }) }}
+              onSubscribe={() => { onSubscribe && onSubscribe({ ...answers, skipFoundation, path: path.key }) }}
+              onBack={() => setStep(TOTAL_STEPS)}
             />
           )}
         </div>
@@ -631,5 +654,5 @@ export default function PathFinderModal({ isOpen, onClose, onSignup, onLogin }) 
   )
 }
 
-// Export path data for Dashboard use
-export { PATHS, EXP_MULTIPLIERS, DEPTH_LIMITS, computeTimeline }
+// Export path data + helpers for Dashboard use
+export { PATHS, EXP_MULTIPLIERS, DEPTH_LIMITS, FAMILIARITY_TO_EXP, computeTimeline, isPastFoundation, journeyCerts }

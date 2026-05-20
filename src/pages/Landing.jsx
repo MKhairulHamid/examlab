@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import useAuthStore from '../stores/authStore'
 import AuthModal from '../components/auth/AuthModal'
-import PathFinderModal from '../components/pathfinder/PathFinderModal'
 
 const CERTIFICATIONS = {
   aws: [
@@ -98,7 +97,6 @@ function Landing() {
   const { user } = useAuthStore()
   const [showAuthModal, setShowAuthModal]     = useState(false)
   const [authModalMode, setAuthModalMode]     = useState('signup')
-  const [showPathFinder, setShowPathFinder]   = useState(false)
   const [expandedProvider, setExpandedProvider] = useState('aws')
   const [expandedFAQ, setExpandedFAQ]         = useState(null)
   const [demoSelectedAnswer, setDemoSelectedAnswer] = useState(null)
@@ -176,16 +174,16 @@ function Landing() {
                 marginBottom: '2.5rem',
                 maxWidth: '38rem'
               }}>
-                Answer 3 quick questions. Get a personalized certification roadmap — with your timeline, target salary, and exam-realistic practice to get you there.
+                Sign up free, then map your existing career to a personalized certification roadmap — with your timeline, target salary, and exam-realistic practice to get you there.
               </p>
 
               <div className="hero-buttons" style={{ marginBottom: '2rem' }}>
                 <button
-                  onClick={() => setShowPathFinder(true)}
+                  onClick={openSignup}
                   className="btn-primary"
                   style={{ fontSize: '1.0625rem', padding: '1rem 2rem' }}
                 >
-                  Find My Path →
+                  Start Free →
                 </button>
                 <button onClick={() => scrollToSection('demo')} className="btn-secondary" style={{ fontSize: '0.9375rem', padding: '1rem 1.5rem' }}>
                   See It in Action
@@ -341,7 +339,7 @@ function Landing() {
             {PATH_PREVIEWS.map(p => (
               <button
                 key={p.key}
-                onClick={() => setShowPathFinder(true)}
+                onClick={openSignup}
                 style={{
                   background: 'white', borderRadius: '1rem', padding: '1.375rem',
                   border: '1px solid #e5e7eb', cursor: 'pointer', textAlign: 'left',
@@ -362,7 +360,7 @@ function Landing() {
 
           <div style={{ textAlign: 'center' }}>
             <button
-              onClick={() => setShowPathFinder(true)}
+              onClick={openSignup}
               style={{
                 padding: '1rem 2.5rem',
                 background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
@@ -373,10 +371,10 @@ function Landing() {
               onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 12px 32px rgba(0,212,170,0.45)' }}
               onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,212,170,0.35)' }}
             >
-              Find My Path — 3 Quick Questions →
+              Start Free — Map My Journey →
             </button>
             <p style={{ color: '#9ca3af', fontSize: '0.8125rem', marginTop: '0.75rem' }}>
-              Takes 30 seconds • No sign-up required to see your path
+              Free to start • Build your roadmap right after signup
             </p>
           </div>
         </div>
@@ -682,7 +680,7 @@ function Landing() {
 
           <div style={{ textAlign: 'center', marginTop: '3.5rem' }}>
             <button
-              onClick={() => setShowPathFinder(true)}
+              onClick={openSignup}
               style={{
                 padding: '1.125rem 2.5rem',
                 background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
@@ -698,7 +696,7 @@ function Landing() {
               onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 12px 32px rgba(0,212,170,0.45)' }}
               onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,212,170,0.35)' }}
             >
-              Find My Certification Path →
+              Start Free →
             </button>
           </div>
         </div>
@@ -869,12 +867,12 @@ function Landing() {
 
           <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
             <button
-              onClick={() => setShowPathFinder(true)}
+              onClick={openSignup}
               style={{ padding: '0.875rem 2rem', background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)', color: 'white', border: 'none', borderRadius: '0.75rem', fontWeight: '700', cursor: 'pointer', fontSize: '1rem', boxShadow: '0 4px 12px rgba(0,212,170,0.3)', transition: 'all 0.2s' }}
               onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,212,170,0.4)' }}
               onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,212,170,0.3)' }}
             >
-              Find My Certification Path →
+              Start Free →
             </button>
             <button
               onClick={openSignup}
@@ -1239,7 +1237,7 @@ function Landing() {
           </p>
 
           <button
-            onClick={() => setShowPathFinder(true)}
+            onClick={openSignup}
             style={{
               padding: '1.25rem 3rem',
               background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
@@ -1257,7 +1255,7 @@ function Landing() {
             onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 14px 36px rgba(0,212,170,0.5)' }}
             onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 28px rgba(0,212,170,0.4)' }}
           >
-            Find My Certification Path →
+            Start Free →
           </button>
           <div style={{ marginBottom: '1.5rem' }}>
             <button
@@ -1436,12 +1434,6 @@ function Landing() {
         initialMode={authModalMode}
       />
 
-      <PathFinderModal
-        isOpen={showPathFinder}
-        onClose={() => setShowPathFinder(false)}
-        onSignup={(mode) => { setShowPathFinder(false); openSignup() }}
-        onLogin={() => { setShowPathFinder(false); openLogin() }}
-      />
     </div>
   )
 }
