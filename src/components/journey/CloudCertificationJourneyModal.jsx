@@ -41,9 +41,9 @@ const PATHS = {
     accentBorder: 'rgba(16,185,129,0.3)',
     certs: [
       { code: 'CLF-C02', name: 'Cloud Practitioner', level: 'Foundational', baseHours: 50, cost: 100, unlocks: 'Cloud literacy · Foundation for all paths' },
-      { code: 'DVA-C02', name: 'Developer – Associate', level: 'Associate', baseHours: 100, cost: 150, unlocks: 'Cloud Developer roles · CI/CD · Lambda expertise' },
-      { code: 'CloudOps', name: 'CloudOps Engineer – Associate', level: 'Associate', baseHours: 100, cost: 150, unlocks: 'Ops roles · Infrastructure management · SRE track' },
+      { code: 'DVA-C02', name: 'Developer – Associate', level: 'Associate', baseHours: 100, cost: 150, unlocks: 'Cloud Developer · CI/CD · Lambda · (or CloudOps for ops-first roles)' },
       { code: 'DOP-C02', name: 'DevOps Engineer – Professional', level: 'Professional', baseHours: 175, cost: 300, unlocks: 'Senior DevOps · $151K avg salary · Platform Engineer' },
+      { code: 'SCS-C02', name: 'Security – Specialty', level: 'Specialty', baseHours: 140, cost: 300, unlocks: 'DevSecOps · Security automation · Highest-paying specialty (+73% demand)' },
     ],
   },
   data: {
@@ -87,6 +87,7 @@ const PATHS = {
       { code: 'AIF-C01', name: 'AI Practitioner', level: 'Foundational', baseHours: 50, cost: 100, unlocks: 'AI literacy · AI product & analyst roles' },
       { code: 'MLA-C01', name: 'ML Engineer – Associate', level: 'Associate', baseHours: 115, cost: 150, unlocks: 'ML Engineer · $188K avg salary · SageMaker expertise' },
       { code: 'GenAI-Pro', name: 'Generative AI Developer – Pro', level: 'Professional', baseHours: 175, cost: 300, unlocks: 'GenAI Engineer · Bedrock · RAG · Agentic AI · Fastest-growing role' },
+      { code: 'SCS-C02', name: 'Security – Specialty', level: 'Specialty', baseHours: 140, cost: 300, unlocks: 'Secure ML/AI workloads · Data governance · Compliance' },
     ],
   },
   security: {
@@ -141,6 +142,18 @@ const FAMILIARITY_TO_EXP = { never: 'beginner', a_little: 'it_background', regul
 const DEPTH_LIMITS    = { quick: 1, role: 2, senior: 3, expert: 4 }
 const LEVEL_COLOR     = { Foundational: '#6366F1', Associate: '#0EA5E9', Professional: '#8B5CF6', Specialty: '#EC4899' }
 
+// Readable labels for the user's current role (separate from their aspiring path).
+const CURRENT_ROLE_LABELS = {
+  software_dev: 'Software Developer',
+  sysadmin:     'SysAdmin / Ops Engineer',
+  data:         'Data / Analytics',
+  security:     'Security / Compliance',
+  network:      'Network Engineer',
+  aiml:         'AI / ML Practitioner',
+  student:      'Student',
+  other:        'Career Changer',
+}
+
 // A user is "past foundation" if they already hold an AWS cert or use AWS extensively.
 function isPastFoundation({ existingCerts, awsFamiliarity }) {
   return ['aws_foundational', 'aws_associate', 'aws_pro'].includes(existingCerts) || awsFamiliarity === 'extensively'
@@ -174,7 +187,7 @@ function computeTimeline(path, experience, depth, hoursPerWeek = 10, skipFoundat
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-const STEP_LABELS = ['Role', 'Experience', 'AWS', 'Certs', 'Goal', 'Depth', 'Timeline', 'Hours']
+const STEP_LABELS = ['Role', 'Path', 'Experience', 'AWS', 'Certs', 'Goal', 'Depth', 'Timeline', 'Hours']
 const TOTAL_STEPS = STEP_LABELS.length
 
 function ProgressBar({ step }) {
@@ -241,17 +254,33 @@ function QuestionStep({ title, subtitle, options, value, optKey, onAnswer, gap =
 // ─── Question definitions ───────────────────────────────────────────────────
 
 const QUESTIONS = {
-  role: {
+  currentRole: {
     title: "What's your current role?",
-    subtitle: 'This identifies you and sets your certification track.',
+    subtitle: 'Where you are today — this is your starting point, not your destination.',
+    optKey: 'currentRole',
+    options: [
+      { value: 'software_dev', icon: '👨‍💻', title: 'Software Developer',    desc: 'I write code and build applications' },
+      { value: 'sysadmin',     icon: '🖥️', title: 'SysAdmin / Ops',         desc: 'I manage servers, infrastructure, and operations' },
+      { value: 'data',         icon: '📊', title: 'Data / Analytics',       desc: 'I work with data pipelines and analytics' },
+      { value: 'security',     icon: '🔒', title: 'Security / Compliance',   desc: 'I handle security, IAM, or compliance' },
+      { value: 'network',      icon: '🌐', title: 'Network Engineer',        desc: 'I manage networks and connectivity' },
+      { value: 'aiml',         icon: '🤖', title: 'AI / ML Practitioner',    desc: 'I work with ML or AI systems' },
+      { value: 'student',      icon: '🎓', title: 'Student / New to Tech',   desc: 'Just getting started in tech' },
+      { value: 'other',        icon: '💼', title: 'Other / Non-technical',   desc: 'Business, management, or switching fields' },
+    ],
+    gap: '0.5rem',
+  },
+  role: {
+    title: 'Which direction do you want to grow?',
+    subtitle: "Your aspiring future — pick the role you're aiming for. (A developer can target Architect or DevOps.)",
     optKey: 'role',
     options: [
-      { value: 'architect', icon: '🌩️', title: 'Cloud Architect',     desc: 'I design systems, infrastructure, and cloud architecture' },
-      { value: 'devops',    icon: '🛠️', title: 'Developer / DevOps',   desc: 'I build apps, CI/CD pipelines, and automate infrastructure' },
-      { value: 'data',      icon: '📊', title: 'Data Engineer',        desc: 'I build data pipelines, ETL workflows, and analytics' },
-      { value: 'aiml',      icon: '🤖', title: 'AI / ML Engineer',     desc: 'I build or work with machine learning and AI systems' },
-      { value: 'security',  icon: '🔒', title: 'Security Specialist',   desc: 'I handle cloud security, IAM, and compliance' },
-      { value: 'network',   icon: '🌐', title: 'Network Specialist',    desc: 'I manage networks, VPCs, and cloud connectivity' },
+      { value: 'architect', icon: '🌩️', title: 'Cloud Architect',     desc: 'Design resilient, cost-optimized cloud systems' },
+      { value: 'devops',    icon: '🛠️', title: 'DevOps Engineer',      desc: 'Build CI/CD, automate infra, ship & operate apps' },
+      { value: 'data',      icon: '📊', title: 'Data Engineer',        desc: 'Build data pipelines and analytics platforms' },
+      { value: 'aiml',      icon: '🤖', title: 'AI / ML Engineer',     desc: 'Build ML systems and generative AI on AWS' },
+      { value: 'security',  icon: '🔒', title: 'Security Specialist',   desc: 'Secure cloud at scale — IAM, threat detection' },
+      { value: 'network',   icon: '🌐', title: 'Network Specialist',    desc: 'Design hybrid and cloud-native networks' },
     ],
     gap: '0.5rem',
   },
@@ -339,7 +368,7 @@ const QUESTIONS = {
 }
 
 // Order steps are shown in (region is captured passively, not as a blocking step)
-const STEP_ORDER = ['role', 'years', 'awsFamiliarity', 'existingCerts', 'goal', 'depth', 'targetTimeline', 'hoursPerWeek']
+const STEP_ORDER = ['currentRole', 'role', 'years', 'awsFamiliarity', 'existingCerts', 'goal', 'depth', 'targetTimeline', 'hoursPerWeek']
 
 // ─── Result Screen ────────────────────────────────────────────────────────────
 
@@ -420,7 +449,7 @@ function ResultScreen({ path, timeline, answers, onStartFree, onSubscribe, onBac
         {/* Role transformation line */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
           <div style={{ fontSize: '0.8125rem', color: 'rgba(255,255,255,0.65)' }}>
-            {path.currentRole}
+            {CURRENT_ROLE_LABELS[answers.currentRole] || path.currentRole}
           </div>
           <div style={{ color: '#00D4AA', fontSize: '1rem' }}>→</div>
           <div style={{ fontSize: '0.9375rem', fontWeight: '800', color: 'white' }}>
@@ -534,7 +563,7 @@ function ResultScreen({ path, timeline, answers, onStartFree, onSubscribe, onBac
 const STORAGE_KEY = 'cloudexamlab_path_answers'
 
 const INITIAL_ANSWERS = {
-  role: null, years: null, awsFamiliarity: null, existingCerts: null,
+  currentRole: null, role: null, years: null, awsFamiliarity: null, existingCerts: null,
   goal: null, depth: null, targetTimeline: null, hoursPerWeek: null,
 }
 
@@ -655,4 +684,4 @@ export default function CloudCertificationJourneyModal({ isOpen, onClose, onStar
 }
 
 // Export path data + helpers for Dashboard use
-export { PATHS, EXP_MULTIPLIERS, DEPTH_LIMITS, FAMILIARITY_TO_EXP, computeTimeline, isPastFoundation, journeyCerts }
+export { PATHS, EXP_MULTIPLIERS, DEPTH_LIMITS, CURRENT_ROLE_LABELS, FAMILIARITY_TO_EXP, computeTimeline, isPastFoundation, journeyCerts }

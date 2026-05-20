@@ -640,19 +640,19 @@ function Landing() {
                 step: '01',
                 icon: '✍️',
                 title: 'Create Free Account',
-                desc: 'Sign up in 30 seconds. No credit card required. Instantly unlock 10 free practice questions with full explanations.',
+                desc: 'Sign up in 30 seconds with email or Google. No credit card required.',
               },
               {
                 step: '02',
-                icon: '🎯',
-                title: 'Practice & Learn',
-                desc: '195 exam-realistic questions across 3 full sets. Instant feedback, answer explanations, and official AWS doc links — right when you need them.',
+                icon: '🗺️',
+                title: 'Map Your Journey',
+                desc: 'Answer a few questions about your career and we\'ll build your personalized roadmap — target role, salary, and timeline — then unlock 10 free practice questions.',
               },
               {
                 step: '03',
                 icon: '🏆',
-                title: 'Pass With Confidence',
-                desc: 'Walk into exam day having seen every question type, every scenario format. No surprises. No retakes.',
+                title: 'Practice & Pass',
+                desc: 'Work through exam-realistic questions with instant feedback, explanations, and official AWS doc links. Walk into exam day with no surprises.',
               },
             ].map((item, index, arr) => (
               <div key={index} style={{
