@@ -538,6 +538,15 @@ export default function AIExplanationPanel({ question, onClose }) {
                   </div>
                   <div style={{ color: 'rgba(255,255,255,0.7)' }}>{error}</div>
                 </div>
+              ) : errorCode === 'content_not_ready' ? (
+                <div>
+                  <div style={{ color: '#67e8f9', fontWeight: '600', marginBottom: '0.375rem' }}>
+                    🕐 Explanation Coming Soon
+                  </div>
+                  <div style={{ color: 'rgba(255,255,255,0.7)' }}>
+                    Our team is preparing this explanation. Please check back soon.
+                  </div>
+                </div>
               ) : (
                 <span style={{ color: '#fca5a5' }}>⚠️ {error}</span>
               )}
@@ -611,110 +620,25 @@ export default function AIExplanationPanel({ question, onClose }) {
           borderTop: '1px solid rgba(255,255,255,0.08)',
           flexShrink: 0
         }}>
-          {isSubscribed ? (
-            <>
-              <div style={{
-                display: 'flex',
-                gap: '0.5rem',
-                alignItems: 'flex-end',
-                background: 'rgba(255,255,255,0.06)',
-                border: '1px solid rgba(255,255,255,0.12)',
-                borderRadius: '0.75rem',
-                padding: '0.5rem 0.5rem 0.5rem 0.875rem',
-                transition: 'border-color 0.2s'
-              }}>
-                <textarea
-                  value={customInput}
-                  onChange={(e) => setCustomInput(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Ask anything about this question…"
-                  rows={1}
-                  style={{
-                    flex: 1,
-                    background: 'transparent',
-                    border: 'none',
-                    outline: 'none',
-                    color: 'white',
-                    fontSize: '0.875rem',
-                    resize: 'none',
-                    lineHeight: '1.5',
-                    maxHeight: '80px',
-                    overflow: 'auto',
-                    fontFamily: 'inherit',
-                    padding: '0.25rem 0'
-                  }}
-                  onInput={(e) => {
-                    e.target.style.height = 'auto'
-                    e.target.style.height = Math.min(e.target.scrollHeight, 80) + 'px'
-                  }}
-                />
-                <button
-                  onClick={handleCustomSend}
-                  disabled={loading || !customInput.trim()}
-                  style={{
-                    padding: '0.5rem 0.875rem',
-                    background: customInput.trim() && !loading
-                      ? 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)'
-                      : 'rgba(255,255,255,0.08)',
-                    border: 'none',
-                    borderRadius: '0.5rem',
-                    color: customInput.trim() && !loading ? 'white' : 'rgba(255,255,255,0.3)',
-                    fontWeight: '600',
-                    cursor: customInput.trim() && !loading ? 'pointer' : 'not-allowed',
-                    fontSize: '0.8125rem',
-                    flexShrink: 0,
-                    transition: 'all 0.2s'
-                  }}
-                >
-                  Send
-                </button>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            padding: '0.75rem 1rem',
+            background: 'rgba(103,232,249,0.06)',
+            border: '1px solid rgba(103,232,249,0.15)',
+            borderRadius: '0.75rem'
+          }}>
+            <span style={{ fontSize: '1.125rem', flexShrink: 0 }}>🕐</span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ color: '#67e8f9', fontWeight: '600', fontSize: '0.8125rem' }}>
+                Custom Q&amp;A — Coming Soon
               </div>
-              <p style={{
-                fontSize: '0.6875rem',
-                color: 'rgba(255,255,255,0.25)',
-                margin: '0.375rem 0 0',
-                textAlign: 'center'
-              }}>
-                Enter to send • Shift+Enter for new line • 200 custom calls/day
-              </p>
-            </>
-          ) : (
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.75rem',
-              padding: '0.75rem 1rem',
-              background: 'rgba(245,158,11,0.08)',
-              border: '1px solid rgba(245,158,11,0.2)',
-              borderRadius: '0.75rem'
-            }}>
-              <span style={{ fontSize: '1.25rem', flexShrink: 0 }}>🔒</span>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ color: '#fcd34d', fontWeight: '600', fontSize: '0.8125rem' }}>
-                  Custom questions — Premium only
-                </div>
-                <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.75rem', marginTop: '0.125rem' }}>
-                  Use the quick options above for free, or upgrade to ask anything.
-                </div>
+              <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.75rem', marginTop: '0.125rem' }}>
+                Use the quick options above to explore explanations and concepts.
               </div>
-              <a
-                href="/pricing"
-                style={{
-                  padding: '0.375rem 0.875rem',
-                  background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-                  color: 'white',
-                  borderRadius: '0.5rem',
-                  fontWeight: '600',
-                  fontSize: '0.75rem',
-                  textDecoration: 'none',
-                  flexShrink: 0,
-                  whiteSpace: 'nowrap'
-                }}
-              >
-                Upgrade
-              </a>
             </div>
-          )}
+          </div>
         </div>
       </div>
 

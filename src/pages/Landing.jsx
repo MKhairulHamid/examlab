@@ -41,7 +41,7 @@ const FAQ_ITEMS = [
   },
   {
     question: 'How does the subscription work?',
-    answer: 'Choose from monthly ($5), quarterly ($10), or annual ($30) plans. Your subscription gives you unlimited access to all available practice questions and features. Cancel anytime with no commitment.'
+    answer: 'Choose from monthly ($19.99) or annual ($99/year — save $141) plans. Your subscription gives you unlimited access to all available practice questions and features. Cancel anytime with no commitment.'
   },
   {
     question: 'What\'s included in my subscription?',
@@ -176,7 +176,7 @@ function Landing() {
               color: 'white',
               fontSize: '0.875rem',
               fontWeight: '600'
-            }}>💰 From $2.50/month</div>
+            }}>💰 From $8.25/month</div>
             <div style={{ 
               padding: '0.5rem 1rem', 
               background: 'rgba(255,255,255,0.1)', 
@@ -1289,7 +1289,7 @@ function Landing() {
                 Monthly
               </h3>
               <div style={{ fontSize: 'clamp(2rem, 6vw, 3rem)', fontWeight: '700', color: '#00D4AA', marginBottom: '0.5rem' }}>
-                $5
+                $19.99
               </div>
               <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
                 Per month • Billed monthly
@@ -1323,54 +1323,7 @@ function Landing() {
               </button>
             </div>
 
-            <div style={{ 
-              background: 'rgba(255,255,255,0.1)', 
-              backdropFilter: 'blur(20px)',
-              padding: '2rem', 
-              borderRadius: '1rem',
-              border: '1px solid rgba(255,255,255,0.2)',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>📆</div>
-              <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: 'white', marginBottom: '0.5rem' }}>
-                Quarterly
-              </h3>
-              <div style={{ fontSize: 'clamp(2rem, 6vw, 3rem)', fontWeight: '700', color: '#00D4AA', marginBottom: '0.5rem' }}>
-                $10
-              </div>
-              <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
-                3 months • Save $5
-              </p>
-              <ul style={{ listStyle: 'none', padding: 0, marginBottom: '1.5rem', textAlign: 'left' }}>
-                <li style={{ color: 'rgba(255,255,255,0.9)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center' }}>
-                  <span style={{ marginRight: '0.5rem' }}>✓</span> All 195 questions
-                </li>
-                <li style={{ color: 'rgba(255,255,255,0.9)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center' }}>
-                  <span style={{ marginRight: '0.5rem' }}>✓</span> Unlimited practice
-                </li>
-                <li style={{ color: 'rgba(255,255,255,0.9)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center' }}>
-                  <span style={{ marginRight: '0.5rem' }}>✓</span> Cancel anytime
-                </li>
-              </ul>
-              <button
-                onClick={() => user ? navigate('/dashboard') : setShowAuthModal(true)}
-                style={{
-                  width: '100%',
-                  padding: '0.875rem',
-                  background: 'rgba(255,255,255,0.2)',
-                  color: 'white',
-                  border: '2px solid rgba(255,255,255,0.3)',
-                  borderRadius: '0.75rem',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  fontSize: '1rem'
-                }}
-              >
-                {user ? 'Enroll Now' : 'Get Started'}
-              </button>
-            </div>
-
-            <div style={{ 
+            <div style={{
               background: 'rgba(255,255,255,0.15)', 
               backdropFilter: 'blur(20px)',
               padding: '2rem', 
@@ -1397,11 +1350,14 @@ function Landing() {
               <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: 'white', marginBottom: '0.5rem' }}>
                 Annual
               </h3>
-              <div style={{ fontSize: 'clamp(2rem, 6vw, 3rem)', fontWeight: '700', color: '#00D4AA', marginBottom: '0.5rem' }}>
-                $30
+              <div style={{ fontSize: 'clamp(2rem, 6vw, 3rem)', fontWeight: '700', color: '#00D4AA', marginBottom: '0.25rem' }}>
+                $99
               </div>
+              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.875rem', textDecoration: 'line-through', marginBottom: '0.25rem' }}>
+                $239.88/year
+              </p>
               <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
-                12 months • Save $30
+                12 months • Save $141 • $8.25/mo
               </p>
               <ul style={{ listStyle: 'none', padding: 0, marginBottom: '1.5rem', textAlign: 'left' }}>
                 <li style={{ color: 'rgba(255,255,255,0.9)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center' }}>
@@ -1464,7 +1420,7 @@ function Landing() {
               {
                 step: '2',
                 title: 'Choose Your Plan',
-                description: 'Select monthly, quarterly, or annual subscription for unlimited access.'
+                description: 'Select monthly or annual subscription for unlimited access.'
               },
               {
                 step: '3',
