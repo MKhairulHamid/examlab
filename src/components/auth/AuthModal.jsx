@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Modal, ModalHeader } from '../../design-system'
 import LoginForm from './LoginForm'
 import SignupForm from './SignupForm'
 
@@ -8,52 +9,30 @@ function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
   // Sync mode when initialMode changes (e.g. opened from different CTAs)
   React.useEffect(() => { if (isOpen) setMode(initialMode) }, [isOpen, initialMode])
 
-  if (!isOpen) return null
-
   return (
-    <div 
-      className="modal-overlay"
-      onClick={onClose}
-    >
-      <div 
-        className="modal-content"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          className="modal-close"
-        >
-          ×
-        </button>
+    <Modal isOpen={isOpen} onClose={onClose} maxWidth="max-w-md">
+      <ModalHeader
+        title={mode === 'login' ? 'Welcome Back' : 'Create Account'}
+        description={mode === 'login'
+          ? 'Login to access exam practice tests'
+          : 'Sign up to start practicing for free'}
+        onClose={onClose}
+      />
 
-        {/* Header */}
-        <div className="modal-header">
-          <h2 className="modal-title">
-            {mode === 'login' ? 'Welcome Back' : 'Create Account'}
-          </h2>
-          <p className="modal-description">
-            {mode === 'login' 
-              ? 'Login to access exam practice tests' 
-              : 'Sign up to start practicing for free'}
-          </p>
-        </div>
-
-        {/* Form */}
+      <div className="px-6 py-5">
         {mode === 'login' ? (
           <LoginForm onSuccess={onClose} />
         ) : (
           <SignupForm onSuccess={onClose} />
         )}
 
-        {/* Toggle mode */}
-        <div className="mt-6 text-center text-sm text-muted">
+        <div className="mt-6 text-center text-sm text-gray-500">
           {mode === 'login' ? (
             <>
               Don't have an account?{' '}
               <button
                 onClick={() => setMode('signup')}
-                className="link-button"
+                className="text-[#00A884] font-semibold hover:underline bg-transparent border-none cursor-pointer p-0"
               >
                 Sign Up
               </button>
@@ -63,7 +42,7 @@ function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
               Already have an account?{' '}
               <button
                 onClick={() => setMode('login')}
-                className="link-button"
+                className="text-[#00A884] font-semibold hover:underline bg-transparent border-none cursor-pointer p-0"
               >
                 Login
               </button>
@@ -71,7 +50,7 @@ function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
           )}
         </div>
       </div>
-    </div>
+    </Modal>
   )
 }
 

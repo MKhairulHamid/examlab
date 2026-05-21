@@ -202,8 +202,7 @@ function LoginForm({ onSuccess }) {
             setShowForgotPassword(false)
             setError('')
           }}
-          className="w-full mt-3 text-muted text-sm"
-          style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+          className="w-full mt-3 text-gray-500 text-sm bg-transparent border-none cursor-pointer"
         >
           ← Back to Login
         </button>

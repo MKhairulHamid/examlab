@@ -327,43 +327,24 @@ function ExamInterface() {
   if (accessDenied) {
     return (
       <div className="loading-container">
-        <div className="loading-content" style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🔒</div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: '700', marginBottom: '1rem' }}>
+        <div className="loading-content text-center">
+          <div className="text-[4rem] mb-4">🔒</div>
+          <h2 className="text-2xl font-bold mb-4">
             Access Denied
           </h2>
-          <p style={{ fontSize: '1rem', opacity: 0.8, marginBottom: '2rem', maxWidth: '400px', margin: '0 auto 2rem' }}>
+          <p className="text-base opacity-80 max-w-[400px] mx-auto mb-8">
             {accessMessage || 'This question set requires a purchase.'}
           </p>
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+          <div className="flex gap-4 justify-center flex-wrap">
             <button
               onClick={() => navigate(`/exam/${slug}`)}
-              className="btn-primary"
-              style={{
-                padding: '0.75rem 1.5rem',
-                background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '0.5rem',
-                fontWeight: '600',
-                cursor: 'pointer',
-                fontSize: '1rem'
-              }}
+              className="px-6 py-3 bg-gradient-to-br from-[#00D4AA] to-[#00A884] text-white border-none rounded-lg font-semibold cursor-pointer text-base hover:opacity-90 transition-opacity"
             >
               View Purchase Options
             </button>
             <button
               onClick={() => navigate('/dashboard')}
-              style={{
-                padding: '0.75rem 1.5rem',
-                background: 'rgba(255,255,255,0.1)',
-                color: 'inherit',
-                border: '1px solid rgba(255,255,255,0.3)',
-                borderRadius: '0.5rem',
-                fontWeight: '600',
-                cursor: 'pointer',
-                fontSize: '1rem'
-              }}
+              className="px-6 py-3 bg-white/10 text-inherit border border-white/30 rounded-lg font-semibold cursor-pointer text-base hover:bg-white/20 transition-colors"
             >
               Back to Dashboard
             </button>
@@ -645,22 +626,14 @@ function ExamInterface() {
             style={{ width: `${((answeredCount) / questions.length) * 100}%` }}
           ></div>
         </div>
-        <div className="progress-text" style={{ marginBottom: '1rem' }}>
+        <div className="progress-text mb-4">
           {answeredCount} of {questions.length} questions answered
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.75rem' }}>
+        <div className="flex justify-center mb-3">
           <button
             onClick={() => setShowAIPanel(true)}
-            className="materials-button"
-            style={{
-              background: 'rgba(0,212,170,0.15)',
-              color: '#00D4AA',
-              borderColor: '#00D4AA',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.375rem'
-            }}
+            className="materials-button flex items-center gap-1.5 bg-[rgba(0,212,170,0.15)] text-[#00D4AA] border-[#00D4AA]"
           >
             🤖 AI Learning Guide
           </button>
@@ -726,7 +699,7 @@ function ExamInterface() {
             disabled={currentQuestionIndex === 0}
             className="nav-button nav-button-prev"
           >
-            <span style={{ marginRight: '0.5rem' }}>←</span> Previous
+            <span className="mr-2">←</span> Previous
           </button>
           <button
             onClick={() => {
@@ -739,7 +712,7 @@ function ExamInterface() {
             className="nav-button nav-button-next"
           >
             {currentQuestionIndex < questions.length - 1 ? (
-              <>Next <span style={{ marginLeft: '0.5rem' }}>→</span></>
+              <>Next <span className="ml-2">→</span></>
             ) : (
               'Finish'
             )}
@@ -754,29 +727,11 @@ function ExamInterface() {
 
       {/* Resume Notification */}
       {showResumeNotification && (
-        <div style={{
-          position: 'fixed',
-          top: '12px',
-          left: '12px',
-          right: '12px',
-          background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
-          color: 'white',
-          padding: '0.875rem 1rem',
-          borderRadius: '0.75rem',
-          boxShadow: '0 10px 25px rgba(0, 212, 170, 0.3)',
-          zIndex: 10000,
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.625rem',
-          animation: 'slideDown 0.3s ease-out',
-          maxWidth: '400px',
-          marginLeft: 'auto',
-          marginRight: 'auto'
-        }}>
-          <span style={{ fontSize: '1.25rem', flexShrink: 0 }}>🔄</span>
-          <div style={{ minWidth: 0 }}>
-            <div style={{ fontWeight: '600', fontSize: '0.875rem' }}>Exam Resumed</div>
-            <div style={{ fontSize: '0.8125rem', opacity: 0.9 }}>
+        <div className="fixed top-3 left-3 right-3 max-w-[400px] mx-auto z-[10000] flex items-center gap-2.5 px-4 py-3.5 bg-gradient-to-br from-[#00D4AA] to-[#00A884] text-white rounded-xl shadow-[0_10px_25px_rgba(0,212,170,0.3)] animate-[slideDown_0.3s_ease-out]">
+          <span className="text-xl shrink-0">🔄</span>
+          <div className="min-w-0">
+            <div className="font-semibold text-sm">Exam Resumed</div>
+            <div className="text-[0.8125rem] opacity-90">
               Your progress has been restored.
             </div>
           </div>
@@ -797,14 +752,7 @@ function ExamInterface() {
           <div className="paused-modal">
             <h2>⏸️ Exam Paused</h2>
             <p>The exam is paused. Your progress and timer have been saved.</p>
-            <div style={{ 
-              fontSize: '0.875rem', 
-              color: 'rgba(10, 37, 64, 0.7)', 
-              marginBottom: '1.5rem',
-              padding: '0.75rem',
-              background: 'rgba(0, 212, 170, 0.1)',
-              borderRadius: '0.5rem'
-            }}>
+            <div className="text-sm text-[rgba(10,37,64,0.7)] mb-6 p-3 bg-[rgba(0,212,170,0.1)] rounded-lg">
               <div>⏱️ Time Elapsed: {formatTime(timeElapsed)}</div>
               <div>📝 Questions Answered: {answeredCount} of {questions?.length || 0}</div>
             </div>
