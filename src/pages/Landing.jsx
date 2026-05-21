@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import useAuthStore from '../stores/authStore'
 import AuthModal from '../components/auth/AuthModal'
+import { Button, Card } from '../design-system'
 
 const CERTIFICATIONS = {
   aws: [
@@ -84,21 +85,21 @@ const TESTIMONIALS = [
 ]
 
 const PATH_PREVIEWS = [
-  { key: 'architect', emoji: '🌩️', name: 'Cloud Architect',   salary: '$153K–$165K', color: '#0EA5E9', roles: '2,000+ roles' },
-  { key: 'devops',    emoji: '🛠️', name: 'DevOps Engineer',   salary: '$131K–$151K', color: '#10B981', roles: '1,000+ roles' },
-  { key: 'data',      emoji: '📊', name: 'Data Engineer',     salary: '$137K–$165K', color: '#F59E0B', roles: '2,000+ roles' },
-  { key: 'aiml',      emoji: '🤖', name: 'AI / ML Engineer',  salary: '$154K–$188K', color: '#8B5CF6', roles: '33,000+ roles' },
-  { key: 'security',  emoji: '🔒', name: 'Security Specialist',salary: '$132K–$202K', color: '#EF4444', roles: '+73% YoY demand' },
-  { key: 'network',   emoji: '🌐', name: 'Network Specialist', salary: '$127K–$153K', color: '#06B6D4', roles: '1,000+ roles' },
+  { key: 'architect', emoji: '🌩️', name: 'Cloud Architect',    salary: '$153K–$165K', color: '#0EA5E9', roles: '2,000+ roles' },
+  { key: 'devops',    emoji: '🛠️', name: 'DevOps Engineer',    salary: '$131K–$151K', color: '#10B981', roles: '1,000+ roles' },
+  { key: 'data',      emoji: '📊', name: 'Data Engineer',      salary: '$137K–$165K', color: '#F59E0B', roles: '2,000+ roles' },
+  { key: 'aiml',      emoji: '🤖', name: 'AI / ML Engineer',   salary: '$154K–$188K', color: '#8B5CF6', roles: '33,000+ roles' },
+  { key: 'security',  emoji: '🔒', name: 'Security Specialist', salary: '$132K–$202K', color: '#EF4444', roles: '+73% YoY demand' },
+  { key: 'network',   emoji: '🌐', name: 'Network Specialist',  salary: '$127K–$153K', color: '#06B6D4', roles: '1,000+ roles' },
 ]
 
 function Landing() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
-  const [showAuthModal, setShowAuthModal]     = useState(false)
-  const [authModalMode, setAuthModalMode]     = useState('signup')
-  const [expandedProvider, setExpandedProvider] = useState('aws')
-  const [expandedFAQ, setExpandedFAQ]         = useState(null)
+  const [showAuthModal, setShowAuthModal]           = useState(false)
+  const [authModalMode, setAuthModalMode]           = useState('signup')
+  const [expandedProvider, setExpandedProvider]     = useState('aws')
+  const [expandedFAQ, setExpandedFAQ]               = useState(null)
   const [demoSelectedAnswer, setDemoSelectedAnswer] = useState(null)
   const [showDemoMaterials, setShowDemoMaterials]   = useState(false)
   const [showDemoResults, setShowDemoResults]       = useState(false)
@@ -109,9 +110,7 @@ function Landing() {
   useEffect(() => {
     const hasAuthTokens = window.location.hash.includes('access_token') ||
       window.location.hash.includes('refresh_token')
-    if (user && !hasAuthTokens) {
-      navigate('/dashboard')
-    }
+    if (user && !hasAuthTokens) navigate('/dashboard')
   }, [user, navigate])
 
   const scrollToSection = (id) => {
@@ -141,56 +140,30 @@ function Landing() {
         <div className="hero-bg-1" />
         <div className="hero-bg-2" />
 
-        <div style={{ maxWidth: '72rem', margin: '0 auto', width: '100%', position: 'relative', zIndex: 10 }}>
-          <div style={{
-            display: 'grid',
-            gap: '3rem',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 420px), 1fr))',
-            alignItems: 'center'
-          }}>
+        <div className="max-w-[72rem] mx-auto w-full relative z-10">
+          <div className="grid gap-12 items-center" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 420px), 1fr))' }}>
 
             {/* Left — copy */}
             <div>
               <div className="hero-badge" style={{ marginBottom: '1.5rem', display: 'inline-block' }}>
                 🗺️ All 13 AWS Certifications — 6 Career Paths
               </div>
-
-              <h1 style={{
-                fontSize: 'clamp(2.25rem, 5vw, 3.75rem)',
-                fontWeight: '800',
-                color: 'white',
-                lineHeight: '1.1',
-                marginBottom: '1.5rem',
-                letterSpacing: '-0.03em'
-              }}>
+              <h1 className="text-[clamp(2.25rem,5vw,3.75rem)] font-extrabold text-white leading-[1.1] mb-6 tracking-[-0.03em]">
                 Your AWS Certification<br />
-                <span style={{ color: '#00D4AA' }}>Path Starts Here.</span>
+                <span className="text-[#00D4AA]">Path Starts Here.</span>
               </h1>
-
-              <p style={{
-                fontSize: 'clamp(1rem, 2.5vw, 1.2rem)',
-                color: 'rgba(255,255,255,0.85)',
-                lineHeight: '1.7',
-                marginBottom: '2.5rem',
-                maxWidth: '38rem'
-              }}>
+              <p className="text-[clamp(1rem,2.5vw,1.2rem)] text-white/85 leading-[1.7] mb-10 max-w-[38rem]">
                 Sign up free, then map your existing career to a personalized certification roadmap — with your timeline, target salary, and exam-realistic practice to get you there.
               </p>
-
               <div className="hero-buttons" style={{ marginBottom: '2rem' }}>
-                <button
-                  onClick={openSignup}
-                  className="btn-primary"
-                  style={{ fontSize: '1.0625rem', padding: '1rem 2rem' }}
-                >
+                <button onClick={openSignup} className="btn-primary" style={{ fontSize: '1.0625rem', padding: '1rem 2rem' }}>
                   Start Free →
                 </button>
                 <button onClick={() => scrollToSection('demo')} className="btn-secondary" style={{ fontSize: '0.9375rem', padding: '1rem 1.5rem' }}>
                   See It in Action
                 </button>
               </div>
-
-              <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', color: 'rgba(255,255,255,0.65)', fontSize: '0.875rem' }}>
+              <div className="flex gap-6 flex-wrap text-white/65 text-sm">
                 <span>✓ Personalized roadmap</span>
                 <span>✓ Salary & timeline data</span>
                 <span>✓ From $8.25/month</span>
@@ -198,117 +171,62 @@ function Landing() {
             </div>
 
             {/* Right — product preview mockup */}
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-start' }}>
-              <div style={{
-                background: 'white',
-                borderRadius: '1rem',
-                overflow: 'hidden',
-                boxShadow: '0 30px 80px rgba(0,0,0,0.45)',
-                width: '100%',
-                maxWidth: '480px',
-                border: '1px solid rgba(255,255,255,0.08)'
-              }}>
+            <div className="flex justify-center items-start">
+              <div className="bg-white rounded-2xl overflow-hidden w-full max-w-[480px] border border-white/[0.08]" style={{ boxShadow: '0 30px 80px rgba(0,0,0,0.45)' }}>
                 {/* Browser chrome */}
-                <div style={{ background: '#1e293b', padding: '0.625rem 1rem', display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
-                  <div style={{ width: '11px', height: '11px', borderRadius: '50%', background: '#ef4444' }} />
-                  <div style={{ width: '11px', height: '11px', borderRadius: '50%', background: '#f59e0b' }} />
-                  <div style={{ width: '11px', height: '11px', borderRadius: '50%', background: '#22c55e' }} />
-                  <div style={{ marginLeft: '0.625rem', background: '#334155', borderRadius: '0.3rem', padding: '0.2rem 0.75rem', flex: 1, fontSize: '0.7rem', color: '#94a3b8', textAlign: 'center' }}>
+                <div className="bg-[#1e293b] px-4 py-2.5 flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
+                  <div className="ml-2.5 bg-[#334155] rounded flex-1 px-3 py-1 text-[0.7rem] text-slate-400 text-center">
                     cloudexamlab.com/exam
                   </div>
                 </div>
 
                 {/* App header bar */}
-                <div style={{
-                  background: 'linear-gradient(135deg, #0A2540 0%, #1A3B5C 100%)',
-                  padding: '0.875rem 1.25rem',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
-                }}>
-                  <span style={{ color: 'white', fontWeight: '600', fontSize: '0.8125rem' }}>AWS Developer Associate — Set 1</span>
-                  <span style={{
-                    background: 'rgba(0,212,170,0.2)',
-                    color: '#00D4AA',
-                    padding: '0.2rem 0.625rem',
-                    borderRadius: '1rem',
-                    fontSize: '0.7rem',
-                    fontWeight: '700',
-                    border: '1px solid rgba(0,212,170,0.35)'
-                  }}>⏱ 01:23:47</span>
+                <div className="bg-gradient-to-r from-[#0A2540] to-[#1A3B5C] px-5 py-3.5 flex justify-between items-center">
+                  <span className="text-white font-semibold text-[0.8125rem]">AWS Developer Associate — Set 1</span>
+                  <span className="bg-[#00D4AA]/20 text-[#00D4AA] px-2.5 py-1 rounded-full text-[0.7rem] font-bold border border-[#00D4AA]/35">⏱ 01:23:47</span>
                 </div>
 
                 {/* Progress bar */}
-                <div style={{ height: '3px', background: '#e5e7eb' }}>
-                  <div style={{ height: '100%', width: '32%', background: 'linear-gradient(90deg, #00D4AA, #00A884)' }} />
+                <div className="h-[3px] bg-gray-200">
+                  <div className="h-full w-[32%] bg-gradient-to-r from-[#00D4AA] to-[#00A884]" />
                 </div>
 
                 {/* Question content */}
-                <div style={{ padding: '1.25rem', background: 'white' }}>
-                  <div style={{ marginBottom: '0.75rem' }}>
-                    <span style={{
-                      background: '#0A2540',
-                      color: 'white',
-                      fontSize: '0.6875rem',
-                      fontWeight: '700',
-                      padding: '0.2rem 0.625rem',
-                      borderRadius: '1rem'
-                    }}>Question 21 of 65</span>
+                <div className="p-5 bg-white">
+                  <div className="mb-3">
+                    <span className="bg-[#0A2540] text-white text-[0.6875rem] font-bold px-2.5 py-1 rounded-full">Question 21 of 65</span>
                   </div>
-
-                  <p style={{ fontSize: '0.85rem', fontWeight: '600', color: '#0A2540', lineHeight: '1.55', marginBottom: '1rem' }}>
+                  <p className="text-[0.85rem] font-semibold text-[#0A2540] leading-[1.55] mb-4">
                     A developer needs sensitive configuration data encrypted at rest with automatic rotation. Which AWS service best meets this requirement?
                   </p>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <div className="flex flex-col gap-2">
                     {[
                       { label: 'AWS Systems Manager Parameter Store', selected: false },
                       { label: 'AWS Secrets Manager', selected: true },
                       { label: 'Amazon S3 with SSE-S3 encryption', selected: false },
                       { label: 'AWS KMS with key policies', selected: false },
                     ].map((opt, i) => (
-                      <div key={i} style={{
-                        padding: '0.625rem 0.875rem',
-                        borderRadius: '0.5rem',
-                        border: `2px solid ${opt.selected ? '#00D4AA' : '#e5e7eb'}`,
-                        background: opt.selected ? 'rgba(0,212,170,0.07)' : 'white',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.625rem'
-                      }}>
-                        <div style={{
-                          width: '16px', height: '16px', borderRadius: '50%', flexShrink: 0,
-                          border: `2px solid ${opt.selected ? '#00D4AA' : '#d1d5db'}`,
-                          background: opt.selected ? '#00D4AA' : 'white',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center'
-                        }}>
-                          {opt.selected && <span style={{ color: 'white', fontSize: '0.5625rem', fontWeight: '800' }}>✓</span>}
+                      <div key={i} className={`px-3.5 py-2.5 rounded-lg flex items-center gap-2.5 border-2 ${opt.selected ? 'border-[#00D4AA] bg-[#00D4AA]/[0.07]' : 'border-gray-200 bg-white'}`}>
+                        <div className={`w-4 h-4 rounded-full shrink-0 flex items-center justify-center border-2 ${opt.selected ? 'border-[#00D4AA] bg-[#00D4AA]' : 'border-gray-300 bg-white'}`}>
+                          {opt.selected && <span className="text-white text-[0.5625rem] font-extrabold">✓</span>}
                         </div>
-                        <span style={{ fontSize: '0.78rem', color: opt.selected ? '#0A2540' : '#4b5563', fontWeight: opt.selected ? '600' : '400' }}>
-                          {opt.label}
-                        </span>
+                        <span className={`text-[0.78rem] ${opt.selected ? 'text-[#0A2540] font-semibold' : 'text-gray-500'}`}>{opt.label}</span>
                       </div>
                     ))}
                   </div>
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem', gap: '0.5rem' }}>
-                    <button style={{ padding: '0.5rem 1rem', background: '#f1f5f9', border: 'none', borderRadius: '0.375rem', fontSize: '0.78rem', color: '#64748b', fontWeight: '600', cursor: 'default' }}>← Previous</button>
-                    <button style={{ padding: '0.5rem 1rem', background: 'linear-gradient(135deg, #00D4AA, #00A884)', border: 'none', borderRadius: '0.375rem', fontSize: '0.78rem', color: 'white', fontWeight: '600', cursor: 'default' }}>Next →</button>
+                  <div className="flex justify-between mt-4 gap-2">
+                    <button className="px-4 py-2 bg-slate-100 rounded text-[0.78rem] text-slate-500 font-semibold cursor-default">← Previous</button>
+                    <button className="px-4 py-2 bg-gradient-to-r from-[#00D4AA] to-[#00A884] rounded text-[0.78rem] text-white font-semibold cursor-default">Next →</button>
                   </div>
                 </div>
 
                 {/* Bottom status bar */}
-                <div style={{
-                  padding: '0.625rem 1.25rem',
-                  background: '#f9fafb',
-                  borderTop: '1px solid #e5e7eb',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  fontSize: '0.7rem',
-                  color: '#6b7280'
-                }}>
+                <div className="px-5 py-2.5 bg-gray-50 border-t border-gray-200 flex justify-between text-[0.7rem] text-gray-500">
                   <span>✓ 20 answered</span>
-                  <span style={{ color: '#00A884', fontWeight: '700' }}>82% on track to pass</span>
+                  <span className="text-[#00A884] font-bold">82% on track to pass</span>
                   <span>44 remaining</span>
                 </div>
               </div>
@@ -321,59 +239,57 @@ function Landing() {
       {/* ═══════════════════════════════════════
           PATH PREVIEWS
       ═══════════════════════════════════════ */}
-      <section style={{ padding: '4rem 1.5rem', background: '#f8fafc' }}>
-        <div style={{ maxWidth: '72rem', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-            <div style={{ color: '#00D4AA', fontSize: '0.8125rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>
+      <section className="py-16 px-6 bg-slate-50">
+        <div className="max-w-[72rem] mx-auto">
+          <div className="text-center mb-10">
+            <p className="text-[0.8125rem] font-bold text-[#00D4AA] uppercase tracking-[0.08em] mb-3">
               6 CERTIFICATION PATHS
-            </div>
-            <h2 style={{ fontSize: 'clamp(1.5rem, 3.5vw, 2.25rem)', fontWeight: '800', color: '#0A2540', letterSpacing: '-0.02em', marginBottom: '0.75rem' }}>
+            </p>
+            <h2 className="text-[clamp(1.5rem,3.5vw,2.25rem)] font-extrabold text-[#0A2540] tracking-tight mb-3">
               Pick your direction. We'll show you how to get there.
             </h2>
-            <p style={{ color: '#6b7280', fontSize: '1rem', maxWidth: '36rem', margin: '0 auto' }}>
+            <p className="text-gray-500 text-base max-w-[36rem] mx-auto">
               Every path comes with a personalized timeline, salary benchmarks, and practice questions mapped to each cert.
             </p>
           </div>
 
-          <div style={{ display: 'grid', gap: '0.875rem', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 240px), 1fr))', marginBottom: '2.5rem' }}>
+          <div className="grid gap-3.5 mb-10" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 240px), 1fr))' }}>
             {PATH_PREVIEWS.map(p => (
               <button
                 key={p.key}
                 onClick={openSignup}
-                style={{
-                  background: 'white', borderRadius: '1rem', padding: '1.375rem',
-                  border: '1px solid #e5e7eb', cursor: 'pointer', textAlign: 'left',
-                  transition: 'all 0.2s', position: 'relative', overflow: 'hidden',
+                className="bg-white rounded-2xl p-5 border border-gray-200 cursor-pointer text-left transition-all duration-200 relative overflow-hidden"
+                onMouseEnter={e => {
+                  e.currentTarget.style.transform = 'translateY(-3px)'
+                  e.currentTarget.style.borderColor = p.color
+                  e.currentTarget.style.boxShadow = `0 8px 24px ${p.color}22`
                 }}
-                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.borderColor = p.color; e.currentTarget.style.boxShadow = `0 8px 24px ${p.color}22` }}
-                onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.borderColor = '#e5e7eb'; e.currentTarget.style.boxShadow = 'none' }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.transform = 'none'
+                  e.currentTarget.style.borderColor = '#e5e7eb'
+                  e.currentTarget.style.boxShadow = 'none'
+                }}
               >
-                {/* Color accent top bar */}
-                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: p.color, opacity: 0.7 }} />
-                <div style={{ fontSize: '1.75rem', marginBottom: '0.625rem' }}>{p.emoji}</div>
-                <div style={{ fontWeight: '700', color: '#0A2540', fontSize: '0.9375rem', marginBottom: '0.25rem' }}>{p.name}</div>
-                <div style={{ fontWeight: '800', color: p.color, fontSize: '1rem', marginBottom: '0.25rem' }}>{p.salary}<span style={{ fontWeight: '500', color: '#9ca3af', fontSize: '0.75rem' }}>/yr</span></div>
-                <div style={{ color: '#9ca3af', fontSize: '0.75rem' }}>{p.roles}</div>
+                <div className="absolute top-0 left-0 right-0 h-[3px] opacity-70" style={{ background: p.color }} />
+                <div className="text-[1.75rem] mb-2.5">{p.emoji}</div>
+                <div className="font-bold text-[#0A2540] text-[0.9375rem] mb-1">{p.name}</div>
+                <div className="font-extrabold text-base mb-1" style={{ color: p.color }}>
+                  {p.salary}<span className="font-medium text-gray-400 text-xs">/yr</span>
+                </div>
+                <div className="text-gray-400 text-xs">{p.roles}</div>
               </button>
             ))}
           </div>
 
-          <div style={{ textAlign: 'center' }}>
-            <button
+          <div className="text-center">
+            <Button
+              variant="primary"
               onClick={openSignup}
-              style={{
-                padding: '1rem 2.5rem',
-                background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
-                color: 'white', border: 'none', borderRadius: '0.875rem',
-                fontWeight: '700', fontSize: '1.0625rem', cursor: 'pointer',
-                boxShadow: '0 8px 24px rgba(0,212,170,0.35)', transition: 'all 0.2s',
-              }}
-              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 12px 32px rgba(0,212,170,0.45)' }}
-              onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,212,170,0.35)' }}
+              className="!px-10 !py-4 !rounded-[0.875rem] !text-[1.0625rem] shadow-teal hover:shadow-teal-lg hover:-translate-y-1"
             >
               Start Free — Map My Journey →
-            </button>
-            <p style={{ color: '#9ca3af', fontSize: '0.8125rem', marginTop: '0.75rem' }}>
+            </Button>
+            <p className="text-gray-400 text-[0.8125rem] mt-3">
               Free to start • Build your roadmap right after signup
             </p>
           </div>
@@ -383,51 +299,38 @@ function Landing() {
       {/* ═══════════════════════════════════════
           ZONE 2 — AGITATION & PARADIGM SHIFT
       ═══════════════════════════════════════ */}
-      <section style={{ padding: '5rem 1.5rem', background: '#f8fafc' }}>
-        <div style={{ maxWidth: '72rem', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-            <div style={{ color: '#00D4AA', fontSize: '0.8125rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>
+      <section className="py-20 px-6 bg-slate-50">
+        <div className="max-w-[72rem] mx-auto">
+          <div className="text-center mb-12">
+            <p className="text-[0.8125rem] font-bold text-[#00D4AA] uppercase tracking-[0.08em] mb-3">
               THE PROBLEM WITH EXAM PREP
-            </div>
-            <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', fontWeight: '800', color: '#0A2540', lineHeight: '1.2', letterSpacing: '-0.02em' }}>
+            </p>
+            <h2 className="text-[clamp(1.75rem,4vw,2.5rem)] font-extrabold text-[#0A2540] leading-snug tracking-tight">
               Most exam prep is broken.<br />We fixed it.
             </h2>
           </div>
 
-          <div style={{
-            display: 'grid',
-            gap: '1.25rem',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 380px), 1fr))',
-            maxWidth: '860px',
-            margin: '0 auto'
-          }}>
+          <div className="grid gap-5 max-w-[860px] mx-auto" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 380px), 1fr))' }}>
             {/* Before card */}
-            <div style={{
-              background: 'white',
-              borderRadius: '1.25rem',
-              padding: '2rem',
-              border: '2px solid #fecaca',
-              position: 'relative',
-              overflow: 'hidden'
-            }}>
-              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: 'linear-gradient(90deg, #ef4444, #f87171)' }} />
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
-                <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: '#fef2f2', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.125rem', flexShrink: 0 }}>❌</div>
+            <div className="bg-white rounded-[1.25rem] p-8 border-2 border-red-200 relative overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 to-red-400" />
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-lg shrink-0">❌</div>
                 <div>
-                  <div style={{ fontSize: '0.6875rem', fontWeight: '700', color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.05em' }}>The Old Way</div>
-                  <div style={{ fontSize: '1.0625rem', fontWeight: '700', color: '#0A2540' }}>Expensive & Unfocused</div>
+                  <div className="text-[0.6875rem] font-bold text-red-500 uppercase tracking-[0.05em]">The Old Way</div>
+                  <div className="text-[1.0625rem] font-bold text-[#0A2540]">Expensive & Unfocused</div>
                 </div>
               </div>
-              <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+              <ul className="space-y-3 list-none p-0 m-0">
                 {[
-                  '$500+ video courses you\'ll never finish',
+                  "$500+ video courses you'll never finish",
                   'Reading 1,000 pages of documentation',
                   'Generic quizzes not tied to the exam blueprint',
                   'No progress tracking or weak-area analysis',
                   'Blindsided by the real exam on test day',
                 ].map((item, i) => (
-                  <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.625rem', color: '#6b7280', fontSize: '0.9375rem', lineHeight: '1.5' }}>
-                    <span style={{ color: '#f87171', fontWeight: '700', flexShrink: 0, marginTop: '0.1rem' }}>✗</span>
+                  <li key={i} className="flex items-start gap-2.5 text-gray-500 text-[0.9375rem] leading-relaxed">
+                    <span className="text-red-400 font-bold shrink-0 mt-0.5">✗</span>
                     {item}
                   </li>
                 ))}
@@ -435,23 +338,16 @@ function Landing() {
             </div>
 
             {/* After card */}
-            <div style={{
-              background: 'white',
-              borderRadius: '1.25rem',
-              padding: '2rem',
-              border: '2px solid #00D4AA',
-              position: 'relative',
-              overflow: 'hidden'
-            }}>
-              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: 'linear-gradient(90deg, #00D4AA, #00A884)' }} />
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
-                <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'rgba(0,212,170,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.125rem', flexShrink: 0 }}>✅</div>
+            <div className="bg-white rounded-[1.25rem] p-8 border-2 border-[#00D4AA] relative overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#00D4AA] to-[#00A884]" />
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-full bg-[#00D4AA]/10 flex items-center justify-center text-lg shrink-0">✅</div>
                 <div>
-                  <div style={{ fontSize: '0.6875rem', fontWeight: '700', color: '#00A884', textTransform: 'uppercase', letterSpacing: '0.05em' }}>The CloudExamLab Way</div>
-                  <div style={{ fontSize: '1.0625rem', fontWeight: '700', color: '#0A2540' }}>Targeted & Proven</div>
+                  <div className="text-[0.6875rem] font-bold text-[#00A884] uppercase tracking-[0.05em]">The CloudExamLab Way</div>
+                  <div className="text-[1.0625rem] font-bold text-[#0A2540]">Targeted & Proven</div>
                 </div>
               </div>
-              <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+              <ul className="space-y-3 list-none p-0 m-0">
                 {[
                   'Exam-realistic practice from $8.25/month',
                   'Just-in-time study materials per question',
@@ -459,8 +355,8 @@ function Landing() {
                   'Progress tracking & per-domain analytics',
                   'Walk in knowing exactly what to expect',
                 ].map((item, i) => (
-                  <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.625rem', color: '#374151', fontSize: '0.9375rem', lineHeight: '1.5' }}>
-                    <span style={{ color: '#00D4AA', fontWeight: '700', flexShrink: 0, marginTop: '0.1rem' }}>✓</span>
+                  <li key={i} className="flex items-start gap-2.5 text-gray-700 text-[0.9375rem] leading-relaxed">
+                    <span className="text-[#00D4AA] font-bold shrink-0 mt-0.5">✓</span>
                     {item}
                   </li>
                 ))}
@@ -473,39 +369,30 @@ function Landing() {
       {/* ═══════════════════════════════════════
           ZONE 3 — BENTO GRID (Core Value Pillars)
       ═══════════════════════════════════════ */}
-      <section style={{ padding: '5rem 1.5rem', background: 'white' }}>
-        <div style={{ maxWidth: '72rem', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-            <div style={{ color: '#00D4AA', fontSize: '0.8125rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>
-              THE PLATFORM
-            </div>
-            <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', fontWeight: '800', color: '#0A2540', letterSpacing: '-0.02em' }}>
+      <section className="py-20 px-6 bg-white">
+        <div className="max-w-[72rem] mx-auto">
+          <div className="text-center mb-12">
+            <p className="text-[0.8125rem] font-bold text-[#00D4AA] uppercase tracking-[0.08em] mb-3">THE PLATFORM</p>
+            <h2 className="text-[clamp(1.75rem,4vw,2.5rem)] font-extrabold text-[#0A2540] tracking-tight">
               Everything you need. Nothing you don't.
             </h2>
           </div>
 
           {/* Row 1: Full-width tech card */}
-          <div style={{
-            background: 'linear-gradient(135deg, #0A2540 0%, #1A3B5C 100%)',
-            borderRadius: '1.25rem',
-            padding: 'clamp(1.5rem, 4vw, 2.5rem)',
-            marginBottom: '1rem',
-            position: 'relative',
-            overflow: 'hidden'
-          }}>
-            <div style={{ position: 'absolute', top: '-60px', right: '-60px', width: '220px', height: '220px', background: 'rgba(0,212,170,0.08)', borderRadius: '50%', filter: 'blur(50px)' }} />
-            <div style={{ position: 'absolute', bottom: '-40px', left: '40%', width: '160px', height: '160px', background: 'rgba(59,130,246,0.06)', borderRadius: '50%', filter: 'blur(40px)' }} />
-            <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexWrap: 'wrap', gap: '2rem', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ flex: '1', minWidth: '220px' }}>
-                <div style={{ fontSize: '2rem', marginBottom: '0.875rem' }}>🎯</div>
-                <h3 style={{ fontSize: 'clamp(1.25rem, 3vw, 1.625rem)', fontWeight: '700', color: 'white', marginBottom: '0.75rem' }}>
+          <div className="bg-gradient-to-br from-[#0A2540] to-[#1A3B5C] rounded-[1.25rem] p-[clamp(1.5rem,4vw,2.5rem)] mb-4 relative overflow-hidden">
+            <div className="absolute -top-16 -right-16 w-56 h-56 bg-[#00D4AA]/[0.08] rounded-full blur-[50px]" />
+            <div className="absolute -bottom-10 left-[40%] w-40 h-40 bg-blue-500/[0.06] rounded-full blur-[40px]" />
+            <div className="relative z-10 flex flex-wrap gap-8 items-center justify-between">
+              <div className="flex-1 min-w-[220px]">
+                <div className="text-3xl mb-3.5">🎯</div>
+                <h3 className="text-[clamp(1.25rem,3vw,1.625rem)] font-bold text-white mb-3">
                   Exam-Realistic Technology
                 </h3>
-                <p style={{ color: 'rgba(255,255,255,0.78)', lineHeight: '1.65', fontSize: '0.9375rem', maxWidth: '440px' }}>
+                <p className="text-white/[0.78] leading-[1.65] text-[0.9375rem] max-w-[440px]">
                   Every question maps to the official DVA-C02 blueprint. Same format, same difficulty, same scenario style as the real exam — built to close the gap between practice and passing.
                 </p>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem', minWidth: '200px' }}>
+              <div className="flex flex-col gap-2.5 min-w-[200px]">
                 {[
                   '65 questions per timed set',
                   'Blueprint-mapped domains',
@@ -513,8 +400,8 @@ function Landing() {
                   'Official AWS doc links included',
                   'Detailed answer explanations',
                 ].map((f, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'rgba(255,255,255,0.85)' }}>
-                    <span style={{ color: '#00D4AA', fontWeight: '700', fontSize: '0.75rem' }}>→</span>
+                  <div key={i} className="flex items-center gap-2 text-sm text-white/[0.85]">
+                    <span className="text-[#00D4AA] font-bold text-xs">→</span>
                     {f}
                   </div>
                 ))}
@@ -523,91 +410,55 @@ function Landing() {
           </div>
 
           {/* Row 2: Two medium cards */}
-          <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', marginBottom: '1rem' }}>
-            {/* Value card */}
-            <div style={{
-              background: 'linear-gradient(135deg, rgba(0,212,170,0.06) 0%, rgba(0,168,132,0.1) 100%)',
-              borderRadius: '1.25rem',
-              padding: '2rem',
-              border: '2px solid rgba(0,212,170,0.25)'
-            }}>
-              <div style={{ fontSize: '1.75rem', marginBottom: '0.875rem' }}>💰</div>
-              <h3 style={{ fontSize: '1.1875rem', fontWeight: '700', color: '#0A2540', marginBottom: '0.5rem' }}>Unbeatable Value</h3>
-              <div style={{ marginBottom: '0.5rem' }}>
-                <span style={{ fontSize: '2.75rem', fontWeight: '800', color: '#00A884', letterSpacing: '-0.03em' }}>$8.25</span>
-                <span style={{ fontSize: '1rem', fontWeight: '600', color: '#6b7280' }}>/month</span>
+          <div className="grid gap-4 mb-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))' }}>
+            <div className="bg-gradient-to-br from-[#00D4AA]/[0.06] to-[#00A884]/10 rounded-[1.25rem] p-8 border-2 border-[#00D4AA]/25">
+              <div className="text-[1.75rem] mb-3.5">💰</div>
+              <h3 className="text-[1.1875rem] font-bold text-[#0A2540] mb-2">Unbeatable Value</h3>
+              <div className="mb-2">
+                <span className="text-[2.75rem] font-extrabold text-[#00A884] tracking-tight">$8.25</span>
+                <span className="text-base font-semibold text-gray-500">/month</span>
               </div>
-              <p style={{ color: '#4b5563', fontSize: '0.9rem', lineHeight: '1.55', marginBottom: '1rem' }}>
+              <p className="text-gray-600 text-[0.9rem] leading-[1.55] mb-4">
                 Annual plan. Less than a coffee for full exam readiness.
               </p>
-              <div style={{ padding: '0.625rem 0.875rem', background: 'white', borderRadius: '0.625rem', fontSize: '0.8125rem', color: '#9ca3af', border: '1px solid #e5e7eb' }}>
+              <div className="px-3.5 py-2.5 bg-white rounded-[0.625rem] text-[0.8125rem] text-gray-400 border border-gray-200">
                 vs. $500+ boot camps &amp; courses
               </div>
             </div>
 
-            {/* Flexibility card */}
-            <div style={{
-              background: '#f8fafc',
-              borderRadius: '1.25rem',
-              padding: '2rem',
-              border: '1px solid #e5e7eb'
-            }}>
-              <div style={{ fontSize: '1.75rem', marginBottom: '0.875rem' }}>📊</div>
-              <h3 style={{ fontSize: '1.1875rem', fontWeight: '700', color: '#0A2540', marginBottom: '0.75rem' }}>Study on Your Terms</h3>
-              <p style={{ color: '#4b5563', fontSize: '0.9rem', lineHeight: '1.6', marginBottom: '1.25rem' }}>
+            <div className="bg-slate-50 rounded-[1.25rem] p-8 border border-gray-200">
+              <div className="text-[1.75rem] mb-3.5">📊</div>
+              <h3 className="text-[1.1875rem] font-bold text-[#0A2540] mb-3">Study on Your Terms</h3>
+              <p className="text-gray-600 text-[0.9rem] leading-[1.6] mb-5">
                 Track progress across all 195 questions. Resume mid-set anytime. Study on any device at your own pace — timed or untimed.
               </p>
-              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <div className="flex gap-2 flex-wrap">
                 {['Progress saving', 'Any device', 'Timed mode', 'Weak-area focus'].map((tag, i) => (
-                  <span key={i} style={{
-                    padding: '0.3rem 0.625rem',
-                    background: 'white',
-                    borderRadius: '1rem',
-                    fontSize: '0.78rem',
-                    fontWeight: '600',
-                    color: '#374151',
-                    border: '1px solid #e5e7eb'
-                  }}>{tag}</span>
+                  <span key={i} className="px-2.5 py-1.5 bg-white rounded-full text-[0.78rem] font-semibold text-gray-700 border border-gray-200">
+                    {tag}
+                  </span>
                 ))}
               </div>
             </div>
           </div>
 
           {/* Row 3: Full-width growing library card */}
-          <div style={{
-            background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
-            borderRadius: '1.25rem',
-            padding: 'clamp(1.5rem, 4vw, 2rem)',
-            border: '1px solid #bae6fd',
-            display: 'flex',
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '1.5rem'
-          }}>
-            <div style={{ flex: '1', minWidth: '220px' }}>
-              <div style={{ fontSize: '1.75rem', marginBottom: '0.875rem' }}>🚀</div>
-              <h3 style={{ fontSize: '1.1875rem', fontWeight: '700', color: '#0A2540', marginBottom: '0.5rem' }}>Growing Certification Library</h3>
-              <p style={{ color: '#0369a1', fontSize: '0.9rem', lineHeight: '1.55' }}>
+          <div className="bg-gradient-to-br from-sky-50 to-sky-100 rounded-[1.25rem] p-[clamp(1.5rem,4vw,2rem)] border border-sky-200 flex flex-wrap items-center justify-between gap-6">
+            <div className="flex-1 min-w-[220px]">
+              <div className="text-[1.75rem] mb-3.5">🚀</div>
+              <h3 className="text-[1.1875rem] font-bold text-[#0A2540] mb-2">Growing Certification Library</h3>
+              <p className="text-sky-700 text-[0.9rem] leading-[1.55]">
                 AWS DVA-C02 live now. Your subscription automatically includes all new certs as they launch — no extra cost.
               </p>
             </div>
-            <div style={{ display: 'flex', gap: '0.625rem', flexWrap: 'wrap' }}>
+            <div className="flex gap-2.5 flex-wrap">
               {[
                 { label: '✅ AWS DVA-C02', available: true },
                 { label: '🚧 AWS SAA-C03', available: false },
                 { label: '🚧 AZ-104', available: false },
                 { label: '🚧 GCP ACE', available: false },
               ].map((cert, i) => (
-                <div key={i} style={{
-                  padding: '0.5rem 0.875rem',
-                  background: cert.available ? 'rgba(0,212,170,0.12)' : 'white',
-                  borderRadius: '0.625rem',
-                  fontSize: '0.8125rem',
-                  fontWeight: '600',
-                  color: cert.available ? '#00A884' : '#9ca3af',
-                  border: `1px solid ${cert.available ? 'rgba(0,212,170,0.3)' : '#e5e7eb'}`
-                }}>
+                <div key={i} className={`px-3.5 py-2 rounded-[0.625rem] text-[0.8125rem] font-semibold border ${cert.available ? 'bg-[#00D4AA]/10 text-[#00A884] border-[#00D4AA]/30' : 'bg-white text-gray-400 border-gray-200'}`}>
                   {cert.label}
                 </div>
               ))}
@@ -619,22 +470,16 @@ function Landing() {
       {/* ═══════════════════════════════════════
           ZONE 4 — 3-STEP FRICTION REDUCER
       ═══════════════════════════════════════ */}
-      <section id="how-it-works" style={{ padding: '5rem 1.5rem', background: '#0A2540' }}>
-        <div style={{ maxWidth: '72rem', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
-            <div style={{ color: '#00D4AA', fontSize: '0.8125rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>
-              GET STARTED IN MINUTES
-            </div>
-            <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', fontWeight: '800', color: 'white', letterSpacing: '-0.02em' }}>
+      <section id="how-it-works" className="py-20 px-6 bg-[#0A2540]">
+        <div className="max-w-[72rem] mx-auto">
+          <div className="text-center mb-14">
+            <p className="text-[0.8125rem] font-bold text-[#00D4AA] uppercase tracking-[0.08em] mb-3">GET STARTED IN MINUTES</p>
+            <h2 className="text-[clamp(1.75rem,4vw,2.5rem)] font-extrabold text-white tracking-tight">
               From zero to certified in 3 steps
             </h2>
           </div>
 
-          <div style={{
-            display: 'grid',
-            gap: '0',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
-          }}>
+          <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))' }}>
             {[
               {
                 step: '01',
@@ -646,7 +491,7 @@ function Landing() {
                 step: '02',
                 icon: '🗺️',
                 title: 'Map Your Journey',
-                desc: 'Answer a few questions about your career and we\'ll build your personalized roadmap — target role, salary, and timeline — then unlock 10 free practice questions.',
+                desc: "Answer a few questions about your career and we'll build your personalized roadmap — target role, salary, and timeline — then unlock 10 free practice questions.",
               },
               {
                 step: '03',
@@ -654,129 +499,65 @@ function Landing() {
                 title: 'Practice & Pass',
                 desc: 'Work through exam-realistic questions with instant feedback, explanations, and official AWS doc links. Walk into exam day with no surprises.',
               },
-            ].map((item, index, arr) => (
-              <div key={index} style={{
-                padding: '2rem',
-                borderLeft: index > 0 ? '1px solid rgba(255,255,255,0.08)' : 'none',
-                position: 'relative'
-              }}>
-                <div style={{
-                  fontSize: '4.5rem',
-                  fontWeight: '900',
-                  color: 'rgba(0,212,170,0.12)',
-                  lineHeight: '1',
-                  marginBottom: '0.875rem',
-                  letterSpacing: '-0.05em',
-                  fontVariantNumeric: 'tabular-nums'
-                }}>
+            ].map((item, index) => (
+              <div key={index} className={`p-8 relative ${index > 0 ? 'border-l border-white/[0.08]' : ''}`}>
+                <div className="text-[4.5rem] font-black text-[#00D4AA]/[0.12] leading-none mb-3.5 tracking-tighter tabular-nums">
                   {item.step}
                 </div>
-                <div style={{ fontSize: '2rem', marginBottom: '0.875rem' }}>{item.icon}</div>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: 'white', marginBottom: '0.75rem' }}>{item.title}</h3>
-                <p style={{ color: 'rgba(255,255,255,0.65)', lineHeight: '1.65', fontSize: '0.9375rem' }}>{item.desc}</p>
+                <div className="text-3xl mb-3.5">{item.icon}</div>
+                <h3 className="text-xl font-bold text-white mb-3">{item.title}</h3>
+                <p className="text-white/65 leading-[1.65] text-[0.9375rem]">{item.desc}</p>
               </div>
             ))}
           </div>
 
-          <div style={{ textAlign: 'center', marginTop: '3.5rem' }}>
-            <button
+          <div className="text-center mt-14">
+            <Button
+              variant="primary"
               onClick={openSignup}
-              style={{
-                padding: '1.125rem 2.5rem',
-                background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '0.875rem',
-                fontWeight: '700',
-                fontSize: '1.0625rem',
-                cursor: 'pointer',
-                boxShadow: '0 8px 24px rgba(0,212,170,0.35)',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 12px 32px rgba(0,212,170,0.45)' }}
-              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,212,170,0.35)' }}
+              className="!px-10 !py-4 !rounded-[0.875rem] !text-[1.0625rem] shadow-teal hover:shadow-teal-lg hover:-translate-y-1"
             >
               Start Free →
-            </button>
+            </Button>
           </div>
         </div>
       </section>
 
       {/* ── Interactive Demo ── */}
-      <section id="demo" style={{ padding: '5rem 1.5rem', background: '#f8fafc' }}>
-        <div style={{ maxWidth: '72rem', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-            <div style={{ color: '#00D4AA', fontSize: '0.8125rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>
-              INTERACTIVE DEMO
-            </div>
-            <h2 style={{ fontSize: 'clamp(1.5rem, 3.5vw, 2rem)', fontWeight: '800', color: '#0A2540', marginBottom: '0.75rem', letterSpacing: '-0.02em' }}>
+      <section id="demo" className="py-20 px-6 bg-slate-50">
+        <div className="max-w-[72rem] mx-auto">
+          <div className="text-center mb-12">
+            <p className="text-[0.8125rem] font-bold text-[#00D4AA] uppercase tracking-[0.08em] mb-3">INTERACTIVE DEMO</p>
+            <h2 className="text-[clamp(1.5rem,3.5vw,2rem)] font-extrabold text-[#0A2540] mb-3 tracking-tight">
               Experience the exam interface
             </h2>
-            <p style={{ color: '#6b7280', fontSize: '1rem', maxWidth: '38rem', margin: '0 auto' }}>
+            <p className="text-gray-500 text-base max-w-[38rem] mx-auto">
               This is the exact interface you'll use — try selecting an answer below.
             </p>
           </div>
 
-          <div style={{
-            maxWidth: '860px',
-            margin: '0 auto 2.5rem',
-            background: 'white',
-            borderRadius: '1rem',
-            overflow: 'hidden',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.12)',
-            border: '1px solid #e5e7eb'
-          }}>
+          <div className="max-w-[860px] mx-auto mb-10 bg-white rounded-2xl overflow-hidden border border-gray-200" style={{ boxShadow: '0 20px 60px rgba(0,0,0,0.12)' }}>
             {/* Demo header */}
-            <div style={{
-              background: 'linear-gradient(135deg, #0A2540 0%, #1A3B5C 100%)',
-              padding: '1.25rem 1.5rem',
-              color: 'white',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              gap: '0.75rem'
-            }}>
-              <h3 style={{ fontSize: '1rem', fontWeight: '600', margin: 0 }}>AWS Developer Associate Practice</h3>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                fontSize: '0.875rem',
-                background: 'rgba(255,255,255,0.1)',
-                padding: '0.375rem 0.875rem',
-                borderRadius: '0.5rem'
-              }}>
+            <div className="bg-gradient-to-r from-[#0A2540] to-[#1A3B5C] px-6 py-5 text-white flex justify-between items-center flex-wrap gap-3">
+              <h3 className="text-base font-semibold m-0">AWS Developer Associate Practice</h3>
+              <div className="flex items-center gap-2 text-sm bg-white/10 px-3.5 py-1.5 rounded-lg">
                 ⏱️ Time Remaining: 01:30:00
               </div>
             </div>
 
             {/* Progress bar */}
-            <div style={{ height: '4px', background: '#e5e7eb' }}>
-              <div style={{ height: '100%', width: '15%', background: 'linear-gradient(90deg, #00D4AA, #00A884)' }} />
+            <div className="h-1 bg-gray-200">
+              <div className="h-full w-[15%] bg-gradient-to-r from-[#00D4AA] to-[#00A884]" />
             </div>
 
             {/* Question navigation */}
-            <div style={{
-              background: 'linear-gradient(135deg, #0A2540 0%, #1A3B5C 100%)',
-              padding: '0.875rem 1.25rem',
-              borderBottom: '1px solid #e5e7eb'
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.625rem', color: 'white', fontSize: '0.8125rem' }}>
+            <div className="bg-gradient-to-r from-[#0A2540] to-[#1A3B5C] px-5 py-3.5 border-b border-gray-200">
+              <div className="flex justify-between items-center mb-2.5 text-white text-[0.8125rem]">
                 <span>Questions: 1/65</span>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(34px, 1fr))', gap: '0.35rem' }}>
+              <div className="grid gap-1.5" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(34px, 1fr))' }}>
                 {[...Array(10)].map((_, i) => (
-                  <div key={i} style={{
-                    padding: '0.4rem',
-                    background: i === 0 ? '#00D4AA' : 'rgba(255,255,255,0.1)',
-                    color: 'white',
-                    borderRadius: '0.35rem',
-                    textAlign: 'center',
-                    fontSize: '0.8125rem',
-                    fontWeight: '600',
-                    border: i === 0 ? '2px solid white' : 'none'
-                  }}>
+                  <div key={i} className={`py-1.5 rounded text-center text-[0.8125rem] font-semibold ${i === 0 ? 'bg-[#00D4AA] text-white border-2 border-white' : 'bg-white/10 text-white'}`}>
                     {i + 1}
                   </div>
                 ))}
@@ -784,37 +565,35 @@ function Landing() {
             </div>
 
             {/* Action buttons */}
-            <div style={{ padding: '0.875rem 1.25rem', background: 'white', borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-              <button
+            <div className="px-5 py-3.5 bg-white border-b border-gray-200 flex justify-center gap-3 flex-wrap">
+              <Button
+                variant="primary"
                 onClick={() => setShowDemoMaterials(true)}
-                style={{ padding: '0.625rem 1.25rem', background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)', color: 'white', border: 'none', borderRadius: '0.5rem', fontWeight: '600', cursor: 'pointer', fontSize: '0.875rem', boxShadow: '0 2px 8px rgba(0,212,170,0.3)', transition: 'all 0.2s' }}
-                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,212,170,0.4)' }}
-                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,212,170,0.3)' }}
+                className="shadow-[0_2px_8px_rgba(0,212,170,0.3)] hover:shadow-[0_4px_12px_rgba(0,212,170,0.4)] hover:-translate-y-0.5"
               >
                 📚 Study Materials
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="outline"
                 onClick={() => setShowDemoResults(true)}
-                style={{ padding: '0.625rem 1.25rem', background: 'white', color: '#0A2540', border: '2px solid #0A2540', borderRadius: '0.5rem', fontWeight: '600', cursor: 'pointer', fontSize: '0.875rem', transition: 'all 0.2s' }}
-                onMouseEnter={e => { e.currentTarget.style.background = '#0A2540'; e.currentTarget.style.color = 'white' }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.color = '#0A2540' }}
+                className="!border-[#0A2540]/40 !text-[#0A2540] hover:!bg-[#0A2540] hover:!text-white hover:!border-[#0A2540]"
               >
                 📊 View Results
-              </button>
+              </Button>
             </div>
 
             {/* Question */}
-            <div style={{ padding: 'clamp(1.25rem, 4vw, 2rem)', background: 'white' }}>
-              <div style={{ background: '#f9fafb', padding: '1.25rem', borderRadius: '0.75rem', border: '2px solid #e5e7eb', marginBottom: '1.25rem' }}>
-                <div style={{ display: 'inline-block', background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)', color: 'white', padding: '0.375rem 0.875rem', borderRadius: '0.5rem', fontSize: '0.75rem', fontWeight: '600', marginBottom: '0.875rem' }}>
+            <div className="p-[clamp(1.25rem,4vw,2rem)] bg-white">
+              <div className="bg-gray-50 p-5 rounded-xl border-2 border-gray-200 mb-5">
+                <div className="inline-block bg-gradient-to-r from-[#00D4AA] to-[#00A884] text-white px-3.5 py-1.5 rounded-lg text-xs font-semibold mb-3.5">
                   Question 1 • Multiple Choice (select one)
                 </div>
-                <p style={{ fontSize: '0.9375rem', color: '#0A2540', lineHeight: '1.6', margin: 0, fontWeight: '500' }}>
+                <p className="text-[0.9375rem] text-[#0A2540] leading-[1.6] m-0 font-medium">
                   A developer is building a serverless application using AWS Lambda. The application needs to process images uploaded to an S3 bucket. Which AWS service should be used to trigger the Lambda function when a new image is uploaded?
                 </p>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div className="flex flex-col gap-3">
                 {[
                   'Amazon CloudWatch Events',
                   'Amazon S3 Event Notifications',
@@ -824,60 +603,60 @@ function Landing() {
                   <div
                     key={index}
                     onClick={() => setDemoSelectedAnswer(index)}
+                    className="px-[1.125rem] py-3.5 rounded-xl cursor-pointer transition-all duration-150 flex items-center gap-3.5"
                     style={{
-                      padding: '0.875rem 1.125rem',
                       background: demoSelectedAnswer === index ? 'rgba(0,212,170,0.08)' : 'white',
                       border: `2px solid ${demoSelectedAnswer === index ? '#00D4AA' : '#e5e7eb'}`,
-                      borderRadius: '0.75rem',
-                      cursor: 'pointer',
-                      transition: 'all 0.15s',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.875rem'
                     }}
-                    onMouseEnter={e => { if (demoSelectedAnswer !== index) { e.currentTarget.style.borderColor = '#00D4AA'; e.currentTarget.style.transform = 'translateX(4px)' } }}
-                    onMouseLeave={e => { if (demoSelectedAnswer !== index) { e.currentTarget.style.borderColor = '#e5e7eb'; e.currentTarget.style.transform = 'translateX(0)' } }}
+                    onMouseEnter={e => {
+                      if (demoSelectedAnswer !== index) {
+                        e.currentTarget.style.borderColor = '#00D4AA'
+                        e.currentTarget.style.transform = 'translateX(4px)'
+                      }
+                    }}
+                    onMouseLeave={e => {
+                      if (demoSelectedAnswer !== index) {
+                        e.currentTarget.style.borderColor = '#e5e7eb'
+                        e.currentTarget.style.transform = 'translateX(0)'
+                      }
+                    }}
                   >
-                    <div style={{
-                      width: '22px', height: '22px', borderRadius: '50%', flexShrink: 0,
-                      border: `2px solid ${demoSelectedAnswer === index ? '#00D4AA' : '#d1d5db'}`,
-                      background: demoSelectedAnswer === index ? '#00D4AA' : 'white',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      transition: 'all 0.15s'
-                    }}>
-                      {demoSelectedAnswer === index && <span style={{ color: 'white', fontSize: '0.75rem' }}>✓</span>}
+                    <div
+                      className="w-5 h-5 rounded-full shrink-0 flex items-center justify-center transition-all duration-150"
+                      style={{
+                        border: `2px solid ${demoSelectedAnswer === index ? '#00D4AA' : '#d1d5db'}`,
+                        background: demoSelectedAnswer === index ? '#00D4AA' : 'white',
+                      }}
+                    >
+                      {demoSelectedAnswer === index && <span className="text-white text-xs">✓</span>}
                     </div>
-                    <span style={{ color: '#0A2540', fontSize: '0.9375rem', fontWeight: demoSelectedAnswer === index ? '600' : '400' }}>
+                    <span className={`text-[#0A2540] text-[0.9375rem] ${demoSelectedAnswer === index ? 'font-semibold' : 'font-normal'}`}>
                       {option}
                     </span>
                   </div>
                 ))}
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1.5rem', gap: '0.75rem', flexWrap: 'wrap' }}>
-                <button style={{ padding: '0.75rem 1.25rem', background: '#e5e7eb', color: '#9ca3af', border: 'none', borderRadius: '0.5rem', fontWeight: '600', cursor: 'not-allowed', fontSize: '0.9375rem', opacity: 0.6 }} disabled>
+              <div className="flex justify-between mt-6 gap-3 flex-wrap">
+                <button disabled className="px-5 py-3 bg-gray-200 text-gray-400 rounded-lg font-semibold cursor-not-allowed text-[0.9375rem] opacity-60">
                   ← Previous
                 </button>
-                <button style={{ padding: '0.75rem 1.25rem', background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)', color: 'white', border: 'none', borderRadius: '0.5rem', fontWeight: '600', cursor: 'pointer', fontSize: '0.9375rem', boxShadow: '0 4px 12px rgba(0,212,170,0.3)' }}>
+                <button className="px-5 py-3 bg-gradient-to-r from-[#00D4AA] to-[#00A884] text-white rounded-lg font-semibold text-[0.9375rem] shadow-[0_4px_12px_rgba(0,212,170,0.3)]">
                   Next →
                 </button>
               </div>
             </div>
           </div>
 
-          <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
-            <button
+          <div className="text-center flex flex-col items-center gap-3">
+            <Button
+              variant="primary"
               onClick={openSignup}
-              style={{ padding: '0.875rem 2rem', background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)', color: 'white', border: 'none', borderRadius: '0.75rem', fontWeight: '700', cursor: 'pointer', fontSize: '1rem', boxShadow: '0 4px 12px rgba(0,212,170,0.3)', transition: 'all 0.2s' }}
-              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,212,170,0.4)' }}
-              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,212,170,0.3)' }}
+              className="!px-8 !py-3.5 !rounded-xl shadow-[0_4px_12px_rgba(0,212,170,0.3)] hover:shadow-[0_6px_16px_rgba(0,212,170,0.4)] hover:-translate-y-0.5"
             >
               Start Free →
-            </button>
-            <button
-              onClick={openSignup}
-              style={{ background: 'none', border: 'none', color: '#9ca3af', fontSize: '0.875rem', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
-            >
+            </Button>
+            <button onClick={openSignup} className="bg-transparent border-none text-gray-400 text-sm cursor-pointer underline p-0">
               or start with 10 free questions
             </button>
           </div>
@@ -885,39 +664,25 @@ function Landing() {
       </section>
 
       {/* ── Certifications Catalog ── */}
-      <section id="certifications" style={{ padding: '5rem 1.5rem', background: 'white' }}>
-        <div style={{ maxWidth: '72rem', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-            <div style={{ color: '#00D4AA', fontSize: '0.8125rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>
-              AVAILABLE NOW + 20 MORE COMING SOON
-            </div>
-            <h2 style={{ fontSize: 'clamp(1.5rem, 3.5vw, 2rem)', fontWeight: '800', color: '#0A2540', marginBottom: '0.75rem', letterSpacing: '-0.02em' }}>
+      <section id="certifications" className="py-20 px-6 bg-white">
+        <div className="max-w-[72rem] mx-auto">
+          <div className="text-center mb-12">
+            <p className="text-[0.8125rem] font-bold text-[#00D4AA] uppercase tracking-[0.08em] mb-3">AVAILABLE NOW + 20 MORE COMING SOON</p>
+            <h2 className="text-[clamp(1.5rem,3.5vw,2rem)] font-extrabold text-[#0A2540] mb-3 tracking-tight">
               Your certification journey starts here
             </h2>
-            <p style={{ color: '#6b7280', fontSize: '1rem', maxWidth: '40rem', margin: '0 auto' }}>
+            <p className="text-gray-500 text-base max-w-[40rem] mx-auto">
               Start with AWS Developer Associate today. More certifications launching soon across AWS, Azure, and GCP.
             </p>
           </div>
 
           {/* Provider tabs */}
-          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', marginBottom: '2rem', flexWrap: 'wrap' }}>
+          <div className="flex gap-2 justify-center mb-8 flex-wrap">
             {['aws', 'azure', 'gcp'].map(provider => (
               <button
                 key={provider}
                 onClick={() => setExpandedProvider(provider)}
-                style={{
-                  padding: '0.625rem 1.25rem',
-                  background: expandedProvider === provider ? '#0A2540' : 'white',
-                  color: expandedProvider === provider ? 'white' : '#0A2540',
-                  border: '2px solid #0A2540',
-                  borderRadius: '0.5rem',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  textTransform: 'uppercase',
-                  fontSize: '0.8125rem',
-                  minWidth: '90px'
-                }}
+                className={`px-5 py-2.5 border-2 border-[#0A2540] rounded-lg font-semibold cursor-pointer transition-all duration-200 uppercase text-[0.8125rem] min-w-[90px] ${expandedProvider === provider ? 'bg-[#0A2540] text-white' : 'bg-white text-[#0A2540]'}`}
               >
                 {provider === 'aws' && '🔶 AWS'}
                 {provider === 'azure' && '☁️ Azure'}
@@ -927,63 +692,53 @@ function Landing() {
           </div>
 
           {/* Certification cards */}
-          <div style={{ display: 'grid', gap: '1.25rem', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 290px), 1fr))' }}>
+          <div className="grid gap-5" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 290px), 1fr))' }}>
             {CERTIFICATIONS[expandedProvider].map((cert, index) => (
               <div
                 key={index}
-                style={{
-                  background: 'white',
-                  padding: '1.5rem',
-                  borderRadius: '1rem',
-                  boxShadow: '0 4px 6px -1px rgba(0,0,0,0.08)',
-                  border: cert.available ? '2px solid #00D4AA' : '1px solid #e5e7eb',
-                  transition: 'all 0.25s',
-                  position: 'relative',
-                  opacity: cert.available ? 1 : 0.75
+                className={`bg-white p-6 rounded-2xl transition-all duration-[250ms] relative ${cert.available ? 'border-2 border-[#00D4AA]' : 'border border-gray-200 opacity-75'}`}
+                style={{ boxShadow: '0 4px 6px -1px rgba(0,0,0,0.08)' }}
+                onMouseEnter={e => {
+                  if (cert.available) {
+                    e.currentTarget.style.transform = 'translateY(-4px)'
+                    e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0,212,170,0.25)'
+                  }
                 }}
-                onMouseEnter={e => { if (cert.available) { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0,212,170,0.25)' } }}
-                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = cert.available ? '0 4px 6px -1px rgba(0,212,170,0.15)' : '0 4px 6px -1px rgba(0,0,0,0.08)' }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = cert.available
+                    ? '0 4px 6px -1px rgba(0,212,170,0.15)'
+                    : '0 4px 6px -1px rgba(0,0,0,0.08)'
+                }}
               >
-                {cert.available && (
-                  <div style={{ position: 'absolute', top: '-10px', right: '12px', background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)', color: 'white', padding: '0.2rem 0.75rem', borderRadius: '1rem', fontSize: '0.7rem', fontWeight: '700', boxShadow: '0 2px 8px rgba(0,212,170,0.3)' }}>
+                {cert.available ? (
+                  <div className="absolute -top-2.5 right-3 bg-gradient-to-r from-[#00D4AA] to-[#00A884] text-white px-3 py-1 rounded-full text-[0.7rem] font-bold shadow-[0_2px_8px_rgba(0,212,170,0.3)]">
                     ✨ AVAILABLE NOW
                   </div>
-                )}
-                {!cert.available && (
-                  <div style={{ position: 'absolute', top: '-10px', right: '12px', background: '#9ca3af', color: 'white', padding: '0.2rem 0.75rem', borderRadius: '1rem', fontSize: '0.7rem', fontWeight: '700' }}>
+                ) : (
+                  <div className="absolute -top-2.5 right-3 bg-gray-400 text-white px-3 py-1 rounded-full text-[0.7rem] font-bold">
                     🚧 COMING SOON
                   </div>
                 )}
 
-                <div style={{ marginTop: '0.5rem', marginBottom: '0.875rem' }}>
-                  <div style={{ color: '#9ca3af', fontSize: '0.75rem', fontWeight: '600', marginBottom: '0.375rem' }}>{cert.code}</div>
-                  <h3 style={{ fontSize: '1.0625rem', fontWeight: '700', color: '#0A2540' }}>{cert.name}</h3>
+                <div className="mt-2 mb-3.5">
+                  <div className="text-gray-400 text-xs font-semibold mb-1.5">{cert.code}</div>
+                  <h3 className="text-[1.0625rem] font-bold text-[#0A2540]">{cert.name}</h3>
                 </div>
 
-                <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid #f3f4f6' }}>
-                  <div style={{ fontSize: '0.8125rem', color: '#6b7280', marginBottom: '0.3rem' }}>
-                    <strong style={{ color: '#374151' }}>Actual exam:</strong> {cert.examQuestions} questions
+                <div className="mb-4 pb-4 border-b border-gray-100">
+                  <div className="text-[0.8125rem] text-gray-500 mb-1">
+                    <strong className="text-gray-700">Actual exam:</strong> {cert.examQuestions} questions
                   </div>
-                  <div style={{ fontSize: '0.8125rem', color: '#6b7280' }}>
-                    <strong style={{ color: '#374151' }}>Practice questions:</strong> {cert.practiceQuestions} (3 sets of {cert.perSet})
+                  <div className="text-[0.8125rem] text-gray-500">
+                    <strong className="text-gray-700">Practice questions:</strong> {cert.practiceQuestions} (3 sets of {cert.perSet})
                   </div>
                 </div>
 
                 <button
                   onClick={() => cert.available ? setShowAuthModal(true) : null}
                   disabled={!cert.available}
-                  style={{
-                    width: '100%',
-                    padding: '0.75rem',
-                    background: cert.available ? 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)' : '#f3f4f6',
-                    color: cert.available ? 'white' : '#9ca3af',
-                    border: 'none',
-                    borderRadius: '0.5rem',
-                    fontWeight: '600',
-                    cursor: cert.available ? 'pointer' : 'not-allowed',
-                    fontSize: '0.875rem',
-                    transition: 'all 0.2s'
-                  }}
+                  className={`w-full py-3 rounded-lg font-semibold text-sm transition-all duration-200 ${cert.available ? 'bg-gradient-to-r from-[#00D4AA] to-[#00A884] text-white cursor-pointer' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}
                 >
                   {cert.available ? 'Try 10 Free Questions' : 'Notify Me When Available'}
                 </button>
@@ -994,92 +749,80 @@ function Landing() {
       </section>
 
       {/* ── Pricing ── */}
-      <section id="pricing" style={{ padding: '5rem 1.5rem', background: 'linear-gradient(135deg, #0A2540 0%, #1A3B5C 100%)' }}>
-        <div style={{ maxWidth: '72rem', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-            <div style={{ color: '#00D4AA', fontSize: '0.8125rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>
-              SIMPLE PRICING
-            </div>
-            <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.25rem)', fontWeight: '800', color: 'white', marginBottom: '0.75rem', letterSpacing: '-0.02em' }}>
+      <section id="pricing" className="py-20 px-6 bg-gradient-to-br from-[#0A2540] to-[#1A3B5C]">
+        <div className="max-w-[72rem] mx-auto">
+          <div className="text-center mb-12">
+            <p className="text-[0.8125rem] font-bold text-[#00D4AA] uppercase tracking-[0.08em] mb-3">SIMPLE PRICING</p>
+            <h2 className="text-[clamp(1.75rem,4vw,2.25rem)] font-extrabold text-white mb-3 tracking-tight">
               Choose your study plan
             </h2>
-            <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '1rem' }}>
+            <p className="text-white/80 text-base">
               Unlimited access • Study at your own pace • Cancel anytime
             </p>
           </div>
 
-          <div style={{
-            display: 'grid',
-            gap: '1.25rem',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))',
-            maxWidth: '900px',
-            margin: '0 auto'
-          }}>
+          <div className="grid gap-5 max-w-[900px] mx-auto" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))' }}>
             {/* Free */}
-            <div style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(20px)', padding: '2rem', borderRadius: '1.25rem', border: '1px solid rgba(255,255,255,0.15)', textAlign: 'center' }}>
-              <div style={{ fontSize: '2rem', marginBottom: '0.875rem' }}>🎁</div>
-              <h3 style={{ fontSize: '1.375rem', fontWeight: '700', color: 'white', marginBottom: '0.375rem' }}>Free Sample</h3>
-              <div style={{ fontSize: '2.75rem', fontWeight: '800', color: '#00D4AA', marginBottom: '0.375rem', letterSpacing: '-0.03em' }}>$0</div>
-              <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>Try before you subscribe</p>
-              <ul style={{ listStyle: 'none', padding: 0, marginBottom: '1.5rem', textAlign: 'left' }}>
+            <div className="bg-white/[0.08] backdrop-blur-xl p-8 rounded-[1.25rem] border border-white/15 text-center">
+              <div className="text-3xl mb-3.5">🎁</div>
+              <h3 className="text-[1.375rem] font-bold text-white mb-1.5">Free Sample</h3>
+              <div className="text-[2.75rem] font-extrabold text-[#00D4AA] mb-1.5 tracking-tight">$0</div>
+              <p className="text-white/65 text-sm mb-6">Try before you subscribe</p>
+              <ul className="list-none p-0 mb-6 text-left space-y-2">
                 {['10 sample questions', 'Full explanations', 'No credit card required'].map((item, i) => (
-                  <li key={i} style={{ color: 'rgba(255,255,255,0.85)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
-                    <span style={{ color: '#00D4AA' }}>✓</span> {item}
+                  <li key={i} className="text-white/85 flex items-center gap-2 text-[0.9rem]">
+                    <span className="text-[#00D4AA]">✓</span> {item}
                   </li>
                 ))}
               </ul>
-              <button onClick={() => setShowAuthModal(true)} style={{ width: '100%', padding: '0.875rem', background: 'rgba(255,255,255,0.15)', color: 'white', border: '2px solid rgba(255,255,255,0.25)', borderRadius: '0.75rem', fontWeight: '600', cursor: 'pointer', fontSize: '0.9375rem', transition: 'all 0.2s' }}
-                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.22)'}
-                onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}>
+              <Button variant="dark" onClick={() => setShowAuthModal(true)} className="!w-full !py-3.5 !rounded-xl">
                 Start Free
-              </button>
+              </Button>
             </div>
 
             {/* Monthly */}
-            <div style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(20px)', padding: '2rem', borderRadius: '1.25rem', border: '1px solid rgba(255,255,255,0.15)', textAlign: 'center' }}>
-              <div style={{ fontSize: '2rem', marginBottom: '0.875rem' }}>📅</div>
-              <h3 style={{ fontSize: '1.375rem', fontWeight: '700', color: 'white', marginBottom: '0.375rem' }}>Monthly</h3>
-              <div style={{ fontSize: '2.75rem', fontWeight: '800', color: '#00D4AA', marginBottom: '0.375rem', letterSpacing: '-0.03em' }}>$19.99</div>
-              <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>Per month • Billed monthly</p>
-              <ul style={{ listStyle: 'none', padding: 0, marginBottom: '1.5rem', textAlign: 'left' }}>
+            <div className="bg-white/[0.08] backdrop-blur-xl p-8 rounded-[1.25rem] border border-white/15 text-center">
+              <div className="text-3xl mb-3.5">📅</div>
+              <h3 className="text-[1.375rem] font-bold text-white mb-1.5">Monthly</h3>
+              <div className="text-[2.75rem] font-extrabold text-[#00D4AA] mb-1.5 tracking-tight">$19.99</div>
+              <p className="text-white/65 text-sm mb-6">Per month • Billed monthly</p>
+              <ul className="list-none p-0 mb-6 text-left space-y-2">
                 {['All 195 questions', 'Unlimited practice', 'Cancel anytime'].map((item, i) => (
-                  <li key={i} style={{ color: 'rgba(255,255,255,0.85)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
-                    <span style={{ color: '#00D4AA' }}>✓</span> {item}
+                  <li key={i} className="text-white/85 flex items-center gap-2 text-[0.9rem]">
+                    <span className="text-[#00D4AA]">✓</span> {item}
                   </li>
                 ))}
               </ul>
-              <button onClick={() => user ? navigate('/dashboard') : setShowAuthModal(true)} style={{ width: '100%', padding: '0.875rem', background: 'rgba(255,255,255,0.15)', color: 'white', border: '2px solid rgba(255,255,255,0.25)', borderRadius: '0.75rem', fontWeight: '600', cursor: 'pointer', fontSize: '0.9375rem', transition: 'all 0.2s' }}
-                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.22)'}
-                onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}>
+              <Button variant="dark" onClick={() => user ? navigate('/dashboard') : setShowAuthModal(true)} className="!w-full !py-3.5 !rounded-xl">
                 {user ? 'Enroll Now' : 'Get Started'}
-              </button>
+              </Button>
             </div>
 
             {/* Annual — best value */}
-            <div style={{ background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(20px)', padding: '2rem', borderRadius: '1.25rem', border: '2px solid #00D4AA', textAlign: 'center', position: 'relative' }}>
-              <div style={{ position: 'absolute', top: '-13px', left: '50%', transform: 'translateX(-50%)', background: '#00D4AA', color: 'white', padding: '0.2rem 1rem', borderRadius: '1rem', fontSize: '0.75rem', fontWeight: '700', whiteSpace: 'nowrap' }}>
+            <div className="bg-white/[0.12] backdrop-blur-xl p-8 rounded-[1.25rem] border-2 border-[#00D4AA] text-center relative">
+              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#00D4AA] text-white px-4 py-1 rounded-full text-xs font-bold whitespace-nowrap">
                 BEST VALUE
               </div>
-              <div style={{ fontSize: '2rem', marginBottom: '0.875rem' }}>🎓</div>
-              <h3 style={{ fontSize: '1.375rem', fontWeight: '700', color: 'white', marginBottom: '0.375rem' }}>Annual</h3>
-              <div style={{ fontSize: '2.75rem', fontWeight: '800', color: '#00D4AA', marginBottom: '0.25rem', letterSpacing: '-0.03em' }}>$99</div>
-              <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.8125rem', textDecoration: 'line-through', marginBottom: '0.25rem' }}>$239.88/year</p>
-              <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>12 months • Save $141 • $8.25/mo</p>
-              <ul style={{ listStyle: 'none', padding: 0, marginBottom: '1.5rem', textAlign: 'left' }}>
+              <div className="text-3xl mb-3.5">🎓</div>
+              <h3 className="text-[1.375rem] font-bold text-white mb-1.5">Annual</h3>
+              <div className="text-[2.75rem] font-extrabold text-[#00D4AA] mb-1 tracking-tight">$99</div>
+              <p className="text-white/45 text-[0.8125rem] line-through mb-1">$239.88/year</p>
+              <p className="text-white/75 text-sm mb-6">12 months • Save $141 • $8.25/mo</p>
+              <ul className="list-none p-0 mb-6 text-left space-y-2">
                 {['All 195 questions', 'Unlimited practice', 'Cancel anytime', 'All new certs included'].map((item, i) => (
-                  <li key={i} style={{ color: 'rgba(255,255,255,0.9)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
-                    <span style={{ color: '#00D4AA' }}>✓</span> {item}
+                  <li key={i} className="text-white/90 flex items-center gap-2 text-[0.9rem]">
+                    <span className="text-[#00D4AA]">✓</span> {item}
                   </li>
                 ))}
               </ul>
-              <button onClick={() => user ? navigate('/dashboard') : setShowAuthModal(true)} style={{ width: '100%', padding: '0.875rem', background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)', color: 'white', border: 'none', borderRadius: '0.75rem', fontWeight: '700', cursor: 'pointer', fontSize: '0.9375rem', boxShadow: '0 4px 12px rgba(0,212,170,0.3)' }}>
+              <Button variant="primary" onClick={() => user ? navigate('/dashboard') : setShowAuthModal(true)} className="!w-full !py-3.5 !rounded-xl shadow-teal">
                 {user ? 'Enroll Now' : 'Get Started'}
-              </button>
+              </Button>
             </div>
           </div>
 
-          <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-            <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.875rem' }}>
+          <div className="text-center mt-8">
+            <p className="text-white/70 text-sm">
               All plans include access to all certifications • Currently: AWS Developer Associate • Coming soon: 20+ more
             </p>
           </div>
@@ -1089,123 +832,82 @@ function Landing() {
       {/* ═══════════════════════════════════════
           ZONE 5 — SOCIAL PROOF & TRUST
       ═══════════════════════════════════════ */}
-      <section style={{ padding: '5rem 1.5rem', background: 'white' }}>
-        <div style={{ maxWidth: '72rem', margin: '0 auto' }}>
+      <section className="py-20 px-6 bg-white">
+        <div className="max-w-[72rem] mx-auto">
           {/* Metrics bar */}
-          <div style={{
-            display: 'grid',
-            gap: '1rem',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))',
-            marginBottom: '4rem',
-            padding: '2rem',
-            background: '#f8fafc',
-            borderRadius: '1.25rem',
-            border: '1px solid #e5e7eb'
-          }}>
+          <div className="grid gap-4 mb-16 p-8 bg-slate-50 rounded-[1.25rem] border border-gray-200" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))' }}>
             {[
               { stat: '500+', label: 'Certified professionals' },
               { stat: '82%', label: 'First-attempt pass rate' },
               { stat: '4.9/5', label: 'Average rating' },
               { stat: '195', label: 'Practice questions' },
             ].map((item, i) => (
-              <div key={i} style={{ textAlign: 'center', padding: '0.5rem' }}>
-                <div style={{ fontSize: 'clamp(1.75rem, 4vw, 2.25rem)', fontWeight: '800', color: '#0A2540', letterSpacing: '-0.03em', marginBottom: '0.25rem' }}>{item.stat}</div>
-                <div style={{ fontSize: '0.875rem', color: '#6b7280', fontWeight: '500' }}>{item.label}</div>
+              <div key={i} className="text-center py-2">
+                <div className="text-[clamp(1.75rem,4vw,2.25rem)] font-extrabold text-[#0A2540] tracking-tight mb-1">{item.stat}</div>
+                <div className="text-sm text-gray-500 font-medium">{item.label}</div>
               </div>
             ))}
           </div>
 
-          {/* Testimonials */}
-          <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-            <div style={{ color: '#00D4AA', fontSize: '0.8125rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>
-              REAL RESULTS
-            </div>
-            <h2 style={{ fontSize: 'clamp(1.5rem, 3.5vw, 2rem)', fontWeight: '800', color: '#0A2540', letterSpacing: '-0.02em' }}>
+          <div className="text-center mb-10">
+            <p className="text-[0.8125rem] font-bold text-[#00D4AA] uppercase tracking-[0.08em] mb-3">REAL RESULTS</p>
+            <h2 className="text-[clamp(1.5rem,3.5vw,2rem)] font-extrabold text-[#0A2540] tracking-tight">
               Trusted by cloud professionals
             </h2>
           </div>
 
-          <div style={{ display: 'grid', gap: '1.25rem', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))' }}>
+          <div className="grid gap-5" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))' }}>
             {TESTIMONIALS.map((t, i) => (
-              <div key={i} style={{
-                background: '#f8fafc',
-                borderRadius: '1.25rem',
-                padding: '1.75rem',
-                border: '1px solid #e5e7eb',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '1rem'
-              }}>
-                {/* Stars */}
-                <div style={{ display: 'flex', gap: '0.2rem' }}>
+              <Card key={i} variant="tinted" className="!p-7 flex flex-col gap-4">
+                <div className="flex gap-1">
                   {[...Array(5)].map((_, si) => (
-                    <span key={si} style={{ color: '#f59e0b', fontSize: '1rem' }}>★</span>
+                    <span key={si} className="text-amber-400 text-base">★</span>
                   ))}
                 </div>
-
-                {/* Quote */}
-                <p style={{ color: '#374151', fontSize: '0.9375rem', lineHeight: '1.65', flex: 1 }}>
+                <p className="text-gray-700 text-[0.9375rem] leading-[1.65] flex-1">
                   "{t.text}"
                 </p>
-
-                {/* Author */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
-                  <div style={{
-                    width: '42px', height: '42px', borderRadius: '50%', flexShrink: 0,
-                    background: 'linear-gradient(135deg, #0A2540, #1A3B5C)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    color: 'white', fontSize: '0.875rem', fontWeight: '700'
-                  }}>
+                <div className="flex items-center gap-3.5">
+                  <div className="w-11 h-11 rounded-full shrink-0 bg-gradient-to-br from-[#0A2540] to-[#1A3B5C] flex items-center justify-center text-white text-sm font-bold">
                     {t.avatar}
                   </div>
                   <div>
-                    <div style={{ fontWeight: '700', color: '#0A2540', fontSize: '0.9375rem' }}>{t.name}</div>
-                    <div style={{ color: '#6b7280', fontSize: '0.8125rem' }}>{t.role}</div>
-                    <div style={{ color: '#00A884', fontSize: '0.75rem', fontWeight: '600' }}>{t.company}</div>
+                    <div className="font-bold text-[#0A2540] text-[0.9375rem]">{t.name}</div>
+                    <div className="text-gray-500 text-[0.8125rem]">{t.role}</div>
+                    <div className="text-[#00A884] text-xs font-semibold">{t.company}</div>
                   </div>
                 </div>
-              </div>
+              </Card>
             ))}
           </div>
         </div>
       </section>
 
       {/* ── FAQ ── */}
-      <section id="faq" style={{ padding: '5rem 1.5rem', background: '#f8fafc' }}>
-        <div style={{ maxWidth: '48rem', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-            <div style={{ color: '#00D4AA', fontSize: '0.8125rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>FAQ</div>
-            <h2 style={{ fontSize: 'clamp(1.5rem, 3.5vw, 2rem)', fontWeight: '800', color: '#0A2540', letterSpacing: '-0.02em' }}>
+      <section id="faq" className="py-20 px-6 bg-slate-50">
+        <div className="max-w-[48rem] mx-auto">
+          <div className="text-center mb-12">
+            <p className="text-[0.8125rem] font-bold text-[#00D4AA] uppercase tracking-[0.08em] mb-3">FAQ</p>
+            <h2 className="text-[clamp(1.5rem,3.5vw,2rem)] font-extrabold text-[#0A2540] tracking-tight">
               Frequently asked questions
             </h2>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          <div className="flex flex-col gap-3">
             {FAQ_ITEMS.map((item, index) => (
-              <div key={index} style={{ border: '1px solid #e5e7eb', borderRadius: '0.875rem', overflow: 'hidden', background: 'white' }}>
+              <div key={index} className="border border-gray-200 rounded-[0.875rem] overflow-hidden bg-white">
                 <button
                   onClick={() => setExpandedFAQ(expandedFAQ === index ? null : index)}
-                  style={{
-                    width: '100%',
-                    padding: '1.25rem',
-                    background: expandedFAQ === index ? '#f9fafb' : 'white',
-                    border: 'none',
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    fontWeight: '600',
-                    color: '#0A2540',
-                    fontSize: '0.9375rem',
-                    gap: '1rem'
-                  }}
+                  className={`w-full px-5 py-5 border-none text-left cursor-pointer flex justify-between items-center font-semibold text-[#0A2540] text-[0.9375rem] gap-4 transition-colors ${expandedFAQ === index ? 'bg-gray-50' : 'bg-white'}`}
                 >
                   <span>{item.question}</span>
-                  <span style={{ fontSize: '1rem', transition: 'transform 0.25s', transform: expandedFAQ === index ? 'rotate(180deg)' : 'rotate(0)', flexShrink: 0, color: '#9ca3af' }}>▼</span>
+                  <span
+                    className="text-base shrink-0 text-gray-400 transition-transform duration-[250ms]"
+                    style={{ transform: expandedFAQ === index ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                  >▼</span>
                 </button>
                 {expandedFAQ === index && (
-                  <div style={{ padding: '0 1.25rem 1.25rem', color: '#4b5563', lineHeight: '1.65', fontSize: '0.9375rem' }}>
+                  <div className="px-5 pb-5 text-gray-600 leading-[1.65] text-[0.9375rem]">
                     {item.answer}
                   </div>
                 )}
@@ -1218,55 +920,32 @@ function Landing() {
       {/* ═══════════════════════════════════════
           ZONE 6 — CLOSING CALL TO ACTION
       ═══════════════════════════════════════ */}
-      <section style={{ padding: '6rem 1.5rem', background: 'linear-gradient(135deg, #0A2540 0%, #0d2d4a 50%, #1A3B5C 100%)', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
-        {/* Background glow */}
-        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '600px', height: '300px', background: 'rgba(0,212,170,0.06)', borderRadius: '50%', filter: 'blur(80px)', pointerEvents: 'none' }} />
-
-        <div style={{ maxWidth: '52rem', margin: '0 auto', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-block', background: 'rgba(0,212,170,0.15)', border: '1px solid rgba(0,212,170,0.3)', color: '#00D4AA', padding: '0.375rem 1rem', borderRadius: '1rem', fontSize: '0.8125rem', fontWeight: '700', marginBottom: '1.5rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+      <section className="py-24 px-6 bg-gradient-to-br from-[#0A2540] via-[#0d2d4a] to-[#1A3B5C] text-center relative overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-[#00D4AA]/[0.06] rounded-full blur-[80px] pointer-events-none" />
+        <div className="max-w-[52rem] mx-auto relative z-10">
+          <div className="inline-block bg-[#00D4AA]/15 border border-[#00D4AA]/30 text-[#00D4AA] px-4 py-1.5 rounded-full text-[0.8125rem] font-bold mb-6 uppercase tracking-[0.06em]">
             Start for free today
           </div>
-
-          <h2 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: '800', color: 'white', marginBottom: '1.25rem', lineHeight: '1.15', letterSpacing: '-0.03em' }}>
+          <h2 className="text-[clamp(2rem,5vw,3rem)] font-extrabold text-white mb-5 leading-[1.15] tracking-tighter">
             Ready to get your<br />
-            <span style={{ color: '#00D4AA' }}>AWS certification?</span>
+            <span className="text-[#00D4AA]">AWS certification?</span>
           </h2>
-
-          <p style={{ fontSize: 'clamp(1rem, 2.5vw, 1.1875rem)', color: 'rgba(255,255,255,0.75)', marginBottom: '2.5rem', lineHeight: '1.65' }}>
+          <p className="text-[clamp(1rem,2.5vw,1.1875rem)] text-white/75 mb-10 leading-[1.65]">
             Join 500+ professionals who passed on their first attempt. Start free — 10 questions, full explanations, no credit card.
           </p>
-
-          <button
+          <Button
+            variant="primary"
             onClick={openSignup}
-            style={{
-              padding: '1.25rem 3rem',
-              background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '0.875rem',
-              fontWeight: '700',
-              fontSize: '1.1875rem',
-              cursor: 'pointer',
-              boxShadow: '0 8px 28px rgba(0,212,170,0.4)',
-              transition: 'all 0.25s',
-              marginBottom: '1rem',
-              display: 'inline-block'
-            }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 14px 36px rgba(0,212,170,0.5)' }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 28px rgba(0,212,170,0.4)' }}
+            className="!px-12 !py-5 !rounded-[0.875rem] !text-[1.1875rem] shadow-[0_8px_28px_rgba(0,212,170,0.4)] hover:shadow-[0_14px_36px_rgba(0,212,170,0.5)] hover:-translate-y-1 mb-4"
           >
             Start Free →
-          </button>
-          <div style={{ marginBottom: '1.5rem' }}>
-            <button
-              onClick={openLogin}
-              style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.45)', fontSize: '0.875rem', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
-            >
+          </Button>
+          <div className="mb-6">
+            <button onClick={openLogin} className="bg-transparent border-none text-white/45 text-sm cursor-pointer underline p-0">
               Already a member? Sign in
             </button>
           </div>
-
-          <div style={{ display: 'flex', gap: '2rem', justifyContent: 'center', flexWrap: 'wrap', color: 'rgba(255,255,255,0.55)', fontSize: '0.875rem' }}>
+          <div className="flex gap-8 justify-center flex-wrap text-white/55 text-sm">
             <span>🔒 Secure payment</span>
             <span>⚡ Instant access</span>
             <span>🔄 Cancel anytime</span>
@@ -1275,51 +954,49 @@ function Landing() {
       </section>
 
       {/* ── Footer ── */}
-      <footer style={{ background: '#0A2540', padding: '3rem 1.5rem 1.5rem' }}>
-        <div style={{ maxWidth: '72rem', margin: '0 auto' }}>
-          <div style={{ display: 'grid', gap: '2rem', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 190px), 1fr))', marginBottom: '2rem' }}>
+      <footer className="bg-[#0A2540] pt-12 pb-6 px-6">
+        <div className="max-w-[72rem] mx-auto">
+          <div className="grid gap-8 mb-8" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 190px), 1fr))' }}>
             <div>
-              <h3 style={{ color: 'white', fontWeight: '700', marginBottom: '0.875rem', fontSize: '1rem' }}>Cloud Exam Lab</h3>
-              <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.875rem', lineHeight: '1.6' }}>
+              <h3 className="text-white font-bold mb-3.5 text-base">Cloud Exam Lab</h3>
+              <p className="text-white/60 text-sm leading-relaxed">
                 Subscription-based practice questions for cloud certifications. AWS DVA-C02 available now — 20+ more coming soon.
               </p>
             </div>
-
             <div>
-              <h3 style={{ color: 'white', fontWeight: '700', marginBottom: '0.875rem', fontSize: '0.875rem' }}>Available Now</h3>
-              <ul style={{ listStyle: 'none', padding: 0 }}>
-                <li style={{ marginBottom: '0.5rem' }}>
-                  <button onClick={() => { setExpandedProvider('aws'); scrollToSection('certifications') }} style={{ background: 'none', border: 'none', color: '#00D4AA', fontSize: '0.875rem', cursor: 'pointer', padding: 0, fontWeight: '600' }}>
+              <h3 className="text-white font-bold mb-3.5 text-sm">Available Now</h3>
+              <ul className="list-none p-0 m-0">
+                <li className="mb-2">
+                  <button
+                    onClick={() => { setExpandedProvider('aws'); scrollToSection('certifications') }}
+                    className="bg-transparent border-none text-[#00D4AA] text-sm cursor-pointer p-0 font-semibold"
+                  >
                     ✨ AWS Developer Associate (DVA-C02)
                   </button>
                 </li>
-                <li style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.875rem', marginBottom: '0.3rem' }}>195 practice questions</li>
-                <li style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.875rem' }}>3 complete exam sets</li>
+                <li className="text-white/45 text-sm mb-1.5">195 practice questions</li>
+                <li className="text-white/45 text-sm">3 complete exam sets</li>
               </ul>
             </div>
-
             <div>
-              <h3 style={{ color: 'white', fontWeight: '700', marginBottom: '0.875rem', fontSize: '0.875rem' }}>Coming Soon</h3>
-              <ul style={{ listStyle: 'none', padding: 0 }}>
+              <h3 className="text-white font-bold mb-3.5 text-sm">Coming Soon</h3>
+              <ul className="list-none p-0 m-0">
                 {['🚧 AWS Solutions Architect', '🚧 AWS Cloud Practitioner', '🚧 Azure & GCP Certifications'].map((item, i) => (
-                  <li key={i} style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.875rem', marginBottom: '0.5rem' }}>{item}</li>
+                  <li key={i} className="text-white/45 text-sm mb-2">{item}</li>
                 ))}
               </ul>
             </div>
-
             <div>
-              <h3 style={{ color: 'white', fontWeight: '700', marginBottom: '0.875rem', fontSize: '0.875rem' }}>Support & Legal</h3>
-              <ul style={{ listStyle: 'none', padding: 0 }}>
+              <h3 className="text-white font-bold mb-3.5 text-sm">Support & Legal</h3>
+              <ul className="list-none p-0 m-0">
                 {[
                   { label: 'Contact Support', href: 'mailto:cloudexamlab@gmail.com' },
                   { label: 'Privacy Policy', href: '#' },
                   { label: 'Terms of Service', href: '#' },
                   { label: 'Refund Policy', href: '#' },
                 ].map((link, i) => (
-                  <li key={i} style={{ marginBottom: '0.5rem' }}>
-                    <a href={link.href} style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.875rem', textDecoration: 'none' }}
-                      onMouseEnter={e => e.currentTarget.style.color = 'white'}
-                      onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}>
+                  <li key={i} className="mb-2">
+                    <a href={link.href} className="text-white/60 text-sm no-underline hover:text-white transition-colors">
                       {link.label}
                     </a>
                   </li>
@@ -1328,101 +1005,102 @@ function Landing() {
             </div>
           </div>
 
-          <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '1.5rem' }}>
-            <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem', textAlign: 'center', marginBottom: '0.375rem' }}>
+          <div className="border-t border-white/[0.08] pt-6">
+            <p className="text-white/40 text-xs text-center mb-1.5">
               <strong>Disclaimer:</strong> Independent practice questions. Not affiliated with or endorsed by Amazon Web Services (AWS), Microsoft Azure, or Google Cloud Platform (GCP).
             </p>
-            <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem', textAlign: 'center' }}>
+            <p className="text-white/40 text-xs text-center">
               © {new Date().getFullYear()} Cloud Exam Lab. All rights reserved.
             </p>
           </div>
         </div>
       </footer>
 
-      {/* ── Demo Modals ── */}
+      {/* ── Demo: Study Materials Modal ── */}
       {showDemoMaterials && (
-        <div onClick={() => setShowDemoMaterials(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
-          <div onClick={e => e.stopPropagation()} style={{ background: 'white', borderRadius: '1rem', maxWidth: '660px', width: '100%', maxHeight: '80vh', overflow: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
-            <div style={{ padding: 'clamp(1.25rem, 4vw, 2rem)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
+        <div onClick={() => setShowDemoMaterials(false)} className="fixed inset-0 bg-black/70 flex items-center justify-center z-[1000] p-4">
+          <div onClick={e => e.stopPropagation()} className="bg-white rounded-2xl max-w-[660px] w-full max-h-[80vh] overflow-auto shadow-[0_20px_60px_rgba(0,0,0,0.3)]">
+            <div className="p-[clamp(1.25rem,4vw,2rem)]">
+              <div className="flex justify-between items-start mb-6">
                 <div>
-                  <h3 style={{ fontSize: 'clamp(1.125rem, 3vw, 1.4rem)', fontWeight: '700', color: '#0A2540', marginBottom: '0.375rem' }}>📚 Study Materials</h3>
-                  <p style={{ color: '#6b7280', fontSize: '0.875rem' }}>Just-in-time learning resources for this question</p>
+                  <h3 className="text-[clamp(1.125rem,3vw,1.4rem)] font-bold text-[#0A2540] mb-1.5">📚 Study Materials</h3>
+                  <p className="text-gray-500 text-sm">Just-in-time learning resources for this question</p>
                 </div>
-                <button onClick={() => setShowDemoMaterials(false)} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#9ca3af', padding: '0.25rem' }}>×</button>
+                <button onClick={() => setShowDemoMaterials(false)} className="bg-transparent border-none text-2xl cursor-pointer text-gray-400 p-1 leading-none">×</button>
               </div>
 
-              <div style={{ background: '#f9fafb', padding: '1.5rem', borderRadius: '0.75rem', border: '1px solid #e5e7eb', marginBottom: '1.25rem' }}>
-                <h4 style={{ fontSize: '1rem', fontWeight: '700', color: '#0A2540', marginBottom: '0.875rem' }}>📖 AWS Lambda &amp; S3 Event Notifications</h4>
-                <p style={{ color: '#4b5563', fontSize: '0.875rem', lineHeight: '1.65', marginBottom: '1rem' }}>
+              <div className="bg-gray-50 p-6 rounded-xl border border-gray-200 mb-5">
+                <h4 className="text-base font-bold text-[#0A2540] mb-3.5">📖 AWS Lambda &amp; S3 Event Notifications</h4>
+                <p className="text-gray-600 text-sm leading-[1.65] mb-4">
                   Amazon S3 can publish events (object creation, deletion, restoration) directly to AWS Lambda, SNS, SQS, and EventBridge. S3 Event Notifications is the most direct and efficient way to trigger Lambda when objects are uploaded.
                 </p>
-                <div style={{ background: 'white', padding: '1rem', borderRadius: '0.5rem', borderLeft: '4px solid #00D4AA' }}>
-                  <p style={{ fontSize: '0.875rem', color: '#0A2540', fontWeight: '600', marginBottom: '0.375rem' }}>💡 Key Concept</p>
-                  <p style={{ fontSize: '0.875rem', color: '#4b5563', lineHeight: '1.55' }}>
+                <div className="bg-white p-4 rounded-lg border-l-4 border-[#00D4AA]">
+                  <p className="text-sm text-[#0A2540] font-semibold mb-1.5">💡 Key Concept</p>
+                  <p className="text-sm text-gray-600 leading-[1.55]">
                     S3 Event Notifications provide a serverless, event-driven architecture that automatically triggers your Lambda function — no polling required.
                   </p>
                 </div>
               </div>
 
-              <div style={{ background: '#f0f9ff', padding: '1.25rem', borderRadius: '0.75rem', border: '1px solid #bae6fd' }}>
-                <h4 style={{ fontSize: '0.875rem', fontWeight: '700', color: '#0369a1', marginBottom: '0.875rem' }}>📚 Official AWS Documentation</h4>
+              <div className="bg-sky-50 p-5 rounded-xl border border-sky-200">
+                <h4 className="text-sm font-bold text-sky-700 mb-3.5">📚 Official AWS Documentation</h4>
                 {[
                   { label: 'Using AWS Lambda with Amazon S3', href: 'https://docs.aws.amazon.com/lambda/latest/dg/with-s3.html' },
                   { label: 'Configuring S3 Event Notifications', href: 'https://docs.aws.amazon.com/AmazonS3/latest/userguide/NotificationHowTo.html' },
                 ].map((link, i) => (
-                  <a key={i} href={link.href} target="_blank" rel="noopener noreferrer" style={{ color: '#0369a1', textDecoration: 'none', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: i === 0 ? '0.5rem' : 0 }}>
+                  <a key={i} href={link.href} target="_blank" rel="noopener noreferrer" className="text-sky-700 no-underline text-sm flex items-center gap-2 mb-2 last:mb-0">
                     <span>→</span> {link.label}
                   </a>
                 ))}
               </div>
 
-              <button onClick={() => setShowDemoMaterials(false)} style={{ width: '100%', marginTop: '1.25rem', padding: '0.875rem', background: 'linear-gradient(135deg, #00D4AA, #00A884)', color: 'white', border: 'none', borderRadius: '0.5rem', fontWeight: '600', cursor: 'pointer', fontSize: '1rem' }}>
+              <Button variant="primary" onClick={() => setShowDemoMaterials(false)} className="!w-full !mt-5 !py-3.5 !rounded-lg">
                 Close
-              </button>
+              </Button>
             </div>
           </div>
         </div>
       )}
 
+      {/* ── Demo: Results Modal ── */}
       {showDemoResults && (
-        <div onClick={() => setShowDemoResults(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
-          <div onClick={e => e.stopPropagation()} style={{ background: 'white', borderRadius: '1rem', maxWidth: '560px', width: '100%', maxHeight: '80vh', overflow: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
-            <div style={{ padding: 'clamp(1.25rem, 4vw, 2rem)' }}>
-              <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
-                <div style={{ fontSize: '2.75rem', marginBottom: '0.875rem' }}>🎉</div>
-                <h3 style={{ fontSize: 'clamp(1.25rem, 4vw, 1.625rem)', fontWeight: '700', color: '#0A2540', marginBottom: '0.375rem' }}>Exam Complete!</h3>
-                <p style={{ color: '#6b7280', fontSize: '0.9375rem' }}>AWS Developer Associate — Practice Set 1</p>
+        <div onClick={() => setShowDemoResults(false)} className="fixed inset-0 bg-black/70 flex items-center justify-center z-[1000] p-4">
+          <div onClick={e => e.stopPropagation()} className="bg-white rounded-2xl max-w-[560px] w-full max-h-[80vh] overflow-auto shadow-[0_20px_60px_rgba(0,0,0,0.3)]">
+            <div className="p-[clamp(1.25rem,4vw,2rem)]">
+              <div className="text-center mb-7">
+                <div className="text-[2.75rem] mb-3.5">🎉</div>
+                <h3 className="text-[clamp(1.25rem,4vw,1.625rem)] font-bold text-[#0A2540] mb-1.5">Exam Complete!</h3>
+                <p className="text-gray-500 text-[0.9375rem]">AWS Developer Associate — Practice Set 1</p>
               </div>
 
-              <div style={{ background: 'rgba(0,212,170,0.08)', padding: '1.75rem', borderRadius: '1rem', border: '2px solid #00D4AA', marginBottom: '1.75rem', textAlign: 'center' }}>
-                <div style={{ fontSize: 'clamp(2.25rem, 6vw, 3rem)', fontWeight: '800', color: '#00D4AA', marginBottom: '0.375rem', letterSpacing: '-0.03em' }}>82%</div>
-                <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#0A2540', marginBottom: '0.375rem' }}>PASSED ✓</div>
-                <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>53 / 65 questions correct</div>
+              <div className="bg-[#00D4AA]/[0.08] p-7 rounded-2xl border-2 border-[#00D4AA] mb-7 text-center">
+                <div className="text-[clamp(2.25rem,6vw,3rem)] font-extrabold text-[#00D4AA] mb-1.5 tracking-tight">82%</div>
+                <div className="text-xl font-bold text-[#0A2540] mb-1.5">PASSED ✓</div>
+                <div className="text-sm text-gray-500">53 / 65 questions correct</div>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem', marginBottom: '1.5rem' }}>
+              <div className="flex flex-col gap-2.5 mb-6">
                 {[
                   ['Score', '820 / 1000'],
                   ['Time Taken', '48 minutes'],
                   ['Passing Score', '720 / 1000 (72%)'],
                 ].map(([label, value], i) => (
-                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.875rem 1rem', background: '#f9fafb', borderRadius: '0.5rem' }}>
-                    <span style={{ color: '#6b7280', fontSize: '0.875rem' }}>{label}</span>
-                    <span style={{ color: '#0A2540', fontWeight: '600', fontSize: '0.875rem' }}>{value}</span>
+                  <div key={i} className="flex justify-between px-4 py-3.5 bg-gray-50 rounded-lg">
+                    <span className="text-gray-500 text-sm">{label}</span>
+                    <span className="text-[#0A2540] font-semibold text-sm">{value}</span>
                   </div>
                 ))}
               </div>
 
-              <div style={{ background: '#f0f9ff', padding: '1rem', borderRadius: '0.75rem', border: '1px solid #bae6fd', marginBottom: '1.25rem' }}>
-                <p style={{ fontSize: '0.875rem', color: '#0369a1', margin: 0, lineHeight: '1.55' }}>
+              <div className="bg-sky-50 p-4 rounded-xl border border-sky-200 mb-5">
+                <p className="text-sm text-sky-700 m-0 leading-[1.55]">
                   <strong>💡 Great job!</strong> You're ready for the actual exam. Review the questions you missed to lock in the remaining weak areas.
                 </p>
               </div>
 
-              <button onClick={() => setShowDemoResults(false)} style={{ width: '100%', padding: '0.875rem', background: 'linear-gradient(135deg, #00D4AA, #00A884)', color: 'white', border: 'none', borderRadius: '0.5rem', fontWeight: '600', cursor: 'pointer', fontSize: '1rem' }}>
+              <Button variant="primary" onClick={() => setShowDemoResults(false)} className="!w-full !py-3.5 !rounded-lg">
                 Close
-              </button>
+              </Button>
             </div>
           </div>
         </div>
