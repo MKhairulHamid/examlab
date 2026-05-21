@@ -5,7 +5,9 @@ import useAuthStore from '../stores/authStore'
 import usePurchaseStore from '../stores/purchaseStore'
 import EnrollmentModal from '../components/enrollment/EnrollmentModal'
 import ExamLandingSection from '../components/exam/ExamLandingSection'
+import { Button } from '../design-system'
 import supabase from '../services/supabase'
+import { getOfficialResourceUrl } from '../utils/officialResources'
 
 function ExamDetail() {
   const { slug } = useParams()
@@ -42,7 +44,6 @@ function ExamDetail() {
     if (!user) return
 
     try {
-      // Fetch exam results from Supabase for this specific exam type
       const { data, error } = await supabase
         .from('exam_attempts')
         .select(`
@@ -59,7 +60,6 @@ function ExamDetail() {
 
       if (error) throw error
 
-      // Transform data to expected format
       const transformedResults = (data || []).map(result => ({
         id: result.id,
         userId: result.user_id,
@@ -91,28 +91,24 @@ function ExamDetail() {
     )
   }
 
-  // Check if user has access (subscription grants full access)
   const hasAccess = isSubscribed
   const freeSet = questionSets.find(set => set.is_free_sample || set.price_cents === 0)
   const paidSets = questionSets.filter(set => !set.is_free_sample && set.price_cents > 0)
+  const officialUrl = getOfficialResourceUrl(exam)
 
   return (
     <div className="min-h-screen bg-gradient-primary">
       <div className="max-w-6xl mx-auto px-4 py-4 sm:p-6">
-        {/* Header */}
-        <button
-          onClick={() => navigate('/dashboard')}
-          className="back-button mb-4 sm:mb-6"
-        >
+
+        {/* Back button */}
+        <button onClick={() => navigate('/dashboard')} className="back-button mb-4 sm:mb-6">
           ← Back to Dashboard
         </button>
 
-        {/* Exam Header */}
+        {/* Exam Header Card */}
         <div className="exam-header-card">
           <div className="exam-header-icon">{exam.icon || '📚'}</div>
-          <div className="exam-header-provider">
-            {exam.provider}
-          </div>
+          <div className="exam-header-provider">{exam.provider}</div>
           <h1 className="exam-header-title">{exam.name}</h1>
           <p className="exam-header-description">{exam.description}</p>
           <div className="exam-header-meta">
@@ -120,75 +116,50 @@ function ExamDetail() {
             <span>⏱️ {exam.duration_minutes || 'N/A'} minutes</span>
             {exam.passing_score && <span>🎯 Pass: {exam.passing_score}/{exam.max_score || 1000}</span>}
           </div>
-          <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'flex-end' }}>
+          <div className="mt-6 pt-6 border-t border-white/10 flex flex-col sm:flex-row gap-3">
             <button
               onClick={() => navigate(`/exam/${slug}/study`)}
-              style={{
-                padding: '0.75rem 1.25rem',
-                background: 'rgba(255,255,255,0.1)',
-                color: 'white',
-                borderRadius: '0.75rem',
-                fontWeight: '600',
-                transition: 'all 0.2s',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                border: '1px solid rgba(255,255,255,0.2)',
-                cursor: 'pointer',
-                fontSize: '0.9375rem',
-                width: '100%',
-                justifyContent: 'center'
-              }}
+              className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-white/10 hover:bg-white/[0.17] text-white rounded-xl font-semibold border border-white/20 hover:border-white/30 transition-all duration-200 text-[0.9375rem]"
             >
               📚 View Study Material
             </button>
+            {officialUrl && (
+              <a
+                href={officialUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-white/10 hover:bg-white/[0.17] text-white rounded-xl font-semibold border border-white/20 hover:border-white/30 transition-all duration-200 text-[0.9375rem] no-underline"
+              >
+                🔗 Official Exam Page ↗
+              </a>
+            )}
           </div>
         </div>
-
 
         {/* Certification Landing Info */}
         <ExamLandingSection landing={exam.landing_content} />
 
         {/* Question Sets */}
-        <h2 className="section-title" style={{ marginTop: '2rem' }}>📝 Question Sets</h2>
+        <h2 className="section-title mt-8">📝 Question Sets</h2>
         <div className="question-sets-grid">
           {loadingQuestionSets ? (
             <div className="col-span-full empty-state">
               <div>Loading question sets...</div>
             </div>
           ) : questionSets.length === 0 && !isSubscribed ? (
-            <div className="col-span-full" style={{
-              background: 'rgba(255,255,255,0.08)',
-              backdropFilter: 'blur(20px)',
-              borderRadius: '1rem',
-              padding: '2.5rem 1.5rem',
-              border: '1px solid rgba(255,255,255,0.15)',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>🔒</div>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: 'white', marginBottom: '0.5rem' }}>
-                Subscribe to Access Question Sets
-              </h3>
-              <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9375rem', marginBottom: '1.5rem', maxWidth: '400px', margin: '0 auto 1.5rem' }}>
+            <div className="col-span-full bg-white/[0.08] backdrop-blur-xl rounded-2xl p-10 border border-white/15 text-center">
+              <div className="text-[2.5rem] mb-4">🔒</div>
+              <h3 className="text-xl font-bold text-white mb-2">Subscribe to Access Question Sets</h3>
+              <p className="text-white/70 text-[0.9375rem] mb-6 max-w-[400px] mx-auto">
                 Get full access to all practice exams and question sets with an active subscription.
               </p>
-              <button
+              <Button
+                variant="primary"
                 onClick={() => setShowPurchaseModal(true)}
-                style={{
-                  padding: '0.75rem 2rem',
-                  background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '0.75rem',
-                  fontWeight: '700',
-                  fontSize: '1rem',
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 12px rgba(0,212,170,0.3)',
-                  transition: 'all 0.2s'
-                }}
+                className="shadow-teal"
               >
                 View Plans
-              </button>
+              </Button>
             </div>
           ) : questionSets.length === 0 ? (
             <div className="col-span-full empty-state">
@@ -203,31 +174,18 @@ function ExamDetail() {
                 <div
                   key={set.id}
                   className="question-set-card"
-                  style={{
-                    opacity: isLocked ? 0.7 : 1
-                  }}
+                  style={{ opacity: isLocked ? 0.7 : 1 }}
                 >
                   <div className="question-set-header">
                     <h3 className="question-set-title">{set.name}</h3>
                     {isFree ? (
-                      <span className="badge-free">
-                        ✓ Free
-                      </span>
+                      <span className="badge-free">✓ Free</span>
                     ) : hasAccess ? (
-                      <span style={{
-                        padding: '0.25rem 0.75rem',
-                        background: 'rgba(0,212,170,0.2)',
-                        color: '#00D4AA',
-                        borderRadius: '0.5rem',
-                        fontSize: '0.875rem',
-                        fontWeight: '600'
-                      }}>
+                      <span className="px-3 py-1 bg-[#00D4AA]/20 text-[#00D4AA] rounded-lg text-sm font-semibold">
                         ✓ Subscribed
                       </span>
                     ) : (
-                      <span className="badge-locked">
-                        🔒 Subscribe
-                      </span>
+                      <span className="badge-locked">🔒 Subscribe</span>
                     )}
                   </div>
                   <p className="question-set-description">{set.description}</p>
@@ -246,18 +204,7 @@ function ExamDetail() {
                   ) : (
                     <button
                       onClick={() => setShowPurchaseModal(true)}
-                      style={{
-                        width: '100%',
-                        padding: '0.75rem',
-                        background: 'rgba(0,212,170,0.1)',
-                        color: '#00D4AA',
-                        border: '2px solid rgba(0,212,170,0.3)',
-                        borderRadius: '0.5rem',
-                        fontWeight: '600',
-                        cursor: 'pointer',
-                        fontSize: '0.875rem',
-                        transition: 'all 0.2s'
-                      }}
+                      className="w-full py-3 bg-[#00D4AA]/10 text-[#00D4AA] border-2 border-[#00D4AA]/30 rounded-lg font-semibold cursor-pointer text-sm hover:bg-[#00D4AA]/20 hover:border-[#00D4AA]/50 transition-all duration-200"
                     >
                       🔒 Subscribe to Unlock
                     </button>
@@ -270,45 +217,26 @@ function ExamDetail() {
 
         {/* Enrollment CTA */}
         {paidSets.length > 0 && !hasAccess && (
-          <div style={{
-            marginTop: '3rem',
-            background: 'rgba(255,255,255,0.1)',
-            backdropFilter: 'blur(20px)',
-            borderRadius: '1rem',
-            padding: '2rem',
-            border: '1px solid rgba(255,255,255,0.2)',
-            textAlign: 'center'
-          }}>
-            <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: 'white', marginBottom: '1rem' }}>
-              🎓 Get Full Access
-            </h3>
-            <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '1rem', marginBottom: '1.5rem' }}>
+          <div className="mt-12 bg-white/10 backdrop-blur-xl rounded-2xl p-8 border border-white/20 text-center">
+            <h3 className="text-2xl font-bold text-white mb-4">🎓 Get Full Access</h3>
+            <p className="text-white/80 text-base mb-6">
               Subscribe to unlock all {paidSets.length} question sets and every exam on the platform. Plans start at $5/month.
             </p>
-            <button
+            <Button
+              variant="primary"
               onClick={() => setShowPurchaseModal(true)}
-              style={{
-                padding: '1rem 2rem',
-                background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '0.75rem',
-                fontWeight: '700',
-                fontSize: '1.125rem',
-                cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(0,212,170,0.3)'
-              }}
+              className="!px-8 !py-3.5 !text-lg shadow-teal"
             >
               View Plans
-            </button>
+            </Button>
           </div>
         )}
 
         {/* Exam Attempts History */}
         {examResults.length > 0 && (
-          <div style={{ marginTop: '3rem' }}>
+          <div className="mt-12">
             <h2 className="section-title">📊 Your Exam Attempts</h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div className="flex flex-col gap-4">
               {examResults.map((result) => {
                 const passColor = result.passed ? '#10b981' : '#ef4444'
                 const passIcon = result.passed ? '✓' : '✗'
@@ -316,82 +244,52 @@ function ExamDetail() {
                 return (
                   <div
                     key={result.id}
-                    style={{
-                      background: 'rgba(255,255,255,0.1)',
-                      backdropFilter: 'blur(20px)',
-                      borderRadius: '1rem',
-                      padding: 'clamp(1rem, 3vw, 1.5rem)',
-                      border: '1px solid rgba(255,255,255,0.2)',
-                      borderLeft: `4px solid ${passColor}`,
-                      cursor: 'pointer',
-                      transition: 'all 0.3s'
-                    }}
+                    className="bg-white/10 backdrop-blur-xl rounded-2xl p-[clamp(1rem,3vw,1.5rem)] border border-white/20 cursor-pointer transition-all duration-300 hover:bg-white/[0.15] hover:translate-x-1"
+                    style={{ borderLeft: `4px solid ${passColor}` }}
                     onClick={() => navigate(`/exam/${slug}/results?resultId=${result.id}&set=${result.questionSetId}`)}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = 'rgba(255,255,255,0.15)'
-                      e.currentTarget.style.transform = 'translateX(4px)'
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = 'rgba(255,255,255,0.1)'
-                      e.currentTarget.style.transform = 'translateX(0)'
-                    }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-                      {/* Status Icon + Result Details */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: '1 1 auto', minWidth: 0 }}>
-                        <div style={{
-                          width: '2.5rem',
-                          height: '2.5rem',
-                          borderRadius: '0.625rem',
-                          background: passColor,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: 'white',
-                          fontWeight: '700',
-                          fontSize: '1.25rem',
-                          flexShrink: 0
-                        }}>
+                    <div className="flex items-center gap-4 flex-wrap">
+                      {/* Status Icon + Details */}
+                      <div className="flex items-center gap-4 flex-1 min-w-0">
+                        <div
+                          className="w-10 h-10 rounded-[0.625rem] flex items-center justify-center text-white font-bold text-xl shrink-0"
+                          style={{ background: passColor }}
+                        >
                           {passIcon}
                         </div>
-
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem', flexWrap: 'wrap' }}>
-                            <h3 style={{ fontSize: '0.9375rem', fontWeight: '700', color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            <h3 className="text-[0.9375rem] font-bold text-white truncate max-w-full">
                               {result.questionSetName || 'Practice Exam'}
                             </h3>
-                            <span style={{
-                              padding: '0.125rem 0.5rem',
-                              background: result.passed ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)',
-                              border: `1px solid ${passColor}`,
-                              borderRadius: '0.375rem',
-                              color: passColor,
-                              fontSize: '0.6875rem',
-                              fontWeight: '600',
-                              flexShrink: 0
-                            }}>
+                            <span
+                              className="px-2 py-0.5 rounded text-[0.6875rem] font-semibold shrink-0 border"
+                              style={{
+                                background: result.passed ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)',
+                                borderColor: passColor,
+                                color: passColor,
+                              }}
+                            >
                               {result.passed ? 'PASSED' : 'FAILED'}
                             </span>
                           </div>
-                          <div style={{ fontSize: '0.8125rem', color: 'rgba(255,255,255,0.7)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <div className="text-[0.8125rem] text-white/70 truncate">
                             {new Date(result.completedAt).toLocaleDateString()} • {Math.floor(result.timeSpent / 60)} min
                           </div>
                         </div>
                       </div>
 
-                      {/* Score Display + Arrow */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0 }}>
-                        <div style={{ textAlign: 'right' }}>
-                          <div style={{ fontSize: '1.5rem', fontWeight: '700', color: passColor }}>
+                      {/* Score + Arrow */}
+                      <div className="flex items-center gap-3 shrink-0">
+                        <div className="text-right">
+                          <div className="text-2xl font-bold" style={{ color: passColor }}>
                             {result.percentageScore}%
                           </div>
-                          <div style={{ fontSize: '0.6875rem', color: 'rgba(255,255,255,0.7)' }}>
+                          <div className="text-[0.6875rem] text-white/70">
                             {result.rawScore}/{result.totalQuestions}
                           </div>
                         </div>
-                        <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '1.25rem' }}>
-                          →
-                        </div>
+                        <div className="text-white/50 text-xl">→</div>
                       </div>
                     </div>
                   </div>
@@ -402,7 +300,6 @@ function ExamDetail() {
         )}
       </div>
 
-      {/* Enrollment Modal */}
       <EnrollmentModal
         isOpen={showPurchaseModal}
         onClose={() => setShowPurchaseModal(false)}
