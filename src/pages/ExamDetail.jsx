@@ -22,8 +22,11 @@ function ExamDetail() {
   const [loadingQuestionSets, setLoadingQuestionSets] = useState(true)
 
   useEffect(() => {
+    // Reset loading state SYNCHRONOUSLY so the component never renders
+    // stale "no sets" data from a previous exam page visit.
+    setLoadingQuestionSets(true)
+
     const loadExam = async () => {
-      setLoadingQuestionSets(true)
       const examData = await getExamBySlug(slug)
       setExam(examData)
 
@@ -178,7 +181,7 @@ function ExamDetail() {
             <div className="col-span-full empty-state">
               <div>Loading question sets...</div>
             </div>
-          ) : questionSets.length === 0 && !isSubscribed ? (
+          ) : paidSets.length > 0 && !freeSet && !isSubscribed ? (
             <div className="col-span-full bg-white/[0.08] backdrop-blur-xl rounded-2xl p-10 border border-white/15 text-center">
               <div className="mb-4 flex justify-center"><Lock className="w-10 h-10 text-white/60" /></div>
               <h3 className="text-xl font-bold text-white mb-2">Subscribe to Access Question Sets</h3>

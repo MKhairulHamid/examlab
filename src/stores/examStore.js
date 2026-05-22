@@ -76,7 +76,9 @@ export const useExamStore = create((set, get) => ({
    */
   fetchQuestionSets: async (examTypeId) => {
     try {
-      set({ loading: true, error: null })
+      // Clear stale question sets immediately so the UI never shows data from
+      // a previous exam while the new fetch is in flight.
+      set({ questionSets: [], loading: true, error: null })
 
       const { data, error } = await supabase
         .from('question_sets')
