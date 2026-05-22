@@ -8,6 +8,7 @@ import ExamLandingSection from '../components/exam/ExamLandingSection'
 import { Button } from '../design-system'
 import supabase from '../services/supabase'
 import { getOfficialResourceUrl } from '../utils/officialResources'
+import { FileText, Clock, Target, BookOpen, ExternalLink, Lock, BarChart2 } from 'lucide-react'
 
 function ExamDetail() {
   const { slug } = useParams()
@@ -112,35 +113,66 @@ function ExamDetail() {
           <h1 className="exam-header-title">{exam.name}</h1>
           <p className="exam-header-description">{exam.description}</p>
           <div className="exam-header-meta">
-            <span>📝 {exam.total_questions || 'N/A'} Total Questions</span>
-            <span>⏱️ {exam.duration_minutes || 'N/A'} minutes</span>
-            {exam.passing_score && <span>🎯 Pass: {exam.passing_score}/{exam.max_score || 1000}</span>}
+            <span className="inline-flex items-center gap-1.5"><FileText className="w-3.5 h-3.5 opacity-70" />{exam.total_questions || 'N/A'} Questions</span>
+            <span className="inline-flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 opacity-70" />{exam.duration_minutes || 'N/A'} min</span>
+            {exam.passing_score && <span className="inline-flex items-center gap-1.5"><Target className="w-3.5 h-3.5 opacity-70" />Pass: {exam.passing_score}/{exam.max_score || 1000}</span>}
           </div>
-          <div className="mt-6 pt-6 border-t border-white/10 flex flex-col sm:flex-row gap-3">
-            <button
-              onClick={() => navigate(`/exam/${slug}/study`)}
-              className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-white/10 hover:bg-white/[0.17] text-white rounded-xl font-semibold border border-white/20 hover:border-white/30 transition-all duration-200 text-[0.9375rem]"
-            >
-              📚 View Study Material
-            </button>
-            {officialUrl && (
+          {officialUrl && (
+            <div className="mt-6 pt-6 border-t border-white/10 flex flex-col sm:flex-row gap-3">
               <a
                 href={officialUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-white/10 hover:bg-white/[0.17] text-white rounded-xl font-semibold border border-white/20 hover:border-white/30 transition-all duration-200 text-[0.9375rem] no-underline"
               >
-                🔗 Official Exam Page ↗
+                <ExternalLink className="w-4 h-4" /> Official Exam Page
               </a>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Certification Landing Info */}
         <ExamLandingSection landing={exam.landing_content} />
 
+        {/* Study Material — a first-class offering, co-equal with the practice exams */}
+        <h2 className="section-title mt-8">Study Material</h2>
+        <div className="question-sets-grid">
+          <div className="question-set-card">
+            <div className="question-set-header">
+              <h3 className="question-set-title">Full Study Course</h3>
+              {hasAccess ? (
+                <span className="px-3 py-1 bg-[#00D4AA]/20 text-[#00D4AA] rounded-lg text-sm font-semibold">
+                  ✓ Subscribed
+                </span>
+              ) : (
+                <span className="badge-free">✓ Free preview</span>
+              )}
+            </div>
+            <p className="question-set-description">
+              Comprehensive, exam-aligned lessons across every domain — key concepts, AWS service
+              breakdowns, exam tips, and a practice question in each session. Learn the material in
+              depth, then prove it with the practice exams.
+            </p>
+            <div className="question-set-meta">
+              <span className="inline-flex items-center gap-1.5"><BookOpen className="w-3.5 h-3.5 opacity-60" />Guided sessions</span>
+              <span>Every exam domain</span>
+            </div>
+            <button
+              onClick={() => navigate(`/exam/${slug}/study`)}
+              className="start-exam-button"
+            >
+              {hasAccess ? 'Continue Studying →' : 'Start Free Preview →'}
+            </button>
+            {!hasAccess && (
+              <p className="text-white/55 text-[0.75rem] text-center mt-2.5">
+                First domain free · Subscribe to unlock the full course
+              </p>
+            )}
+          </div>
+        </div>
+
         {/* Question Sets */}
-        <h2 className="section-title mt-8">📝 Question Sets</h2>
+        <h2 className="section-title mt-8">Question Sets</h2>
         <div className="question-sets-grid">
           {loadingQuestionSets ? (
             <div className="col-span-full empty-state">
@@ -148,7 +180,7 @@ function ExamDetail() {
             </div>
           ) : questionSets.length === 0 && !isSubscribed ? (
             <div className="col-span-full bg-white/[0.08] backdrop-blur-xl rounded-2xl p-10 border border-white/15 text-center">
-              <div className="text-[2.5rem] mb-4">🔒</div>
+              <div className="mb-4 flex justify-center"><Lock className="w-10 h-10 text-white/60" /></div>
               <h3 className="text-xl font-bold text-white mb-2">Subscribe to Access Question Sets</h3>
               <p className="text-white/70 text-[0.9375rem] mb-6 max-w-[400px] mx-auto">
                 Get full access to all practice exams and question sets with an active subscription.
@@ -185,13 +217,13 @@ function ExamDetail() {
                         ✓ Subscribed
                       </span>
                     ) : (
-                      <span className="badge-locked">🔒 Subscribe</span>
+                      <span className="badge-locked inline-flex items-center gap-1"><Lock className="w-3 h-3" /> Subscribe</span>
                     )}
                   </div>
                   <p className="question-set-description">{set.description}</p>
                   <div className="question-set-meta">
-                    <span>📝 {set.question_count} Questions</span>
-                    <span>📊 Set {set.set_number}</span>
+                    <span className="inline-flex items-center gap-1.5"><FileText className="w-3.5 h-3.5 opacity-60" />{set.question_count} Questions</span>
+                    <span>Set {set.set_number}</span>
                   </div>
 
                   {(isFree || hasAccess) ? (
@@ -218,7 +250,7 @@ function ExamDetail() {
         {/* Enrollment CTA */}
         {paidSets.length > 0 && !hasAccess && (
           <div className="mt-12 bg-white/10 backdrop-blur-xl rounded-2xl p-8 border border-white/20 text-center">
-            <h3 className="text-2xl font-bold text-white mb-4">🎓 Get Full Access</h3>
+            <h3 className="text-2xl font-bold text-white mb-4">Get Full Access</h3>
             <p className="text-white/80 text-base mb-6">
               Subscribe to unlock all {paidSets.length} question sets and every exam on the platform. Plans start at $5/month.
             </p>
@@ -235,7 +267,7 @@ function ExamDetail() {
         {/* Exam Attempts History */}
         {examResults.length > 0 && (
           <div className="mt-12">
-            <h2 className="section-title">📊 Your Exam Attempts</h2>
+            <h2 className="section-title">Your Exam Attempts</h2>
             <div className="flex flex-col gap-4">
               {examResults.map((result) => {
                 const passColor = result.passed ? '#10b981' : '#ef4444'

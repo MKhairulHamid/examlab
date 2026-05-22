@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import SessionCourse from '../components/study/SessionCourse'
 import aifC01Course from '../data/aifC01Course'
+import useAuthStore from '../stores/authStore'
+import usePurchaseStore from '../stores/purchaseStore'
+import EnrollmentModal from '../components/enrollment/EnrollmentModal'
 
 // Registry of session-based prep courses keyed by exam slug fragment.
 // A slug containing any of these fragments renders the matching SessionCourse.
@@ -658,24 +661,43 @@ function TopicItem({ item, isBookmarked, onToggleBookmark, onStartQuiz }) {
 function StudyMaterial() {
     const { slug } = useParams()
     const navigate = useNavigate()
+    const { user } = useAuthStore()
+    const { isSubscribed, fetchSubscription } = usePurchaseStore()
+    const [showPurchaseModal, setShowPurchaseModal] = useState(false)
+
+    useEffect(() => {
+        if (user) fetchSubscription(user.id)
+    }, [user])
+
+    const hasAccess = isSubscribed
+    const onSubscribe = () => setShowPurchaseModal(true)
+
     const lowerSlug = (slug || '').toLowerCase()
     const sessionCourse = SESSION_COURSES.find(entry =>
         entry.match.some(fragment => lowerSlug.includes(fragment))
     )
 
-    if (sessionCourse) {
-        return (
-            <SessionCourse
-                course={sessionCourse.course}
-                onBack={() => navigate(`/exam/${slug}`)}
+    return (
+        <>
+            {sessionCourse ? (
+                <SessionCourse
+                    course={sessionCourse.course}
+                    hasAccess={hasAccess}
+                    onSubscribe={onSubscribe}
+                    onBack={() => navigate(`/exam/${slug}`)}
+                />
+            ) : (
+                <LegacyStudyMaterial hasAccess={hasAccess} onSubscribe={onSubscribe} />
+            )}
+            <EnrollmentModal
+                isOpen={showPurchaseModal}
+                onClose={() => setShowPurchaseModal(false)}
             />
-        )
-    }
-
-    return <LegacyStudyMaterial />
+        </>
+    )
 }
 
-function LegacyStudyMaterial() {
+function LegacyStudyMaterial({ hasAccess = true, onSubscribe }) {
     const { slug } = useParams()
     const navigate = useNavigate()
     const [bookmarkedTopics, setBookmarkedTopics] = useState([])
@@ -906,7 +928,9 @@ function LegacyStudyMaterial() {
                         {studyData.title}
                     </h2>
 
-                    {studyData.tasks.map((task) => (
+                    {studyData.tasks.map((task, taskIdx) => {
+                      if (!hasAccess && taskIdx > 0) return null
+                      return (
                         <div key={task.id} style={{ marginBottom: '3rem' }}>
                             <h3 style={{
                                 fontSize: 'clamp(1.0625rem, 3vw, 1.375rem)',
@@ -989,7 +1013,40 @@ function LegacyStudyMaterial() {
                                 })}
                             </div>
                         </div>
-                    ))}
+                      )
+                    })}
+
+                    {!hasAccess && (
+                        <div style={{
+                            marginTop: '1rem',
+                            background: 'linear-gradient(135deg, rgba(0,212,170,0.08) 0%, rgba(0,168,132,0.08) 100%)',
+                            border: '2px solid rgba(0,212,170,0.3)',
+                            borderRadius: '1rem',
+                            padding: 'clamp(1.5rem, 4vw, 2.5rem)',
+                            textAlign: 'center'
+                        }}>
+                            <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🔒</div>
+                            <h3 style={{ fontSize: '1.375rem', fontWeight: 700, color: '#0A2540', marginBottom: '0.5rem' }}>
+                                Unlock the full study course
+                            </h3>
+                            <p style={{ color: '#475569', fontSize: '0.9375rem', lineHeight: 1.6, maxWidth: '440px', margin: '0 auto 1.5rem' }}>
+                                You're viewing the free preview. Subscribe to access every domain — all concepts,
+                                use cases, exam distractors, flashcards, and quizzes.
+                            </p>
+                            <button
+                                onClick={onSubscribe}
+                                style={{
+                                    padding: '0.875rem 2rem',
+                                    background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
+                                    color: 'white', border: 'none', borderRadius: '0.75rem',
+                                    fontSize: '1rem', fontWeight: 700, cursor: 'pointer',
+                                    boxShadow: '0 8px 20px rgba(0,212,170,0.3)'
+                                }}
+                            >
+                                Subscribe to Unlock →
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
 

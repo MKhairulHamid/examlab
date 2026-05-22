@@ -206,7 +206,7 @@ function SampleQuestion({ sample }) {
 
 // ─── Sidebar session item ─────────────────────────────────────────────────────
 
-function SidebarItem({ session, isActive, isDone, onClick }) {
+function SidebarItem({ session, isActive, isDone, isLocked, onClick }) {
   return (
     <button
       onClick={onClick}
@@ -230,12 +230,12 @@ function SidebarItem({ session, isActive, isDone, onClick }) {
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: '0.625rem', fontWeight: 700, flexShrink: 0,
       }}>
-        {isDone ? '✓' : session.number}
+        {isLocked ? '🔒' : isDone ? '✓' : session.number}
       </span>
       <span style={{
         flex: 1, minWidth: 0,
         fontSize: '0.8125rem', fontWeight: isActive ? 700 : 500,
-        color: isActive ? NAVY : isDone ? '#475569' : '#374151',
+        color: isLocked ? '#94a3b8' : isActive ? NAVY : isDone ? '#475569' : '#374151',
         lineHeight: 1.35,
         overflow: 'hidden', textOverflow: 'ellipsis',
         display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
@@ -246,14 +246,52 @@ function SidebarItem({ session, isActive, isDone, onClick }) {
   )
 }
 
+// ─── Locked session paywall ───────────────────────────────────────────────────
+
+function LockedSession({ onSubscribe, freeModuleLabel }) {
+  return (
+    <div style={{
+      background: `linear-gradient(135deg, rgba(0,212,170,0.08), rgba(0,168,132,0.06))`,
+      border: `2px solid rgba(0,212,170,0.3)`, borderRadius: '1.25rem',
+      padding: 'clamp(1.75rem, 5vw, 3rem)', textAlign: 'center', marginTop: '0.5rem',
+    }}>
+      <div style={{ fontSize: '2.75rem', marginBottom: '0.75rem' }}>🔒</div>
+      <h3 style={{ fontSize: 'clamp(1.25rem, 3vw, 1.5rem)', fontWeight: 800, color: NAVY, marginBottom: '0.6rem' }}>
+        This session is part of the full course
+      </h3>
+      <p style={{ fontSize: '1rem', color: '#475569', lineHeight: 1.7, maxWidth: '460px', margin: '0 auto 1.5rem' }}>
+        {freeModuleLabel
+          ? <>You're on the free preview — <strong>{freeModuleLabel}</strong> is open to everyone. Subscribe to unlock every remaining session, with full lessons, exam tips, and practice questions.</>
+          : <>You're on the free preview. Subscribe to unlock every remaining session, with full lessons, exam tips, and practice questions.</>}
+      </p>
+      <button
+        onClick={onSubscribe}
+        style={{
+          padding: '0.875rem 2.25rem',
+          background: `linear-gradient(135deg, ${TEAL}, ${TEAL_DARK})`,
+          color: 'white', border: 'none', borderRadius: '0.75rem',
+          fontWeight: 700, fontSize: '1rem', cursor: 'pointer',
+          boxShadow: '0 8px 20px rgba(0,212,170,0.35)',
+        }}
+      >
+        Subscribe to Unlock →
+      </button>
+    </div>
+  )
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
-function SessionCourse({ course, onBack }) {
+function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
   const storageKey = `course-progress-${course.slug}`
   const [completedIds, setCompletedIds] = useState([])
   const [activeId, setActiveId] = useState(course.sessions[0]?.id)
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
   const contentRef = useRef(null)
+
+  // Free preview: the first module's sessions are open; the rest require a subscription.
+  const freeModuleId = course.modules[0]?.id
+  const isLocked = (session) => !hasAccess && session && session.domain !== freeModuleId
 
   useEffect(() => {
     try {
@@ -353,6 +391,7 @@ function SessionCourse({ course, onBack }) {
                   session={session}
                   isActive={session.id === activeId}
                   isDone={completedIds.includes(session.id)}
+                  isLocked={isLocked(session)}
                   onClick={() => selectSession(session.id)}
                 />
               ))}
@@ -529,6 +568,10 @@ function SessionCourse({ course, onBack }) {
                 </ul>
               </div>
 
+              {isLocked(activeSession) ? (
+                <LockedSession onSubscribe={onSubscribe} freeModuleLabel={course.modules[0]?.label} />
+              ) : (
+              <>
               {/* Teaching sections */}
               {activeSession.sections.map((sec, i) => (
                 <ContentSection key={i} section={sec} />
@@ -701,6 +744,8 @@ function SessionCourse({ course, onBack }) {
                     Take Practice Exam →
                   </button>
                 </div>
+              )}
+              </>
               )}
 
             </div>

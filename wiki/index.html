@@ -1,0 +1,1492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CloudExamLab — Developer Wiki</title>
+  <style>
+    :root {
+      --sidebar-w: 255px;
+      --sidebar-bg: #0f172a;
+      --sidebar-text: #94a3b8;
+      --sidebar-active-text: #38bdf8;
+      --sidebar-active-bg: rgba(56,189,248,0.08);
+      --sidebar-hover: #1e293b;
+      --accent: #2563eb;
+      --accent-light: #eff6ff;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --heading: #0f172a;
+      --code-bg: #1e293b;
+      --code-text: #e2e8f0;
+      --stripe: #f8fafc;
+      --warn-bg: #fef2f2;
+      --warn-border: #ef4444;
+      --tip-bg: #f0fdf4;
+      --tip-border: #22c55e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--text);
+      line-height: 1.65;
+      background: #fff;
+    }
+
+    /* ── Sidebar ── */
+    #sidebar {
+      position: fixed; top: 0; left: 0;
+      width: var(--sidebar-w); height: 100vh;
+      background: var(--sidebar-bg);
+      overflow-y: auto; z-index: 100;
+      display: flex; flex-direction: column;
+    }
+    #sidebar::-webkit-scrollbar { width: 4px; }
+    #sidebar::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+    .sb-header {
+      padding: 20px 16px 14px;
+      border-bottom: 1px solid #1e293b;
+    }
+    .sb-logo { font-size: 13px; font-weight: 700; color: #f1f5f9; letter-spacing: .06em; text-transform: uppercase; }
+    .sb-sub  { font-size: 11px; color: var(--sidebar-text); margin-top: 2px; }
+    .sb-group { padding: 10px 0 2px; }
+    .sb-group-label {
+      font-size: 10px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: #475569;
+      padding: 0 16px; margin-bottom: 3px;
+    }
+    .sb-item {
+      display: block; padding: 6px 16px;
+      font-size: 12.5px; color: var(--sidebar-text);
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: background .12s, color .12s;
+    }
+    .sb-item:hover { background: var(--sidebar-hover); color: #f1f5f9; }
+    .sb-item.active { color: var(--sidebar-active-text); border-left-color: var(--sidebar-active-text); background: var(--sidebar-active-bg); }
+    .sb-item.ext { color: #60a5fa; }
+    .sb-item.ext::after { content: ' ↗'; font-size: 10px; }
+
+    /* ── Main ── */
+    #main {
+      margin-left: var(--sidebar-w);
+      padding: 48px 64px 96px;
+      max-width: calc(var(--sidebar-w) + 880px);
+    }
+
+    /* ── Section ── */
+    .section { padding-top: 52px; border-top: 1px solid var(--border); margin-top: 28px; }
+    .section:first-of-type { border-top: none; margin-top: 0; padding-top: 0; }
+
+    /* ── Typography ── */
+    h1 { font-size: 27px; font-weight: 700; color: var(--heading); margin-bottom: 10px; }
+    h2 { font-size: 19px; font-weight: 700; color: var(--heading); margin-top: 38px; margin-bottom: 14px; }
+    h3 { font-size: 15px; font-weight: 600; color: var(--heading); margin-top: 24px; margin-bottom: 8px; }
+    p  { margin-bottom: 12px; }
+    a  { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ul, ol { padding-left: 22px; margin-bottom: 12px; }
+    li { margin-bottom: 4px; }
+    hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+    .section-meta { font-size: 14px; color: var(--text-muted); margin-bottom: 26px; margin-top: -4px; }
+
+    /* ── Chip label ── */
+    .chip {
+      display: inline-block; padding: 2px 9px; border-radius: 4px;
+      font-size: 10px; font-weight: 700; letter-spacing: .05em;
+      text-transform: uppercase; margin-bottom: 6px;
+    }
+    .chip-platform  { background: #eff6ff; color: #1d4ed8; }
+    .chip-technical { background: #f0fdf4; color: #15803d; }
+    .chip-reference { background: #fdf4ff; color: #7e22ce; }
+
+    /* ── Tables ── */
+    .tw { overflow-x: auto; margin: 16px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    th {
+      background: #f1f5f9; padding: 7px 12px;
+      text-align: left; font-size: 11px; font-weight: 700;
+      color: var(--text-muted); border-bottom: 2px solid var(--border);
+      white-space: nowrap;
+    }
+    td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:nth-child(even) td { background: var(--stripe); }
+
+    /* ── Code ── */
+    code {
+      font-family: 'SF Mono','Fira Code','Cascadia Code',Consolas,monospace;
+      font-size: 12px; background: #f1f5f9; color: #be185d;
+      padding: 2px 5px; border-radius: 3px;
+    }
+    pre {
+      background: var(--code-bg); color: var(--code-text);
+      padding: 18px 20px; border-radius: 8px;
+      overflow-x: auto; margin: 14px 0;
+      font-size: 12.5px; line-height: 1.65;
+    }
+    pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+
+    /* ── Flow diagram ── */
+    .flow {
+      background: #1e293b; color: #7dd3fc;
+      padding: 18px 22px; border-radius: 8px;
+      font-family: 'SF Mono','Fira Code',Consolas,monospace;
+      font-size: 13px; line-height: 1.75;
+      margin: 14px 0; white-space: pre; overflow-x: auto;
+    }
+
+    /* ── DB tree ── */
+    .dbtree {
+      font-family: 'SF Mono','Fira Code',Consolas,monospace;
+      font-size: 12.5px; line-height: 1.9;
+      background: #f8fafc; border: 1px solid var(--border);
+      padding: 14px 18px; border-radius: 6px; margin: 12px 0;
+    }
+
+    /* ── Callouts ── */
+    .callout {
+      padding: 12px 16px; border-radius: 6px;
+      margin: 14px 0; font-size: 13.5px;
+    }
+    .callout-note    { background: var(--accent-light); border-left: 4px solid var(--accent); }
+    .callout-warning { background: var(--warn-bg);      border-left: 4px solid var(--warn-border); }
+    .callout-tip     { background: var(--tip-bg);       border-left: 4px solid var(--tip-border); }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 10px;
+      font-size: 11px; font-weight: 600;
+    }
+    .badge-green  { background: #dcfce7; color: #15803d; }
+    .badge-yellow { background: #fef3c7; color: #b45309; }
+    .badge-gray   { background: #f1f5f9; color: #475569; }
+
+    /* ── Numbered steps ── */
+    .steps { counter-reset: step; list-style: none; padding: 0; margin-bottom: 14px; }
+    .steps li {
+      counter-increment: step;
+      padding: 7px 0 7px 36px; position: relative;
+      border-left: 2px solid var(--border); margin-left: 11px;
+    }
+    .steps li::before {
+      content: counter(step);
+      position: absolute; left: -11px; top: 7px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--accent); color: #fff;
+      font-size: 10px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── Page title ── */
+    .page-title { margin-bottom: 36px; }
+    .page-title h1 { font-size: 30px; margin-bottom: 8px; }
+    .page-title p  { font-size: 15px; color: var(--text-muted); margin: 0; }
+
+    /* ── Jump-to-top ── */
+    #top-btn {
+      position: fixed; bottom: 28px; right: 28px;
+      background: var(--accent); color: #fff;
+      border: none; border-radius: 50%; width: 38px; height: 38px;
+      font-size: 18px; cursor: pointer; display: none;
+      align-items: center; justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+      transition: opacity .2s;
+    }
+    #top-btn:hover { background: #1d4ed8; }
+  </style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<nav id="sidebar">
+  <div class="sb-header">
+    <div class="sb-logo">CloudExamLab</div>
+    <div class="sb-sub">Developer Wiki</div>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Start here</div>
+    <a class="sb-item" href="#intro">Overview</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Platform</div>
+    <a class="sb-item" href="#platform-overview">What is CloudExamLab</a>
+    <a class="sb-item" href="#user-flow">User Flow</a>
+    <a class="sb-item" href="#authentication">Authentication</a>
+    <a class="sb-item" href="#access-control">Access Control</a>
+    <a class="sb-item" href="#exam-flow">Exam Flow</a>
+    <a class="sb-item" href="#subscription">Subscription &amp; Payment</a>
+    <a class="sb-item" href="#admin">Admin</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Technical</div>
+    <a class="sb-item" href="#architecture">Architecture</a>
+    <a class="sb-item" href="#database">Database Schema</a>
+    <a class="sb-item" href="#edge-functions">Edge Functions</a>
+    <a class="sb-item" href="#state-management">State Management</a>
+    <a class="sb-item" href="#offline-sync">Offline &amp; Sync</a>
+    <a class="sb-item" href="#environment">Environment Setup</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">UI</div>
+    <a class="sb-item" href="design-system.html">Design System</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Reference</div>
+    <a class="sb-item ext" href="aws-certification-roadmap.html">AWS Cert Roadmap</a>
+  </div>
+</nav>
+
+<!-- ══ MAIN ══ -->
+<main id="main">
+
+  <!-- INTRO -->
+  <div class="page-title" id="intro">
+    <h1>CloudExamLab — Developer Wiki</h1>
+    <p>Single source of truth for how the platform works, why decisions were made, and how the codebase is structured.</p>
+  </div>
+
+  <div class="tw"><table>
+    <thead><tr><th>Layer</th><th>Details</th></tr></thead>
+    <tbody>
+      <tr><td>Frontend</td><td>React 18 + Vite + Zustand — no Redux, deployed as static files</td></tr>
+      <tr><td>Backend</td><td>Supabase (Postgres + Auth + Edge Functions on Deno)</td></tr>
+      <tr><td>Payments</td><td>PayPal subscriptions via Edge Function</td></tr>
+      <tr><td>Current exam</td><td>AWS Developer Associate (DVA-C02) — Azure &amp; GCP planned</td></tr>
+      <tr><td>Access model</td><td>Free samples always open; paid sets require an active subscription</td></tr>
+    </tbody>
+  </table></div>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       PLATFORM — OVERVIEW
+  ════════════════════════════════════════════════════ -->
+  <div class="section" id="platform-overview">
+    <span class="chip chip-platform">Platform</span>
+    <h1>What is CloudExamLab?</h1>
+    <p class="section-meta">The product, the target users, and how the business model works.</p>
+
+    <p>CloudExamLab is a SaaS exam-prep platform focused on cloud certifications. The subscription unlocks two co-equal offerings for each exam: a <strong>comprehensive study course</strong> (guided lessons across every domain) and <strong>realistic practice exams</strong>. Both track progress and provide AI-powered explanations.</p>
+
+    <h2>Core Value Proposition</h2>
+    <ul>
+      <li><strong>Comprehensive study course</strong> — guided, exam-aligned lessons covering every domain (concepts, AWS service breakdowns, exam tips, and a practice question per session)</li>
+      <li>Realistic timed practice exams</li>
+      <li>AI explanations for every question (powered by Claude)</li>
+      <li>Progress tracking across multiple attempts</li>
+      <li>Offline support — take exams without internet</li>
+      <li>Study streak to encourage daily practice</li>
+    </ul>
+    <p>Study material and practice exams are <strong>peers</strong>, not a primary feature plus an add-on: the exam-detail page surfaces both at the same level, and both are part of what the subscription sells.</p>
+
+    <h2>What's Live vs Coming Soon</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Exam</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>AWS Developer Associate (DVA-C02)</td><td><span class="badge badge-green">Live</span></td></tr>
+        <tr><td>AWS Solutions Architect</td><td><span class="badge badge-yellow">Coming soon</span></td></tr>
+        <tr><td>Azure, GCP</td><td><span class="badge badge-gray">Planned</span></td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Business Model</h2>
+    <p>Subscription-based. <strong>One subscription unlocks all paid question sets and the full study course</strong> across all exams. Each exam offers a free taste of both: free sample question sets, and the first domain of the study course as a free preview. Everything beyond the preview requires an active subscription.</p>
+    <div class="tw"><table>
+      <thead><tr><th>Plan</th><th>Price</th></tr></thead>
+      <tbody>
+        <tr><td>Monthly</td><td>$5 / month</td></tr>
+        <tr><td>Quarterly</td><td>$10 / quarter</td></tr>
+        <tr><td>Annual</td><td>$30 / year</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Key Concepts</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Term</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Exam type</strong></td><td>A certification (e.g. "AWS Developer Associate"). Has: duration, passing score, max score, total questions.</td></tr>
+        <tr><td><strong>Question set</strong></td><td>A practice exam within an exam type. Can be free (sample) or paid. Has its own questions, timer, and scoring.</td></tr>
+        <tr><td><strong>Enrollment</strong></td><td>A user linking themselves to an exam type. Requires active subscription. Used for dashboard filtering and progress tracking — <em>not</em> for access gating.</td></tr>
+        <tr><td><strong>Attempt</strong></td><td>A single run-through of a question set. Saved to DB with all answers, time spent, and score.</td></tr>
+        <tr><td><strong>Progress</strong></td><td>The in-progress state of an ongoing attempt. Allows resuming if the user leaves mid-exam.</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       PLATFORM — USER FLOW
+  ════════════════════════════════════════════════════ -->
+  <div class="section" id="user-flow">
+    <span class="chip chip-platform">Platform</span>
+    <h1>User Flow</h1>
+    <p class="section-meta">End-to-end journey: from landing page to active learner.</p>
+
+    <div class="callout callout-note">
+      <strong>Design principle:</strong> The user is making a multi-month career investment, not just buying a practice test. The flow leads with an easy signup, then immediately makes the product feel personal via the <strong>Cloud Certification Journey</strong>, then proves value with a free practice set before asking for payment.
+    </div>
+
+    <div class="flow">Landing page
+  ↓
+Signup  (email + password  or  Google OAuth — nothing else required)
+  ↓
+Cloud Certification Journey quiz  (career-aware, 3 stages)
+  ↓
+Your Journey result
+  current role → target role + salary + timeline + cert sequence
+  ↓
+Free 10-question practice set
+  (Foundation cert by default; Associate cert if quiz shows user is past Foundation)
+  ↓
+"Subscribe to unlock your full journey" → PayPal payment
+  ↓
+Full dashboard + ongoing study</div>
+
+    <h2>1. Landing Page <code>/</code></h2>
+    <p>Public marketing page. Primary CTA is <strong>"Start Free"</strong> (signup), not the quiz. Communicates: 6 cloud career paths + salaries, pricing, and FAQ. Works even without Supabase credentials — a mock client fallback renders the page.</p>
+
+    <h2>2. Signup</h2>
+    <p>Deliberately minimal friction.</p>
+    <ol class="steps">
+      <li><code>AuthModal</code> opens with <code>SignupForm</code></li>
+      <li>User signs up with <strong>email + password</strong> or <strong>Google OAuth</strong> — no extra fields</li>
+      <li><code>authStore.signup()</code> → Supabase creates auth user + profile row</li>
+      <li>If email verification is on, user sees "Check your email"</li>
+      <li>Navigated to <code>/dashboard</code></li>
+    </ol>
+    <p>Country, city, and timezone are detected silently via <code>ipapi.co</code> and saved to the profile.</p>
+
+    <h2>3. Cloud Certification Journey (post-signup)</h2>
+    <p>A career-aware quiz that maps the user's background to a cert roadmap and a concrete salary outcome. Framed as a promise, not a help tool.</p>
+
+    <h3>Stage 1 — Where you are now</h3>
+    <ul>
+      <li><strong>Current role</strong> — Software Developer / SysAdmin-Ops / Data / Security / Network / AI-ML / Student / Other</li>
+      <li><strong>Aspiring path</strong> — Cloud Architect / DevOps / Data / AI-ML / Security / Network (separate question — a developer can target Architect <em>or</em> DevOps)</li>
+      <li>Years of experience &amp; AWS familiarity</li>
+      <li>Existing certifications held</li>
+    </ul>
+
+    <h3>Stage 2 — What you want to achieve</h3>
+    <ul>
+      <li>Primary goal (higher pay / promotion / career change / employer requirement / validate skills)</li>
+      <li>How far to go (Foundational → Associate → Professional → Specialty)</li>
+      <li>Target timeline</li>
+    </ul>
+
+    <h3>Stage 3 — Study capacity</h3>
+    <ul>
+      <li>Hours per week &amp; region (for salary data)</li>
+    </ul>
+
+    <p>Answers are persisted in <code>localStorage</code> under key <code>cloudexamlab_path_answers</code> so the dashboard "My Path" section and free-set logic can read them.</p>
+
+    <h2>4. Your Journey Result</h2>
+    <p>A <strong>career transformation statement</strong>, not just a cert list:</p>
+    <div class="flow">Current role:     Software Developer (2–4 yrs experience)
+Target role:      Senior DevOps Engineer
+Recommended path: Path 2 — DevOps / Operations
+
+Your Journey:
+  CLF  →  DVA  →  DOP
+  5wks     10wks    16wks   (at your chosen weekly pace)
+
+By month 8, you could be earning $131K–$151K/yr.
+33,000+ job postings open right now on LinkedIn.</div>
+
+    <p>The depth of the cert sequence (how many steps show) is controlled by the "how far do you want to go" answer. Each path ends with a Specialty cert at the deepest "Domain Expert" depth.</p>
+
+    <h2>5. Free Practice Set</h2>
+    <ul>
+      <li>Default: <strong>Foundation</strong> cert for their path (CLF, or AIF for the AI/ML path)</li>
+      <li>If quiz shows user is already past Foundation (holds an AWS cert, or 2+ years AWS experience) → first <strong>Associate</strong> cert instead — always relevant</li>
+    </ul>
+    <p>Timed, answers save to <code>user_progress</code>, completion shows score + one AI explanation as a teaser.</p>
+
+    <h2>6. Subscribe to Continue</h2>
+    <ol class="steps">
+      <li><code>EnrollmentModal</code> opens with the 3 subscription plans</li>
+      <li>User selects plan → <code>purchaseStore.createSubscription()</code></li>
+      <li>Redirect to PayPal approval → <code>/payment-success</code></li>
+      <li>Subscription status updated to <code>"active"</code> in <code>user_subscriptions</code></li>
+    </ol>
+    <p>The pitch is targeted: "Unlock your full [Path Name] journey" — not a generic upsell.</p>
+
+    <h2>7. Dashboard <code>/dashboard</code></h2>
+    <div class="tw"><table>
+      <thead><tr><th>Quiz state</th><th>Behaviour</th></tr></thead>
+      <tbody>
+        <tr><td>NOT completed</td><td>A persistent prompt to complete the Cloud Certification Journey is always shown. Not a blocker — they can still browse.</td></tr>
+        <tr><td>Completed</td><td><strong>My Path</strong> section shows target role, salary, timeline, cert sequence + enrolled exams, study streak, daily goal, recent history, subscription status.</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>8. Taking an Exam <code>/exam/:slug/take?set=:setId</code></h2>
+    <p>Timer, per-question answer saving, free navigation between questions, AI explanations on demand. Resumes in-progress attempts automatically.</p>
+
+    <h2>9. Review Results <code>/exam/:slug/results</code></h2>
+    <p>Score summary (%, scaled score, pass/fail, time) + question-by-question review with correct answers highlighted + AI explanations + retake option.</p>
+
+    <h2>10. Ongoing Use</h2>
+    <ul>
+      <li>Streak tracking encourages daily sessions</li>
+      <li>Multiple attempts per set — each is saved separately</li>
+      <li>As certs are cleared, "My Path" reflects progress through the journey</li>
+    </ul>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       PLATFORM — AUTHENTICATION
+  ════════════════════════════════════════════════════ -->
+  <div class="section" id="authentication">
+    <span class="chip chip-platform">Platform</span>
+    <h1>Authentication</h1>
+    <p class="section-meta">Handled entirely by Supabase Auth, wrapped in <code>authStore</code> (Zustand).</p>
+
+    <div class="tw"><table>
+      <thead><tr><th>Method</th><th>How</th></tr></thead>
+      <tbody>
+        <tr><td>Email + password</td><td>Supabase <code>signUp</code> / <code>signInWithPassword</code></td></tr>
+        <tr><td>Magic link (OTP)</td><td>Supabase <code>signInWithOtp</code> — sends email with one-time link</td></tr>
+        <tr><td>Password reset</td><td><code>resetPasswordForEmail</code> + <code>updateUser</code></td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Signup Flow</h2>
+    <ol class="steps">
+      <li>User submits email + password on <code>SignupForm</code></li>
+      <li><code>authStore.signup(email, password, metadata)</code> → <code>supabase.auth.signUp()</code></li>
+      <li>Supabase creates auth user and fires <code>onAuthStateChange</code> with <code>SIGNED_IN</code></li>
+      <li><code>authStore.initialize()</code> listener picks this up → calls <code>loadProfile(userId)</code></li>
+      <li>Profile row created in <code>public.profiles</code> (server-side trigger or upsert)</li>
+      <li>Metadata saved: <code>{ country, city, timezone }</code> — detected via <code>ipapi.co</code></li>
+    </ol>
+
+    <h2>Login Flow</h2>
+    <ol class="steps">
+      <li><code>authStore.login(email, password)</code> → <code>supabase.auth.signInWithPassword()</code></li>
+      <li>Session tokens stored in localStorage under key <code>cloudexamlab-auth</code></li>
+      <li><code>loadProfile()</code> called → fetches profile cache-first (1-hour TTL)</li>
+      <li>Navigate to <code>/dashboard</code></li>
+    </ol>
+
+    <h2>Magic Link Flow</h2>
+    <ol class="steps">
+      <li><code>authStore.signInWithMagicLink(email)</code> → <code>supabase.auth.signInWithOtp()</code></li>
+      <li>User receives email → clicks one-time link → redirected back to app with token in URL</li>
+      <li><code>authStore.initialize()</code> detects URL hash → Supabase processes token</li>
+      <li>Auth state changes to <code>SIGNED_IN</code> → same profile load as above</li>
+    </ol>
+
+    <h2>Password Reset Flow</h2>
+    <ol class="steps">
+      <li>User clicks "Forgot Password" → enters email</li>
+      <li><code>authStore.resetPassword(email)</code> → recovery email sent pointing to <code>/reset-password</code></li>
+      <li><code>ResetPassword.jsx</code> checks URL for <code>token_type === "recovery"</code></li>
+      <li>User enters new password → <code>authStore.updatePassword()</code> → <code>supabase.auth.updateUser()</code></li>
+      <li>On success → redirect to landing page</li>
+    </ol>
+
+    <h2>Session Management</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Setting</th><th>Value / behaviour</th></tr></thead>
+      <tbody>
+        <tr><td>Auto-refresh</td><td>Enabled — <code>autoRefreshToken: true</code></td></tr>
+        <tr><td>Persistence</td><td>Enabled — <code>persistSession: true</code></td></tr>
+        <tr><td>Storage key</td><td><code>cloudexamlab-auth</code> in localStorage</td></tr>
+        <tr><td>URL detection</td><td><code>detectSessionInUrl: true</code> — handles magic link and OAuth redirects</td></tr>
+        <tr><td>On app load</td><td><code>authStore.initialize()</code> calls <code>supabase.auth.getUser()</code> to restore session</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Protected Routes</h2>
+    <p><code>App.jsx</code> wraps private pages in a <code>ProtectedRoute</code> component: waits for <code>authStore.loading</code> to be false, redirects to <code>/</code> if no session.</p>
+
+    <h2>Profile (<code>public.profiles</code>)</h2>
+    <p>One row per user. Cached in localStorage with 1-hour TTL; background refresh on each app load.</p>
+    <div class="tw"><table>
+      <thead><tr><th>Field</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><code>id</code></td><td>uuid PK — matches Supabase <code>auth.users</code> UUID</td></tr>
+        <tr><td><code>email</code>, <code>full_name</code>, <code>avatar_url</code></td><td></td></tr>
+        <tr><td><code>exam_dates_json</code></td><td>JSON map: <code>{ "aws-dva-c02": "2025-06-15" }</code></td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Logout</h2>
+    <p><code>authStore.logout()</code> → <code>supabase.auth.signOut()</code> → clears profile cache → resets store state.</p>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       PLATFORM — ACCESS CONTROL
+  ════════════════════════════════════════════════════ -->
+  <div class="section" id="access-control">
+    <span class="chip chip-platform">Platform</span>
+    <h1>Access Control</h1>
+    <p class="section-meta">Who can access what, and how it is enforced at each layer.</p>
+
+    <div class="tw"><table>
+      <thead><tr><th>Content</th><th>Anonymous</th><th>Logged in (no sub)</th><th>Active subscriber</th></tr></thead>
+      <tbody>
+        <tr><td>Landing page</td><td>✅</td><td>✅</td><td>✅</td></tr>
+        <tr><td>Free sample exams</td><td>✅</td><td>✅</td><td>✅</td></tr>
+        <tr><td>Paid question sets</td><td>❌</td><td>❌</td><td>✅</td></tr>
+        <tr><td>Study course — free preview (first domain)</td><td>❌</td><td>✅</td><td>✅</td></tr>
+        <tr><td>Study course — full (all domains)</td><td>❌</td><td>❌</td><td>✅</td></tr>
+        <tr><td>Dashboard</td><td>❌</td><td>✅</td><td>✅</td></tr>
+        <tr><td>Exam detail page</td><td>❌</td><td>✅</td><td>✅</td></tr>
+        <tr><td>Admin panel</td><td>❌</td><td>❌ unless admin email</td><td>❌ unless admin email</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Paid Content Check — <code>ExamInterface.jsx</code></h2>
+    <pre><code>const isFree    = questionSet.is_free_sample || questionSet.price_cents === 0
+const canAccess = isFree || isSubscribed</code></pre>
+    <p><code>isSubscribed</code> comes from <code>purchaseStore</code>, which checks <code>user_subscriptions.status === 'active'</code>.</p>
+
+    <h2>Study Course Check — <code>StudyMaterial.jsx</code> / <code>SessionCourse.jsx</code></h2>
+    <p>The study course uses a <strong>free-preview</strong> model: the first module (domain) is open to any logged-in user; the rest require a subscription. <code>StudyMaterial</code> fetches the subscription and passes <code>hasAccess</code> + <code>onSubscribe</code> down.</p>
+    <pre><code>// SessionCourse.jsx — first module is the free preview
+const freeModuleId = course.modules[0]?.id
+const isLocked = (session) =&gt; !hasAccess &amp;&amp; session.domain !== freeModuleId</code></pre>
+    <p>Locked sessions still appear in the sidebar (with a 🔒) and show a teaser header, but the lesson body is replaced by a <code>LockedSession</code> paywall whose CTA opens the <code>EnrollmentModal</code>. The legacy topic-based study path gates the same way: the first task is the preview, later tasks are replaced by a subscribe panel.</p>
+    <div class="callout callout-warning">Like the paid-question-set check, this gate is <strong>application-layer only</strong>. Course content ships in the client bundle (<code>src/data/*.js</code>), so it is not a hard security boundary — it's a paywall, not DRM.</div>
+
+    <h2>Admin Panel — Double-Gated</h2>
+    <ol>
+      <li>Standard <code>ProtectedRoute</code> — must be logged in</li>
+      <li><code>admin-api</code> Edge Function verifies caller's email === <code>ADMIN_EMAIL</code> env var — returns 403 otherwise</li>
+    </ol>
+    <div class="callout callout-note">No admin role in the database. Access is controlled by a single hardcoded email environment variable.</div>
+
+    <h2>Row-Level Security (RLS) — Supabase Policies</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Table</th><th>Policy</th></tr></thead>
+      <tbody>
+        <tr><td><code>subscription_plans</code></td><td>Anyone can read active plans (no auth needed)</td></tr>
+        <tr><td><code>exam_types</code>, <code>question_sets</code>, <code>question_items</code></td><td>Readable by all authenticated users</td></tr>
+        <tr><td><code>user_progress</code>, <code>exam_attempts</code></td><td>Users can only read/write their own rows</td></tr>
+        <tr><td><code>profiles</code>, <code>user_subscriptions</code>, <code>user_enrollments</code></td><td>Users can only read/write their own row(s)</td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="callout callout-warning">
+      <strong>RLS does not block <code>question_items</code> for paid sets.</strong> The subscription check is application-layer only — it happens in <code>ExamInterface</code> before loading the exam. A determined user could query the DB directly.
+    </div>
+
+    <h2>Edge Cases</h2>
+    <ul>
+      <li>Cancelled/suspended subscription → loses paid access immediately on next check</li>
+      <li>Enrollment persists even if subscription lapses — user stays enrolled but loses paid access</li>
+      <li>Free samples always accessible regardless of subscription state</li>
+      <li>Study course first domain (free preview) stays accessible to any logged-in user even without a subscription; later domains lock the moment a subscription lapses</li>
+    </ul>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       PLATFORM — EXAM FLOW
+  ════════════════════════════════════════════════════ -->
+  <div class="section" id="exam-flow">
+    <span class="chip chip-platform">Platform</span>
+    <h1>Exam Flow</h1>
+    <p class="section-meta">Starting, taking, submitting, and reviewing an exam.</p>
+
+    <h2>Data Model</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Entity</th><th>Key fields</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Exam type</strong></td><td><code>duration_minutes</code>, <code>passing_score</code>, <code>max_score</code>, <code>total_questions</code></td></tr>
+        <tr><td><strong>Question set</strong></td><td><code>question_count</code>, <code>is_free_sample</code>, <code>price_cents</code>, <code>version_number</code></td></tr>
+        <tr><td><strong>Question item</strong></td><td><code>question_text</code>, <code>question_type</code> (Multiple Choice / Multiple Response), <code>options[]</code>, <code>domain</code>, <code>tags[]</code>, <code>ai_cache</code></td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Starting an Exam</h2>
+    <p>Route: <code>/exam/:slug/take?set=:setId</code></p>
+    <ol class="steps">
+      <li><code>ExamInterface</code> mounts → checks auth + access (<code>isFree || isSubscribed</code>)</li>
+      <li><code>examStore.loadQuestionSet(setId)</code> → fetches metadata + all <code>question_items</code> → normalizes format (derives <code>correctAnswers[]</code> from <code>options[].isCorrect</code>)</li>
+      <li><code>progressStore.startOrResumeExam()</code> → queries <code>user_progress</code> for any <code>in_progress</code> attempt for this set</li>
+      <li>If resuming: loads saved state (question index, answers, timeElapsed) + shows resume banner</li>
+      <li>Timer starts; options may be shuffled for randomisation</li>
+    </ol>
+
+    <h2>During the Exam</h2>
+
+    <h3>Navigation panel</h3>
+    <p>All question numbers visible at once. Color coding:</p>
+    <ul>
+      <li>Gray — not visited</li>
+      <li>Yellow/orange — visited but unanswered</li>
+      <li>Green — answered</li>
+    </ul>
+    <p>User can jump to any question at any time.</p>
+
+    <h3>Answering</h3>
+    <ul>
+      <li><strong>Multiple Choice:</strong> click one option (auto-deselects others)</li>
+      <li><strong>Multiple Response:</strong> toggle each option (e.g. "Select 2 answers")</li>
+      <li>Each selection calls <code>progressStore.saveAnswer()</code> → immediately upserted to <code>user_progress</code></li>
+    </ul>
+
+    <h3>Timer</h3>
+    <p>Counts up (tracks time spent, not remaining). Updates every second locally — not persisted every second. Pause state is persisted. Free samples get a proportional timer.</p>
+
+    <h3>AI Explanations</h3>
+    <p>User clicks "Explain" → <code>AIExplanationPanel</code> slides in → calls <code>ai-explanation</code> Edge Function → returns explanation + AWS doc links. Response cached in <code>question_items.ai_cache</code> to avoid repeat API calls.</p>
+
+    <h3>Offline persistence</h3>
+    <p>If a save fails (offline), <code>SyncService</code> queues the write and retries when network returns.</p>
+
+    <h2>Submitting</h2>
+
+    <h3>Score calculation</h3>
+    <pre><code>correctCount  = answers matching question's correctAnswers[]
+percentage    = (correctCount / totalQuestions) * 100
+scaledScore   = percentage × (maxScore / 100)
+passed        = percentage >= exam_type.passing_score</code></pre>
+
+    <h3>After submit</h3>
+    <ol class="steps">
+      <li>Full record saved to <code>exam_attempts</code></li>
+      <li><code>user_progress.status</code> updated to <code>completed</code></li>
+      <li><code>streakService.recordActivity()</code> — increments streak if consecutive day</li>
+      <li>Redirect to <code>/exam/:slug/results?resultId=:id&amp;set=:setId</code></li>
+    </ol>
+
+    <h2>Results Page</h2>
+    <ul>
+      <li>Score summary: raw score, %, scaled score, pass/fail badge, time spent</li>
+      <li>Every question reviewed: user's answer, correct answer highlighted, domain tag, explanation text</li>
+      <li>AI explanation panel on demand per question</li>
+      <li>Actions: Get AI Explanation, Retake Exam, Back to Exam page</li>
+    </ul>
+
+    <h2>Free Samples vs Paid Sets</h2>
+    <div class="tw"><table>
+      <thead><tr><th></th><th>Free sample</th><th>Paid set</th></tr></thead>
+      <tbody>
+        <tr><td>Requires login</td><td>No</td><td>Yes</td></tr>
+        <tr><td>Requires subscription</td><td>No</td><td>Yes</td></tr>
+        <tr><td><code>is_free_sample</code></td><td><code>true</code></td><td><code>false</code></td></tr>
+        <tr><td><code>price_cents</code></td><td><code>0</code></td><td><code>&gt; 0</code></td></tr>
+      </tbody>
+    </table></div>
+    <p>Both use the same <code>ExamInterface</code> — the only difference is the access check at the start.</p>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       PLATFORM — SUBSCRIPTION & PAYMENT
+  ════════════════════════════════════════════════════ -->
+  <div class="section" id="subscription">
+    <span class="chip chip-platform">Platform</span>
+    <h1>Subscription &amp; Payment</h1>
+    <p class="section-meta">PayPal subscriptions, plan management, and how enrollment relates to subscription.</p>
+
+    <div class="callout callout-note">
+      Payments are processed by <strong>PayPal</strong> (subscription billing). Free sample sets bypass all subscription checks.
+    </div>
+
+    <h2>Subscription Plans (<code>subscription_plans</code> table)</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Plan</th><th>Slug</th><th>Price</th><th>Billing</th></tr></thead>
+      <tbody>
+        <tr><td>Monthly</td><td><code>monthly</code></td><td>$5</td><td>Every month</td></tr>
+        <tr><td>Quarterly</td><td><code>quarterly</code></td><td>$10</td><td>Every 3 months</td></tr>
+        <tr><td>Annual</td><td><code>annual</code></td><td>$30</td><td>Every year</td></tr>
+      </tbody>
+    </table></div>
+    <p>Each row includes a <code>paypal_plan_id</code> — created in the PayPal Developer dashboard, not the app.</p>
+
+    <h2>PayPal Subscription Flow</h2>
+    <div class="flow">User selects plan
+  ↓
+purchaseStore.createSubscription(planSlug, userId, email)
+  ↓
+paymentService.createSubscription()
+  ↓
+Edge Function: create-paypal-subscription
+  — Fetches plan row from DB (gets paypal_plan_id)
+  — Calls PayPal API to create a subscription
+  — Inserts pending row in user_subscriptions
+  — Returns { approvalUrl }
+  ↓
+Frontend redirects user to PayPal approval page
+  ↓
+User approves on PayPal
+  ↓
+PayPal redirects to /payment-success?type=subscription
+  ↓
+PaymentSuccess page verifies subscription is "active"</div>
+
+    <div class="callout callout-tip">
+      <strong>Dev mode:</strong> <code>paymentService.mockSubscription()</code> inserts a fake "active" row directly, skipping PayPal entirely.
+    </div>
+
+    <h2>Webhook — Keeping Subscription Status in Sync</h2>
+    <p>The <code>paypal-webhook</code> Edge Function receives events from PayPal, validates the signature using <code>PAYPAL_WEBHOOK_ID</code>, and updates <code>user_subscriptions.status</code>.</p>
+    <div class="tw"><table>
+      <thead><tr><th>PayPal event</th><th>Status set to</th></tr></thead>
+      <tbody>
+        <tr><td><code>BILLING.SUBSCRIPTION.ACTIVATED</code></td><td><code>active</code></td></tr>
+        <tr><td><code>BILLING.SUBSCRIPTION.CANCELLED</code></td><td><code>cancelled</code></td></tr>
+        <tr><td><code>BILLING.SUBSCRIPTION.SUSPENDED</code></td><td><code>suspended</code></td></tr>
+      </tbody>
+    </table></div>
+    <p>Webhook must be registered in PayPal Developer dashboard pointing to:</p>
+    <pre><code>https://&lt;supabase-project-ref&gt;.supabase.co/functions/v1/paypal-webhook</code></pre>
+
+    <h2>Enrollment (separate concept from subscription)</h2>
+    <p>Enrollment links a subscriber to a specific exam type. One subscription → many enrollments.</p>
+    <ol class="steps">
+      <li>Active subscriber clicks "Enroll" on an exam type</li>
+      <li><code>purchaseStore.enrollInExam()</code> → inserts into <code>user_enrollments</code></li>
+      <li>Unique constraint on <code>(user_id, exam_type_id)</code> — returns <code>alreadyEnrolled: true</code> if duplicate</li>
+      <li>Enrolled exams appear on dashboard</li>
+    </ol>
+    <div class="callout callout-note">
+      <strong>Enrollment ≠ access control.</strong> Enrollment is for dashboard filtering and progress tracking. Paid content access is controlled by subscription status alone.
+    </div>
+
+    <h2>Changing Prices or PayPal Plans</h2>
+    <div class="callout callout-warning">
+      PayPal <strong>does not allow editing prices</strong> on existing billing plans. To change prices: create new plans in PayPal → update <code>subscription_plans</code> table rows → update the fallback prices in <code>EnrollmentModal.jsx:187–190</code>. Existing subscribers on old plans continue on their old pricing until they cancel.
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       PLATFORM — ADMIN
+  ════════════════════════════════════════════════════ -->
+  <div class="section" id="admin">
+    <span class="chip chip-platform">Platform</span>
+    <h1>Admin</h1>
+    <p class="section-meta">How platform administrators manage exam content. Route: <code>/admin</code>.</p>
+
+    <h2>Access</h2>
+    <p>Double-gated:</p>
+    <ol>
+      <li>Standard <code>ProtectedRoute</code> — must be logged in</li>
+      <li><code>admin-api</code> Edge Function verifies caller email === <code>ADMIN_EMAIL</code> env var — returns 403 otherwise</li>
+    </ol>
+
+    <h2>Tab 1 — Exam Types</h2>
+    <p>Manages the certification catalog. Operations: create, edit (no delete in UI).</p>
+    <div class="tw"><table>
+      <thead><tr><th>Field</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>name</code></td><td>Display name (e.g. "AWS Developer Associate")</td></tr>
+        <tr><td><code>slug</code></td><td>URL identifier (e.g. <code>aws-dva-c02</code>)</td></tr>
+        <tr><td><code>provider</code></td><td>AWS, Azure, or GCP</td></tr>
+        <tr><td><code>duration_minutes</code></td><td>Full exam duration</td></tr>
+        <tr><td><code>total_questions</code></td><td>Number of questions in the real exam</td></tr>
+        <tr><td><code>passing_score</code></td><td>Minimum % to pass</td></tr>
+        <tr><td><code>max_score</code></td><td>Maximum scaled score (1000 for AWS exams)</td></tr>
+        <tr><td><code>is_active</code></td><td>Controls visibility on landing page</td></tr>
+        <tr><td><code>display_order</code></td><td>Sort order in catalog</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Tab 2 — Question Sets</h2>
+    <p>Practice exam sets within an exam type. Operations: create, edit.</p>
+    <div class="tw"><table>
+      <thead><tr><th>Field</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>exam_type_id</code></td><td>FK to exam_types</td></tr>
+        <tr><td><code>set_number</code></td><td>Numeric ordering within exam type</td></tr>
+        <tr><td><code>question_count</code></td><td>Number of questions in this set</td></tr>
+        <tr><td><code>price_cents</code></td><td>0 = free, &gt;0 = paid</td></tr>
+        <tr><td><code>is_free_sample</code></td><td>Explicit free flag — overrides price check</td></tr>
+        <tr><td><code>version_number</code></td><td>Content revision tracker</td></tr>
+        <tr><td><code>is_active</code></td><td>Controls visibility</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Tab 3 — Manage Questions</h2>
+    <p>Individual questions within a selected set. Operations: bulk upsert (create + update), delete.</p>
+    <div class="tw"><table>
+      <thead><tr><th>Field</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>question_number</code></td><td>Ordering within the set</td></tr>
+        <tr><td><code>question_text</code></td><td>Supports markdown</td></tr>
+        <tr><td><code>question_type</code></td><td>"Multiple Choice" (1 correct) or "Multiple Response" (≥2 correct)</td></tr>
+        <tr><td><code>domain</code></td><td>Exam domain (e.g. "Development with AWS Services")</td></tr>
+        <tr><td><code>options</code></td><td>Array of <code>{ id, text, isCorrect }</code></td></tr>
+        <tr><td><code>correct_answers</code></td><td>Derived from <code>options[].isCorrect</code> during normalization</td></tr>
+        <tr><td><code>tags</code></td><td>Array of topic strings for filtering</td></tr>
+        <tr><td><code>ai_cache</code></td><td>Pre-fetched AI explanation — avoids repeat Claude API calls</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Edge Function: <code>admin-api</code></h2>
+    <p>All admin CRUD goes through this Edge Function — keeps <code>SUPABASE_SERVICE_ROLE_KEY</code> server-side and centralises access control. The frontend calls it via <code>adminService.js</code>, which wraps requests with the user's JWT.</p>
+    <div class="tw"><table>
+      <thead><tr><th>Operations</th><th></th></tr></thead>
+      <tbody>
+        <tr><td>Exam types</td><td><code>getExamTypes</code>, <code>createExamType</code>, <code>updateExamType</code></td></tr>
+        <tr><td>Question sets</td><td><code>getQuestionSets</code>, <code>createQuestionSet</code>, <code>updateQuestionSet</code></td></tr>
+        <tr><td>Questions</td><td><code>getQuestionItems</code>, <code>upsertQuestionItems</code>, <code>deleteQuestionItems</code></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       TECHNICAL — ARCHITECTURE
+  ════════════════════════════════════════════════════ -->
+  <div class="section" id="architecture">
+    <span class="chip chip-technical">Technical</span>
+    <h1>Architecture</h1>
+    <p class="section-meta">Tech stack, folder structure, and key design patterns.</p>
+
+    <h2>Tech Stack</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Layer</th><th>Technology</th></tr></thead>
+      <tbody>
+        <tr><td>Frontend</td><td>React 18 + Vite</td></tr>
+        <tr><td>Styling</td><td>Tailwind CSS</td></tr>
+        <tr><td>State management</td><td>Zustand — 5 stores, no Redux</td></tr>
+        <tr><td>Backend</td><td>Supabase (Postgres + Auth + Edge Functions on Deno)</td></tr>
+        <tr><td>Payments</td><td>PayPal REST API via Edge Function</td></tr>
+        <tr><td>Offline storage</td><td>IndexedDB via custom <code>indexedDBService</code></td></tr>
+        <tr><td>Local cache</td><td>localStorage via <code>cacheService</code></td></tr>
+        <tr><td>Background sync</td><td>Custom <code>SyncService</code> — event-driven queue with retry</td></tr>
+        <tr><td>PWA</td><td>Service worker at <code>/sw.js</code></td></tr>
+        <tr><td>Hosting</td><td>Static Vite build, deployed to CDN</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Folder Structure</h2>
+    <pre><code>src/
+  App.jsx              — Router + ProtectedRoute setup
+  main.jsx             — React DOM entry point
+  pages/               — Route-level components (one per page)
+  components/
+    auth/              — AuthModal, LoginForm, SignupForm
+    admin/             — ExamTypeForm, QuestionSetForm, QuestionSetManager
+    exam/              — ExamLandingSection
+    enrollment/        — EnrollmentModal
+    layout/            — DashboardHeader
+    AIExplanationPanel.jsx
+  stores/              — 5 Zustand stores
+  services/            — All external calls (Supabase, PayPal, IDB, cache, sync, streak)
+  utils/               — Constants, validators
+
+supabase/
+  functions/           — 4 Edge Functions (Deno/TypeScript)
+  table/               — SQL DDL for all 13 tables
+  migrations/          — Incremental schema changes
+  email-templates/     — Custom HTML for Supabase Auth emails</code></pre>
+
+    <h2>Design Patterns</h2>
+
+    <h3>Cache-first data loading</h3>
+    <p>Profile, exam types, question sets — all check local cache (localStorage or IndexedDB) first. Cache hit: return cached data + trigger background refresh. Cache miss: fetch from Supabase + populate cache.</p>
+
+    <h3>Offline-first exam taking</h3>
+    <p>Answers are saved to Supabase immediately. If the request fails (offline), <code>SyncService</code> queues it and retries with exponential backoff when the network returns.</p>
+
+    <h3>Client-generated UUIDs for attempts</h3>
+    <p><code>exam_attempt_id</code> is generated on the client with <code>crypto.randomUUID()</code> before the attempt starts. This lets local state reference the attempt ID before the first server write — no round-trip needed to start an exam.</p>
+
+    <h3>Edge Functions for sensitive operations</h3>
+    <p>Admin CRUD and PayPal API calls go through Supabase Edge Functions, keeping <code>SUPABASE_SERVICE_ROLE_KEY</code> and <code>PAYPAL_CLIENT_SECRET</code> off the client.</p>
+
+    <h3>Zustand over Redux</h3>
+    <p>Lightweight stores with no boilerplate. Each store is self-contained with its own state and actions. Stores communicate by calling each other's methods directly.</p>
+
+    <h3>Question normalisation</h3>
+    <p><code>examStore.normalizeQuestionSet()</code> converts raw DB format into a consistent <code>{ correctAnswers[], options[] }</code> structure used throughout the UI. Runs once on load.</p>
+
+    <h2>Routing</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Route</th><th>Component</th><th>Protected</th></tr></thead>
+      <tbody>
+        <tr><td><code>/</code></td><td>Landing</td><td>No</td></tr>
+        <tr><td><code>/reset-password</code></td><td>ResetPassword</td><td>No</td></tr>
+        <tr><td><code>/dashboard</code></td><td>Dashboard</td><td>Yes</td></tr>
+        <tr><td><code>/exam/:slug</code></td><td>ExamDetail</td><td>Yes</td></tr>
+        <tr><td><code>/exam/:slug/take</code></td><td>ExamInterface</td><td>Yes</td></tr>
+        <tr><td><code>/exam/:slug/results</code></td><td>ExamResults</td><td>Yes</td></tr>
+        <tr><td><code>/exam/:slug/study</code></td><td>StudyMaterial (free first domain; rest needs subscription)</td><td>Yes</td></tr>
+        <tr><td><code>/payment-success</code></td><td>PaymentSuccess</td><td>Yes</td></tr>
+        <tr><td><code>/admin</code></td><td>AdminPage</td><td>Yes</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>External Services</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Service</th><th>Used for</th><th>Where</th></tr></thead>
+      <tbody>
+        <tr><td>Supabase</td><td>Auth, database, Edge Functions</td><td><code>services/supabase.js</code></td></tr>
+        <tr><td>PayPal API</td><td>Subscription creation</td><td><code>supabase/functions/create-paypal-subscription/</code></td></tr>
+        <tr><td>PayPal Webhooks</td><td>Status sync (activated / cancelled / suspended)</td><td><code>supabase/functions/paypal-webhook/</code></td></tr>
+        <tr><td>ipapi.co</td><td>Geolocation at signup/login (country, city, timezone)</td><td><code>LoginForm.jsx</code>, <code>SignupForm.jsx</code></td></tr>
+        <tr><td>Anthropic Claude</td><td>AI explanations for questions</td><td><code>supabase/functions/ai-explanation/</code></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       TECHNICAL — DATABASE SCHEMA
+  ════════════════════════════════════════════════════ -->
+  <div class="section" id="database">
+    <span class="chip chip-technical">Technical</span>
+    <h1>Database Schema</h1>
+    <p class="section-meta">All 13 tables in the Supabase Postgres database.</p>
+
+    <h2>Relationships at a Glance</h2>
+    <div class="dbtree">exam_types
+  └── question_sets
+        └── question_items
+
+profiles  (id = Supabase auth.users UUID)
+  ├── user_subscriptions  →  subscription_plans
+  ├── user_enrollments    →  exam_types
+  ├── user_progress       →  question_sets
+  ├── exam_attempts       →  question_sets
+  ├── study_streaks
+  └── ai_usage            →  question_items</div>
+
+    <h2>Core Exam Content</h2>
+
+    <h3><code>exam_types</code></h3>
+    <div class="tw"><table>
+      <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><code>id</code></td><td>uuid PK</td><td></td></tr>
+        <tr><td><code>name</code></td><td>text</td><td>e.g. "AWS Developer Associate"</td></tr>
+        <tr><td><code>slug</code></td><td>text UNIQUE</td><td>e.g. <code>aws-dva-c02</code> — used in URL</td></tr>
+        <tr><td><code>provider</code></td><td>text</td><td>AWS, Azure, GCP</td></tr>
+        <tr><td><code>total_questions</code></td><td>int</td><td>Questions in the real exam</td></tr>
+        <tr><td><code>duration_minutes</code></td><td>int</td><td>Real exam duration</td></tr>
+        <tr><td><code>passing_score</code></td><td>int</td><td>Minimum % to pass</td></tr>
+        <tr><td><code>max_score</code></td><td>int</td><td>Default 1000 (AWS scaled scoring)</td></tr>
+        <tr><td><code>is_active</code></td><td>bool</td><td>Controls landing page visibility</td></tr>
+        <tr><td><code>display_order</code></td><td>int</td><td>Sort order</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3><code>question_sets</code></h3>
+    <div class="tw"><table>
+      <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><code>id</code></td><td>uuid PK</td><td></td></tr>
+        <tr><td><code>exam_type_id</code></td><td>uuid FK</td><td>→ exam_types</td></tr>
+        <tr><td><code>name</code></td><td>text</td><td>e.g. "Practice Exam 1"</td></tr>
+        <tr><td><code>set_number</code></td><td>int</td><td>Ordering within exam type</td></tr>
+        <tr><td><code>question_count</code></td><td>int</td><td></td></tr>
+        <tr><td><code>price_cents</code></td><td>int</td><td>0 = free</td></tr>
+        <tr><td><code>is_free_sample</code></td><td>bool</td><td>Explicit free flag — overrides price check</td></tr>
+        <tr><td><code>version_number</code></td><td>int</td><td>Content revision tracker</td></tr>
+        <tr><td><code>is_active</code></td><td>bool</td><td></td></tr>
+      </tbody>
+    </table></div>
+
+    <h3><code>question_items</code></h3>
+    <div class="tw"><table>
+      <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><code>id</code></td><td>uuid PK</td><td></td></tr>
+        <tr><td><code>question_set_id</code></td><td>uuid FK</td><td>→ question_sets</td></tr>
+        <tr><td><code>question_number</code></td><td>int</td><td>Ordering within set</td></tr>
+        <tr><td><code>question_text</code></td><td>text</td><td>Supports markdown</td></tr>
+        <tr><td><code>question_type</code></td><td>text</td><td>"Multiple Choice" or "Multiple Response"</td></tr>
+        <tr><td><code>domain</code></td><td>text</td><td>Exam domain/topic area</td></tr>
+        <tr><td><code>options</code></td><td>jsonb</td><td>Array of <code>{ id, text, isCorrect }</code></td></tr>
+        <tr><td><code>correct_answers</code></td><td>jsonb</td><td>Array of correct option IDs</td></tr>
+        <tr><td><code>tags</code></td><td>jsonb</td><td>Array of topic strings</td></tr>
+        <tr><td><code>ai_cache</code></td><td>text</td><td>Cached AI explanation text</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>User &amp; Auth</h2>
+
+    <h3><code>profiles</code></h3>
+    <p>One row per user, created on signup. <code>id</code> matches Supabase <code>auth.users</code> UUID.</p>
+    <div class="tw"><table>
+      <thead><tr><th>Column</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><code>id</code> uuid PK</td><td>Matches auth.users UUID</td></tr>
+        <tr><td><code>email</code>, <code>full_name</code>, <code>avatar_url</code></td><td></td></tr>
+        <tr><td><code>exam_dates_json</code></td><td>jsonb — <code>{ "aws-dva-c02": "2025-06-15" }</code></td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Subscriptions &amp; Enrollment</h2>
+
+    <h3><code>subscription_plans</code></h3>
+    <p>RLS: anyone (no auth needed) can read active plans — used by the landing page.</p>
+    <div class="tw"><table>
+      <thead><tr><th>Column</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><code>slug</code> UNIQUE</td><td><code>monthly</code>, <code>quarterly</code>, <code>annual</code></td></tr>
+        <tr><td><code>price_cents</code></td><td>e.g. 500 = $5.00</td></tr>
+        <tr><td><code>interval_unit</code>, <code>interval_count</code></td><td>Billing cycle definition</td></tr>
+        <tr><td><code>paypal_plan_id</code></td><td>PayPal billing plan ID — from PayPal dashboard</td></tr>
+        <tr><td><code>is_active</code></td><td>Only active plans shown to users</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3><code>user_subscriptions</code></h3>
+    <div class="tw"><table>
+      <thead><tr><th>Column</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><code>user_id</code></td><td>FK → profiles</td></tr>
+        <tr><td><code>plan_id</code></td><td>FK → subscription_plans</td></tr>
+        <tr><td><code>paypal_subscription_id</code></td><td>PayPal's subscription reference ID</td></tr>
+        <tr><td><code>status</code></td><td><code>pending</code> / <code>active</code> / <code>cancelled</code> / <code>suspended</code></td></tr>
+        <tr><td><code>current_period_start/end</code></td><td>Current billing window</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3><code>user_enrollments</code></h3>
+    <p>Unique constraint on <code>(user_id, exam_type_id)</code>.</p>
+
+    <h2>Progress &amp; Results</h2>
+
+    <h3><code>user_progress</code></h3>
+    <p>In-progress exam state — allows resuming.</p>
+    <div class="tw"><table>
+      <thead><tr><th>Column</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><code>exam_attempt_id</code> uuid PK</td><td>Client-generated with <code>crypto.randomUUID()</code></td></tr>
+        <tr><td><code>user_id</code>, <code>question_set_id</code></td><td></td></tr>
+        <tr><td><code>current_question_number</code></td><td>0-indexed current position</td></tr>
+        <tr><td><code>current_answers_json</code></td><td>jsonb — <code>{ "0": "A", "1": ["A","C"] }</code></td></tr>
+        <tr><td><code>time_elapsed_seconds</code></td><td>Total time spent so far</td></tr>
+        <tr><td><code>status</code></td><td><code>in_progress</code> / <code>completed</code></td></tr>
+        <tr><td><code>started_at</code>, <code>completed_at</code></td><td><code>completed_at</code> is null until done</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3><code>exam_attempts</code></h3>
+    <p>Completed exam records. <code>id</code> is the same UUID as <code>user_progress.exam_attempt_id</code>.</p>
+    <div class="tw"><table>
+      <thead><tr><th>Column</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><code>answers_json</code></td><td>Full answers map</td></tr>
+        <tr><td><code>raw_score</code></td><td># of correct answers</td></tr>
+        <tr><td><code>percentage_score</code></td><td>0–100</td></tr>
+        <tr><td><code>scaled_score</code></td><td>Exam-specific scale (e.g. 0–1000 for AWS)</td></tr>
+        <tr><td><code>passed</code></td><td>bool</td></tr>
+        <tr><td><code>time_spent_seconds</code></td><td></td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Gamification &amp; AI</h2>
+
+    <h3><code>study_streaks</code></h3>
+    <p>One row per user (unique on <code>user_id</code>). Fields: <code>current_streak</code>, <code>longest_streak</code>, <code>total_days</code>, <code>last_activity_date</code>, <code>questions_today</code> (resets daily).</p>
+
+    <h3><code>ai_usage</code></h3>
+    <p>Tracks AI explanation API calls per user + question — used for rate limiting or cost tracking. Fields: <code>user_id</code>, <code>question_item_id</code>, <code>created_at</code>.</p>
+
+    <h2>Payment Infrastructure</h2>
+
+    <h3><code>paypal_webhook_logs</code></h3>
+    <p>Logs incoming PayPal webhook events. Fields: <code>event_type</code>, <code>payload</code> (jsonb), <code>processed</code> (bool), <code>created_at</code>. Used for debugging and auditing.</p>
+
+    <h3><code>packages</code></h3>
+    <p>Legacy / future feature — not actively used in the current subscription flow.</p>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       TECHNICAL — EDGE FUNCTIONS
+  ════════════════════════════════════════════════════ -->
+  <div class="section" id="edge-functions">
+    <span class="chip chip-technical">Technical</span>
+    <h1>Edge Functions</h1>
+    <p class="section-meta">4 Supabase Edge Functions (Deno/TypeScript) in <code>supabase/functions/</code>. Supabase auto-injects <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code> — all other secrets must be set via <code>supabase secrets set</code>.</p>
+
+    <hr>
+
+    <h2><code>admin-api</code></h2>
+    <p><strong>Purpose:</strong> Secure gateway for all admin CRUD. Keeps <code>SUPABASE_SERVICE_ROLE_KEY</code> off the client.</p>
+    <p><strong>Auth:</strong> Decodes the caller's JWT, fetches their email, compares to <code>ADMIN_EMAIL</code>. Returns 403 if no match.</p>
+    <p><strong>Operations:</strong> exam type CRUD, question set CRUD, question item bulk-upsert &amp; delete.</p>
+    <div class="tw"><table>
+      <thead><tr><th>Secret</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code>SUPABASE_SERVICE_ROLE_KEY</code></td><td>Privileged DB writes</td></tr>
+        <tr><td><code>ADMIN_EMAIL</code></td><td>Only email allowed admin access</td></tr>
+      </tbody>
+    </table></div>
+
+    <hr>
+
+    <h2><code>ai-explanation</code></h2>
+    <p><strong>Purpose:</strong> Returns an AI-generated explanation for a question + relevant AWS documentation links.</p>
+    <p><strong>Flow:</strong> Receives <code>question_item_id</code> + context → checks <code>ai_cache</code> column → if cached, returns it immediately → otherwise calls Claude API → saves to <code>ai_cache</code> + logs to <code>ai_usage</code>.</p>
+    <div class="tw"><table>
+      <thead><tr><th>Secret</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code>SUPABASE_SERVICE_ROLE_KEY</code></td><td>Write <code>ai_cache</code> + <code>ai_usage</code></td></tr>
+        <tr><td><code>ANTHROPIC_API_KEY</code></td><td>Claude API calls</td></tr>
+      </tbody>
+    </table></div>
+
+    <hr>
+
+    <h2><code>create-paypal-subscription</code></h2>
+    <p><strong>Purpose:</strong> Creates a PayPal subscription and returns an approval URL for the frontend to redirect to.</p>
+    <p><strong>Flow:</strong> Receives <code>planSlug</code>, <code>userId</code>, <code>email</code> → fetches <code>paypal_plan_id</code> from DB → calls PayPal API → inserts <code>pending</code> row in <code>user_subscriptions</code> → returns <code>{ approvalUrl }</code>.</p>
+    <div class="tw"><table>
+      <thead><tr><th>Secret</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code>PAYPAL_CLIENT_ID</code>, <code>PAYPAL_CLIENT_SECRET</code></td><td>PayPal app credentials</td></tr>
+        <tr><td><code>PAYPAL_MODE</code></td><td><code>sandbox</code> or <code>live</code></td></tr>
+        <tr><td><code>SUPABASE_SERVICE_ROLE_KEY</code></td><td>Write <code>user_subscriptions</code></td></tr>
+      </tbody>
+    </table></div>
+
+    <hr>
+
+    <h2><code>paypal-webhook</code></h2>
+    <p><strong>Purpose:</strong> Receives PayPal webhook events and updates subscription status in the database.</p>
+    <p><strong>Flow:</strong> Verifies webhook signature using <code>PAYPAL_WEBHOOK_ID</code> → logs to <code>paypal_webhook_logs</code> → updates <code>user_subscriptions.status</code>.</p>
+    <p><strong>Webhook URL to register in PayPal:</strong></p>
+    <pre><code>https://&lt;project-ref&gt;.supabase.co/functions/v1/paypal-webhook</code></pre>
+    <div class="tw"><table>
+      <thead><tr><th>Secret</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code>PAYPAL_CLIENT_ID</code>, <code>PAYPAL_CLIENT_SECRET</code></td><td>For verifying events with PayPal API</td></tr>
+        <tr><td><code>PAYPAL_WEBHOOK_ID</code></td><td>Registered webhook ID — used for signature verification</td></tr>
+        <tr><td><code>PAYPAL_MODE</code></td><td><code>sandbox</code> or <code>live</code></td></tr>
+        <tr><td><code>SUPABASE_SERVICE_ROLE_KEY</code></td><td>Write subscription status</td></tr>
+      </tbody>
+    </table></div>
+
+    <hr>
+
+    <h2>Deploying</h2>
+    <pre><code>supabase functions deploy admin-api                    --project-ref &lt;ref&gt;
+supabase functions deploy ai-explanation               --project-ref &lt;ref&gt;
+supabase functions deploy create-paypal-subscription   --project-ref &lt;ref&gt;
+supabase functions deploy paypal-webhook               --project-ref &lt;ref&gt;
+
+# Set secrets (one-time per project)
+supabase secrets set \
+  SUPABASE_SERVICE_ROLE_KEY=... \
+  ADMIN_EMAIL=... \
+  PAYPAL_CLIENT_ID=... \
+  PAYPAL_CLIENT_SECRET=... \
+  PAYPAL_WEBHOOK_ID=... \
+  PAYPAL_MODE=live \
+  --project-ref &lt;ref&gt;</code></pre>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       TECHNICAL — STATE MANAGEMENT
+  ════════════════════════════════════════════════════ -->
+  <div class="section" id="state-management">
+    <span class="chip chip-technical">Technical</span>
+    <h1>State Management</h1>
+    <p class="section-meta">5 Zustand stores in <code>src/stores/</code>. Each is self-contained — state, actions, and async logic in one file.</p>
+
+    <h2><code>authStore</code></h2>
+    <p>Owns authentication and user profile state.<br><em>Called by:</em> <code>App.jsx</code>, <code>LoginForm</code>, <code>SignupForm</code>, <code>DashboardHeader</code></p>
+    <div class="tw"><table>
+      <thead><tr><th>State</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>user</code></td><td>Supabase auth user object (or null)</td></tr>
+        <tr><td><code>profile</code></td><td>Row from <code>profiles</code> table</td></tr>
+        <tr><td><code>loading</code></td><td>True while session is being checked on app load</td></tr>
+        <tr><td><code>error</code></td><td>Last auth error message</td></tr>
+      </tbody>
+    </table></div>
+    <div class="tw"><table>
+      <thead><tr><th>Key action</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td><code>initialize()</code></td><td>Checks session on app load; subscribes to <code>onAuthStateChange</code></td></tr>
+        <tr><td><code>login(email, password)</code></td><td>Signs in via Supabase</td></tr>
+        <tr><td><code>signup(email, password, metadata)</code></td><td>Creates user + profile</td></tr>
+        <tr><td><code>signInWithMagicLink(email)</code></td><td>Sends OTP email</td></tr>
+        <tr><td><code>logout()</code></td><td>Signs out + clears cache</td></tr>
+        <tr><td><code>loadProfile(userId)</code></td><td>Cache-first fetch, 1-hour TTL</td></tr>
+        <tr><td><code>resetPassword(email)</code></td><td>Sends password reset email</td></tr>
+        <tr><td><code>updatePassword(newPassword)</code></td><td>Updates password (used in reset flow)</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2><code>examStore</code></h2>
+    <p>Owns exam catalog and question data.<br><em>Called by:</em> <code>Landing</code>, <code>ExamDetail</code>, <code>ExamInterface</code>, <code>ExamResults</code></p>
+    <div class="tw"><table>
+      <thead><tr><th>Key action</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td><code>fetchExams()</code></td><td>Gets all active exam types ordered by <code>display_order</code></td></tr>
+        <tr><td><code>fetchQuestionSets(examTypeId)</code></td><td>Gets set metadata (no questions)</td></tr>
+        <tr><td><code>loadQuestionSet(questionSetId)</code></td><td>Loads full set + all <code>question_items</code></td></tr>
+        <tr><td><code>normalizeQuestionSet(data)</code></td><td>Converts raw DB format to <code>{ correctAnswers[], options[] }</code></td></tr>
+      </tbody>
+    </table></div>
+
+    <h2><code>purchaseStore</code></h2>
+    <p>Owns subscription and enrollment state.<br><em>Called by:</em> <code>ExamDetail</code>, <code>ExamInterface</code>, <code>EnrollmentModal</code>, <code>Dashboard</code></p>
+    <div class="tw"><table>
+      <thead><tr><th>Key action</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td><code>fetchSubscription(userId)</code></td><td>Checks user's subscription status</td></tr>
+        <tr><td><code>createSubscription(planSlug, userId, email)</code></td><td>Starts PayPal flow (or mock in dev)</td></tr>
+        <tr><td><code>hasAccess(questionSetId)</code></td><td>Returns <code>isSubscribed</code> boolean</td></tr>
+        <tr><td><code>enrollInExam(examTypeId, userId)</code></td><td>Creates enrollment row</td></tr>
+        <tr><td><code>isEnrolled(examTypeId)</code></td><td>Checks in-memory enrollment array</td></tr>
+        <tr><td><code>clearCache()</code></td><td>Resets on logout</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2><code>progressStore</code></h2>
+    <p>Owns active exam attempt state — lives only for the duration of an exam session.<br><em>Called by:</em> <code>ExamInterface</code>, <code>ExamResults</code></p>
+    <div class="tw"><table>
+      <thead><tr><th>Key action</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td><code>startOrResumeExam(qsId, userId, count)</code></td><td>Checks for in-progress attempt; resumes or starts fresh</td></tr>
+        <tr><td><code>saveAnswer(questionIndex, answer)</code></td><td>Saves answer locally + persists to <code>user_progress</code></td></tr>
+        <tr><td><code>goToQuestion(questionIndex)</code></td><td>Navigates + saves current position</td></tr>
+        <tr><td><code>updateTimer(seconds)</code></td><td>Updates local timer only — not persisted every second</td></tr>
+        <tr><td><code>setTimerPaused(paused)</code></td><td>Pauses/resumes + saves state to DB</td></tr>
+        <tr><td><code>completeExam(results)</code></td><td>Marks complete; saves to <code>exam_attempts</code>; calls streak service</td></tr>
+        <tr><td><code>reset()</code></td><td>Clears all state</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2><code>syncStore</code></h2>
+    <p>Thin wrapper over <code>syncService</code> events — drives the sync status indicator in <code>DashboardHeader</code>.<br><em>Called by:</em> <code>DashboardHeader</code></p>
+    <div class="tw"><table>
+      <thead><tr><th>State</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>isOnline</code></td><td>Network status</td></tr>
+        <tr><td><code>isSyncing</code></td><td>Active sync in progress</td></tr>
+        <tr><td><code>pendingCount</code></td><td>Items waiting in queue</td></tr>
+        <tr><td><code>syncStatus</code></td><td><code>idle</code> / <code>syncing</code> / <code>error</code> / <code>offline</code></td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Store Interactions</h2>
+    <pre><code>authStore.logout()
+  → purchaseStore.clearCache()
+  → examStore reset (implicit — next fetch returns fresh data)
+
+progressStore.completeExam()
+  → streakService.recordActivity()   (direct service call, not via store)
+  → writes to user_progress + exam_attempts via progressService
+
+purchaseStore.createSubscription()
+  → paymentService.createSubscription()   (direct service call)
+  → redirects to PayPal (no store update until /payment-success callback)</code></pre>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       TECHNICAL — OFFLINE & SYNC
+  ════════════════════════════════════════════════════ -->
+  <div class="section" id="offline-sync">
+    <span class="chip chip-technical">Technical</span>
+    <h1>Offline &amp; Sync</h1>
+    <p class="section-meta">CloudExamLab supports taking exams without internet. Built on three layers.</p>
+
+    <h2>Layer 1 — IndexedDB (large data storage)</h2>
+    <p>File: <code>src/services/indexedDBService.js</code><br>DB name: <code>CloudExamLabDB</code> (version 1)</p>
+    <p>Stores large structured data locally so it survives page refreshes and is available offline. Used by <code>examStore</code> — subsequent loads after the first come from IDB instead of Supabase.</p>
+    <div class="tw"><table>
+      <thead><tr><th>Object store</th><th>Contents</th></tr></thead>
+      <tbody>
+        <tr><td><code>questionSets</code></td><td>Full question set data (all questions + options)</td></tr>
+        <tr><td><code>examAttempts</code></td><td>Completed exam records</td></tr>
+        <tr><td><code>examResults</code></td><td>Processed results with scoring</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Layer 2 — SyncService (background write queue)</h2>
+    <p>File: <code>src/services/syncService.js</code></p>
+    <p>An event-driven queue that ensures writes made during offline periods eventually reach Supabase.</p>
+
+    <h3>Flow</h3>
+    <ol>
+      <li>When online → write to Supabase directly</li>
+      <li>When offline → add to in-memory queue</li>
+      <li>When <code>window</code> fires <code>online</code> event → process queue</li>
+      <li>Each item retried up to 3 times with exponential backoff (5 s base)</li>
+      <li>On permanent failure → item marked <code>failed</code>, event emitted</li>
+    </ol>
+
+    <div class="tw"><table>
+      <thead><tr><th>Sync type</th><th>Table it writes to</th></tr></thead>
+      <tbody>
+        <tr><td><code>progress</code></td><td><code>user_progress</code></td></tr>
+        <tr><td><code>result</code></td><td><code>exam_attempts</code></td></tr>
+        <tr><td><code>profile</code></td><td><code>profiles</code></td></tr>
+      </tbody>
+    </table></div>
+
+    <p>Events emitted and consumed by <code>syncStore</code> (which drives the UI indicator): <code>added</code>, <code>processing</code>, <code>synced</code>, <code>failed</code>, <code>retry</code>, <code>idle</code>, <code>offline</code>, <code>cleared</code>.</p>
+
+    <h2>Layer 3 — Service Worker (PWA)</h2>
+    <p>File: <code>/sw.js</code> (registered in <code>main.jsx</code>). Caches static assets and API responses for offline access. Standard PWA setup.</p>
+
+    <h2>localStorage Cache (<code>cacheService</code>)</h2>
+    <p>File: <code>src/services/cacheService.js</code>. Simple wrapper with TTL support. Expired entries removed automatically on <code>get()</code>.</p>
+    <div class="tw"><table>
+      <thead><tr><th>Cached data</th><th>TTL</th></tr></thead>
+      <tbody>
+        <tr><td>User profile</td><td>1 hour</td></tr>
+        <tr><td>Progress metadata</td><td>Session</td></tr>
+      </tbody>
+    </table></div>
+    <p>API: <code>set(key, value, ttlMs)</code>, <code>get(key)</code>, <code>remove(key)</code>, <code>has(key)</code>, <code>touch(key)</code>, <code>clearAll()</code>.</p>
+
+    <h2>Streak Sync (<code>streakService</code>)</h2>
+    <p>File: <code>src/services/streakService.js</code>. Streaks are stored <strong>locally first</strong> in localStorage under key <code>exam_prep_streak</code>. On init: fetches latest from <code>study_streaks</code> table. Syncs back to DB every 5 minutes. Works fully offline; on next load the DB version wins (last-write-wins for multi-device conflict resolution).</p>
+
+    <h2>localStorage Key Namespace</h2>
+    <p>All app keys use prefix <code>cloudexamlab_</code> (from <code>constants.js: STORAGE_PREFIX</code>). Prevents collisions and makes it easy to clear all app data.</p>
+
+    <h2>Fallback Mock Client</h2>
+    <p>If Supabase env vars are missing, <code>services/supabase.js</code> uses a mock client instead of throwing. Returns empty data for reads; "Supabase not configured" errors for writes. Keeps the landing page functional with no backend.</p>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       TECHNICAL — ENVIRONMENT SETUP
+  ════════════════════════════════════════════════════ -->
+  <div class="section" id="environment">
+    <span class="chip chip-technical">Technical</span>
+    <h1>Environment Setup</h1>
+    <p class="section-meta">How to configure the project locally and what's needed when switching Supabase projects.</p>
+
+    <h2>Frontend Environment Variables</h2>
+    <p>Create <code>.env</code> at the project root:</p>
+    <pre><code>VITE_SUPABASE_URL=https://your-project-ref.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key</code></pre>
+    <p>Get from: Supabase Dashboard → Project Settings → API. These are the <strong>only two frontend env vars</strong>. Everything else lives server-side in Edge Function secrets.</p>
+
+    <h2>Edge Function Secrets</h2>
+    <pre><code>supabase secrets set \
+  SUPABASE_SERVICE_ROLE_KEY=your-service-role-key \
+  ADMIN_EMAIL=your-admin-email@example.com \
+  PAYPAL_CLIENT_ID=your-paypal-client-id \
+  PAYPAL_CLIENT_SECRET=your-paypal-client-secret \
+  PAYPAL_WEBHOOK_ID=your-paypal-webhook-id \
+  PAYPAL_MODE=live \
+  --project-ref your-project-ref</code></pre>
+    <div class="callout callout-note"><code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code> are auto-injected by Supabase — do not set them.</div>
+
+    <h2>Switching Supabase Projects — Step-by-Step</h2>
+
+    <h3>Step 1 — Create new project</h3>
+    <p>Go to supabase.com → New project → copy URL and anon key.</p>
+
+    <h3>Step 2 — Run database schema</h3>
+    <p>In the Supabase SQL editor, run each file in <code>supabase/table/</code> in this order (order matters for foreign keys):</p>
+    <ol>
+      <li><code>exam_types.sql</code></li>
+      <li><code>profiles.sql</code></li>
+      <li><code>question_sets.sql</code></li>
+      <li><code>question_items.sql</code></li>
+      <li><code>subscription_plans.sql</code></li>
+      <li><code>user_subscriptions.sql</code></li>
+      <li><code>user_enrollments.sql</code></li>
+      <li><code>user_progress.sql</code></li>
+      <li><code>exam_attempts.sql</code></li>
+      <li><code>study_streaks.sql</code></li>
+      <li><code>ai_usage.sql</code></li>
+      <li><code>packages.sql</code></li>
+      <li><code>paypal_webhook_logs.sql</code></li>
+    </ol>
+    <p>Then run migrations in <code>supabase/migrations/</code> in order:</p>
+    <ol>
+      <li><code>create_study_streak_table.sql</code></li>
+      <li><code>add_question_sets_rls.sql</code></li>
+      <li><code>add_exam_dates_to_profiles.sql</code></li>
+      <li><code>migrate_to_paypal.sql</code></li>
+      <li><code>drop_product_purchase_tables.sql</code></li>
+    </ol>
+
+    <h3>Step 3 — Seed subscription plans</h3>
+    <div class="callout callout-warning"><strong>Create PayPal billing plans first</strong> in PayPal Developer Dashboard → Billing Plans, then use those IDs here.</div>
+    <pre><code>INSERT INTO subscription_plans
+  (name, slug, price_cents, interval_unit, interval_count, paypal_plan_id, is_active, display_order)
+VALUES
+  ('Monthly',   'monthly',   500,  'MONTH', 1, 'P-XXXXXXXX', true, 1),
+  ('Quarterly', 'quarterly', 1000, 'MONTH', 3, 'P-XXXXXXXX', true, 2),
+  ('Annual',    'annual',    3000, 'YEAR',  1, 'P-XXXXXXXX', true, 3);</code></pre>
+
+    <h3>Step 4 — Set email templates</h3>
+    <p>Supabase Dashboard → Authentication → Email Templates. Paste HTML from <code>supabase/email-templates/</code>: <code>confirm-signup.html</code>, <code>reset-password.html</code>, <code>magic-link.html</code>, <code>invite-user.html</code>, <code>confirm-email-change.html</code>, <code>reauthentication.html</code>.</p>
+
+    <h3>Step 5 — Deploy Edge Functions</h3>
+    <pre><code>supabase functions deploy admin-api                   --project-ref &lt;ref&gt;
+supabase functions deploy ai-explanation              --project-ref &lt;ref&gt;
+supabase functions deploy create-paypal-subscription  --project-ref &lt;ref&gt;
+supabase functions deploy paypal-webhook              --project-ref &lt;ref&gt;</code></pre>
+
+    <h3>Step 6 — Register PayPal webhook</h3>
+    <p>PayPal Developer Dashboard → your app → Webhooks → Add webhook:</p>
+    <ul>
+      <li>URL: <code>https://&lt;new-ref&gt;.supabase.co/functions/v1/paypal-webhook</code></li>
+      <li>Events: <code>BILLING.SUBSCRIPTION.ACTIVATED</code>, <code>BILLING.SUBSCRIPTION.CANCELLED</code>, <code>BILLING.SUBSCRIPTION.SUSPENDED</code></li>
+    </ul>
+    <p>Copy the Webhook ID from PayPal → set as <code>PAYPAL_WEBHOOK_ID</code> secret.</p>
+
+    <h3>Step 7 — Update <code>.env</code></h3>
+    <p>Update <code>VITE_SUPABASE_URL</code> and <code>VITE_SUPABASE_ANON_KEY</code> with the new project values.</p>
+
+    <h3>Step 8 — Update hardcoded fallback prices (if prices changed)</h3>
+    <p>In <code>src/components/enrollment/EnrollmentModal.jsx</code> ~line 187–190:</p>
+    <pre><code>{ slug: 'monthly',   price_cents: 500  },
+{ slug: 'quarterly', price_cents: 1000 },
+{ slug: 'annual',    price_cents: 3000 },</code></pre>
+    <p>These are fallback display values shown only when the DB fetch fails — update to match your <code>subscription_plans</code> rows.</p>
+
+    <h2>Local Development</h2>
+    <pre><code>cd /Users/hamid/CloudExamLab
+npm install
+cp .env.example .env   # or create .env manually with the two VITE_ vars
+npm run dev            # runs at http://localhost:5173</code></pre>
+    <p>For Edge Functions locally: <code>supabase functions serve</code> (requires Supabase CLI + Docker).</p>
+  </div>
+
+</main>
+
+<!-- back to top button -->
+<button id="top-btn" title="Back to top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+  // Active sidebar item on scroll
+  const sections = document.querySelectorAll('[id]');
+  const navItems = document.querySelectorAll('.sb-item[href^="#"]');
+  const topBtn   = document.getElementById('top-btn');
+
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const id = e.target.id;
+        navItems.forEach(a => {
+          a.classList.toggle('active', a.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  }, { rootMargin: '-8% 0px -80% 0px' });
+
+  sections.forEach(s => io.observe(s));
+
+  // Show/hide back-to-top button
+  window.addEventListener('scroll', () => {
+    topBtn.style.display = window.scrollY > 400 ? 'flex' : 'none';
+  });
+</script>
+</body>
+</html>

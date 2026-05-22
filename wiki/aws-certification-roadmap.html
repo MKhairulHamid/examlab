@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AWS Certification Roadmap — CloudExamLab</title>
+  <style>
+    :root {
+      --sidebar-w: 255px;
+      --sidebar-bg: #0f172a;
+      --sidebar-text: #94a3b8;
+      --sidebar-active-text: #f59e0b;
+      --sidebar-active-bg: rgba(245,158,11,0.08);
+      --sidebar-hover: #1e293b;
+      --accent: #f59e0b;
+      --accent-dark: #b45309;
+      --accent-light: #fffbeb;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --heading: #0f172a;
+      --code-bg: #1e293b;
+      --code-text: #e2e8f0;
+      --stripe: #f8fafc;
+      --warn-bg: #fef2f2;
+      --warn-border: #ef4444;
+      --tip-bg: #f0fdf4;
+      --tip-border: #22c55e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--text); line-height: 1.65; background: #fff;
+    }
+
+    /* ── Sidebar ── */
+    #sidebar {
+      position: fixed; top: 0; left: 0;
+      width: var(--sidebar-w); height: 100vh;
+      background: var(--sidebar-bg);
+      overflow-y: auto; z-index: 100;
+    }
+    #sidebar::-webkit-scrollbar { width: 4px; }
+    #sidebar::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+    .sb-header { padding: 20px 16px 14px; border-bottom: 1px solid #1e293b; }
+    .sb-logo { font-size: 13px; font-weight: 700; color: #f1f5f9; letter-spacing: .06em; text-transform: uppercase; }
+    .sb-sub  { font-size: 11px; color: var(--sidebar-text); margin-top: 2px; }
+    .sb-back {
+      display: block; padding: 8px 16px; font-size: 12px;
+      color: #60a5fa; text-decoration: none;
+      border-bottom: 1px solid #1e293b;
+    }
+    .sb-back:hover { background: #1e293b; }
+    .sb-group { padding: 10px 0 2px; }
+    .sb-group-label {
+      font-size: 10px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: #475569;
+      padding: 0 16px; margin-bottom: 3px;
+    }
+    .sb-item {
+      display: block; padding: 5px 16px;
+      font-size: 12px; color: var(--sidebar-text);
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: background .12s, color .12s;
+    }
+    .sb-item:hover { background: var(--sidebar-hover); color: #f1f5f9; }
+    .sb-item.active { color: var(--sidebar-active-text); border-left-color: var(--sidebar-active-text); background: var(--sidebar-active-bg); }
+    .sb-item.indent { padding-left: 28px; font-size: 11.5px; }
+
+    /* ── Main ── */
+    #main {
+      margin-left: var(--sidebar-w);
+      padding: 48px 64px 96px;
+      max-width: calc(var(--sidebar-w) + 880px);
+    }
+
+    .section { padding-top: 52px; border-top: 1px solid var(--border); margin-top: 28px; }
+    .section:first-of-type { border-top: none; margin-top: 0; padding-top: 0; }
+
+    /* ── Typography ── */
+    h1 { font-size: 26px; font-weight: 700; color: var(--heading); margin-bottom: 10px; }
+    h2 { font-size: 19px; font-weight: 700; color: var(--heading); margin-top: 36px; margin-bottom: 12px; }
+    h3 { font-size: 15px; font-weight: 600; color: var(--heading); margin-top: 22px; margin-bottom: 8px; }
+    p  { margin-bottom: 12px; }
+    a  { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ul, ol { padding-left: 22px; margin-bottom: 12px; }
+    li { margin-bottom: 4px; }
+    hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+
+    .section-meta { font-size: 14px; color: var(--text-muted); margin-bottom: 24px; margin-top: -4px; }
+
+    /* ── Tables ── */
+    .tw { overflow-x: auto; margin: 14px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    th {
+      background: #f1f5f9; padding: 7px 12px;
+      text-align: left; font-size: 11px; font-weight: 700;
+      color: var(--text-muted); border-bottom: 2px solid var(--border); white-space: nowrap;
+    }
+    td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:nth-child(even) td { background: var(--stripe); }
+
+    /* ── Code ── */
+    code {
+      font-family: 'SF Mono','Fira Code',Consolas,monospace;
+      font-size: 12px; background: #f1f5f9; color: #be185d;
+      padding: 2px 5px; border-radius: 3px;
+    }
+    pre {
+      background: var(--code-bg); color: var(--code-text);
+      padding: 18px 20px; border-radius: 8px;
+      overflow-x: auto; margin: 14px 0;
+      font-size: 12.5px; line-height: 1.65;
+    }
+    pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+
+    /* ── Roadmap diagram ── */
+    .roadmap {
+      background: #1e293b; color: #93c5fd;
+      padding: 20px 24px; border-radius: 8px;
+      font-family: 'SF Mono','Fira Code',Consolas,monospace;
+      font-size: 13px; line-height: 1.75;
+      margin: 14px 0; white-space: pre; overflow-x: auto;
+    }
+
+    /* ── Callouts ── */
+    .callout {
+      padding: 12px 16px; border-radius: 6px;
+      margin: 14px 0; font-size: 13.5px;
+    }
+    .callout-note    { background: var(--accent-light); border-left: 4px solid var(--accent); }
+    .callout-warning { background: var(--warn-bg);      border-left: 4px solid var(--warn-border); }
+    .callout-tip     { background: var(--tip-bg);       border-left: 4px solid var(--tip-border); }
+
+    /* ── Page header ── */
+    .page-title { margin-bottom: 36px; }
+    .page-title h1 { font-size: 30px; margin-bottom: 8px; }
+    .page-title .meta { font-size: 13px; color: var(--text-muted); }
+
+    /* ── Cert card ── */
+    .cert-card {
+      border: 1px solid var(--border); border-radius: 10px;
+      padding: 20px 22px; margin: 18px 0;
+      background: #fff;
+    }
+    .cert-card h3 { margin-top: 0; font-size: 16px; color: var(--heading); }
+    .cert-card .cert-meta {
+      display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 14px;
+    }
+    .tag {
+      display: inline-block; padding: 3px 9px; border-radius: 4px;
+      font-size: 11px; font-weight: 600;
+    }
+    .tag-found   { background: #e0f2fe; color: #0369a1; }
+    .tag-assoc   { background: #dcfce7; color: #15803d; }
+    .tag-prof    { background: #ede9fe; color: #6d28d9; }
+    .tag-spec    { background: #fee2e2; color: #b91c1c; }
+    .tag-retire  { background: #fef9c3; color: #854d0e; }
+    .tag-new     { background: #fce7f3; color: #9d174d; }
+    .tag-neutral { background: #f1f5f9; color: #475569; }
+
+    /* ── Path card ── */
+    .path-card {
+      border: 1px solid var(--border); border-radius: 10px;
+      margin: 20px 0; overflow: hidden;
+    }
+    .path-header {
+      padding: 14px 20px;
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: baseline; gap: 12px;
+    }
+    .path-header h3 { margin: 0; font-size: 15px; }
+    .path-header .path-sub { font-size: 13px; color: var(--text-muted); }
+    .path-body { padding: 16px 20px; }
+    .path-flow {
+      font-family: 'SF Mono','Fira Code',Consolas,monospace;
+      font-size: 13px; color: #0ea5e9;
+      background: #f0f9ff; border: 1px solid #bae6fd;
+      padding: 12px 16px; border-radius: 6px;
+      margin-bottom: 14px; white-space: pre; overflow-x: auto;
+    }
+
+    /* ── Salary highlight ── */
+    .salary { font-weight: 700; color: #15803d; }
+    .demand { font-weight: 700; color: #0369a1; }
+
+    /* ── Back to top ── */
+    #top-btn {
+      position: fixed; bottom: 28px; right: 28px;
+      background: var(--accent); color: #fff;
+      border: none; border-radius: 50%; width: 38px; height: 38px;
+      font-size: 18px; cursor: pointer; display: none;
+      align-items: center; justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+    }
+    #top-btn:hover { background: var(--accent-dark); }
+
+    /* ── Quick-ref tables ── */
+    .qr-table th { font-size: 10.5px; }
+    .qr-table td { font-size: 12.5px; }
+  </style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<nav id="sidebar">
+  <div class="sb-header">
+    <div class="sb-logo">CloudExamLab</div>
+    <div class="sb-sub">AWS Cert Roadmap</div>
+  </div>
+  <a class="sb-back" href="index.html">← Back to Wiki</a>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Overview</div>
+    <a class="sb-item" href="#intro">Introduction</a>
+    <a class="sb-item" href="#levels">Cert Levels</a>
+    <a class="sb-item" href="#roadmap-glance">Roadmap at a Glance</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Foundational</div>
+    <a class="sb-item indent" href="#clf">Cloud Practitioner (CLF)</a>
+    <a class="sb-item indent" href="#aif">AI Practitioner (AIF)</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Associate</div>
+    <a class="sb-item indent" href="#saa">Solutions Architect (SAA)</a>
+    <a class="sb-item indent" href="#dva">Developer (DVA)</a>
+    <a class="sb-item indent" href="#cloudops">CloudOps Engineer</a>
+    <a class="sb-item indent" href="#soa">SysOps Admin (SOA)</a>
+    <a class="sb-item indent" href="#dea">Data Engineer (DEA)</a>
+    <a class="sb-item indent" href="#mla">ML Engineer (MLA)</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Professional</div>
+    <a class="sb-item indent" href="#sap">Solutions Architect (SAP)</a>
+    <a class="sb-item indent" href="#dop">DevOps Engineer (DOP)</a>
+    <a class="sb-item indent" href="#genai">Gen AI Developer</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Specialty</div>
+    <a class="sb-item indent" href="#scs">Security (SCS)</a>
+    <a class="sb-item indent" href="#ans">Advanced Networking (ANS)</a>
+    <a class="sb-item indent" href="#mls">ML Specialty (MLS) ⚠</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Career & Planning</div>
+    <a class="sb-item" href="#salary">Salary & Demand</a>
+    <a class="sb-item" href="#paths">6 Learning Paths</a>
+    <a class="sb-item" href="#prep-time">Prep Time Estimator</a>
+    <a class="sb-item" href="#tips">Tips &amp; Resources</a>
+    <a class="sb-item" href="#pricing">Pricing Summary</a>
+  </div>
+</nav>
+
+<!-- ══ MAIN ══ -->
+<main id="main">
+
+  <!-- INTRO -->
+  <div class="page-title" id="intro">
+    <h1>AWS Certification Roadmap</h1>
+    <p class="meta">Source: aws.amazon.com/certification &nbsp;·&nbsp; Last updated: May 2026 &nbsp;·&nbsp; 1.42M+ active certifications &nbsp;·&nbsp; 1.05M+ unique certified individuals</p>
+  </div>
+
+  <p>AWS certifications validate cloud skills across four progressively advanced levels — from non-technical business professionals to senior ML engineers. They're valid for <strong>3 years</strong> and delivered via Pearson VUE (test center or online proctored).</p>
+
+  <div class="callout callout-note">
+    <strong>Tip:</strong> Passing Cloud Practitioner earns a <strong>50% discount voucher</strong> for your next AWS exam. Start there if you're new to AWS.
+  </div>
+
+
+  <!-- CERT LEVELS -->
+  <div class="section" id="levels">
+    <h1>Certification Levels</h1>
+    <div class="tw"><table>
+      <thead><tr><th>Level</th><th>Experience required</th><th>Exam cost</th><th>Duration</th><th>Questions</th></tr></thead>
+      <tbody>
+        <tr><td><span class="tag tag-found">Foundational</span></td><td>No prior experience needed</td><td>$100 USD</td><td>90 min</td><td>65</td></tr>
+        <tr><td><span class="tag tag-assoc">Associate</span></td><td>1–2 years cloud / IT experience</td><td>$150 USD</td><td>130 min</td><td>65</td></tr>
+        <tr><td><span class="tag tag-prof">Professional</span></td><td>2+ years hands-on AWS experience</td><td>$300 USD</td><td>180 min</td><td>75</td></tr>
+        <tr><td><span class="tag tag-spec">Specialty</span></td><td>Deep domain expertise</td><td>$300 USD</td><td>170–180 min</td><td>65</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+
+  <!-- ROADMAP AT A GLANCE -->
+  <div class="section" id="roadmap-glance">
+    <h1>Roadmap at a Glance</h1>
+    <div class="roadmap">                    ┌──────────────────────────────┐
+                    │        FOUNDATIONAL          │
+                    │                              │
+                    │  Cloud Practitioner (CLF)    │
+                    │  AI Practitioner (AIF)       │
+                    └──────────────┬───────────────┘
+                                   │
+                    ┌──────────────▼───────────────┐
+                    │          ASSOCIATE           │
+                    │                              │
+                    │  Solutions Architect (SAA)   │
+                    │  Developer (DVA)             │
+                    │  CloudOps Engineer           │
+                    │  SysOps Admin (SOA)          │
+                    │  Data Engineer (DEA)         │
+                    │  ML Engineer (MLA)           │
+                    └──────────────┬───────────────┘
+                                   │
+                    ┌──────────────▼───────────────┐
+                    │        PROFESSIONAL          │
+                    │                              │
+                    │  Solutions Architect (SAP)   │
+                    │  DevOps Engineer (DOP)       │
+                    │  Gen AI Developer            │
+                    └──────────────┬───────────────┘
+                                   │
+                    ┌──────────────▼───────────────┐
+                    │          SPECIALTY           │
+                    │                              │
+                    │  Security (SCS)              │
+                    │  Advanced Networking (ANS)   │
+                    │  Machine Learning (MLS) *    │
+                    └──────────────────────────────┘
+
+  * ML Specialty retiring March 31, 2026 — replaced by ML Engineer Associate</div>
+  </div>
+
+
+  <!-- ═══════ FOUNDATIONAL ═══════ -->
+  <div class="section" id="clf">
+    <h1>Foundational Level</h1>
+    <p class="section-meta">Goal: Build cloud literacy and core AWS knowledge. No prior experience required.</p>
+
+    <div class="cert-card">
+      <h3>AWS Certified Cloud Practitioner <code>CLF-C02</code></h3>
+      <div class="cert-meta">
+        <span class="tag tag-found">Foundational</span>
+        <span class="tag tag-neutral">$100</span>
+        <span class="tag tag-neutral">90 min</span>
+        <span class="tag tag-neutral">65 questions</span>
+        <span class="tag tag-neutral">Valid 3 years</span>
+      </div>
+      <p><strong>The recommended starting point for anyone new to AWS.</strong> Earns a <strong>50% discount voucher</strong> for the next exam.</p>
+      <p><strong>Who it's for:</strong> Individuals new to cloud; non-technical roles (sales, marketing, finance, project management); business leaders needing cloud literacy.</p>
+      <p><strong>What it validates:</strong> High-level AWS service knowledge, cloud value proposition, shared responsibility model, pricing, security fundamentals.</p>
+      <p><strong>Recertification options:</strong> Pass the updated exam, complete AWS Cloud Quest game-based learning (free through July 2025), or earn any Associate/Professional cert.</p>
+      <p><strong>Salary at this stage:</strong> <span class="salary">$60K–$90K/yr</span> (entry cloud &amp; IT roles). <strong>Demand:</strong> <span class="demand">9,000+ job postings</span> on LinkedIn — 70% entry-level.</p>
+    </div>
+  </div>
+
+  <div class="section" id="aif">
+    <div class="cert-card">
+      <h3>AWS Certified AI Practitioner <code>AIF-C01</code></h3>
+      <div class="cert-meta">
+        <span class="tag tag-found">Foundational</span>
+        <span class="tag tag-neutral">$100</span>
+        <span class="tag tag-neutral">90 min</span>
+        <span class="tag tag-neutral">65 questions</span>
+        <span class="tag tag-neutral">Valid 3 years</span>
+      </div>
+      <p><strong>The foundational entry point for AI/ML on AWS.</strong> Focused on concepts and services, not hands-on engineering.</p>
+      <p><strong>Who it's for:</strong> Business analysts, IT support, marketing/sales professionals, product managers — anyone familiar with AI tools but not building systems.</p>
+      <p><strong>What it validates:</strong> Foundational AI/ML/GenAI concepts, AWS AI service landscape, responsible AI principles.</p>
+      <p><strong>Recommended path before this cert:</strong> No prior AI experience required. New IT professionals: complete AWS Cloud Practitioner Essentials first. CLF holders can proceed directly.</p>
+      <p><strong>Recertification:</strong> Pass current exam version or earn the ML Engineer Associate.</p>
+      <p><strong>Salary at this stage:</strong> <span class="salary">$80K–$120K/yr</span> (AI-adjacent / support roles).</p>
+      <p><a href="aif-c01.html">→ Full AIF-C01 Exam Guide</a></p>
+    </div>
+  </div>
+
+
+  <!-- ═══════ ASSOCIATE ═══════ -->
+  <div class="section" id="saa">
+    <h1>Associate Level</h1>
+    <p class="section-meta">Goal: Validate core technical skills for specific AWS roles. Recommended: 1–2 years hands-on experience.</p>
+
+    <div class="cert-card">
+      <h3>AWS Certified Solutions Architect – Associate <code>SAA-C03</code></h3>
+      <div class="cert-meta">
+        <span class="tag tag-assoc">Associate</span>
+        <span class="tag tag-neutral">$150</span>
+        <span class="tag tag-neutral">130 min</span>
+        <span class="tag tag-neutral">65 questions</span>
+      </div>
+      <p><strong>The most popular AWS certification worldwide.</strong> Ranked in the top 10 certifications globally by Skillsoft.</p>
+      <p><strong>Who it's for:</strong> Cloud architects, infrastructure engineers, IT professionals designing AWS solutions.</p>
+      <p><strong>What it validates:</strong> Designing resilient, high-performing, and secure architectures; selecting appropriate AWS services; cost and performance optimisation.</p>
+      <p><strong>Experience recommended:</strong> 1 year designing cloud solutions. CLF recommended for those without an IT background.</p>
+      <p><strong>Salary:</strong> <span class="salary">avg $153K/yr</span> (range $100K–$234K). <strong>Demand:</strong> <span class="demand">2,000+ job postings</span>.</p>
+    </div>
+  </div>
+
+  <div class="section" id="dva">
+    <div class="cert-card">
+      <h3>AWS Certified Developer – Associate <code>DVA-C02</code></h3>
+      <div class="cert-meta">
+        <span class="tag tag-assoc">Associate</span>
+        <span class="tag tag-neutral">$150</span>
+        <span class="tag tag-neutral">130 min</span>
+        <span class="tag tag-neutral">65 questions</span>
+      </div>
+      <p><strong>Who it's for:</strong> Software developers and application engineers building/deploying on AWS.</p>
+      <p><strong>What it validates:</strong> Developing, testing, deploying, and debugging cloud-based apps; CI/CD workflows; Lambda, DynamoDB, deployment pipelines.</p>
+      <p><strong>Recertification:</strong> Retake the exam or earn the DevOps Engineer Professional.</p>
+      <p><strong>Salary:</strong> <span class="salary">$120K–$145K/yr</span> for cloud developer roles. Often combined with SAA for a stronger profile.</p>
+    </div>
+  </div>
+
+  <div class="section" id="cloudops">
+    <div class="cert-card">
+      <h3>AWS Certified CloudOps Engineer – Associate</h3>
+      <div class="cert-meta">
+        <span class="tag tag-assoc">Associate</span>
+        <span class="tag tag-new">New</span>
+        <span class="tag tag-neutral">$150</span>
+        <span class="tag tag-neutral">130 min</span>
+        <span class="tag tag-neutral">65 questions</span>
+      </div>
+      <p><strong>The evolution of SysOps Administrator</strong> — reflects modern cloud operations practices.</p>
+      <p><strong>Who it's for:</strong> Cloud Operations Specialists, Cloud Support Engineers, Migration Specialists.</p>
+      <p><strong>What it validates:</strong> Deploying and managing workloads on AWS; monitoring; security controls; networking; business continuity; cost optimisation.</p>
+      <p><strong>Salary:</strong> <span class="salary">$120K–$140K/yr</span> for cloud operations roles.</p>
+    </div>
+  </div>
+
+  <div class="section" id="soa">
+    <div class="cert-card">
+      <h3>AWS Certified SysOps Administrator – Associate <code>SOA-C02</code></h3>
+      <div class="cert-meta">
+        <span class="tag tag-assoc">Associate</span>
+        <span class="tag tag-retire">Being superseded by CloudOps</span>
+        <span class="tag tag-neutral">$150</span>
+        <span class="tag tag-neutral">130 min</span>
+      </div>
+      <p><strong>Who it's for:</strong> System administrators and operations engineers managing AWS workloads.</p>
+      <p><strong>What it validates:</strong> Deploying/managing AWS infrastructure; monitoring; security controls; business continuity; cost optimisation.</p>
+      <div class="callout callout-warning" style="margin-top:10px">This exam is being superseded by the <strong>CloudOps Engineer Associate</strong>. New candidates should prefer the CloudOps path.</div>
+    </div>
+  </div>
+
+  <div class="section" id="dea">
+    <div class="cert-card">
+      <h3>AWS Certified Data Engineer – Associate <code>DEA-C01</code></h3>
+      <div class="cert-meta">
+        <span class="tag tag-assoc">Associate</span>
+        <span class="tag tag-neutral">$150</span>
+        <span class="tag tag-neutral">130 min</span>
+        <span class="tag tag-neutral">65 questions</span>
+      </div>
+      <p><strong>Who it's for:</strong> Data engineers and data architects building/managing data pipelines on AWS.</p>
+      <p><strong>What it validates:</strong> Data ingestion, transformation, pipeline orchestration, data model design; AWS data services (Glue, Kinesis, Redshift, S3, Lake Formation).</p>
+      <p><strong>Experience recommended:</strong> 2–3 years data engineering + 1–2 years hands-on AWS.</p>
+      <p><strong>Salary:</strong> <span class="salary">avg $137K/yr</span> (range $89K–$211K). <strong>Demand:</strong> <span class="demand">2,000+ postings/month</span>.</p>
+    </div>
+  </div>
+
+  <div class="section" id="mla">
+    <div class="cert-card">
+      <h3>AWS Certified Machine Learning Engineer – Associate <code>MLA-C01</code></h3>
+      <div class="cert-meta">
+        <span class="tag tag-assoc">Associate</span>
+        <span class="tag tag-new">Replaces ML Specialty</span>
+        <span class="tag tag-neutral">$150</span>
+        <span class="tag tag-neutral">130 min</span>
+        <span class="tag tag-neutral">65 questions</span>
+      </div>
+      <p><strong>The new hands-on ML engineering cert for production workloads.</strong> Successor to the retiring ML Specialty.</p>
+      <p><strong>Who it's for:</strong> Backend developers moving into ML; DevOps/data engineers; MLOps engineers; data scientists operationalising models.</p>
+      <p><strong>What it validates:</strong> Implementing ML workloads in production on AWS; SageMaker; model deployment, monitoring, and ML pipeline operations.</p>
+      <p><strong>Salary:</strong> <span class="salary">avg $187K/yr</span> (range $114K–$310K). <strong>Demand:</strong> <span class="demand">33,000+ postings</span> — highest of any AWS path.</p>
+    </div>
+  </div>
+
+
+  <!-- ═══════ PROFESSIONAL ═══════ -->
+  <div class="section" id="sap">
+    <h1>Professional Level</h1>
+    <p class="section-meta">Goal: Demonstrate advanced AWS expertise for complex, enterprise-scale solutions. Requires 2+ years hands-on experience.</p>
+
+    <div class="cert-card">
+      <h3>AWS Certified Solutions Architect – Professional <code>SAP-C02</code></h3>
+      <div class="cert-meta">
+        <span class="tag tag-prof">Professional</span>
+        <span class="tag tag-neutral">$300</span>
+        <span class="tag tag-neutral">180 min</span>
+        <span class="tag tag-neutral">75 questions</span>
+      </div>
+      <p><strong>Who it's for:</strong> Senior cloud architects designing complex multi-account AWS environments.</p>
+      <p><strong>What it validates:</strong> Sophisticated solutions for complex cloud problems; security/cost/performance optimisation at scale; compliance, migration, and hybrid architectures; architectural guidance across large organisations.</p>
+      <p><strong>Salary:</strong> <span class="salary">avg $155K–$166K/yr</span> (Senior Cloud Architect avg $165K). <strong>Demand:</strong> <span class="demand">2,000+ postings</span>, majority senior/director level. Qualifies for government and finance sector roles.</p>
+    </div>
+  </div>
+
+  <div class="section" id="dop">
+    <div class="cert-card">
+      <h3>AWS Certified DevOps Engineer – Professional <code>DOP-C02</code></h3>
+      <div class="cert-meta">
+        <span class="tag tag-prof">Professional</span>
+        <span class="tag tag-neutral">$300</span>
+        <span class="tag tag-neutral">180 min</span>
+        <span class="tag tag-neutral">75 questions</span>
+      </div>
+      <p><strong>Who it's for:</strong> DevOps engineers and platform engineers managing CI/CD and distributed systems.</p>
+      <p><strong>What it validates:</strong> Provisioning/operating distributed apps on AWS; advanced CI/CD and infrastructure-as-code; monitoring and observability at scale; security and compliance automation.</p>
+      <p><strong>Experience recommended:</strong> 2+ years AWS operations; scripting/programming familiarity.</p>
+      <p><strong>Salary:</strong> DevOps Engineer <span class="salary">avg $132K/yr</span>; Senior DevOps <span class="salary">avg $151K/yr</span> (range $85K–$205K). <strong>Demand:</strong> <span class="demand">1,000+ postings</span> (495 new/week).</p>
+    </div>
+  </div>
+
+  <div class="section" id="genai">
+    <div class="cert-card">
+      <h3>AWS Certified Generative AI Developer – Professional</h3>
+      <div class="cert-meta">
+        <span class="tag tag-prof">Professional</span>
+        <span class="tag tag-new">New 2025</span>
+        <span class="tag tag-neutral">$300</span>
+        <span class="tag tag-neutral">180 min</span>
+        <span class="tag tag-neutral">75 questions</span>
+      </div>
+      <p><strong>The most advanced AI engineering credential on AWS.</strong> Brand new in 2025.</p>
+      <p><strong>Who it's for:</strong> AI/ML engineers building production GenAI systems; architects designing agentic AI on AWS.</p>
+      <p><strong>What it validates:</strong> Production-ready GenAI on AWS; Amazon Bedrock and foundation models; agentic AI workflows and RAG systems; responsible AI in production; cost optimisation for AI workloads.</p>
+      <p><strong>Recommended prerequisites (not mandatory):</strong> AI Practitioner, Solutions Architect Associate, ML Engineer Associate, Data Engineer Associate.</p>
+      <p><strong>Salary:</strong> AI Developer <span class="salary">avg $153K/yr</span>; top-tier roles up to $500K. Top cities: San Jose $204K, San Francisco $195K, New York $182K. <strong>Demand:</strong> <span class="demand">11,000+ postings</span>, growing rapidly.</p>
+    </div>
+  </div>
+
+
+  <!-- ═══════ SPECIALTY ═══════ -->
+  <div class="section" id="scs">
+    <h1>Specialty Level</h1>
+    <p class="section-meta">Goal: Demonstrate deep, domain-specific expertise. Requires significant real-world experience.</p>
+
+    <div class="cert-card">
+      <h3>AWS Certified Security – Specialty <code>SCS-C02</code></h3>
+      <div class="cert-meta">
+        <span class="tag tag-spec">Specialty</span>
+        <span class="tag tag-neutral">$300</span>
+        <span class="tag tag-neutral">170 min</span>
+        <span class="tag tag-neutral">65 questions</span>
+      </div>
+      <p><strong>One of the highest-paying and fastest-growing AWS certifications.</strong></p>
+      <p><strong>Who it's for:</strong> Security engineers, architects, and analysts responsible for AWS security posture.</p>
+      <p><strong>What it validates:</strong> Creating and implementing security solutions; data classification and protection; encryption; IAM at scale; incident response; threat detection; secure networking.</p>
+      <p><strong>Experience recommended:</strong> 5+ years IT security + 2+ years hands-on AWS security.</p>
+      <p><strong>Market signal:</strong> Job listings grew <strong>73% YoY</strong>. Consistently ranked among the highest-paying technical certifications globally.</p>
+      <p><strong>Salary:</strong> <span class="salary">avg $132K/yr</span> (range $87K–$202K). Unlocks healthcare, finance, government, and defense roles (FedRAMP, HIPAA, PCI-DSS, SOC 2). <strong>Demand:</strong> <span class="demand">429+ targeted postings</span>.</p>
+    </div>
+  </div>
+
+  <div class="section" id="ans">
+    <div class="cert-card">
+      <h3>AWS Certified Advanced Networking – Specialty <code>ANS-C01</code></h3>
+      <div class="cert-meta">
+        <span class="tag tag-spec">Specialty</span>
+        <span class="tag tag-neutral">$300</span>
+        <span class="tag tag-neutral">170 min</span>
+        <span class="tag tag-neutral">65 questions</span>
+      </div>
+      <p><strong>Who it's for:</strong> Senior network engineers designing complex hybrid and cloud-native topologies.</p>
+      <p><strong>What it validates:</strong> Complex networking tasks; multi-region solutions; advanced protocols (IP VPN, MPLS, BGP); network automation; AWS WAF, IDS/IPS, DDoS protection.</p>
+      <p><strong>Experience recommended:</strong> 5+ years networking + 2+ years cloud/hybrid. One of the most experience-intensive certs in the catalog.</p>
+      <p><strong>Salary:</strong> Senior Network Engineer <span class="salary">avg $127K/yr</span> (range $70K–$188K). <strong>Demand:</strong> <span class="demand">1,000+ postings</span>. Low supply of certified candidates keeps salaries competitive.</p>
+    </div>
+  </div>
+
+  <div class="section" id="mls">
+    <div class="cert-card">
+      <h3>AWS Certified Machine Learning – Specialty <code>MLS-C01</code></h3>
+      <div class="cert-meta">
+        <span class="tag tag-spec">Specialty</span>
+        <span class="tag tag-retire">⚠ Retiring March 31, 2026</span>
+        <span class="tag tag-neutral">$300</span>
+        <span class="tag tag-neutral">180 min</span>
+      </div>
+      <div class="callout callout-warning">
+        <strong>Retiring March 31, 2026.</strong> New candidates should pursue the <strong>ML Engineer – Associate (MLA-C01)</strong> instead.
+      </div>
+      <p><strong>Who it's for:</strong> Data scientists and ML engineers with deep AWS expertise.</p>
+      <p><strong>What it validates:</strong> Designing, building, deploying, and optimising ML solutions on AWS; deep learning model development; selecting/tuning AWS ML services.</p>
+    </div>
+  </div>
+
+
+  <!-- ═══════ SALARY & DEMAND ═══════ -->
+  <div class="section" id="salary">
+    <h1>Career &amp; Salary Outcomes by Path</h1>
+    <p class="section-meta">Salary data from Indeed (May 2026). Job demand from LinkedIn (May 2026).</p>
+
+    <div class="tw"><table>
+      <thead><tr><th>Path</th><th>Target role</th><th>Avg US salary</th><th>Range</th><th>LinkedIn demand</th></tr></thead>
+      <tbody>
+        <tr><td>1 — Cloud Architect</td><td>Cloud / Solutions Architect</td><td class="salary">$153K–$155K/yr</td><td>$100K–$233K</td><td>2,000+ jobs</td></tr>
+        <tr><td>2 — DevOps / Ops</td><td>DevOps → Senior DevOps Engineer</td><td class="salary">$131K–$151K/yr</td><td>$85K–$205K</td><td>1,000+ jobs</td></tr>
+        <tr><td>3 — Data Engineer</td><td>Data Engineer</td><td class="salary">$137K/yr</td><td>$89K–$211K</td><td>2,000+ jobs</td></tr>
+        <tr><td>4 — AI / ML Engineer</td><td>ML Engineer</td><td class="salary">$187K/yr</td><td>$114K–$310K</td><td>33,000+ jobs</td></tr>
+        <tr><td>5 — Security Specialist</td><td>Cloud Security Engineer</td><td class="salary">$132K/yr</td><td>$87K–$202K</td><td>429+ targeted jobs</td></tr>
+        <tr><td>6 — Network Specialist</td><td>Senior Network Engineer</td><td class="salary">$127K/yr</td><td>$70K–$188K</td><td>1,000+ jobs</td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="callout callout-note">
+      <strong>Path 4 (AI/ML) commands the highest salaries</strong> — ML engineers average $187K/yr with top-end roles reaching $310K+.<br>
+      <strong>Path 5 (Security) has the fastest-growing demand</strong> — job listings requiring the Security Specialty grew <strong>73% in a single year</strong>.
+    </div>
+  </div>
+
+
+  <!-- ═══════ 6 LEARNING PATHS ═══════ -->
+  <div class="section" id="paths">
+    <h1>6 Learning Paths</h1>
+    <p class="section-meta">Choose your path based on your current role and where you want to go. The aspiring path (not the current role) determines which cert track to follow.</p>
+
+    <h2>Path Finder — 3 Questions</h2>
+
+    <h3>Q1 — What is your current experience level?</h3>
+    <div class="tw"><table>
+      <thead><tr><th>Your situation</th><th>Starting point</th></tr></thead>
+      <tbody>
+        <tr><td>New to cloud, no IT background</td><td>Cloud Practitioner (CLF)</td></tr>
+        <tr><td>IT/systems background, no AWS yet</td><td>Cloud Practitioner (CLF)</td></tr>
+        <tr><td>Familiar with AI tools but not cloud infra</td><td>AI Practitioner (AIF)</td></tr>
+        <tr><td>1–2 years hands-on AWS experience already</td><td>Jump directly to Associate level</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>Q2 — What best describes your daily work?</h3>
+    <div class="tw"><table>
+      <thead><tr><th>Your work</th><th>Your path</th></tr></thead>
+      <tbody>
+        <tr><td>Designing systems and cloud architecture</td><td>→ Path 1: Cloud Architect</td></tr>
+        <tr><td>Writing code and shipping applications</td><td>→ Path 2: DevOps (via Developer Associate)</td></tr>
+        <tr><td>Managing servers, infra, and operations</td><td>→ Path 2: DevOps (via CloudOps Associate)</td></tr>
+        <tr><td>Building data pipelines and analytics</td><td>→ Path 3: Data Engineer</td></tr>
+        <tr><td>Building or working with AI/ML models</td><td>→ Path 4: AI/ML Engineer</td></tr>
+        <tr><td>Handling security, compliance, and IAM</td><td>→ Path 5: Security Specialist</td></tr>
+        <tr><td>Managing networks, VPCs, and connectivity</td><td>→ Path 6: Network Specialist</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>Q3 — How far do you want to go?</h3>
+    <div class="tw"><table>
+      <thead><tr><th>Your goal</th><th>Target level</th></tr></thead>
+      <tbody>
+        <tr><td>Baseline credential fast</td><td>Foundational or Associate</td></tr>
+        <tr><td>Fully validated in my role</td><td>Associate</td></tr>
+        <tr><td>Senior-level, enterprise recognition</td><td>Professional</td></tr>
+        <tr><td>#1 domain expert</td><td>Specialty</td></tr>
+      </tbody>
+    </table></div>
+
+    <hr>
+
+    <!-- Path 1 -->
+    <div class="path-card">
+      <div class="path-header">
+        <h3>🌩️ Path 1 — Cloud Generalist / Architect</h3>
+        <span class="path-sub">System designers, infrastructure architects, IT pros moving into cloud</span>
+      </div>
+      <div class="path-body">
+        <div class="path-flow">CLF → SAA → SAP → SCS (optional)</div>
+        <div class="tw"><table>
+          <thead><tr><th>Step</th><th>Cert</th><th>Why</th><th>Career unlock</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td><code>CLF</code></td><td>Establish cloud vocabulary</td><td>Entry cloud roles, $60K–$90K/yr, 9,000+ postings</td></tr>
+            <tr><td>2</td><td><code>SAA</code></td><td>Design resilient, cost-effective architectures</td><td>Solutions Architect roles, <strong>avg $153K/yr</strong>, 2,000+ postings</td></tr>
+            <tr><td>3</td><td><code>SAP</code></td><td>Master complex multi-account enterprise design</td><td>Senior/Principal Architect, <strong>avg $155K–$166K/yr</strong>, government/finance sectors</td></tr>
+            <tr><td>4 (opt.)</td><td><code>SCS</code></td><td>Add security depth — most in-demand specialty</td><td>Cloud Security Engineer, 73% YoY demand growth</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- Path 2 -->
+    <div class="path-card">
+      <div class="path-header">
+        <h3>🛠️ Path 2 — DevOps / Operations Engineer</h3>
+        <span class="path-sub">Developers, sysadmins, ops engineers, platform and automation engineers</span>
+      </div>
+      <div class="path-body">
+        <div class="path-flow">CLF → CloudOps (ops focus) OR DVA (dev focus) → DOP</div>
+        <div class="tw"><table>
+          <thead><tr><th>Step</th><th>Cert</th><th>Why</th><th>Career unlock</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td><code>CLF</code></td><td>Foundation cloud literacy</td><td>Entry IT/ops roles, $60K–$90K/yr</td></tr>
+            <tr><td>2a</td><td><code>CloudOps</code></td><td>For ops-first: monitoring, infra management, continuity</td><td>Cloud Ops Specialist, SRE, $120K–$140K/yr</td></tr>
+            <tr><td>2b</td><td><code>DVA</code></td><td>For dev-first: CI/CD, app deployment, Lambda</td><td>Cloud Developer, $120K–$145K/yr</td></tr>
+            <tr><td>3</td><td><code>DOP</code></td><td>Advanced DevOps automation at enterprise scale</td><td>Senior DevOps / Platform Engineer, <strong>avg $131K–$151K/yr</strong>, 1,000+ postings</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- Path 3 -->
+    <div class="path-card">
+      <div class="path-header">
+        <h3>📊 Path 3 — Data &amp; Analytics Engineer</h3>
+        <span class="path-sub">Data engineers, analytics engineers, BI developers, data architects</span>
+      </div>
+      <div class="path-body">
+        <div class="path-flow">CLF → DEA → SAA → SCS</div>
+        <div class="tw"><table>
+          <thead><tr><th>Step</th><th>Cert</th><th>Why</th><th>Career unlock</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td><code>CLF</code></td><td>Cloud fundamentals before data-specific work</td><td>Data analyst / junior data engineer, $65K–$95K/yr</td></tr>
+            <tr><td>2</td><td><code>DEA</code></td><td>Validate pipeline design, Glue, Kinesis, Redshift</td><td>Data Engineer, <strong>avg $137K/yr</strong>, 2,000+ postings/month</td></tr>
+            <tr><td>3</td><td><code>SAA</code></td><td>Architectural context for data lakes and data meshes</td><td>Data Platform Architect, +10–20% salary bump with dual certs</td></tr>
+            <tr><td>4</td><td><code>SCS</code></td><td>Security critical for healthcare, finance, government data</td><td>Data Security Architect, $140K–$175K/yr</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- Path 4 -->
+    <div class="path-card">
+      <div class="path-header">
+        <h3>🤖 Path 4 — AI / ML Engineer</h3>
+        <span class="path-sub">ML engineers, data scientists, AI developers, MLOps engineers</span>
+      </div>
+      <div class="path-body">
+        <div class="path-flow">AIF → MLA → Gen AI Developer (Professional)</div>
+        <div class="callout callout-tip" style="margin-bottom:12px">ML Specialty (MLS-C01) is retiring March 31, 2026. New learners follow this path instead.</div>
+        <div class="tw"><table>
+          <thead><tr><th>Step</th><th>Cert</th><th>Why</th><th>Career unlock</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td><code>AIF</code></td><td>AI/ML vocabulary + AWS AI service landscape</td><td>AI-adjacent roles, $80K–$120K/yr</td></tr>
+            <tr><td>2</td><td><code>MLA</code></td><td>Production ML engineering with SageMaker and MLOps</td><td>ML Engineer, <strong>avg $187K/yr</strong>, 33,000+ postings — highest demand of all paths</td></tr>
+            <tr><td>3</td><td>Gen AI Dev</td><td>Bedrock, RAG, agentic AI, foundation model fine-tuning</td><td>GenAI Engineer / AI Solutions Architect, up to $500K at top companies</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- Path 5 -->
+    <div class="path-card">
+      <div class="path-header">
+        <h3>🔒 Path 5 — Security Specialist</h3>
+        <span class="path-sub">Security engineers, cloud security analysts, compliance officers, IAM specialists</span>
+      </div>
+      <div class="path-body">
+        <div class="path-flow">CLF → SAA → SCS</div>
+        <div class="tw"><table>
+          <thead><tr><th>Step</th><th>Cert</th><th>Why</th><th>Career unlock</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td><code>CLF</code></td><td>AWS Shared Responsibility Model — foundation of cloud security</td><td>IT support and cloud admin roles, $60K–$90K/yr</td></tr>
+            <tr><td>2</td><td><code>SAA</code></td><td>Architectural context: VPCs, IAM, S3 policies, CloudTrail, GuardDuty</td><td>Cloud / Junior Security Engineer, avg $153K/yr</td></tr>
+            <tr><td>3</td><td><code>SCS</code></td><td>IAM at scale, encryption, incident response, threat detection</td><td>Cloud Security Engineer, <strong>avg $132K/yr</strong>, 73% YoY demand growth, unlocks FedRAMP/HIPAA roles</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- Path 6 -->
+    <div class="path-card">
+      <div class="path-header">
+        <h3>🌐 Path 6 — Network Specialist</h3>
+        <span class="path-sub">Network engineers, cloud network architects, hybrid connectivity specialists</span>
+      </div>
+      <div class="path-body">
+        <div class="path-flow">CLF → SAA → ANS</div>
+        <div class="callout callout-warning" style="margin-bottom:12px">ANS requires 5+ years networking experience and 2+ years cloud/hybrid. The most experience-intensive cert in the catalog.</div>
+        <div class="tw"><table>
+          <thead><tr><th>Step</th><th>Cert</th><th>Why</th><th>Career unlock</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td><code>CLF</code></td><td>Cloud vocabulary and AWS service awareness</td><td>Entry cloud/infra roles, $65K–$90K/yr</td></tr>
+            <tr><td>2</td><td><code>SAA</code></td><td>VPC, subnet, routing, and load balancing context that ANS builds on</td><td>Cloud Infrastructure / Network Engineer, avg $153K/yr</td></tr>
+            <tr><td>3</td><td><code>ANS</code></td><td>BGP, MPLS, Direct Connect, Transit Gateway, WAF, DDoS mitigation</td><td>Senior Network Engineer, <strong>avg $127K/yr</strong>, 1,000+ postings, low supply = competitive salaries</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════ PREP TIME ESTIMATOR ═══════ -->
+  <div class="section" id="prep-time">
+    <h1>Prep Time Estimator</h1>
+    <p class="section-meta">Estimate how long each cert will take based on your experience and weekly study hours.</p>
+
+    <h2>The Formula</h2>
+    <pre><code>adjusted_hours = base_hours × experience_multiplier
+weeks_to_ready = adjusted_hours ÷ hours_per_week</code></pre>
+
+    <h2>Variable 1 — Experience Level</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Level</th><th>Description</th><th>Hour multiplier</th></tr></thead>
+      <tbody>
+        <tr><td>Beginner</td><td>No cloud or IT background</td><td>1.0×</td></tr>
+        <tr><td>IT Background</td><td>General IT/systems, no AWS</td><td>0.75×</td></tr>
+        <tr><td>Some AWS</td><td>1 year hands-on AWS usage</td><td>0.5×</td></tr>
+        <tr><td>Experienced</td><td>2+ years hands-on AWS / relevant domain</td><td>0.35×</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Variable 2 — Hours Per Week</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Pace</th><th>Hours/week</th><th>Who it fits</th></tr></thead>
+      <tbody>
+        <tr><td>Casual</td><td>5 h/week</td><td>Studying alongside a full-time job</td></tr>
+        <tr><td>Part-time</td><td>10 h/week</td><td>Consistent evening + weekend sessions</td></tr>
+        <tr><td>Committed</td><td>15 h/week</td><td>Active daily study campaign</td></tr>
+        <tr><td>Intensive</td><td>20+ h/week</td><td>Bootcamp pace or study leave</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Base Study Hours Per Certification</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Certification</th><th>Base hours (no experience)</th><th>With recommended experience</th></tr></thead>
+      <tbody>
+        <tr><td>Cloud Practitioner (CLF)</td><td>40–60 h</td><td>20–30 h</td></tr>
+        <tr><td>AI Practitioner (AIF)</td><td>40–60 h</td><td>20–30 h</td></tr>
+        <tr><td>Solutions Architect Associate (SAA)</td><td>80–120 h</td><td>50–80 h</td></tr>
+        <tr><td>Developer Associate (DVA)</td><td>80–120 h</td><td>50–80 h</td></tr>
+        <tr><td>CloudOps Engineer Associate</td><td>80–120 h</td><td>50–80 h</td></tr>
+        <tr><td>SysOps Admin Associate (SOA)</td><td>80–120 h</td><td>50–80 h</td></tr>
+        <tr><td>Data Engineer Associate (DEA)</td><td>100–130 h</td><td>60–90 h</td></tr>
+        <tr><td>ML Engineer Associate (MLA)</td><td>100–130 h</td><td>60–90 h</td></tr>
+        <tr><td>Solutions Architect Professional (SAP)</td><td>150–200 h</td><td>100–150 h</td></tr>
+        <tr><td>DevOps Engineer Professional (DOP)</td><td>150–200 h</td><td>100–150 h</td></tr>
+        <tr><td>Gen AI Developer Professional</td><td>150–200 h</td><td>100–150 h</td></tr>
+        <tr><td>Security Specialty (SCS)</td><td>120–160 h</td><td>80–120 h</td></tr>
+        <tr><td>Advanced Networking Specialty (ANS)</td><td>150–200 h</td><td>100–150 h</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Example Calculations</h2>
+
+    <h3>Scenario A — Career changer, 10 h/week, Path 1 (Architect)</h3>
+    <div class="tw"><table class="qr-table">
+      <thead><tr><th>Cert</th><th>Base</th><th>× Beginner (1.0)</th><th>÷ 10 h/wk</th><th>= Weeks</th></tr></thead>
+      <tbody>
+        <tr><td>CLF</td><td>50 h</td><td>50 h</td><td>÷ 10</td><td><strong>5 wks</strong></td></tr>
+        <tr><td>SAA</td><td>100 h</td><td>100 h</td><td>÷ 10</td><td><strong>10 wks</strong></td></tr>
+        <tr><td>SAP</td><td>175 h</td><td>175 h</td><td>÷ 10</td><td><strong>17–18 wks</strong></td></tr>
+        <tr><td colspan="4"><strong>Total</strong></td><td><strong>~32–33 wks (8 months)</strong></td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>Scenario B — IT pro with some AWS, 15 h/week, Path 2 (DevOps)</h3>
+    <div class="tw"><table class="qr-table">
+      <thead><tr><th>Cert</th><th>Base</th><th>× Some AWS (0.5)</th><th>÷ 15 h/wk</th><th>= Weeks</th></tr></thead>
+      <tbody>
+        <tr><td>CLF</td><td>50 h</td><td>25 h</td><td>÷ 15</td><td><strong>2 wks</strong></td></tr>
+        <tr><td>CloudOps</td><td>100 h</td><td>50 h</td><td>÷ 15</td><td><strong>3–4 wks</strong></td></tr>
+        <tr><td>DVA</td><td>100 h</td><td>50 h</td><td>÷ 15</td><td><strong>3–4 wks</strong></td></tr>
+        <tr><td>DOP</td><td>175 h</td><td>88 h</td><td>÷ 15</td><td><strong>6 wks</strong></td></tr>
+        <tr><td colspan="4"><strong>Total</strong></td><td><strong>~14–16 wks (4 months)</strong></td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>Scenario C — ML developer with AI background, 10 h/week, Path 4 (AI/ML)</h3>
+    <div class="tw"><table class="qr-table">
+      <thead><tr><th>Cert</th><th>Base</th><th>× Some AWS (0.5)</th><th>÷ 10 h/wk</th><th>= Weeks</th></tr></thead>
+      <tbody>
+        <tr><td>AIF</td><td>50 h</td><td>25 h</td><td>÷ 10</td><td><strong>2–3 wks</strong></td></tr>
+        <tr><td>MLA</td><td>115 h</td><td>58 h</td><td>÷ 10</td><td><strong>6 wks</strong></td></tr>
+        <tr><td>Gen AI Dev</td><td>175 h</td><td>88 h</td><td>÷ 10</td><td><strong>9 wks</strong></td></tr>
+        <tr><td colspan="4"><strong>Total</strong></td><td><strong>~17–18 wks (4–5 months)</strong></td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Quick Reference — Weeks Per Cert by Pace &amp; Experience</h2>
+
+    <h3>Cloud Practitioner (CLF) — avg base: 50 h</h3>
+    <div class="tw"><table class="qr-table">
+      <thead><tr><th>Experience</th><th>5 h/wk</th><th>10 h/wk</th><th>15 h/wk</th><th>20 h/wk</th></tr></thead>
+      <tbody>
+        <tr><td>Beginner</td><td>10 wks</td><td>5 wks</td><td>3–4 wks</td><td>2–3 wks</td></tr>
+        <tr><td>IT Background</td><td>7–8 wks</td><td>4 wks</td><td>2–3 wks</td><td>2 wks</td></tr>
+        <tr><td>Some AWS</td><td>5 wks</td><td>2–3 wks</td><td>2 wks</td><td>1–2 wks</td></tr>
+        <tr><td>Experienced</td><td>3–4 wks</td><td>2 wks</td><td>1–2 wks</td><td>1 wk</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>Associate Certs (SAA / DVA / CloudOps) — avg base: 100 h</h3>
+    <div class="tw"><table class="qr-table">
+      <thead><tr><th>Experience</th><th>5 h/wk</th><th>10 h/wk</th><th>15 h/wk</th><th>20 h/wk</th></tr></thead>
+      <tbody>
+        <tr><td>Beginner</td><td>20 wks</td><td>10 wks</td><td>7 wks</td><td>5 wks</td></tr>
+        <tr><td>IT Background</td><td>15 wks</td><td>7–8 wks</td><td>5 wks</td><td>4 wks</td></tr>
+        <tr><td>Some AWS</td><td>10 wks</td><td>5 wks</td><td>3–4 wks</td><td>2–3 wks</td></tr>
+        <tr><td>Experienced</td><td>7 wks</td><td>3–4 wks</td><td>2–3 wks</td><td>2 wks</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>Professional Certs (SAP / DOP / Gen AI Dev) — avg base: 175 h</h3>
+    <div class="tw"><table class="qr-table">
+      <thead><tr><th>Experience</th><th>5 h/wk</th><th>10 h/wk</th><th>15 h/wk</th><th>20 h/wk</th></tr></thead>
+      <tbody>
+        <tr><td>Beginner</td><td>35 wks</td><td>17–18 wks</td><td>12 wks</td><td>9 wks</td></tr>
+        <tr><td>IT Background</td><td>26 wks</td><td>13 wks</td><td>9 wks</td><td>7 wks</td></tr>
+        <tr><td>Some AWS</td><td>17–18 wks</td><td>9 wks</td><td>6 wks</td><td>4–5 wks</td></tr>
+        <tr><td>Experienced</td><td>12 wks</td><td>6 wks</td><td>4 wks</td><td>3 wks</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>Specialty Certs (SCS / ANS) — avg base: 150 h</h3>
+    <div class="tw"><table class="qr-table">
+      <thead><tr><th>Experience</th><th>5 h/wk</th><th>10 h/wk</th><th>15 h/wk</th><th>20 h/wk</th></tr></thead>
+      <tbody>
+        <tr><td>Beginner</td><td>30 wks</td><td>15 wks</td><td>10 wks</td><td>7–8 wks</td></tr>
+        <tr><td>IT Background</td><td>22–23 wks</td><td>11–12 wks</td><td>7–8 wks</td><td>6 wks</td></tr>
+        <tr><td>Some AWS</td><td>15 wks</td><td>7–8 wks</td><td>5 wks</td><td>4 wks</td></tr>
+        <tr><td>Experienced</td><td>10–11 wks</td><td>5–6 wks</td><td>3–4 wks</td><td>3 wks</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Important Caveats</h2>
+    <ul>
+      <li><strong>Study hours only</strong> — add 1–2 weeks buffer per cert for scheduling and review time.</li>
+      <li><strong>Knowledge compounds</strong> — passing a lower cert reduces hours for the next. Associate study covers ~30% of Professional content.</li>
+      <li><strong>Practice exams are included</strong> in the totals. AWS recommends at least one full official practice exam per cert.</li>
+      <li><strong>Hands-on lab time counts.</strong> AWS Builder Labs or real projects count toward study hours — and make you more efficient.</li>
+    </ul>
+  </div>
+
+
+  <!-- ═══════ TIPS & RESOURCES ═══════ -->
+  <div class="section" id="tips">
+    <h1>Exam Tips &amp; Resources</h1>
+
+    <h2>AWS Recommended 4-Step Prep Plan</h2>
+    <ol>
+      <li><strong>Review the Exam Guide</strong> — download the official guide, study the domains and percentage weights</li>
+      <li><strong>Take Official Practice Questions</strong> — identify knowledge gaps with pretests on AWS Skill Builder</li>
+      <li><strong>Complete Digital Courses &amp; Labs</strong> — fill gaps via Skill Builder courses, Builder Labs, and Cloud Quest</li>
+      <li><strong>Take the Official Practice Exam</strong> — simulate real exam conditions before your actual test day</li>
+    </ol>
+
+    <h2>Key Resources</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Resource</th><th>What it is</th></tr></thead>
+      <tbody>
+        <tr><td>AWS Skill Builder</td><td>Official learning platform — courses, labs, and practice exams</td></tr>
+        <tr><td>AWS Builder Labs</td><td>Hands-on guided labs in a live AWS environment</td></tr>
+        <tr><td>AWS Cloud Quest</td><td>Game-based learning — earns recertification credit for CLF</td></tr>
+        <tr><td>AWS Jam</td><td>Team-based challenge events for hands-on practice</td></tr>
+        <tr><td>AWS SimuLearn</td><td>Scenario-based simulations mirroring real exam questions</td></tr>
+        <tr><td>Pearson VUE</td><td>Official exam delivery — test centers and online proctored</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Recertification Options</h2>
+    <ul>
+      <li>Pass the current exam version before your 3-year expiry</li>
+      <li>Earn a higher-level certification in the same track</li>
+      <li>Complete approved game-based learning (Cloud Quest, where applicable)</li>
+    </ul>
+  </div>
+
+
+  <!-- ═══════ PRICING ═══════ -->
+  <div class="section" id="pricing">
+    <h1>Pricing Summary</h1>
+    <div class="tw"><table>
+      <thead><tr><th>Level</th><th>Exam fee</th></tr></thead>
+      <tbody>
+        <tr><td><span class="tag tag-found">Foundational</span></td><td>$100 USD</td></tr>
+        <tr><td><span class="tag tag-assoc">Associate</span></td><td>$150 USD</td></tr>
+        <tr><td><span class="tag tag-prof">Professional</span></td><td>$300 USD</td></tr>
+        <tr><td><span class="tag tag-spec">Specialty</span></td><td>$300 USD</td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout callout-note">
+      Pass Cloud Practitioner first → receive a <strong>50% discount voucher</strong> for your next AWS exam. That saves $75 on an Associate cert or $150 on a Professional/Specialty cert.
+    </div>
+  </div>
+
+</main>
+
+<button id="top-btn" title="Back to top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+  const sections = document.querySelectorAll('[id]');
+  const navItems = document.querySelectorAll('.sb-item[href^="#"]');
+  const topBtn   = document.getElementById('top-btn');
+
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const id = e.target.id;
+        navItems.forEach(a => {
+          a.classList.toggle('active', a.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  }, { rootMargin: '-8% 0px -80% 0px' });
+
+  sections.forEach(s => io.observe(s));
+
+  window.addEventListener('scroll', () => {
+    topBtn.style.display = window.scrollY > 400 ? 'flex' : 'none';
+  });
+</script>
+</body>
+</html>

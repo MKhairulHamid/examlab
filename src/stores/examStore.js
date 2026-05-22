@@ -185,10 +185,16 @@ export const useExamStore = create((set, get) => ({
         return { text: String(opt), correct: false }
       })
 
-      // Primary: derive correct answers from options with correct: true
-      correctAnswers = options
+      // For Ordering and Matching, options don't carry a `correct` flag —
+      // the authoritative correct_answers come from the DB column directly.
+      const derivedFromOptions = options
         .filter(opt => opt.correct === true)
         .map(opt => opt.text)
+
+      if (derivedFromOptions.length > 0) {
+        correctAnswers = derivedFromOptions
+      }
+      // else: keep the DB-provided correctAnswers (required for Ordering/Matching)
 
       if (correctAnswers.length === 0) {
         console.warn(`⚠️ Question ${index + 1} has no correct answers defined!`, {

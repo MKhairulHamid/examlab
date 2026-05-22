@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AIF-C01 Exam Guide — CloudExamLab Wiki</title>
+  <style>
+    :root {
+      --sidebar-w: 255px;
+      --sidebar-bg: #0f172a;
+      --sidebar-text: #94a3b8;
+      --sidebar-active-text: #38bdf8;
+      --sidebar-active-bg: rgba(56,189,248,0.08);
+      --sidebar-hover: #1e293b;
+      --accent: #2563eb;
+      --accent-light: #eff6ff;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --heading: #0f172a;
+      --code-bg: #1e293b;
+      --code-text: #e2e8f0;
+      --stripe: #f8fafc;
+      --warn-bg: #fef2f2;
+      --warn-border: #ef4444;
+      --tip-bg: #f0fdf4;
+      --tip-border: #22c55e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--text);
+      line-height: 1.65;
+      background: #fff;
+    }
+
+    /* ── Sidebar ── */
+    #sidebar {
+      position: fixed; top: 0; left: 0;
+      width: var(--sidebar-w); height: 100vh;
+      background: var(--sidebar-bg);
+      overflow-y: auto; z-index: 100;
+      display: flex; flex-direction: column;
+    }
+    #sidebar::-webkit-scrollbar { width: 4px; }
+    #sidebar::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+    .sb-header {
+      padding: 20px 16px 14px;
+      border-bottom: 1px solid #1e293b;
+    }
+    .sb-logo { font-size: 13px; font-weight: 700; color: #f1f5f9; letter-spacing: .06em; text-transform: uppercase; }
+    .sb-sub  { font-size: 11px; color: var(--sidebar-text); margin-top: 2px; }
+    .sb-group { padding: 10px 0 2px; }
+    .sb-group-label {
+      font-size: 10px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: #475569;
+      padding: 0 16px; margin-bottom: 3px;
+    }
+    .sb-item {
+      display: block; padding: 6px 16px;
+      font-size: 12.5px; color: var(--sidebar-text);
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: background .12s, color .12s;
+    }
+    .sb-item:hover { background: var(--sidebar-hover); color: #f1f5f9; }
+    .sb-item.active { color: var(--sidebar-active-text); border-left-color: var(--sidebar-active-text); background: var(--sidebar-active-bg); }
+    .sb-item.ext { color: #60a5fa; }
+    .sb-item.ext::after { content: ' ↗'; font-size: 10px; }
+
+    /* ── Main ── */
+    #main {
+      margin-left: var(--sidebar-w);
+      padding: 48px 64px 96px;
+      max-width: calc(var(--sidebar-w) + 880px);
+    }
+
+    /* ── Section ── */
+    .section { padding-top: 52px; border-top: 1px solid var(--border); margin-top: 28px; }
+    .section:first-of-type { border-top: none; margin-top: 0; padding-top: 0; }
+
+    /* ── Typography ── */
+    h1 { font-size: 27px; font-weight: 700; color: var(--heading); margin-bottom: 10px; }
+    h2 { font-size: 19px; font-weight: 700; color: var(--heading); margin-top: 38px; margin-bottom: 14px; }
+    h3 { font-size: 15px; font-weight: 600; color: var(--heading); margin-top: 24px; margin-bottom: 8px; }
+    p  { margin-bottom: 12px; }
+    a  { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ul, ol { padding-left: 22px; margin-bottom: 12px; }
+    li { margin-bottom: 4px; }
+    hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+    .section-meta { font-size: 14px; color: var(--text-muted); margin-bottom: 26px; margin-top: -4px; }
+
+    /* ── Chip label ── */
+    .chip {
+      display: inline-block; padding: 2px 9px; border-radius: 4px;
+      font-size: 10px; font-weight: 700; letter-spacing: .05em;
+      text-transform: uppercase; margin-bottom: 6px;
+    }
+    .chip-platform  { background: #eff6ff; color: #1d4ed8; }
+    .chip-technical { background: #f0fdf4; color: #15803d; }
+    .chip-reference { background: #fdf4ff; color: #7e22ce; }
+    .chip-exam      { background: #fff7ed; color: #c2410c; }
+
+    /* ── Tables ── */
+    .tw { overflow-x: auto; margin: 16px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    th {
+      background: #f1f5f9; padding: 7px 12px;
+      text-align: left; font-size: 11px; font-weight: 700;
+      color: var(--text-muted); border-bottom: 2px solid var(--border);
+      white-space: nowrap;
+    }
+    td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:nth-child(even) td { background: var(--stripe); }
+
+    /* ── Code ── */
+    code {
+      font-family: 'SF Mono','Fira Code','Cascadia Code',Consolas,monospace;
+      font-size: 12px; background: #f1f5f9; color: #be185d;
+      padding: 2px 5px; border-radius: 3px;
+    }
+    pre {
+      background: var(--code-bg); color: var(--code-text);
+      padding: 18px 20px; border-radius: 8px;
+      overflow-x: auto; margin: 14px 0;
+      font-size: 12.5px; line-height: 1.65;
+    }
+    pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+
+    /* ── Flow diagram ── */
+    .flow {
+      background: #1e293b; color: #7dd3fc;
+      padding: 18px 22px; border-radius: 8px;
+      font-family: 'SF Mono','Fira Code',Consolas,monospace;
+      font-size: 13px; line-height: 1.75;
+      margin: 14px 0; white-space: pre; overflow-x: auto;
+    }
+
+    /* ── Callouts ── */
+    .callout {
+      padding: 12px 16px; border-radius: 6px;
+      margin: 14px 0; font-size: 13.5px;
+    }
+    .callout-note    { background: var(--accent-light); border-left: 4px solid var(--accent); }
+    .callout-warning { background: var(--warn-bg);      border-left: 4px solid var(--warn-border); }
+    .callout-tip     { background: var(--tip-bg);       border-left: 4px solid var(--tip-border); }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 10px;
+      font-size: 11px; font-weight: 600;
+    }
+    .badge-green  { background: #dcfce7; color: #15803d; }
+    .badge-yellow { background: #fef3c7; color: #b45309; }
+    .badge-gray   { background: #f1f5f9; color: #475569; }
+    .badge-blue   { background: #dbeafe; color: #1d4ed8; }
+    .badge-orange { background: #ffedd5; color: #c2410c; }
+
+    /* ── Numbered steps ── */
+    .steps { counter-reset: step; list-style: none; padding: 0; margin-bottom: 14px; }
+    .steps li {
+      counter-increment: step;
+      padding: 7px 0 7px 36px; position: relative;
+      border-left: 2px solid var(--border); margin-left: 11px;
+    }
+    .steps li::before {
+      content: counter(step);
+      position: absolute; left: -11px; top: 7px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--accent); color: #fff;
+      font-size: 10px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── Page title ── */
+    .page-title { margin-bottom: 36px; }
+    .page-title h1 { font-size: 30px; margin-bottom: 8px; }
+    .page-title p  { font-size: 15px; color: var(--text-muted); margin: 0; }
+
+    /* ── Domain bar ── */
+    .domain-bar {
+      display: flex; gap: 6px; flex-wrap: wrap;
+      margin: 18px 0 8px;
+    }
+    .domain-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 12px; border-radius: 20px;
+      font-size: 12px; font-weight: 600;
+      border: 1px solid var(--border);
+      background: #f8fafc;
+    }
+    .domain-pill .pct {
+      background: var(--accent); color: #fff;
+      border-radius: 10px; padding: 1px 6px;
+      font-size: 10px; font-weight: 700;
+    }
+
+    /* ── Highlight row ── */
+    .hl td { background: #eff6ff !important; font-weight: 600; }
+
+    /* ── Jump-to-top ── */
+    #top-btn {
+      position: fixed; bottom: 28px; right: 28px;
+      background: var(--accent); color: #fff;
+      border: none; border-radius: 50%; width: 38px; height: 38px;
+      font-size: 18px; cursor: pointer; display: none;
+      align-items: center; justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+      transition: opacity .2s;
+    }
+    #top-btn:hover { background: #1d4ed8; }
+  </style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<nav id="sidebar">
+  <div class="sb-header">
+    <div class="sb-logo">CloudExamLab</div>
+    <div class="sb-sub">Exam Guide Series</div>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">On this page</div>
+    <a class="sb-item active" href="#overview">Overview</a>
+    <a class="sb-item" href="#structure">Exam Structure</a>
+    <a class="sb-item" href="#domains">Content Domains</a>
+    <a class="sb-item" href="#domain1">D1 — AI & ML Fundamentals</a>
+    <a class="sb-item" href="#domain2">D2 — GenAI Fundamentals</a>
+    <a class="sb-item" href="#domain3">D3 — Foundation Models</a>
+    <a class="sb-item" href="#domain4">D4 — Responsible AI</a>
+    <a class="sb-item" href="#domain5">D5 — Security & Governance</a>
+    <a class="sb-item" href="#candidate-prep">Helping Candidates</a>
+    <a class="sb-item" href="#simulation">Simulation Design</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Wiki</div>
+    <a class="sb-item ext" href="index.html">Developer Wiki</a>
+    <a class="sb-item ext" href="aws-certification-roadmap.html">AWS Cert Roadmap</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Official</div>
+    <a class="sb-item ext" href="https://docs.aws.amazon.com/aws-certification/latest/ai-practitioner-01/ai-practitioner-01.html">AWS Exam Guide ↗</a>
+  </div>
+</nav>
+
+<!-- ══ MAIN ══ -->
+<main id="main">
+
+  <!-- OVERVIEW -->
+  <div class="page-title" id="overview">
+    <h1>AWS Certified AI Practitioner (AIF-C01)</h1>
+    <p>Everything we need to know about this exam — structure, domains, candidate prep strategy, and simulation design.</p>
+  </div>
+
+  <div class="callout callout-note">
+    <strong>Source:</strong> All domain content on this page is derived from the official
+    <a href="https://docs.aws.amazon.com/aws-certification/latest/ai-practitioner-01/ai-practitioner-01.html" target="_blank">AWS Certified AI Practitioner Exam Guide</a>.
+    This is the authoritative reference for question authoring.
+  </div>
+
+  <h2>What This Exam Is</h2>
+  <p>The AWS Certified AI Practitioner (AIF-C01) is a <strong>Foundational-level</strong> certification. It validates that a candidate understands AI/ML and Generative AI concepts and knows how to apply them using AWS services — without requiring any hands-on coding or model-building skills.</p>
+
+  <div class="tw"><table>
+    <thead><tr><th>Attribute</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td>Exam code</td><td><code>AIF-C01</code></td></tr>
+      <tr><td>Level</td><td>Foundational</td></tr>
+      <tr><td>Target audience</td><td>Business analysts, project managers, developers, data scientists — anyone with up to 6 months of AWS AI/ML exposure</td></tr>
+      <tr><td>Prerequisites</td><td>None (recommended: basic AWS familiarity)</td></tr>
+      <tr><td>Duration</td><td>90 minutes</td></tr>
+      <tr><td>Scored questions</td><td>50</td></tr>
+      <tr><td>Unscored questions</td><td>15 (not counted toward score, used by AWS to evaluate future items)</td></tr>
+      <tr><td>Total questions seen</td><td>65</td></tr>
+      <tr><td>Passing score</td><td>700 / 1,000 (scaled score)</td></tr>
+      <tr><td>Scoring model</td><td>Compensatory — no minimum per domain</td></tr>
+      <tr><td>Penalty for guessing</td><td>None</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout callout-tip">
+    <strong>Key insight for simulation design:</strong> Candidates see 65 questions but only 50 count. They cannot tell which 15 are unscored. Our simulations should mirror this ratio — include a small fraction of "calibration" questions — or simply use 50 questions and be transparent that the real exam has 15 extra unscored items.
+  </div>
+
+
+  <!-- EXAM STRUCTURE -->
+  <div class="section" id="structure">
+    <span class="chip chip-exam">Exam Structure</span>
+    <h1>Question Format &amp; Scoring</h1>
+    <p class="section-meta">Four question types, one scoring model, zero guessing penalty.</p>
+
+    <h2>Question Types</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Type</th><th>Description</th><th>Simulation notes</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Multiple choice</strong></td>
+          <td>Pick 1 correct answer from 4 options (1 correct + 3 distractors)</td>
+          <td>Standard format — most questions will be this type. All or nothing scoring.</td>
+        </tr>
+        <tr>
+          <td><strong>Multiple response</strong></td>
+          <td>Pick 2 or more correct answers from 5+ options. All selections must be correct.</td>
+          <td>Must label "Select X answers". Partial credit is NOT awarded — candidate must get all correct.</td>
+        </tr>
+        <tr>
+          <td><strong>Ordering</strong></td>
+          <td>Arrange 3–5 items in the correct sequence</td>
+          <td>Drag-and-drop or numbered inputs. All items must be in exact correct order to score.</td>
+        </tr>
+        <tr>
+          <td><strong>Matching</strong></td>
+          <td>Match responses to 3–7 prompts. All pairs must be correct.</td>
+          <td>Two-column layout. All matches must be correct for any points.</td>
+        </tr>
+      </tbody>
+    </table></div>
+
+    <div class="callout callout-warning">
+      <strong>Important for question authors:</strong> Multiple response, ordering, and matching questions are all-or-nothing. Do not design partial-credit scoring logic for AIF-C01 simulations.
+    </div>
+
+    <h2>Scoring Model</h2>
+    <p>The exam uses a <strong>compensatory scoring model</strong>. This means a weak domain score can be compensated by a strong score in another domain — there is no domain-level pass/fail requirement. The scaled score of 700/1,000 is the single threshold.</p>
+
+    <h2>Out-of-Scope Skills (Do NOT Test)</h2>
+    <p>These topics are explicitly excluded from the exam. Do not write questions about them.</p>
+    <ul>
+      <li>Developing or coding AI/ML models</li>
+      <li>Implementing data engineering or feature engineering pipelines</li>
+      <li>Hyperparameter tuning</li>
+      <li>Building or deploying ML pipelines end-to-end</li>
+      <li>Mathematical or statistical analysis of model internals</li>
+      <li>Implementing security controls or compliance frameworks</li>
+    </ul>
+
+    <div class="callout callout-note">
+      The AIF-C01 tests <em>understanding and judgment</em>, not <em>hands-on implementation</em>. Questions should ask candidates to identify, describe, select, or explain — not to write code or configure infrastructure step-by-step.
+    </div>
+  </div>
+
+
+  <!-- DOMAINS SUMMARY -->
+  <div class="section" id="domains">
+    <span class="chip chip-exam">Content Domains</span>
+    <h1>Domain Breakdown</h1>
+    <p class="section-meta">Five domains, weighted by scored question percentage.</p>
+
+    <div class="domain-bar">
+      <div class="domain-pill">D1 — AI &amp; ML Fundamentals <span class="pct">20%</span></div>
+      <div class="domain-pill">D2 — GenAI Fundamentals <span class="pct">24%</span></div>
+      <div class="domain-pill">D3 — Foundation Models <span class="pct">28%</span></div>
+      <div class="domain-pill">D4 — Responsible AI <span class="pct">14%</span></div>
+      <div class="domain-pill">D5 — Security &amp; Governance <span class="pct">14%</span></div>
+    </div>
+
+    <div class="tw"><table>
+      <thead><tr><th>#</th><th>Domain</th><th>Weight</th><th>Scored Qs (approx.)</th><th>Focus</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Fundamentals of AI and ML</td><td>20%</td><td>~10</td><td>Core concepts, terminology, lifecycle, use cases</td></tr>
+        <tr class="hl"><td>2</td><td>Fundamentals of GenAI</td><td>24%</td><td>~12</td><td>LLMs, tokens, embeddings, AWS GenAI services</td></tr>
+        <tr class="hl"><td>3</td><td>Applications of Foundation Models</td><td>28%</td><td>~14</td><td>RAG, prompt engineering, fine-tuning, evaluation</td></tr>
+        <tr><td>4</td><td>Guidelines for Responsible AI</td><td>14%</td><td>~7</td><td>Bias, fairness, explainability, transparency</td></tr>
+        <tr><td>5</td><td>Security, Compliance &amp; Governance</td><td>14%</td><td>~7</td><td>IAM, guardrails, data governance, compliance</td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="callout callout-tip">
+      <strong>Where to invest authoring effort:</strong> Domains 2 and 3 together account for 52% of the exam — over half the scored questions. Depth in GenAI concepts, prompt engineering, RAG, and foundation model lifecycle is the highest-leverage area for question writers.
+    </div>
+  </div>
+
+
+  <!-- DOMAIN 1 -->
+  <div class="section" id="domain1">
+    <span class="chip chip-exam">Domain 1 — 20%</span>
+    <h1>Fundamentals of AI and ML</h1>
+    <p class="section-meta">~10 scored questions · Task statements 1.1 – 1.3</p>
+
+    <h2>Task 1.1 — Explain basic AI concepts and terminologies</h2>
+    <ul>
+      <li>Define: AI, ML, deep learning, neural networks, computer vision, NLP, model, algorithm, training vs. inferencing, bias, fairness, fit, LLM, GenAI, agentic AI</li>
+      <li>Distinguish between AI, ML, GenAI, deep learning, and agentic AI</li>
+      <li>Types of inferencing: <strong>batch</strong>, <strong>real-time</strong>, <strong>asynchronous</strong>, <strong>serverless</strong></li>
+      <li>Types of data: labeled/unlabeled, tabular, time-series, image, text, structured/unstructured</li>
+      <li>Learning methods: supervised, unsupervised, reinforcement learning</li>
+    </ul>
+
+    <h2>Task 1.2 — Identify practical use cases for AI</h2>
+    <ul>
+      <li>Scenarios where AI/ML adds value: decision support, scalability, automation</li>
+      <li>When AI/ML is <em>not</em> appropriate: cost-benefit tradeoffs, deterministic outcome requirements</li>
+      <li>Matching technique to problem: regression, classification, clustering</li>
+      <li>Real-world applications: computer vision, NLP, speech recognition, recommendation systems, fraud detection, forecasting, knowledge bases, agentic AI</li>
+      <li>AWS managed AI services: <code>Amazon SageMaker AI</code>, <code>Amazon Transcribe</code>, <code>Amazon Translate</code>, <code>Amazon Comprehend</code>, <code>Amazon Lex</code>, <code>Amazon Polly</code></li>
+      <li>Choosing between traditional ML vs. foundation models (regulatory, explainability, operational constraints)</li>
+    </ul>
+
+    <h2>Task 1.3 — Describe the AI/ML development lifecycle</h2>
+    <ul>
+      <li>ML pipeline stages and differences</li>
+      <li>Foundation model sources: open-source pre-trained vs. custom training</li>
+      <li>Production deployment: managed API service vs. self-hosted API</li>
+      <li>AWS services for lifecycle management: <code>Amazon Bedrock</code>, <code>Amazon Q</code>, <code>SageMaker AI</code></li>
+      <li>MLOps concepts: experimentation, repeatability, scalable systems, technical debt, model monitoring, retraining</li>
+      <li>Model performance metrics: accuracy, precision, recall, F1 score</li>
+      <li>Business metrics: cost per user, development costs, customer feedback, ROI</li>
+    </ul>
+  </div>
+
+
+  <!-- DOMAIN 2 -->
+  <div class="section" id="domain2">
+    <span class="chip chip-exam">Domain 2 — 24%</span>
+    <h1>Fundamentals of Generative AI</h1>
+    <p class="section-meta">~12 scored questions · Task statements 2.1 – 2.3</p>
+
+    <h2>Task 2.1 — Explain basic GenAI concepts</h2>
+    <h3>Core concepts</h3>
+    <ul>
+      <li><strong>Tokens, chunking, embeddings, vectors</strong> — how text is represented and processed</li>
+      <li>Prompt engineering fundamentals</li>
+      <li>Transformer-based LLMs and how they work at a high level</li>
+      <li>Foundation models (FMs) vs. traditional ML models</li>
+      <li>Multi-modal models (text + image + audio)</li>
+      <li>Diffusion models (image generation)</li>
+    </ul>
+    <h3>GenAI use cases</h3>
+    <ul>
+      <li>Image, video, and audio generation</li>
+      <li>Summarization, translation, code generation</li>
+      <li>AI assistants, customer service agents</li>
+      <li>Search, recommendation engines</li>
+    </ul>
+    <h3>Foundation Model lifecycle</h3>
+    <div class="flow">Data selection → Model selection → Pre-training → Fine-tuning
+→ Evaluation → Deployment → Feedback (loop back)</div>
+    <h3>Agentic AI concepts</h3>
+    <ul>
+      <li>Multi-agent system patterns</li>
+      <li>Model Context Protocol (MCP)</li>
+      <li>Multi-agent communication patterns</li>
+      <li>Memory management, tool usage, workflow orchestration</li>
+    </ul>
+    <p>Also: token-based pricing model and context engineering in FM applications.</p>
+
+    <h2>Task 2.2 — Capabilities and limitations of GenAI</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Advantages</th><th>Limitations</th></tr></thead>
+      <tbody>
+        <tr><td>Adaptability across tasks</td><td>Hallucinations (factually incorrect outputs)</td></tr>
+        <tr><td>Responsive / conversational</td><td>Limited interpretability</td></tr>
+        <tr><td>Rich content generation</td><td>Inaccuracy in specific domains</td></tr>
+        <tr><td>General-purpose knowledge</td><td>Nondeterminism (same input → different outputs)</td></tr>
+      </tbody>
+    </table></div>
+    <p>Model selection factors: modality, performance requirements, constraints, compliance, cost, latency, complexity.</p>
+    <p>Business value metrics: cross-domain performance, ROI, efficiency, conversion rate, ARPU, accuracy, customer lifetime value.</p>
+
+    <h2>Task 2.3 — AWS infrastructure for GenAI applications</h2>
+    <ul>
+      <li><code>Amazon Bedrock</code> — fully managed FM access and customization</li>
+      <li><code>Amazon SageMaker AI</code> — end-to-end ML platform</li>
+      <li><code>SageMaker JumpStart</code> — pre-trained model hub</li>
+      <li><code>Amazon Q</code>, <code>Amazon Kiro</code>, <code>Amazon Strands Agents</code> — specialized AI assistants</li>
+      <li><code>Amazon Bedrock AgentCore</code> — agentic application infrastructure</li>
+    </ul>
+    <p>AWS advantages: accessibility, lower barrier to entry, built-in security/compliance, speed to market.</p>
+    <p>Cost tradeoffs: responsiveness, availability, redundancy, regional coverage, token-based pricing, provisioned throughput, custom models.</p>
+  </div>
+
+
+  <!-- DOMAIN 3 -->
+  <div class="section" id="domain3">
+    <span class="chip chip-exam">Domain 3 — 28%</span>
+    <h1>Applications of Foundation Models</h1>
+    <p class="section-meta">~14 scored questions · Task statements 3.1 – 3.4 · Highest-weight domain</p>
+
+    <div class="callout callout-note">
+      This is the largest domain by weight. Question writers should prioritize depth here — especially RAG, prompt engineering techniques, and model evaluation.
+    </div>
+
+    <h2>Task 3.1 — Design considerations for FM applications</h2>
+    <ul>
+      <li>FM selection criteria: cost, modality, latency, multi-lingual support, model size, complexity, customization needs, input/output length, prompt caching</li>
+      <li>Inference parameters and effects: <strong>temperature</strong> (randomness), input/output token length</li>
+      <li><strong>Retrieval Augmented Generation (RAG)</strong>: what it is, business applications, implemented via <code>Amazon Bedrock Knowledge Bases</code></li>
+      <li>Vector database services: <code>Amazon OpenSearch</code>, <code>Aurora</code>, <code>Neptune</code>, <code>RDS for PostgreSQL</code></li>
+      <li>Cost tradeoffs of customization approaches: pre-training, fine-tuning, in-context learning, RAG, model distillation</li>
+      <li>AI agents and their business applications</li>
+    </ul>
+
+    <h2>Task 3.2 — Effective prompt engineering</h2>
+    <h3>Core techniques</h3>
+    <div class="tw"><table>
+      <thead><tr><th>Technique</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Zero-shot</strong></td><td>No examples provided; model relies entirely on instruction</td></tr>
+        <tr><td><strong>Single-shot (one-shot)</strong></td><td>One example provided in the prompt</td></tr>
+        <tr><td><strong>Few-shot</strong></td><td>Multiple examples provided to guide the model's output format</td></tr>
+        <tr><td><strong>Chain-of-thought</strong></td><td>Prompt instructs the model to reason step-by-step before answering</td></tr>
+        <tr><td><strong>Prompt templates</strong></td><td>Reusable prompt structures with placeholders</td></tr>
+      </tbody>
+    </table></div>
+    <h3>Prompt constructs</h3>
+    <ul>
+      <li>Context, instruction, negative prompts (what NOT to do)</li>
+      <li>Specificity and concision best practices</li>
+      <li>Using guardrails and response quality controls</li>
+      <li>Prompt versioning and management: <code>Amazon Bedrock Prompt Management</code></li>
+    </ul>
+    <h3>Prompt risks and attacks</h3>
+    <ul>
+      <li><strong>Prompt injection</strong> — malicious input overrides instructions</li>
+      <li><strong>Prompt poisoning</strong> — corrupting the model's behavior via crafted inputs</li>
+      <li><strong>Prompt hijacking</strong> — redirecting the model to unintended tasks</li>
+      <li><strong>Jailbreaking</strong> — bypassing model safety guardrails</li>
+    </ul>
+
+    <h2>Task 3.3 — Training and fine-tuning</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Approach</th><th>When to use</th></tr></thead>
+      <tbody>
+        <tr><td>Pre-training</td><td>Train a model from scratch on large general datasets — very expensive</td></tr>
+        <tr><td>Continuous pre-training</td><td>Extend a model's knowledge on new unlabeled domain data</td></tr>
+        <tr><td>Fine-tuning</td><td>Adapt a pre-trained model to a specific task using labeled examples</td></tr>
+        <tr><td>Instruction tuning</td><td>Fine-tune to follow instructions more reliably</td></tr>
+        <tr><td>Domain adaptation</td><td>Fine-tune on domain-specific text (e.g., legal, medical)</td></tr>
+        <tr><td>Transfer learning</td><td>Reuse learned representations for a related but different task</td></tr>
+        <tr><td>RLHF</td><td>Reinforcement Learning from Human Feedback — align output with human preferences</td></tr>
+        <tr><td>Distillation</td><td>Train a smaller model to mimic a larger one — reduces cost/latency</td></tr>
+      </tbody>
+    </table></div>
+    <p>Data preparation considerations: curation, governance, dataset size, labeling quality, representativeness.</p>
+
+    <h2>Task 3.4 — FM performance evaluation</h2>
+    <h3>Evaluation approaches</h3>
+    <ul>
+      <li><strong>Human-in-the-loop</strong> — human raters judge output quality</li>
+      <li><strong>Benchmark datasets</strong> — standardized test sets with known answers</li>
+      <li><strong>LLM-as-a-judge</strong> — a separate model evaluates the output</li>
+      <li><code>Amazon Bedrock Model Evaluation</code> — managed evaluation service</li>
+    </ul>
+    <h3>Automated metrics</h3>
+    <div class="tw"><table>
+      <thead><tr><th>Metric</th><th>What it measures</th></tr></thead>
+      <tbody>
+        <tr><td><strong>ROUGE</strong></td><td>Recall-oriented — overlap between generated and reference summaries</td></tr>
+        <tr><td><strong>BLEU</strong></td><td>Precision-oriented — n-gram overlap; used for translation quality</td></tr>
+        <tr><td><strong>BERTScore</strong></td><td>Semantic similarity using BERT embeddings; captures meaning beyond exact word match</td></tr>
+        <tr><td><strong>LLM-as-a-judge</strong></td><td>Flexible scoring of open-ended outputs using another LLM</td></tr>
+      </tbody>
+    </table></div>
+    <h3>Business metrics</h3>
+    <ul>
+      <li>Task completion rate, user satisfaction, cost per interaction</li>
+      <li>Productivity improvements, user engagement, business objective alignment</li>
+    </ul>
+  </div>
+
+
+  <!-- DOMAIN 4 -->
+  <div class="section" id="domain4">
+    <span class="chip chip-exam">Domain 4 — 14%</span>
+    <h1>Guidelines for Responsible AI</h1>
+    <p class="section-meta">~7 scored questions · Task statements 4.1 – 4.2</p>
+
+    <h2>Task 4.1 — Developing responsible AI systems</h2>
+    <h3>Pillars of responsible AI</h3>
+    <ul>
+      <li><strong>Bias</strong> — systematic errors that produce unfair outcomes for certain groups</li>
+      <li><strong>Fairness</strong> — equitable treatment across demographic groups</li>
+      <li><strong>Inclusivity</strong> — diverse and representative training data</li>
+      <li><strong>Robustness</strong> — reliable performance across varied inputs and edge cases</li>
+      <li><strong>Safety</strong> — preventing harmful outputs</li>
+      <li><strong>Veracity</strong> — factual accuracy and groundedness</li>
+    </ul>
+    <h3>Legal risks of GenAI</h3>
+    <ul>
+      <li>Intellectual property infringement (training data, generated content)</li>
+      <li>Biased or discriminatory model outputs</li>
+      <li>Loss of customer trust from hallucinations or errors</li>
+      <li>End user harm from incorrect advice</li>
+    </ul>
+    <h3>Dataset considerations</h3>
+    <ul>
+      <li>Inclusivity and diversity of training data</li>
+      <li>Curated and balanced datasets reduce bias variance</li>
+      <li>Effects of overfitting and underfitting on demographic groups</li>
+    </ul>
+    <h3>AWS tools for responsible AI</h3>
+    <ul>
+      <li><code>Amazon Bedrock Guardrails</code> — content filtering and safety policies</li>
+      <li><code>Amazon SageMaker Clarify</code> — bias detection and explainability</li>
+      <li><code>SageMaker Model Monitor</code> — continuous monitoring for drift and bias in production</li>
+      <li><code>Amazon Augmented AI (A2I)</code> — human review workflows for ML predictions</li>
+    </ul>
+
+    <h2>Task 4.2 — Transparent and explainable models</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Concept</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Transparent model</strong></td><td>Decisions can be traced to specific inputs or rules (e.g., decision trees)</td></tr>
+        <tr><td><strong>Explainable AI (XAI)</strong></td><td>Techniques to explain why a model made a specific prediction</td></tr>
+        <tr><td><strong>Black-box model</strong></td><td>Internal logic not interpretable (e.g., large neural networks)</td></tr>
+      </tbody>
+    </table></div>
+    <p>AWS tools: <code>SageMaker Model Cards</code> (document model behavior), <code>SageMaker Clarify</code>, <code>Bedrock Model Evaluations</code>, open-source models and licensing.</p>
+    <p>Tradeoff: Higher interpretability often means lower performance — and vice versa. Candidates must recognize when each is appropriate.</p>
+    <p>Human-centered design principle: provide user-feedback mechanisms and make AI decision criteria visible to end users.</p>
+  </div>
+
+
+  <!-- DOMAIN 5 -->
+  <div class="section" id="domain5">
+    <span class="chip chip-exam">Domain 5 — 14%</span>
+    <h1>Security, Compliance, and Governance for AI Solutions</h1>
+    <p class="section-meta">~7 scored questions · Task statements 5.1 – 5.2</p>
+
+    <h2>Task 5.1 — Securing AI systems</h2>
+    <h3>AWS security services for AI</h3>
+    <ul>
+      <li><code>IAM</code> — roles, policies, and least-privilege permissions</li>
+      <li>Encryption at rest and in transit</li>
+      <li><code>Amazon Macie</code> — sensitive data discovery in S3</li>
+      <li><code>AWS PrivateLink</code> — private connectivity to AWS services without internet exposure</li>
+      <li><code>Amazon Bedrock Guardrails</code> — content filtering, output validation</li>
+      <li><code>Amazon Bedrock AgentCore Identity</code> and policy — identity and access for agentic workloads</li>
+      <li>AWS Shared Responsibility Model — customer vs. AWS security obligations</li>
+    </ul>
+    <h3>Secure data engineering</h3>
+    <ul>
+      <li>Assessing data quality before training</li>
+      <li>Privacy-enhancing technologies (differential privacy, anonymization)</li>
+      <li>Data access controls and integrity checks</li>
+      <li>Data lineage and cataloging: <code>SageMaker Model Cards</code></li>
+    </ul>
+    <h3>AI-specific security threats</h3>
+    <ul>
+      <li><strong>Prompt injection</strong> — malicious input hijacking model behavior</li>
+      <li><strong>Data leakage</strong> — model memorizing and exposing training data</li>
+      <li><strong>Hallucination risk</strong> — incorrect outputs leading to harmful decisions</li>
+      <li><strong>Toxicity</strong> — harmful or offensive content generation</li>
+    </ul>
+    <h3>Hallucination mitigation</h3>
+    <ul>
+      <li>RAG grounding — anchor responses to retrieved factual sources</li>
+      <li>Output validation — post-processing checks on generated content</li>
+      <li>Confidence scoring — flag low-confidence outputs for human review</li>
+    </ul>
+
+    <h2>Task 5.2 — Governance and compliance</h2>
+    <h3>AWS governance services</h3>
+    <ul>
+      <li><code>AWS Config</code> — resource configuration compliance tracking</li>
+      <li><code>Amazon Inspector</code> — vulnerability assessments</li>
+      <li><code>AWS Audit Manager</code> — continuous audit evidence collection</li>
+      <li><code>AWS Artifact</code> — compliance reports and agreements</li>
+      <li><code>AWS CloudTrail</code> — API activity logging and audit trail</li>
+      <li><code>AWS Trusted Advisor</code> — best-practice recommendations</li>
+    </ul>
+    <h3>Data governance strategies</h3>
+    <ul>
+      <li>Data lifecycle management (creation → archival → deletion)</li>
+      <li>Logging and observability of AI interactions</li>
+      <li>Data residency requirements (where data is stored and processed)</li>
+      <li>Monitoring for model drift and anomalies</li>
+      <li>Retention policies</li>
+    </ul>
+    <h3>Governance protocols</h3>
+    <ul>
+      <li>AI governance policies and review cadence</li>
+      <li>Generative AI Security Scoping Matrix</li>
+      <li>Transparency standards for AI-generated content</li>
+      <li>Team training requirements for AI safety</li>
+    </ul>
+  </div>
+
+
+  <!-- CANDIDATE PREP -->
+  <div class="section" id="candidate-prep">
+    <span class="chip chip-technical">Candidate Prep</span>
+    <h1>How We Help AIF-C01 Candidates</h1>
+    <p class="section-meta">Strategy for what the platform delivers — beyond just questions.</p>
+
+    <h2>Who Takes This Exam</h2>
+    <p>The AIF-C01 candidate is typically <strong>not</strong> a hands-on ML engineer. They are often:</p>
+    <ul>
+      <li>Business analysts or project managers evaluating AI solutions</li>
+      <li>Software developers wanting to add AI knowledge to their skill set</li>
+      <li>Cloud practitioners expanding from a CLF-C02 foundation</li>
+      <li>Data professionals who use AI tools but don't build models</li>
+    </ul>
+    <p>This shapes how we write questions: scenario-based judgment calls, not implementation syntax.</p>
+
+    <h2>What Candidates Struggle With</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Pain point</th><th>Our response</th></tr></thead>
+      <tbody>
+        <tr><td>Confusing AI/ML/GenAI terminology (tokens, embeddings, RAG, fine-tuning)</td><td>Define terms clearly in explanations; link related concepts</td></tr>
+        <tr><td>Knowing <em>when</em> to use which AWS service</td><td>Comparison questions; service selection scenarios</td></tr>
+        <tr><td>Understanding prompt engineering without having tried it</td><td>Concrete examples in question stems; explain the "why" in AI explanations</td></tr>
+        <tr><td>Responsible AI feels abstract</td><td>Scenario questions with real business consequences (bias in hiring, hallucination in medical advice)</td></tr>
+        <tr><td>Security domain — overlap with other certs</td><td>Focus on AI-specific threats (prompt injection, data leakage) not generic AWS security</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Recommended Study Path</h2>
+    <ol class="steps">
+      <li>Start with <strong>Domain 1</strong> — build the vocabulary first. Without it, D2–D3 questions are confusing.</li>
+      <li>Deep-dive <strong>Domain 2 + 3</strong> together — they are tightly coupled (GenAI concepts feed directly into FM application design).</li>
+      <li>Study <strong>Domain 4</strong> — Responsible AI is scenario-heavy; practice applying the concepts.</li>
+      <li>Finish with <strong>Domain 5</strong> — Security/governance overlaps partially with other AWS certs; prioritize the AI-specific content.</li>
+      <li>Take a full 65-question timed simulation — build exam stamina and identify weak domains.</li>
+    </ol>
+
+    <h2>AI Explanation Quality for This Exam</h2>
+    <p>Because the exam tests <em>conceptual understanding</em>, our Claude-powered explanations should:</p>
+    <ul>
+      <li>Explain why each distractor is wrong (not just why the correct answer is right)</li>
+      <li>Relate the concept to a real AWS service or concrete scenario when possible</li>
+      <li>Flag terminology that appears elsewhere in the exam (e.g., "temperature also comes up in Domain 3 when selecting inference parameters")</li>
+    </ul>
+  </div>
+
+
+  <!-- SIMULATION DESIGN -->
+  <div class="section" id="simulation">
+    <span class="chip chip-technical">Simulation Design</span>
+    <h1>How to Formulate the Exam Simulation</h1>
+    <p class="section-meta">Guidelines for building high-quality, exam-accurate practice sets for AIF-C01.</p>
+
+    <h2>Question Set Structure</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Setting</th><th>Value</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Total questions per simulation</td><td>65</td><td>Match real exam — 50 scored + 15 that don't count (unannounced)</td></tr>
+        <tr><td>Duration</td><td>90 minutes</td><td>Exact match to real exam</td></tr>
+        <tr><td>Passing threshold</td><td>700 / 1,000</td><td>Display as % equivalent: 70%</td></tr>
+        <tr><td>Scoring</td><td>Compensatory</td><td>No domain minimums — total score only</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Domain Distribution per Set</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Domain</th><th>Weight</th><th>Qs in 65-Q set</th><th>Qs in 50-Q scored set</th></tr></thead>
+      <tbody>
+        <tr><td>D1 — AI &amp; ML Fundamentals</td><td>20%</td><td>13</td><td>10</td></tr>
+        <tr><td>D2 — GenAI Fundamentals</td><td>24%</td><td>16</td><td>12</td></tr>
+        <tr><td>D3 — Foundation Models</td><td>28%</td><td>18</td><td>14</td></tr>
+        <tr><td>D4 — Responsible AI</td><td>14%</td><td>9</td><td>7</td></tr>
+        <tr><td>D5 — Security &amp; Governance</td><td>14%</td><td>9</td><td>7</td></tr>
+        <tr class="hl"><td><strong>Total</strong></td><td><strong>100%</strong></td><td><strong>65</strong></td><td><strong>50</strong></td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Question Type Mix</h2>
+    <p>The real exam uses all four types. For our simulations, start with:</p>
+    <div class="tw"><table>
+      <thead><tr><th>Type</th><th>Suggested % of set</th><th>Implementation priority</th></tr></thead>
+      <tbody>
+        <tr><td>Multiple choice (1-of-4)</td><td>~70%</td><td><span class="badge badge-green">High — launch with this</span></td></tr>
+        <tr><td>Multiple response (select N)</td><td>~20%</td><td><span class="badge badge-green">High — common on exam</span></td></tr>
+        <tr><td>Ordering</td><td>~5%</td><td><span class="badge badge-yellow">Medium — add after launch</span></td></tr>
+        <tr><td>Matching</td><td>~5%</td><td><span class="badge badge-yellow">Medium — add after launch</span></td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Question Writing Rules</h2>
+    <ul>
+      <li><strong>Scenario-based stems</strong> — "A company wants to…" not "What is X?" Abstract recall is rarely tested; applied judgment is.</li>
+      <li><strong>Single best answer</strong> — for multiple choice, there must be one clearly best answer. Other options should be plausible but wrong for a specific reason.</li>
+      <li><strong>No implementation questions</strong> — never ask candidates to write code, configure step-by-step, or calculate model math.</li>
+      <li><strong>Service knowledge</strong> — questions can name specific AWS services (Bedrock, SageMaker Clarify, etc.), but test whether the candidate can identify the right one, not how to configure it.</li>
+      <li><strong>Responsible AI scenarios</strong> — ground D4 questions in real business impact: hiring bias, loan approval, medical advice, content moderation.</li>
+      <li><strong>Prompt engineering</strong> — questions should test recognition of technique names and when to apply them, not memorization of syntax.</li>
+    </ul>
+
+    <h2>Distractor Quality Guidelines</h2>
+    <ul>
+      <li>Each distractor should be wrong for a <em>specific, teachable reason</em> — not just randomly plausible.</li>
+      <li>Avoid distractors that are obviously out of scope (e.g., writing Python code for a question about service selection).</li>
+      <li>Common distractor traps: confusing similar AWS services, mixing up fine-tuning vs. RAG vs. prompt engineering as solutions, confusing ROUGE with BLEU.</li>
+    </ul>
+
+    <h2>AI Explanation Template</h2>
+    <p>Each question should have an explanation that covers:</p>
+    <ol>
+      <li><strong>Why the correct answer is right</strong> — with a brief conceptual reason</li>
+      <li><strong>Why each distractor is wrong</strong> — one sentence per option</li>
+      <li><strong>Concept link</strong> — which domain/task statement this tests</li>
+      <li><strong>AWS service context</strong> — if the question involves a service, briefly describe what it does</li>
+    </ol>
+
+    <div class="callout callout-tip">
+      <strong>Sample question to validate difficulty:</strong> A good AIF-C01 question should be answerable by a thoughtful candidate who has studied the official exam guide — but should stump a candidate who only skimmed. If a question requires deep model-building knowledge, it is out of scope.
+    </div>
+  </div>
+
+</main>
+
+<button id="top-btn" title="Back to top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+  const btn = document.getElementById('top-btn');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 300 ? 'flex' : 'none';
+  });
+
+  const items = document.querySelectorAll('.sb-item');
+  const sections = document.querySelectorAll('[id]');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        items.forEach(i => i.classList.remove('active'));
+        const link = document.querySelector(`.sb-item[href="#${e.target.id}"]`);
+        if (link) link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>

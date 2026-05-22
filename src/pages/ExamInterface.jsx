@@ -6,6 +6,9 @@ import useAuthStore from '../stores/authStore'
 import usePurchaseStore from '../stores/purchaseStore'
 import streakService from '../services/streakService'
 import AIExplanationPanel from '../components/AIExplanationPanel'
+import OrderingQuestion from '../components/OrderingQuestion'
+import MatchingQuestion from '../components/MatchingQuestion'
+import { Lock, AlertTriangle, Sparkles, Pause, Play, RefreshCw, Clock, FileText } from 'lucide-react'
 
 function ExamInterface() {
   const { slug } = useParams()
@@ -13,12 +16,10 @@ function ExamInterface() {
   const navigate = useNavigate()
   const setId = searchParams.get('set')
   
-  // Helper function to check if question allows multiple selections
-  const isMultipleResponseQuestion = (questionType) => {
-    return questionType === 'Multiple Response' || 
-           questionType === 'multiple' ||
-           questionType === 'multiple_response'
-  }
+  const isMultipleResponseQuestion = (t) =>
+    t === 'Multiple Response' || t === 'multiple' || t === 'multiple_response'
+  const isOrderingQuestion = (t) => t === 'Ordering' || t === 'ordering'
+  const isMatchingQuestion = (t) => t === 'Matching' || t === 'matching'
   
   const { user } = useAuthStore()
   const { loadQuestionSet, currentQuestionSet, getExamBySlug } = useExamStore()
@@ -328,7 +329,7 @@ function ExamInterface() {
     return (
       <div className="loading-container">
         <div className="loading-content text-center">
-          <div className="text-[4rem] mb-4">🔒</div>
+          <div className="mb-4 flex justify-center"><Lock className="w-12 h-12 text-white/60" /></div>
           <h2 className="text-2xl font-bold mb-4">
             Access Denied
           </h2>
@@ -394,7 +395,7 @@ function ExamInterface() {
     return (
       <div className="loading-container">
         <div className="loading-content text-center">
-          <p>⚠️ Question not found</p>
+          <p className="flex items-center justify-center gap-2"><AlertTriangle className="w-5 h-5" /> Question not found</p>
           <p className="text-sm mt-2 opacity-80">
             Question index {currentQuestionIndex + 1} is out of range.
           </p>
@@ -409,57 +410,57 @@ function ExamInterface() {
     )
   }
 
-  const handleAnswerSelect = async (option) => {
-    // Get the option text (in case option is an object with { text, correct })
-    const optionText = typeof option === 'string' ? option : option.text
-    
-    let newAnswer
-    
-    // Check if it's a multiple response question (allows multiple selections)
-    if (isMultipleResponseQuestion(currentQuestion.type)) {
-      // Multiple Response - toggle selection (can select multiple)
-      const current = answers[currentQuestionIndex] || []
-      if (current.includes(optionText)) {
-        newAnswer = current.filter(a => a !== optionText)
-      } else {
-        newAnswer = [...current, optionText]
-      }
-    } else {
-      // Multiple Choice - only one selection allowed
-      newAnswer = [optionText]
-    }
-    
-    saveAnswer(currentQuestionIndex, newAnswer)
-    
-    // Record streak activity - count this as answering 1 question
-    // Only record if this is the first time answering this question
+  const recordFirstAnswer = async () => {
     if (user?.id && !answeredQuestions.has(currentQuestionIndex)) {
       setAnsweredQuestions(prev => new Set(prev).add(currentQuestionIndex))
       await streakService.recordActivity(user.id, 1)
     }
   }
 
+  const handleAnswerSelect = async (option) => {
+    const optionText = typeof option === 'string' ? option : option.text
+    let newAnswer
+    if (isMultipleResponseQuestion(currentQuestion.type)) {
+      const current = answers[currentQuestionIndex] || []
+      newAnswer = current.includes(optionText)
+        ? current.filter(a => a !== optionText)
+        : [...current, optionText]
+    } else {
+      newAnswer = [optionText]
+    }
+    saveAnswer(currentQuestionIndex, newAnswer)
+    await recordFirstAnswer()
+  }
+
+  const handleOrderingChange = async (newOrder) => {
+    saveAnswer(currentQuestionIndex, newOrder)
+    await recordFirstAnswer()
+  }
+
+  const handleMatchingChange = async (pairs) => {
+    saveAnswer(currentQuestionIndex, pairs)
+    await recordFirstAnswer()
+  }
+
   const calculateResults = () => {
     let correctCount = 0
-    
+
     questions.forEach((question, index) => {
       const userAnswer = answers[index] || []
       const correctAnswers = question.correctAnswers || []
-      
-      // Normalize answers: trim whitespace and sort for comparison
-      const normalizeAnswers = (answers) => {
-        return answers
-          .map(ans => String(ans).trim()) // Convert to string and trim
-          .filter(ans => ans.length > 0)  // Remove empty strings
-          .sort()
-      }
-      
-      const sortedUserAnswer = normalizeAnswers(userAnswer)
-      const sortedCorrectAnswers = normalizeAnswers(correctAnswers)
-      
-      // Check if arrays are equal
-      if (JSON.stringify(sortedUserAnswer) === JSON.stringify(sortedCorrectAnswers)) {
-        correctCount++
+      const norm = (arr) => arr.map(s => String(s).trim()).filter(s => s)
+
+      if (isOrderingQuestion(question.type)) {
+        // Sequence must match exactly — do NOT sort
+        if (norm(userAnswer).length > 0 &&
+            JSON.stringify(norm(userAnswer)) === JSON.stringify(norm(correctAnswers))) {
+          correctCount++
+        }
+      } else {
+        // MC, Multiple Response, Matching — sort both sides and compare
+        if (JSON.stringify(norm(userAnswer).sort()) === JSON.stringify(norm(correctAnswers).sort())) {
+          correctCount++
+        }
       }
     })
     
@@ -635,7 +636,7 @@ function ExamInterface() {
             onClick={() => setShowAIPanel(true)}
             className="materials-button flex items-center gap-1.5 bg-[rgba(0,212,170,0.15)] text-[#00D4AA] border-[#00D4AA]"
           >
-            🤖 AI Learning Guide
+            <Sparkles className="w-3.5 h-3.5" /> AI Learning Guide
           </button>
         </div>
 
@@ -644,9 +645,13 @@ function ExamInterface() {
           <div className="question-header">
             <span className="question-badge">
               Question {currentQuestionIndex + 1} • {
-                currentQuestion.type === 'Multiple Response' 
-                  ? '☑️ Multiple Response (select all that apply)' 
-                  : '⭕ Multiple Choice (select one)'
+                isOrderingQuestion(currentQuestion.type)
+                  ? '🔢 Ordering — arrange in correct sequence'
+                  : isMatchingQuestion(currentQuestion.type)
+                  ? '🔗 Matching — pair each item correctly'
+                  : isMultipleResponseQuestion(currentQuestion.type)
+                  ? '☑️ Multiple Response — select all that apply'
+                  : '⭕ Multiple Choice — select one'
               }
             </span>
             <p className="question-text">
@@ -654,42 +659,44 @@ function ExamInterface() {
             </p>
           </div>
 
-          {/* Options */}
-          <div className="options-container">
-            {displayOptions.map((option, index) => {
-              // Handle both string options and option objects
-              const optionText = typeof option === 'string' ? option : option.text
-              const isSelected = currentAnswer.includes(optionText)
-              const isMultiple = isMultipleResponseQuestion(currentQuestion.type)
-              
-              return (
-                <div
-                  key={`${currentQuestionIndex}-${index}-${optionText}`}
-                  onClick={() => handleAnswerSelect(option)}
-                  className={`option ${
-                    isSelected
-                      ? 'option-selected'
-                      : 'option-default'
-                  }`}
-                >
-                  <div className="option-content">
-                    <div className={`option-checkbox ${
-                      isMultiple ? 'option-checkbox-square' : 'option-checkbox-circle'
-                    } ${
-                      isSelected
-                        ? 'option-checkbox-selected'
-                        : 'option-checkbox-default'
-                    }`}>
-                      {isSelected && (
-                        <span>✓</span>
-                      )}
+          {/* Question input — rendered based on type */}
+          {isOrderingQuestion(currentQuestion.type) ? (
+            <OrderingQuestion
+              options={displayOptions}
+              currentOrder={currentAnswer}
+              onChange={handleOrderingChange}
+            />
+          ) : isMatchingQuestion(currentQuestion.type) ? (
+            <MatchingQuestion
+              options={displayOptions}
+              currentAnswer={currentAnswer}
+              onChange={handleMatchingChange}
+            />
+          ) : (
+            <div className="options-container">
+              {displayOptions.map((option, index) => {
+                const optionText = typeof option === 'string' ? option : option.text
+                const isSelected = currentAnswer.includes(optionText)
+                const isMultiple = isMultipleResponseQuestion(currentQuestion.type)
+                return (
+                  <div
+                    key={`${currentQuestionIndex}-${index}-${optionText}`}
+                    onClick={() => handleAnswerSelect(option)}
+                    className={`option ${isSelected ? 'option-selected' : 'option-default'}`}
+                  >
+                    <div className="option-content">
+                      <div className={`option-checkbox ${
+                        isMultiple ? 'option-checkbox-square' : 'option-checkbox-circle'
+                      } ${isSelected ? 'option-checkbox-selected' : 'option-checkbox-default'}`}>
+                        {isSelected && <span>✓</span>}
+                      </div>
+                      <span className="option-text">{optionText}</span>
                     </div>
-                    <span className="option-text">{optionText}</span>
                   </div>
-                </div>
-              )
-            })}
-          </div>
+                )
+              })}
+            </div>
+          )}
         </div>
 
         {/* Navigation */}
@@ -728,7 +735,7 @@ function ExamInterface() {
       {/* Resume Notification */}
       {showResumeNotification && (
         <div className="fixed top-3 left-3 right-3 max-w-[400px] mx-auto z-[10000] flex items-center gap-2.5 px-4 py-3.5 bg-gradient-to-br from-[#00D4AA] to-[#00A884] text-white rounded-xl shadow-[0_10px_25px_rgba(0,212,170,0.3)] animate-[slideDown_0.3s_ease-out]">
-          <span className="text-xl shrink-0">🔄</span>
+          <RefreshCw className="w-5 h-5 shrink-0" />
           <div className="min-w-0">
             <div className="font-semibold text-sm">Exam Resumed</div>
             <div className="text-[0.8125rem] opacity-90">
@@ -750,20 +757,20 @@ function ExamInterface() {
       {timerPaused && (
         <div className="paused-overlay">
           <div className="paused-modal">
-            <h2>⏸️ Exam Paused</h2>
+            <h2 className="flex items-center justify-center gap-2"><Pause className="w-5 h-5" /> Exam Paused</h2>
             <p>The exam is paused. Your progress and timer have been saved.</p>
             <div className="text-sm text-[rgba(10,37,64,0.7)] mb-6 p-3 bg-[rgba(0,212,170,0.1)] rounded-lg">
-              <div>⏱️ Time Elapsed: {formatTime(timeElapsed)}</div>
-              <div>📝 Questions Answered: {answeredCount} of {questions?.length || 0}</div>
+              <div className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> Time Elapsed: {formatTime(timeElapsed)}</div>
+              <div className="flex items-center gap-1.5 mt-1"><FileText className="w-3.5 h-3.5" /> Questions Answered: {answeredCount} of {questions?.length || 0}</div>
             </div>
             <button 
               onClick={async () => {
                 resetInactivity()
                 await setTimerPaused(false)
               }}
-              className="resume-button"
+              className="resume-button flex items-center justify-center gap-2"
             >
-              ▶️ Resume Exam
+              <Play className="w-4 h-4" /> Resume Exam
             </button>
           </div>
         </div>
