@@ -74,6 +74,26 @@ export const progressService = {
     }
     
     try {
+      // user_progress.exam_attempt_id is a FK to exam_attempts.id, so we must
+      // ensure the parent row exists first. Upsert exam_attempts before
+      // touching user_progress (completeExam will later update this same row).
+      const { error: attemptError } = await supabase
+        .from('exam_attempts')
+        .upsert({
+          id: attemptId,
+          user_id: progress.userId,
+          question_set_id: progress.questionSetId,
+          started_at: progress.startedAt || new Date().toISOString(),
+          status: progress.status || 'in_progress',
+          updated_at: new Date().toISOString(),
+          created_at: progress.startedAt || new Date().toISOString()
+        }, { onConflict: 'id', ignoreDuplicates: false })
+
+      if (attemptError) {
+        console.error('Error upserting exam_attempts row:', attemptError)
+        throw attemptError
+      }
+
       // Prepare data for Supabase
       const progressData = {
         exam_attempt_id: attemptId,
