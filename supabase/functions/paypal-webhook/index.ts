@@ -1,8 +1,7 @@
 // Supabase Edge Function: paypal-webhook
 // Handles PayPal webhook events for payment processing
 
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.0'
+import { createClient } from 'npm:@supabase/supabase-js@2'
 
 const PAYPAL_CLIENT_ID = Deno.env.get('PAYPAL_CLIENT_ID') || ''
 const PAYPAL_CLIENT_SECRET = Deno.env.get('PAYPAL_CLIENT_SECRET') || ''
@@ -83,7 +82,7 @@ async function verifyWebhookSignature(
   }
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   try {
     const body = await req.text()
     const event = JSON.parse(body)
