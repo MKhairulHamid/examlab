@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import useAuthStore from '../stores/authStore'
 import useExamStore from '../stores/examStore'
@@ -10,6 +10,13 @@ import progressService from '../services/progressService'
 import supabase from '../services/supabase'
 import CloudCertificationJourneyModal, { PATHS, computeTimeline } from '../components/journey/CloudCertificationJourneyModal'
 import { Button, Card, Badge, Container, SectionHeader } from '../design-system'
+import { BookOpen, ClipboardList, CheckCircle2, CalendarDays, BarChart2, Flame } from 'lucide-react'
+import aifC01Course from '../data/aifC01Course'
+
+// Registry of session-based courses that have localStorage progress
+const SESSION_COURSE_REGISTRY = [
+  { course: aifC01Course, studySlugFragment: 'aif' },
+]
 
 // Maps a journey cert code to keywords in an exam slug/name
 const CERT_EXAM_KEYWORDS = {
@@ -339,17 +346,122 @@ function Dashboard() {
     )
   }
 
+  // ─── Continue Learning ────────────────────────────────────────────
+  const courseProgress = useMemo(() => {
+    return SESSION_COURSE_REGISTRY.map(({ course, studySlugFragment }) => {
+      let completedIds = []
+      try {
+        const raw = localStorage.getItem(`course-progress-${course.slug}`)
+        if (raw) completedIds = JSON.parse(raw)
+      } catch { /* ignore */ }
+      const total = course.sessions.length
+      const done = completedIds.length
+      if (done === 0) return null
+      const pct = Math.round((done / total) * 100)
+      const nextSession = course.sessions.find(s => !completedIds.includes(s.id))
+      const studyExam = exams.find(ex => {
+        const h = `${ex.slug || ''} ${ex.name || ''}`.toLowerCase()
+        return h.includes(studySlugFragment)
+      })
+      return { course, done, total, pct, nextSession, studySlug: studyExam?.slug || null }
+    }).filter(Boolean)
+  }, [exams])
+
+  const renderContinueLearning = () => {
+    if (courseProgress.length === 0) return null
+    return (
+      <section className="py-6">
+        <Container>
+          <div className="flex flex-col gap-3">
+            {courseProgress.map(({ course, done, total, pct, nextSession, studySlug }) => (
+              <div
+                key={course.slug}
+                style={{
+                  background: 'linear-gradient(135deg, #0A2540 0%, #1A3B5C 100%)',
+                  borderRadius: '1rem', padding: '1.25rem 1.5rem',
+                  display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap',
+                  border: '1px solid rgba(0,212,170,0.2)',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
+                }}
+              >
+                {/* Icon */}
+                <div style={{
+                  width: '3rem', height: '3rem', borderRadius: '0.875rem', flexShrink: 0,
+                  background: 'rgba(0,212,170,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '1.4rem',
+                }}>
+                  📖
+                </div>
+
+                {/* Info */}
+                <div style={{ flex: 1, minWidth: '200px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                    <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#00D4AA', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                      Continue Learning
+                    </span>
+                    <span style={{ fontSize: '0.6875rem', color: 'rgba(255,255,255,0.4)', fontWeight: 600 }}>
+                      {pct === 100 ? 'Completed' : `${pct}% complete`}
+                    </span>
+                  </div>
+                  <p style={{ color: 'white', fontWeight: 700, fontSize: '0.9375rem', marginBottom: '0.5rem', lineHeight: 1.3 }}>
+                    {course.title}
+                  </p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <div style={{ flex: 1, maxWidth: '200px', height: '5px', background: 'rgba(255,255,255,0.15)', borderRadius: '999px', overflow: 'hidden' }}>
+                      <div style={{
+                        height: '100%', width: `${pct}%`,
+                        background: 'linear-gradient(90deg, #00D4AA, #00A884)',
+                        transition: 'width 0.4s ease',
+                      }} />
+                    </div>
+                    <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.55)', fontWeight: 600, flexShrink: 0 }}>
+                      {done}/{total} sessions
+                    </span>
+                  </div>
+                  {nextSession && pct < 100 && (
+                    <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.45)', marginTop: '0.3rem' }}>
+                      Next: Session {nextSession.number} — {nextSession.title}
+                    </p>
+                  )}
+                </div>
+
+                {/* CTA */}
+                {studySlug && (
+                  <button
+                    onClick={() => navigate(`/exam/${studySlug}/study`)}
+                    style={{
+                      padding: '0.65rem 1.375rem', borderRadius: '0.625rem', fontWeight: 700,
+                      fontSize: '0.875rem', cursor: 'pointer', flexShrink: 0,
+                      background: pct === 100
+                        ? 'rgba(255,255,255,0.1)'
+                        : 'linear-gradient(135deg, #00D4AA, #00A884)',
+                      color: 'white',
+                      border: pct === 100 ? '1px solid rgba(255,255,255,0.2)' : 'none',
+                      boxShadow: pct < 100 ? '0 4px 14px rgba(0,212,170,0.4)' : 'none',
+                    }}
+                  >
+                    {pct === 100 ? 'Review Course' : 'Continue →'}
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        </Container>
+      </section>
+    )
+  }
+
   // ─── Quick Stats ─────────────────────────────────────────────────
   const renderQuickStats = () => {
     const passed = examResults.filter(r => r.passed).length
     const streak = streakStats?.currentStreak || 0
     const upcoming = examDates.filter(d => calculateDaysUntil(d.exam_date) >= 0).length
     const stats = [
-      { label: 'Enrolled', value: userCertifications.length, icon: '📚' },
-      { label: 'Day Streak', value: streak, icon: '🔥' },
-      { label: 'Exams Taken', value: examResults.length, icon: '📝' },
-      { label: 'Passed', value: passed, icon: '✅' },
-      ...(upcoming > 0 ? [{ label: 'Upcoming', value: upcoming, icon: '📅' }] : []),
+      { label: 'Enrolled',   value: userCertifications.length, Icon: BookOpen,      color: '#00D4AA' },
+      { label: 'Day Streak', value: streak,                    Icon: Flame,          color: '#f59e0b' },
+      { label: 'Exams Taken',value: examResults.length,        Icon: ClipboardList,  color: '#6366f1' },
+      { label: 'Passed',     value: passed,                    Icon: CheckCircle2,   color: '#10b981' },
+      ...(upcoming > 0 ? [{ label: 'Upcoming', value: upcoming, Icon: CalendarDays, color: '#3b82f6' }] : []),
     ]
     return (
       <div className="relative z-10 -mt-8">
@@ -357,7 +469,9 @@ function Dashboard() {
           <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${stats.length}, minmax(0, 1fr))` }}>
             {stats.map((s, i) => (
               <Card key={i} className="p-4 text-center">
-                <p className="text-xl mb-1">{s.icon}</p>
+                <div className="flex justify-center mb-1.5">
+                  <s.Icon className="w-5 h-5" style={{ color: s.color }} />
+                </div>
                 <p className="text-2xl font-bold text-[#0A2540] leading-none">{s.value}</p>
                 <p className="text-xs text-gray-500 mt-1 font-medium">{s.label}</p>
               </Card>
@@ -444,7 +558,7 @@ function Dashboard() {
 
         {userCertifications.length === 0 ? (
           <Card className="p-12 text-center">
-            <p className="text-4xl mb-4">📚</p>
+            <div className="flex justify-center mb-4"><BookOpen className="w-10 h-10 text-gray-300" /></div>
             <h3 className="text-lg font-bold text-[#0A2540] mb-2">No Certifications Yet</h3>
             <p className="text-gray-500 text-sm mb-6">Start your certification journey today!</p>
             <Button variant="primary" onClick={() => exploreRef.current?.scrollIntoView({ behavior: 'smooth' })}>
@@ -493,7 +607,7 @@ function Dashboard() {
                     <Button variant="outline" size="sm"
                             onClick={e => { e.stopPropagation(); setSelectedExamForDate(exam); setShowExamDateModal(true) }}
                             title={`${scheduled ? 'Update' : 'Set'} exam date`}>
-                      📅
+                      <CalendarDays className="w-4 h-4" />
                     </Button>
                   </div>
                 </Card>
@@ -589,7 +703,7 @@ function Dashboard() {
 
       {examResults.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center text-gray-300 py-8 text-center">
-          <p className="text-4xl mb-3">📊</p>
+          <BarChart2 className="w-10 h-10 mb-3 text-gray-200" />
           <p className="text-sm text-gray-400">No exam results yet</p>
           <p className="text-xs text-gray-300 mt-1">Complete a practice exam to see your results here.</p>
         </div>
@@ -856,6 +970,9 @@ function Dashboard() {
 
         {/* Stats */}
         {renderQuickStats()}
+
+        {/* Continue Learning */}
+        {renderContinueLearning()}
 
         {/* Sections */}
         <div className="pt-8">

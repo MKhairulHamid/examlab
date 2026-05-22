@@ -149,11 +149,11 @@ function Landing() {
                 🗺️ All 13 AWS Certifications — 6 Career Paths
               </div>
               <h1 className="text-[clamp(2.25rem,5vw,3.75rem)] font-extrabold text-white leading-[1.1] mb-6 tracking-[-0.03em]">
-                Your AWS Certification<br />
-                <span className="text-[#00D4AA]">Path Starts Here.</span>
+                Learn, Practice, and Pass<br />
+                <span className="text-[#00D4AA]">Your Cloud Certs.</span>
               </h1>
               <p className="text-[clamp(1rem,2.5vw,1.2rem)] text-white/85 leading-[1.7] mb-10 max-w-[38rem]">
-                Sign up free, then map your existing career to a personalized certification roadmap — with your timeline, target salary, and exam-realistic practice to get you there.
+                Structured 30-minute study sessions cover every exam domain — each one ending with a real exam-style question. Then validate with full practice exams mapped to the official blueprint.
               </p>
               <div className="hero-buttons" style={{ marginBottom: '2rem' }}>
                 <button onClick={openSignup} className="btn-primary" style={{ fontSize: '1.0625rem', padding: '1rem 2rem' }}>
@@ -164,8 +164,8 @@ function Landing() {
                 </button>
               </div>
               <div className="flex gap-6 flex-wrap text-white/65 text-sm">
-                <span>✓ Personalized roadmap</span>
-                <span>✓ Salary & timeline data</span>
+                <span>✓ Guided study sessions</span>
+                <span>✓ Exam-style practice per session</span>
                 <span>✓ From $8.25/month</span>
               </div>
             </div>
@@ -349,10 +349,10 @@ function Landing() {
               </div>
               <ul className="space-y-3 list-none p-0 m-0">
                 {[
+                  '16 structured 30-min sessions per certification',
+                  'Real exam-style question at the end of every session',
                   'Exam-realistic practice from $8.25/month',
-                  'Just-in-time study materials per question',
                   '195 questions mapped to the official blueprint',
-                  'Progress tracking & per-domain analytics',
                   'Walk in knowing exactly what to expect',
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-2.5 text-gray-700 text-[0.9375rem] leading-relaxed">
@@ -386,19 +386,19 @@ function Landing() {
               <div className="flex-1 min-w-[220px]">
                 <div className="text-3xl mb-3.5">🎯</div>
                 <h3 className="text-[clamp(1.25rem,3vw,1.625rem)] font-bold text-white mb-3">
-                  Exam-Realistic Technology
+                  Learn First. Then Practice.
                 </h3>
                 <p className="text-white/[0.78] leading-[1.65] text-[0.9375rem] max-w-[440px]">
-                  Every question maps to the official DVA-C02 blueprint. Same format, same difficulty, same scenario style as the real exam — built to close the gap between practice and passing.
+                  Start with structured course sessions that teach every exam domain — each 30 minutes with key terms, AWS services, exam tips, and a real sample question. Then drill with full practice exams.
                 </p>
               </div>
               <div className="flex flex-col gap-2.5 min-w-[200px]">
                 {[
-                  '65 questions per timed set',
+                  '16 study sessions per certification',
+                  'Sample exam question per session',
+                  '65 questions per timed practice set',
                   'Blueprint-mapped domains',
-                  'Scenario-based question style',
                   'Official AWS doc links included',
-                  'Detailed answer explanations',
                 ].map((f, i) => (
                   <div key={i} className="flex items-center gap-2 text-sm text-white/[0.85]">
                     <span className="text-[#00D4AA] font-bold text-xs">→</span>

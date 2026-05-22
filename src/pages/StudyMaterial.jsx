@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import SessionCourse from '../components/study/SessionCourse'
+import aifC01Course from '../data/aifC01Course'
+
+// Registry of session-based prep courses keyed by exam slug fragment.
+// A slug containing any of these fragments renders the matching SessionCourse.
+const SESSION_COURSES = [
+  { match: ['aif', 'ai-practitioner'], course: aifC01Course },
+]
 
 // Data Structure for Content Domain 1
 const studyData = {
@@ -645,7 +653,29 @@ function TopicItem({ item, isBookmarked, onToggleBookmark, onStartQuiz }) {
     )
 }
 
+// Dispatcher: route AIF (and future session-based) exams to SessionCourse,
+// otherwise fall back to the legacy topic-based study UI.
 function StudyMaterial() {
+    const { slug } = useParams()
+    const navigate = useNavigate()
+    const lowerSlug = (slug || '').toLowerCase()
+    const sessionCourse = SESSION_COURSES.find(entry =>
+        entry.match.some(fragment => lowerSlug.includes(fragment))
+    )
+
+    if (sessionCourse) {
+        return (
+            <SessionCourse
+                course={sessionCourse.course}
+                onBack={() => navigate(`/exam/${slug}`)}
+            />
+        )
+    }
+
+    return <LegacyStudyMaterial />
+}
+
+function LegacyStudyMaterial() {
     const { slug } = useParams()
     const navigate = useNavigate()
     const [bookmarkedTopics, setBookmarkedTopics] = useState([])
