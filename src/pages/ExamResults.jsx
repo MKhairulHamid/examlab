@@ -6,6 +6,8 @@ import useAuthStore from '../stores/authStore'
 import supabase from '../services/supabase'
 import DashboardHeader from '../components/layout/DashboardHeader'
 import AIExplanationPanel from '../components/AIExplanationPanel'
+import AnswerReview from '../components/AnswerReview'
+import { isOrderingQuestion, getTypeLabel } from '../utils/questionTypes'
 
 function ExamResults() {
   const { slug } = useParams()
@@ -134,21 +136,20 @@ function ExamResults() {
   const getAnswerStatus = (questionIndex, question) => {
     const userAnswer = result.answers[questionIndex] || []
     const correctAnswers = question.correctAnswers || []
-    
-    // Normalize answers: trim whitespace and sort for comparison
-    const normalizeAnswers = (answers) => {
-      return answers
-        .map(ans => String(ans).trim()) // Convert to string and trim
-        .filter(ans => ans.length > 0)  // Remove empty strings
-        .sort()
+
+    const norm = (arr) => arr.map(a => String(a).trim()).filter(a => a.length > 0)
+
+    // All-or-nothing scoring per AIF-C01 (no partial credit for any type).
+    let isCorrect
+    if (isOrderingQuestion(question.type)) {
+      // Sequence must match exactly — do NOT sort
+      const u = norm(userAnswer)
+      isCorrect = u.length > 0 && JSON.stringify(u) === JSON.stringify(norm(correctAnswers))
+    } else {
+      // MC, Multiple Response, Matching — order-independent set equality
+      isCorrect = JSON.stringify(norm(userAnswer).sort()) === JSON.stringify(norm(correctAnswers).sort())
     }
-    
-    const sortedUserAnswer = normalizeAnswers(userAnswer)
-    const sortedCorrectAnswers = normalizeAnswers(correctAnswers)
-    
-    // Check if arrays are equal
-    const isCorrect = JSON.stringify(sortedUserAnswer) === JSON.stringify(sortedCorrectAnswers)
-    
+
     return { isCorrect, userAnswer, correctAnswers }
   }
 
@@ -465,7 +466,7 @@ function ExamResults() {
                     </div>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.7)', marginBottom: '0.5rem' }}>
-                        Question {index + 1} • {question.type === 'Multiple Response' ? 'Multiple Response' : 'Multiple Choice'}
+                        Question {index + 1} • {getTypeLabel(question.type)}
                       </div>
                       <p style={{ fontSize: '1rem', color: 'white', fontWeight: '500', lineHeight: '1.6' }}>
                         {questionText}
@@ -473,53 +474,8 @@ function ExamResults() {
                     </div>
                   </div>
 
-                  {/* Options Display */}
-                  <div style={{ marginBottom: '1rem' }}>
-                    {question.options?.map((option, optIndex) => {
-                      const optionText = typeof option === 'string' ? option : option.text
-                      const isUserAnswer = userAnswer.includes(optionText)
-                      const isCorrectAnswer = correctAnswers.includes(optionText)
-                      
-                      let optionStyle = {
-                        padding: '0.75rem 1rem',
-                        borderRadius: '0.5rem',
-                        marginBottom: '0.5rem',
-                        border: '1px solid rgba(255,255,255,0.2)',
-                        background: 'rgba(255,255,255,0.05)'
-                      }
-                      
-                      if (isCorrectAnswer) {
-                        optionStyle.background = 'rgba(16,185,129,0.2)'
-                        optionStyle.border = '1px solid rgba(16,185,129,0.5)'
-                      } else if (isUserAnswer && !isCorrectAnswer) {
-                        optionStyle.background = 'rgba(239,68,68,0.2)'
-                        optionStyle.border = '1px solid rgba(239,68,68,0.5)'
-                      }
-                      
-                      return (
-                        <div key={optIndex} style={optionStyle}>
-                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
-                            <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.8125rem', flexShrink: 0, marginTop: '0.125rem' }}>
-                              {String.fromCharCode(65 + optIndex)}.
-                            </span>
-                            <span style={{ color: 'white', fontSize: '0.8125rem', flex: 1, minWidth: 0, lineHeight: '1.5', wordBreak: 'break-word' }}>
-                              {optionText}
-                            </span>
-                            {isCorrectAnswer && (
-                              <span style={{ color: '#10b981', fontWeight: '600', fontSize: '0.6875rem', flexShrink: 0, whiteSpace: 'nowrap', marginTop: '0.125rem' }}>
-                                ✓ Correct
-                              </span>
-                            )}
-                            {isUserAnswer && !isCorrectAnswer && (
-                              <span style={{ color: '#ef4444', fontWeight: '600', fontSize: '0.6875rem', flexShrink: 0, whiteSpace: 'nowrap', marginTop: '0.125rem' }}>
-                                ✗ Yours
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
+                  {/* Answer review — rendered per question type */}
+                  <AnswerReview question={question} userAnswer={userAnswer} correctAnswers={correctAnswers} />
 
                   {/* Ask AI button */}
                   <button

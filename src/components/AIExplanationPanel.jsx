@@ -588,15 +588,132 @@ export default function AIExplanationPanel({ question, onClose }) {
                 )}
               </div>
 
-              {/* Rendered markdown response */}
-              <div style={{
-                padding: '1rem 1.125rem',
-                background: 'rgba(255,255,255,0.04)',
-                borderRadius: '0.75rem',
-                border: '1px solid rgba(255,255,255,0.08)'
-              }}>
-                {renderMarkdown(response)}
-              </div>
+              {/* Rendered response — type-aware */}
+              {activeType === 'official_links' && Array.isArray(response) ? (
+                <div style={{
+                  padding: '1rem 1.125rem',
+                  background: 'rgba(255,255,255,0.04)',
+                  borderRadius: '0.75rem',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.625rem'
+                }}>
+                  {response.map((link, idx) => (
+                    <a
+                      key={idx}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.625rem',
+                        padding: '0.75rem 1rem',
+                        background: 'rgba(96,165,250,0.08)',
+                        border: '1px solid rgba(96,165,250,0.2)',
+                        borderRadius: '0.625rem',
+                        color: '#93c5fd',
+                        textDecoration: 'none',
+                        fontSize: '0.875rem',
+                        fontWeight: '500',
+                        transition: 'background 0.2s, border-color 0.2s'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(96,165,250,0.15)'
+                        e.currentTarget.style.borderColor = 'rgba(96,165,250,0.4)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'rgba(96,165,250,0.08)'
+                        e.currentTarget.style.borderColor = 'rgba(96,165,250,0.2)'
+                      }}
+                    >
+                      <span style={{ fontSize: '1rem', flexShrink: 0 }}>🔗</span>
+                      <span style={{ flex: 1 }}>{link.title}</span>
+                      <span style={{ fontSize: '0.75rem', opacity: 0.6, flexShrink: 0 }}>↗</span>
+                    </a>
+                  ))}
+                </div>
+              ) : activeType === 'explanations' && response && typeof response === 'object' && !Array.isArray(response) ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  {/* Overview */}
+                  {response.overview && (
+                    <div style={{
+                      padding: '1rem 1.125rem',
+                      background: 'rgba(255,255,255,0.04)',
+                      borderRadius: '0.75rem',
+                      border: '1px solid rgba(255,255,255,0.08)'
+                    }}>
+                      <p style={{ color: 'rgba(255,255,255,0.85)', lineHeight: '1.7', fontSize: '0.875rem', margin: 0 }}>
+                        {response.overview}
+                      </p>
+                    </div>
+                  )}
+                  {/* Per-option breakdown */}
+                  {Array.isArray(response.per_option) && response.per_option.map((item, idx) => (
+                    <div
+                      key={idx}
+                      style={{
+                        padding: '0.875rem 1rem',
+                        background: item.correct
+                          ? 'rgba(16,185,129,0.08)'
+                          : 'rgba(239,68,68,0.06)',
+                        border: `1px solid ${item.correct ? 'rgba(16,185,129,0.25)' : 'rgba(239,68,68,0.2)'}`,
+                        borderRadius: '0.75rem'
+                      }}
+                    >
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: '0.5rem',
+                        marginBottom: '0.375rem'
+                      }}>
+                        <span style={{
+                          flexShrink: 0,
+                          width: '1.25rem',
+                          height: '1.25rem',
+                          borderRadius: '50%',
+                          background: item.correct ? '#10b981' : '#ef4444',
+                          color: 'white',
+                          fontSize: '0.75rem',
+                          fontWeight: '700',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          marginTop: '0.1rem'
+                        }}>
+                          {item.correct ? '✓' : '✗'}
+                        </span>
+                        <span style={{
+                          color: item.correct ? '#6ee7b7' : '#fca5a5',
+                          fontSize: '0.8125rem',
+                          fontWeight: '600',
+                          lineHeight: '1.4'
+                        }}>
+                          {item.option}
+                        </span>
+                      </div>
+                      <p style={{
+                        color: 'rgba(255,255,255,0.72)',
+                        fontSize: '0.8125rem',
+                        lineHeight: '1.6',
+                        margin: '0 0 0 1.75rem'
+                      }}>
+                        {item.explanation}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{
+                  padding: '1rem 1.125rem',
+                  background: 'rgba(255,255,255,0.04)',
+                  borderRadius: '0.75rem',
+                  border: '1px solid rgba(255,255,255,0.08)'
+                }}>
+                  {renderMarkdown(typeof response === 'string' ? response : JSON.stringify(response, null, 2))}
+                </div>
+              )}
             </div>
           )}
 
