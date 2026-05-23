@@ -522,6 +522,11 @@ function ExamInterface() {
     navigate(`/exam/${slug}/results?resultId=${result.id}&set=${setId}`)
   }
 
+  const handlePauseExam = async () => {
+    await saveCurrentProgress()
+    await setTimerPaused(true)
+  }
+
   const currentAnswer = answers[currentQuestionIndex] || []
 
   // Shuffle array using Fisher-Yates algorithm
@@ -631,12 +636,18 @@ function ExamInterface() {
           {answeredCount} of {questions.length} questions answered
         </div>
 
-        <div className="flex justify-center mb-3">
+        <div className="flex justify-center gap-2 mb-3">
           <button
             onClick={() => setShowAIPanel(true)}
             className="materials-button flex items-center gap-1.5 bg-[rgba(0,212,170,0.15)] text-[#00D4AA] border-[#00D4AA]"
           >
             <Sparkles className="w-3.5 h-3.5" /> AI Learning Guide
+          </button>
+          <button
+            onClick={handlePauseExam}
+            className="materials-button flex items-center gap-1.5"
+          >
+            <Pause className="w-3.5 h-3.5" /> Pause Exam
           </button>
         </div>
 
@@ -768,7 +779,7 @@ function ExamInterface() {
                 resetInactivity()
                 await setTimerPaused(false)
               }}
-              className="resume-button flex items-center justify-center gap-2"
+              className="resume-button inline-flex items-center justify-center gap-2"
             >
               <Play className="w-4 h-4" /> Resume Exam
             </button>
