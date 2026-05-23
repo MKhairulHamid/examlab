@@ -427,11 +427,10 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
         <button
           onClick={() => setMobileSidebarOpen(o => !o)}
           style={{
-            display: 'none',
             background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)',
             color: 'white', cursor: 'pointer', fontSize: '0.8125rem',
             padding: '0.35rem 0.875rem', borderRadius: '0.5rem', flexShrink: 0,
-            // shown via media-query workaround: use JS check instead
+            alignItems: 'center', gap: '0.375rem',
           }}
           className="mobile-sidebar-toggle"
         >
@@ -465,7 +464,6 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
           width: '272px', minWidth: '272px',
           background: 'white', borderRight: '1px solid #e2e8f0',
           overflowY: 'auto',
-          // hide on small screens via a CSS class workaround
         }} className="course-sidebar">
           {Sidebar}
         </aside>
