@@ -588,8 +588,8 @@ export default function AIExplanationPanel({ question, onClose }) {
                 )}
               </div>
 
-              {/* Rendered response — type-aware */}
-              {activeType === 'concept_guide' && response && typeof response === 'object' && !Array.isArray(response) ? (
+              {/* Rendered response — keyed on data shape, not activeType */}
+              {response && typeof response === 'object' && !Array.isArray(response) && response.title && response.summary ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
                   {/* Title */}
                   {response.title && (
@@ -674,7 +674,7 @@ export default function AIExplanationPanel({ question, onClose }) {
                     </div>
                   )}
                 </div>
-              ) : activeType === 'official_links' && Array.isArray(response) ? (
+              ) : Array.isArray(response) ? (
                 <div style={{
                   padding: '1rem 1.125rem',
                   background: 'rgba(255,255,255,0.04)',
@@ -719,7 +719,7 @@ export default function AIExplanationPanel({ question, onClose }) {
                     </a>
                   ))}
                 </div>
-              ) : activeType === 'explanations' && response && typeof response === 'object' && !Array.isArray(response) ? (
+              ) : response && typeof response === 'object' && !Array.isArray(response) && response.per_option ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                   {/* Overview */}
                   {response.overview && (
