@@ -589,7 +589,92 @@ export default function AIExplanationPanel({ question, onClose }) {
               </div>
 
               {/* Rendered response — type-aware */}
-              {activeType === 'official_links' && Array.isArray(response) ? (
+              {activeType === 'concept_guide' && response && typeof response === 'object' && !Array.isArray(response) ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
+                  {/* Title */}
+                  {response.title && (
+                    <div style={{
+                      padding: '0.75rem 1rem',
+                      background: 'rgba(0,212,170,0.1)',
+                      border: '1px solid rgba(0,212,170,0.25)',
+                      borderRadius: '0.75rem'
+                    }}>
+                      <span style={{ color: '#00D4AA', fontWeight: '700', fontSize: '0.9375rem' }}>
+                        {response.title}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Summary */}
+                  {response.summary && (
+                    <div style={{
+                      padding: '1rem 1.125rem',
+                      background: 'rgba(255,255,255,0.04)',
+                      borderRadius: '0.75rem',
+                      border: '1px solid rgba(255,255,255,0.08)'
+                    }}>
+                      <p style={{ color: 'rgba(255,255,255,0.88)', lineHeight: '1.7', fontSize: '0.875rem', margin: 0 }}>
+                        {response.summary}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Key Facts */}
+                  {Array.isArray(response.key_facts) && response.key_facts.length > 0 && (
+                    <div style={{
+                      padding: '0.875rem 1rem',
+                      background: 'rgba(255,255,255,0.04)',
+                      borderRadius: '0.75rem',
+                      border: '1px solid rgba(255,255,255,0.08)'
+                    }}>
+                      <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.6875rem', fontWeight: '600', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '0.625rem' }}>
+                        Key Facts
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        {response.key_facts.map((fact, idx) => (
+                          <div key={idx} style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
+                            <span style={{ color: '#00D4AA', flexShrink: 0, marginTop: '0.2rem', fontSize: '0.75rem' }}>▸</span>
+                            <span style={{ color: 'rgba(255,255,255,0.82)', fontSize: '0.8125rem', lineHeight: '1.6' }}>{fact}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Related Concepts */}
+                  {Array.isArray(response.related_concepts) && response.related_concepts.length > 0 && (
+                    <div style={{
+                      padding: '0.875rem 1rem',
+                      background: 'rgba(255,255,255,0.04)',
+                      borderRadius: '0.75rem',
+                      border: '1px solid rgba(255,255,255,0.08)'
+                    }}>
+                      <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.6875rem', fontWeight: '600', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '0.625rem' }}>
+                        Related Concepts
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        {response.related_concepts.map((concept, idx) => (
+                          <div key={idx} style={{
+                            display: 'flex',
+                            gap: '0.625rem',
+                            padding: '0.5rem 0.75rem',
+                            background: 'rgba(255,255,255,0.04)',
+                            borderRadius: '0.5rem',
+                            border: '1px solid rgba(255,255,255,0.07)'
+                          }}>
+                            <span style={{ color: '#60a5fa', fontWeight: '600', fontSize: '0.8125rem', flexShrink: 0, minWidth: '8rem' }}>
+                              {concept.name}
+                            </span>
+                            <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.8125rem', lineHeight: '1.5' }}>
+                              {concept.description}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : activeType === 'official_links' && Array.isArray(response) ? (
                 <div style={{
                   padding: '1rem 1.125rem',
                   background: 'rgba(255,255,255,0.04)',
