@@ -99,6 +99,22 @@ const aifC01Course = {
           ],
         },
       ],
+      // Inline active-recall "speed bump". afterSection = index of the section
+      // it follows; the sections after it stay locked until this is answered.
+      microQuizzes: [
+        {
+          afterSection: 1,
+          question: 'Based on the nested hierarchy you just read, which statement is correct?',
+          options: [
+            'Deep learning is a subset of machine learning',
+            'Machine learning is a subset of deep learning',
+            'Generative AI is broader than artificial intelligence',
+            'A "model" is the procedure used to train an "algorithm"',
+          ],
+          correct: 0,
+          explainCorrect: 'Right — the terms are concentric circles: AI ⊃ ML ⊃ deep learning ⊃ generative AI.',
+        },
+      ],
       keyTerms: [
         { term: 'Inferencing', def: 'Using a trained model to generate predictions on new, unseen data.' },
         { term: 'Overfitting', def: 'Model learns the training data too well (including noise) and generalizes poorly.' },

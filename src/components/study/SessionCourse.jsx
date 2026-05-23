@@ -280,13 +280,283 @@ function LockedSession({ onSubscribe, freeModuleLabel }) {
   )
 }
 
+// ─── Enhanced reading features (currently scoped to d1-s1) ─────────────────────
+
+// Bolds the leading ~40% of each word to create skim anchors ("bionic reading").
+function BionicText({ text }) {
+  if (typeof text !== 'string') return text
+  return text.split(/(\s+)/).map((tok, i) => {
+    if (!tok.trim()) return tok
+    const n = Math.max(1, Math.round(tok.length * 0.4))
+    return (
+      <span key={i}>
+        <b style={{ fontWeight: 700, color: 'inherit' }}>{tok.slice(0, n)}</b>{tok.slice(n)}
+      </span>
+    )
+  })
+}
+
+const CONFIDENCE = {
+  mastered: { label: 'Mastered', icon: '✓', color: '#16a34a', bg: 'rgba(34,197,94,0.1)' },
+  review:   { label: 'Review',   icon: '↻', color: '#d97706', bg: 'rgba(245,158,11,0.12)' },
+  confused: { label: 'Confused', icon: '?', color: '#dc2626', bg: 'rgba(239,68,68,0.1)' },
+}
+
+const discloseBtnStyle = {
+  background: 'none', border: 'none', cursor: 'pointer',
+  color: TEAL_DARK, fontWeight: 700, fontSize: '0.8125rem',
+  padding: '0.25rem 0', display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
+}
+
+// A teaching section with progressive disclosure (deep content collapsed by
+// default) and a confidence-scoring control row.
+function EnhancedSection({ section, bionic, confidenceVal, onSetConfidence }) {
+  const hasDeep = !!(section.bullets || section.table || section.callout)
+  const [open, setOpen] = useState(false)
+  const conf = confidenceVal ? CONFIDENCE[confidenceVal] : null
+  const txt = (s) => (bionic ? <BionicText text={s} /> : s)
+
+  return (
+    <div style={{
+      marginBottom: '1.5rem', paddingLeft: '1rem',
+      borderLeft: `4px solid ${conf ? conf.color : '#e2e8f0'}`,
+      transition: 'border-color 0.2s',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '0.75rem' }}>
+        <h3 style={{ fontSize: '1.0625rem', fontWeight: 700, color: NAVY, marginBottom: '0.6rem', lineHeight: 1.3 }}>
+          {txt(section.heading)}
+        </h3>
+        {conf && (
+          <span style={{
+            fontSize: '0.6875rem', fontWeight: 700, color: conf.color, background: conf.bg,
+            padding: '0.15rem 0.5rem', borderRadius: '0.3rem', whiteSpace: 'nowrap', flexShrink: 0,
+          }}>{conf.icon} {conf.label}</span>
+        )}
+      </div>
+
+      {section.body && (
+        <p style={{ fontSize: '0.9375rem', color: '#374151', lineHeight: 1.7, margin: hasDeep ? '0 0 0.5rem' : 0 }}>
+          {txt(section.body)}
+        </p>
+      )}
+
+      {hasDeep && !open && (
+        <button onClick={() => setOpen(true)} style={discloseBtnStyle}>↓ Show details</button>
+      )}
+
+      {hasDeep && open && (
+        <div>
+          {section.bullets && (
+            <ul style={{ paddingLeft: '1.4rem', margin: '0.25rem 0', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+              {section.bullets.map((b, i) => (
+                <li key={i} style={{ fontSize: '0.9375rem', color: '#374151', lineHeight: 1.65 }}>{txt(b)}</li>
+              ))}
+            </ul>
+          )}
+          {section.table && <ContentTable table={section.table} />}
+          {section.callout && <Callout callout={section.callout} />}
+          <button onClick={() => setOpen(false)} style={discloseBtnStyle}>↑ Hide details</button>
+        </div>
+      )}
+
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.4rem', marginTop: '0.85rem' }}>
+        <span style={{ fontSize: '0.6875rem', color: '#94a3b8', fontWeight: 600, marginRight: '0.15rem' }}>
+          How well do you know this?
+        </span>
+        {Object.entries(CONFIDENCE).map(([key, c]) => {
+          const active = confidenceVal === key
+          return (
+            <button
+              key={key}
+              onClick={() => onSetConfidence(key)}
+              style={{
+                fontSize: '0.6875rem', fontWeight: 700, cursor: 'pointer',
+                padding: '0.25rem 0.6rem', borderRadius: '0.4rem',
+                border: `1.5px solid ${active ? c.color : '#e2e8f0'}`,
+                background: active ? c.bg : 'white',
+                color: active ? c.color : '#64748b', transition: 'all 0.15s',
+              }}
+            >{c.icon} {c.label}</button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+// Inline active-recall "speed bump" — the following sections stay locked until
+// the learner answers this correctly.
+function SpeedBump({ quiz, cleared, onClear, bionic }) {
+  const [selected, setSelected] = useState(null)
+  const [checked, setChecked] = useState(false)
+  const isCorrect = checked && selected === quiz.correct
+
+  if (cleared) {
+    return (
+      <div style={{
+        background: 'rgba(34,197,94,0.08)', border: '1.5px solid rgba(34,197,94,0.4)',
+        borderRadius: '0.75rem', padding: '0.75rem 1.125rem', margin: '0.5rem 0 1.5rem',
+        fontSize: '0.875rem', fontWeight: 700, color: '#15803d',
+      }}>
+        ✓ Checkpoint cleared — nicely done.
+      </div>
+    )
+  }
+
+  return (
+    <div style={{
+      background: 'rgba(0,212,170,0.05)', border: `2px dashed ${TEAL}`,
+      borderRadius: '1rem', padding: '1.25rem 1.5rem', margin: '0.5rem 0 1.5rem',
+    }}>
+      <div style={{
+        fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em',
+        color: TEAL_DARK, marginBottom: '0.6rem',
+      }}>
+        🚦 Speed bump · quick recall
+      </div>
+      <p style={{ fontSize: '0.9375rem', fontWeight: 600, color: NAVY, lineHeight: 1.6, marginBottom: '1rem' }}>
+        {bionic ? <BionicText text={quiz.question} /> : quiz.question}
+      </p>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem' }}>
+        {quiz.options.map((opt, idx) => {
+          const isSel = selected === idx
+          const isCorr = quiz.correct === idx
+          let bg = '#fafbfd', border = '1.5px solid #e2e8f0', color = NAVY
+          if (checked) {
+            if (isCorr)     { bg = 'rgba(34,197,94,0.09)'; border = '2px solid #22c55e' }
+            else if (isSel) { bg = 'rgba(239,68,68,0.09)'; border = '2px solid #ef4444' }
+          } else if (isSel) { bg = 'rgba(0,212,170,0.1)';  border = `2px solid ${TEAL}` }
+          return (
+            <button
+              key={idx}
+              onClick={() => { if (!checked) setSelected(idx) }}
+              disabled={checked}
+              style={{
+                width: '100%', textAlign: 'left', padding: '0.75rem 1rem',
+                background: bg, border, borderRadius: '0.6rem', color,
+                cursor: checked ? 'default' : 'pointer', fontSize: '0.9rem',
+                fontWeight: isSel ? 600 : 400, transition: 'all 0.15s', lineHeight: 1.5,
+              }}
+            >
+              {checked && isCorr && '✅ '}{checked && isSel && !isCorr && '❌ '}{opt}
+            </button>
+          )
+        })}
+      </div>
+
+      {!checked ? (
+        <button
+          onClick={() => setChecked(true)}
+          disabled={selected === null}
+          style={{
+            padding: '0.6rem 1.35rem',
+            background: selected !== null ? `linear-gradient(135deg, ${TEAL}, ${TEAL_DARK})` : '#e2e8f0',
+            color: selected !== null ? 'white' : '#94a3b8',
+            border: 'none', borderRadius: '0.6rem', fontWeight: 700,
+            fontSize: '0.875rem', cursor: selected !== null ? 'pointer' : 'not-allowed',
+          }}
+        >
+          Check
+        </button>
+      ) : (
+        <div>
+          <p style={{
+            fontSize: '0.9rem', fontWeight: 700, marginBottom: '0.5rem',
+            color: isCorrect ? '#15803d' : '#991b1b',
+          }}>
+            {isCorrect ? `🎉 Correct! ${quiz.explainCorrect || ''}` : '❌ Not quite — give it another try.'}
+          </p>
+          {isCorrect ? (
+            <button
+              onClick={onClear}
+              style={{
+                padding: '0.6rem 1.35rem', background: NAVY, color: 'white',
+                border: 'none', borderRadius: '0.6rem', fontWeight: 700, fontSize: '0.875rem', cursor: 'pointer',
+              }}
+            >
+              Continue →
+            </button>
+          ) : (
+            <button
+              onClick={() => { setChecked(false); setSelected(null) }}
+              style={{
+                padding: '0.5rem 1.1rem', background: 'white', color: NAVY,
+                border: '1.5px solid #e2e8f0', borderRadius: '0.5rem',
+                fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer',
+              }}
+            >
+              ↺ Try again
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function LockedNotice() {
+  return (
+    <div style={{
+      background: '#f8fafc', border: '1.5px dashed #cbd5e1', borderRadius: '1rem',
+      padding: '1.5rem', textAlign: 'center', color: '#64748b',
+      fontSize: '0.9rem', fontWeight: 600,
+    }}>
+      🔒 The rest of this session unlocks once you clear the speed bump above.
+    </div>
+  )
+}
+
+// Assembles the enhanced lesson: enhanced sections + speed bumps, gating any
+// section that follows an uncleared speed bump.
+function LessonBody({ session, bionic, confidence, onSetConfidence }) {
+  const quizzes = session.microQuizzes || []
+  const [cleared, setCleared] = useState([])
+  const elems = []
+
+  for (let i = 0; i < session.sections.length; i++) {
+    const blocking = quizzes.find(q => q.afterSection < i && !cleared.includes(q.afterSection))
+    if (blocking) {
+      elems.push(<LockedNotice key="locked" />)
+      break
+    }
+    const secKey = `${session.id}::${i}`
+    elems.push(
+      <EnhancedSection
+        key={secKey}
+        section={session.sections[i]}
+        bionic={bionic}
+        confidenceVal={confidence[secKey]}
+        onSetConfidence={(lvl) => onSetConfidence(secKey, lvl)}
+      />
+    )
+    const here = quizzes.find(q => q.afterSection === i)
+    if (here) {
+      elems.push(
+        <SpeedBump
+          key={`quiz-${i}`}
+          quiz={here}
+          bionic={bionic}
+          cleared={cleared.includes(i)}
+          onClear={() => setCleared(c => (c.includes(i) ? c : [...c, i]))}
+        />
+      )
+    }
+  }
+  return <>{elems}</>
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
   const storageKey = `course-progress-${course.slug}`
+  const bionicKey = 'study-bionic'
+  const confidenceKey = `study-confidence-${course.slug}`
   const [completedIds, setCompletedIds] = useState([])
   const [activeId, setActiveId] = useState(course.sessions[0]?.id)
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
+  const [bionic, setBionic] = useState(false)
+  const [confidence, setConfidence] = useState({})
   const contentRef = useRef(null)
 
   // Free preview: the first module's sessions are open; the rest require a subscription.
@@ -298,7 +568,12 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
       const saved = localStorage.getItem(storageKey)
       if (saved) setCompletedIds(JSON.parse(saved))
     } catch { /* ignore */ }
-  }, [storageKey])
+    try { setBionic(localStorage.getItem(bionicKey) === '1') } catch { /* ignore */ }
+    try {
+      const c = localStorage.getItem(confidenceKey)
+      if (c) setConfidence(JSON.parse(c))
+    } catch { /* ignore */ }
+  }, [storageKey, confidenceKey])
 
   const toggleComplete = (id) => {
     setCompletedIds(prev => {
@@ -308,7 +583,26 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
     })
   }
 
+  const toggleBionic = () => {
+    setBionic(prev => {
+      const next = !prev
+      try { localStorage.setItem(bionicKey, next ? '1' : '0') } catch { /* ignore */ }
+      return next
+    })
+  }
+
+  const setConfidenceFor = (secKey, level) => {
+    setConfidence(prev => {
+      const next = { ...prev }
+      if (next[secKey] === level) delete next[secKey]
+      else next[secKey] = level
+      try { localStorage.setItem(confidenceKey, JSON.stringify(next)) } catch { /* ignore */ }
+      return next
+    })
+  }
+
   const activeSession = course.sessions.find(s => s.id === activeId)
+  const enhanced = activeSession?.id === 'd1-s1'
   const activeIdx = course.sessions.findIndex(s => s.id === activeId)
   const prevSession = activeIdx > 0 ? course.sessions[activeIdx - 1] : null
   const nextSession = activeIdx < course.sessions.length - 1 ? course.sessions[activeIdx + 1] : null
@@ -571,9 +865,45 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
               ) : (
               <>
               {/* Teaching sections */}
-              {activeSession.sections.map((sec, i) => (
-                <ContentSection key={i} section={sec} />
-              ))}
+              {enhanced ? (
+                <>
+                  <div style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
+                    gap: '0.6rem', marginBottom: '1.5rem',
+                  }}>
+                    <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 600 }}>
+                      Bionic reading
+                    </span>
+                    <button
+                      onClick={toggleBionic}
+                      aria-pressed={bionic}
+                      style={{
+                        width: '44px', height: '24px', borderRadius: '999px', border: 'none',
+                        cursor: 'pointer', padding: 0, position: 'relative',
+                        background: bionic ? `linear-gradient(135deg, ${TEAL}, ${TEAL_DARK})` : '#cbd5e1',
+                        transition: 'background 0.2s',
+                      }}
+                    >
+                      <span style={{
+                        position: 'absolute', top: '2px', left: bionic ? '22px' : '2px',
+                        width: '20px', height: '20px', borderRadius: '50%', background: 'white',
+                        transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                      }} />
+                    </button>
+                  </div>
+                  <LessonBody
+                    key={activeSession.id}
+                    session={activeSession}
+                    bionic={bionic}
+                    confidence={confidence}
+                    onSetConfidence={setConfidenceFor}
+                  />
+                </>
+              ) : (
+                activeSession.sections.map((sec, i) => (
+                  <ContentSection key={i} section={sec} />
+                ))
+              )}
 
               {/* Key terms */}
               {activeSession.keyTerms?.length > 0 && (
