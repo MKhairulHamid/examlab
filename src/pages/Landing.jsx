@@ -173,7 +173,7 @@ function Landing() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
   const [showAuthModal, setShowAuthModal]           = useState(false)
-  const [authModalMode, setAuthModalMode]           = useState('signup')
+  const [authModalMode, setAuthModalMode]           = useState('login')
   const [expandedProvider, setExpandedProvider]     = useState('aws')
   const [expandedFAQ, setExpandedFAQ]               = useState(null)
   const [demoSelectedAnswer, setDemoSelectedAnswer] = useState(null)
