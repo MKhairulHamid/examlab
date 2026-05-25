@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react'
+import useAuthStore from '../../stores/authStore'
+import studyProgressService from '../../services/studyProgressService'
 
 const TEAL = '#00D4AA'
 const TEAL_DARK = '#00A884'
@@ -297,9 +299,9 @@ function BionicText({ text }) {
 }
 
 const CONFIDENCE = {
-  mastered: { label: 'Mastered', icon: '✓', color: '#16a34a', bg: 'rgba(34,197,94,0.1)' },
-  review:   { label: 'Review',   icon: '↻', color: '#d97706', bg: 'rgba(245,158,11,0.12)' },
-  confused: { label: 'Confused', icon: '?', color: '#dc2626', bg: 'rgba(239,68,68,0.1)' },
+  mastered: { label: 'Mastered',     icon: '✓', color: '#16a34a', bg: 'rgba(34,197,94,0.1)' },
+  almost:   { label: 'Almost there', icon: '◐', color: '#d97706', bg: 'rgba(245,158,11,0.12)' },
+  confused: { label: 'Confused',     icon: '?', color: '#dc2626', bg: 'rgba(239,68,68,0.1)' },
 }
 
 // Renders bullets as scannable "concept cards": a "Term — definition" bullet
@@ -340,7 +342,7 @@ function ConceptList({ bullets, bionic }) {
 // A teaching section as a self-contained, click-to-expand card. Collapsed it
 // shows the heading + core statement (or a hint of what's inside); expanded it
 // reveals the concept cards / table / callout plus a confidence-scoring row.
-function EnhancedSection({ section, index, bionic, confidenceVal, onSetConfidence }) {
+function EnhancedSection({ section, index, anchorId, bionic, confidenceVal, onSetConfidence }) {
   const expandable = !!(section.bullets || section.table || section.callout)
   const [open, setOpen] = useState(false)
   const isOpen = expandable ? open : true
@@ -354,8 +356,9 @@ function EnhancedSection({ section, index, bionic, confidenceVal, onSetConfidenc
   const metaHint = hints.join(' · ')
 
   return (
-    <div style={{
+    <div id={anchorId} style={{
       marginBottom: '1rem', borderRadius: '0.9rem', background: 'white', overflow: 'hidden',
+      scrollMarginTop: '1.5rem',
       border: `1.5px solid ${conf ? conf.color : (isOpen ? 'rgba(0,212,170,0.45)' : '#e8edf3')}`,
       boxShadow: isOpen ? '0 6px 22px rgba(10,37,64,0.08)' : '0 1px 3px rgba(0,0,0,0.04)',
       transition: 'all 0.2s',
@@ -589,6 +592,7 @@ function LessonBody({ session, bionic, confidence, onSetConfidence }) {
         key={secKey}
         section={session.sections[i]}
         index={i}
+        anchorId={`sec-${session.id}-${i}`}
         bionic={bionic}
         confidenceVal={confidence[secKey]}
         onSetConfidence={(lvl) => onSetConfidence(secKey, lvl)}
@@ -610,9 +614,87 @@ function LessonBody({ session, bionic, confidence, onSetConfidence }) {
   return <>{elems}</>
 }
 
+// Overview of every section the learner has tagged, grouped by confidence so
+// they can jump back to whatever they're confused about or still learning.
+function ReviewPanel({ course, confidence, onJump, onClose }) {
+  const items = []
+  course.sessions.forEach(s => {
+    (s.sections || []).forEach((sec, idx) => {
+      const level = confidence[`${s.id}::${idx}`]
+      if (level) items.push({ sessionId: s.id, sessionNumber: s.number, idx, heading: sec.heading, level })
+    })
+  })
+
+  // Confused first (most urgent), then Almost there, then Mastered.
+  const order = ['confused', 'almost', 'mastered']
+  const groups = order
+    .map(key => ({ key, meta: CONFIDENCE[key], list: items.filter(i => i.level === key) }))
+    .filter(g => g.meta)
+
+  return (
+    <div
+      onClick={onClose}
+      style={{ position: 'fixed', inset: 0, background: 'rgba(10,37,64,0.55)', zIndex: 400, display: 'flex', justifyContent: 'center', alignItems: 'flex-start', padding: '4vh 1rem' }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{ background: '#f8fafc', borderRadius: '1.1rem', width: '100%', maxWidth: '620px', maxHeight: '88vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}
+      >
+        <div style={{ position: 'sticky', top: 0, background: 'white', borderBottom: '1px solid #eef2f7', padding: '1.1rem 1.35rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
+          <div>
+            <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: NAVY, margin: 0 }}>Review your confidence map</h2>
+            <p style={{ fontSize: '0.8125rem', color: '#64748b', margin: '0.2rem 0 0' }}>
+              Tap any section to jump back and study it again.
+            </p>
+          </div>
+          <button onClick={onClose} style={{ background: '#f1f5f9', border: 'none', borderRadius: '0.5rem', width: '2rem', height: '2rem', fontSize: '1.1rem', cursor: 'pointer', color: '#64748b', flexShrink: 0 }}>×</button>
+        </div>
+
+        <div style={{ padding: '1.1rem 1.35rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          {items.length === 0 && (
+            <div style={{ textAlign: 'center', color: '#64748b', fontSize: '0.9rem', padding: '2rem 1rem', lineHeight: 1.6 }}>
+              Nothing tagged yet. As you read, use <strong>How well do you know this?</strong> on each section to build your review list.
+            </div>
+          )}
+          {groups.map(g => (
+            <div key={g.key}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.6rem' }}>
+                <span style={{ width: '1.5rem', height: '1.5rem', borderRadius: '0.4rem', background: g.meta.color, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 800 }}>{g.meta.icon}</span>
+                <span style={{ fontWeight: 700, color: NAVY, fontSize: '0.9375rem' }}>{g.meta.label}</span>
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: g.meta.color, background: g.meta.bg, padding: '0.1rem 0.5rem', borderRadius: '0.3rem' }}>{g.list.length}</span>
+              </div>
+              {g.list.length === 0 ? (
+                <p style={{ fontSize: '0.8125rem', color: '#94a3b8', margin: '0 0 0 2rem' }}>None.</p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                  {g.list.map(it => (
+                    <button
+                      key={`${it.sessionId}-${it.idx}`}
+                      onClick={() => onJump(it.sessionId, it.idx)}
+                      style={{ width: '100%', textAlign: 'left', background: 'white', border: `1px solid #eef2f7`, borderLeft: `3px solid ${g.meta.color}`, borderRadius: '0.6rem', padding: '0.65rem 0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}
+                    >
+                      <span style={{ minWidth: 0 }}>
+                        <span style={{ display: 'block', fontSize: '0.65rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Session {it.sessionNumber}</span>
+                        <span style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: NAVY, lineHeight: 1.35 }}>{it.heading}</span>
+                      </span>
+                      <span style={{ color: g.meta.color, fontWeight: 700, flexShrink: 0 }}>→</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
+  const { user } = useAuthStore()
+  const userId = user?.id
   const storageKey = `course-progress-${course.slug}`
   const bionicKey = 'study-bionic'
   const confidenceKey = `study-confidence-${course.slug}`
@@ -621,28 +703,64 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
   const [bionic, setBionic] = useState(false)
   const [confidence, setConfidence] = useState({})
+  const [reviewOpen, setReviewOpen] = useState(false)
   const contentRef = useRef(null)
+  // Refs mirror the latest progress so DB writes always upsert both fields.
+  const completedRef = useRef([])
+  const confidenceRef = useRef({})
+
+  // Normalize any legacy 'review' tag to the renamed 'almost'.
+  const normalizeConfidence = (obj) => {
+    if (!obj || typeof obj !== 'object') return {}
+    const out = {}
+    for (const [k, v] of Object.entries(obj)) out[k] = v === 'review' ? 'almost' : v
+    return out
+  }
+
+  const persistToDb = (completed, conf) => {
+    if (!userId) return
+    studyProgressService.save(userId, course.slug, { completedSessions: completed, confidence: conf })
+  }
 
   // Free preview: the first module's sessions are open; the rest require a subscription.
   const freeModuleId = course.modules[0]?.id
   const isLocked = (session) => !hasAccess && session && session.domain !== freeModuleId
 
+  // 1) Hydrate instantly from the local cache for a snappy first paint.
   useEffect(() => {
     try {
       const saved = localStorage.getItem(storageKey)
-      if (saved) setCompletedIds(JSON.parse(saved))
+      if (saved) { const a = JSON.parse(saved); setCompletedIds(a); completedRef.current = a }
     } catch { /* ignore */ }
     try { setBionic(localStorage.getItem(bionicKey) === '1') } catch { /* ignore */ }
     try {
       const c = localStorage.getItem(confidenceKey)
-      if (c) setConfidence(JSON.parse(c))
+      if (c) { const o = normalizeConfidence(JSON.parse(c)); setConfidence(o); confidenceRef.current = o }
     } catch { /* ignore */ }
   }, [storageKey, confidenceKey])
+
+  // 2) Once we know the user, the DB is authoritative (cross-device sync).
+  useEffect(() => {
+    if (!userId) return
+    let cancelled = false
+    studyProgressService.load(userId, course.slug).then(data => {
+      if (cancelled || !data) return
+      const completed = Array.isArray(data.completedSessions) ? data.completedSessions : []
+      const conf = normalizeConfidence(data.confidence)
+      setCompletedIds(completed); completedRef.current = completed
+      setConfidence(conf); confidenceRef.current = conf
+      try { localStorage.setItem(storageKey, JSON.stringify(completed)) } catch { /* ignore */ }
+      try { localStorage.setItem(confidenceKey, JSON.stringify(conf)) } catch { /* ignore */ }
+    })
+    return () => { cancelled = true }
+  }, [userId, course.slug, storageKey, confidenceKey])
 
   const toggleComplete = (id) => {
     setCompletedIds(prev => {
       const next = prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
       try { localStorage.setItem(storageKey, JSON.stringify(next)) } catch { /* ignore */ }
+      completedRef.current = next
+      persistToDb(next, confidenceRef.current)
       return next
     })
   }
@@ -661,12 +779,18 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
       if (next[secKey] === level) delete next[secKey]
       else next[secKey] = level
       try { localStorage.setItem(confidenceKey, JSON.stringify(next)) } catch { /* ignore */ }
+      confidenceRef.current = next
+      persistToDb(completedRef.current, next)
       return next
     })
   }
 
   const activeSession = course.sessions.find(s => s.id === activeId)
-  const enhanced = activeSession?.id === 'd1-s1'
+  const enhanced = true
+  const reviewAttention = useMemo(
+    () => Object.values(confidence).filter(v => v === 'confused' || v === 'almost').length,
+    [confidence]
+  )
   const activeIdx = course.sessions.findIndex(s => s.id === activeId)
   const prevSession = activeIdx > 0 ? course.sessions[activeIdx - 1] : null
   const nextSession = activeIdx < course.sessions.length - 1 ? course.sessions[activeIdx + 1] : null
@@ -687,6 +811,18 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
   const handleNext = () => {
     if (!isCompleted) toggleComplete(activeId)
     if (nextSession) selectSession(nextSession.id)
+  }
+
+  // From the Review panel: open the right session and scroll to the section.
+  const jumpToSection = (sessionId, sectionIdx) => {
+    setReviewOpen(false)
+    const switching = sessionId !== activeId
+    if (switching) { setActiveId(sessionId); setMobileSidebarOpen(false) }
+    setTimeout(() => {
+      const el = document.getElementById(`sec-${sessionId}-${sectionIdx}`)
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      else contentRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
+    }, switching ? 220 : 60)
   }
 
   // ── Sidebar ────────────────────────────────────────────────────────────────
@@ -803,6 +939,26 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
             {activeSession?.title}
           </div>
         </div>
+
+        <button
+          onClick={() => setReviewOpen(true)}
+          title="Review what you've tagged"
+          style={{
+            flexShrink: 0, position: 'relative', display: 'flex', alignItems: 'center', gap: '0.375rem',
+            background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)',
+            color: 'rgba(255,255,255,0.9)', cursor: 'pointer', fontWeight: 600,
+            fontSize: '0.8125rem', padding: '0.35rem 0.75rem', borderRadius: '0.5rem',
+          }}
+        >
+          Review
+          {reviewAttention > 0 && (
+            <span style={{
+              minWidth: '1.15rem', height: '1.15rem', padding: '0 0.3rem', borderRadius: '999px',
+              background: '#dc2626', color: 'white', fontSize: '0.6875rem', fontWeight: 800,
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+            }}>{reviewAttention}</span>
+          )}
+        </button>
 
         <div style={{
           flexShrink: 0, display: 'flex', alignItems: 'center', gap: '0.5rem',
@@ -1144,6 +1300,15 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
           )}
         </main>
       </div>
+
+      {reviewOpen && (
+        <ReviewPanel
+          course={course}
+          confidence={confidence}
+          onJump={jumpToSection}
+          onClose={() => setReviewOpen(false)}
+        />
+      )}
 
       {/* Responsive styles injected as a style tag */}
       <style>{`
