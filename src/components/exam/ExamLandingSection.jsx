@@ -1,4 +1,10 @@
 import React, { useState } from 'react'
+import {
+  Award, Clock, ClipboardList, CreditCard, Monitor, CalendarDays, Globe,
+  BookOpen, BarChart2, Target, User, Rocket, HelpCircle,
+} from 'lucide-react'
+
+const TEAL = '#00D4AA'
 
 const glassCard = {
   background: 'rgba(255,255,255,0.08)',
@@ -24,6 +30,9 @@ const statLabel = {
   textTransform: 'uppercase',
   letterSpacing: '0.05em',
   color: '#00D4AA',
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '0.35rem',
 }
 
 const statValue = {
@@ -104,17 +113,18 @@ function ExamLandingSection({ landing }) {
     faqs,
   } = landing
 
+  const iconProps = { size: 14, strokeWidth: 2 }
   const glanceStats = exam_at_a_glance ? [
-    exam_at_a_glance.category && { label: 'Level', value: exam_at_a_glance.category, icon: '🏆' },
-    exam_at_a_glance.duration && { label: 'Exam Duration', value: exam_at_a_glance.duration, icon: '⏱️' },
-    exam_at_a_glance.format && { label: 'Format', value: exam_at_a_glance.format, icon: '📋' },
-    exam_at_a_glance.cost && { label: 'Cost', value: exam_at_a_glance.cost, icon: '💳' },
-    exam_at_a_glance.testing_options && { label: 'Testing Options', value: exam_at_a_glance.testing_options, icon: '🖥️' },
-    exam_at_a_glance.validity_years && { label: 'Validity', value: `${exam_at_a_glance.validity_years} years`, icon: '📅' },
+    exam_at_a_glance.category && { label: 'Level', value: exam_at_a_glance.category, icon: <Award {...iconProps} /> },
+    exam_at_a_glance.duration && { label: 'Exam Duration', value: exam_at_a_glance.duration, icon: <Clock {...iconProps} /> },
+    exam_at_a_glance.format && { label: 'Format', value: exam_at_a_glance.format, icon: <ClipboardList {...iconProps} /> },
+    exam_at_a_glance.cost && { label: 'Cost', value: exam_at_a_glance.cost, icon: <CreditCard {...iconProps} /> },
+    exam_at_a_glance.testing_options && { label: 'Testing Options', value: exam_at_a_glance.testing_options, icon: <Monitor {...iconProps} /> },
+    exam_at_a_glance.validity_years && { label: 'Validity', value: `${exam_at_a_glance.validity_years} years`, icon: <CalendarDays {...iconProps} /> },
     exam_at_a_glance.languages?.length && {
       label: 'Available Languages',
       value: exam_at_a_glance.languages.join(', '),
-      icon: '🌐',
+      icon: <Globe {...iconProps} />,
     },
   ].filter(Boolean) : []
 
@@ -140,7 +150,7 @@ function ExamLandingSection({ landing }) {
         }}
       >
         <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: '700', fontSize: '1rem' }}>
-          <span>📖</span> About This Certification
+          <BookOpen size={18} color={TEAL} /> About This Certification
         </span>
         <svg
           width="20"
@@ -202,7 +212,7 @@ function ExamLandingSection({ landing }) {
       {glanceStats.length > 0 && (
         <div style={glassCard}>
           <h3 style={sectionHeading}>
-            <span>📊</span> Exam At A Glance
+            <BarChart2 size={20} color={TEAL} /> Exam At A Glance
           </h3>
           <div style={{
             display: 'grid',
@@ -229,7 +239,7 @@ function ExamLandingSection({ landing }) {
           {why_get_certified?.length > 0 && (
             <div style={glassCard}>
               <h3 style={sectionHeading}>
-                <span>🎯</span> Why Get Certified?
+                <Target size={20} color={TEAL} /> Why Get Certified?
               </h3>
               <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
                 {why_get_certified.map((reason, i) => (
@@ -263,7 +273,7 @@ function ExamLandingSection({ landing }) {
           {who_should_take && (
             <div style={glassCard}>
               <h3 style={sectionHeading}>
-                <span>👤</span> Who Should Take This?
+                <User size={20} color={TEAL} /> Who Should Take This?
               </h3>
               <p style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.8)', lineHeight: '1.7' }}>
                 {who_should_take}
@@ -277,7 +287,7 @@ function ExamLandingSection({ landing }) {
       {next_steps?.length > 0 && (
         <div style={glassCard}>
           <h3 style={sectionHeading}>
-            <span>🚀</span> What's Next After This Certification?
+            <Rocket size={20} color={TEAL} /> What's Next After This Certification?
           </h3>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.625rem' }}>
             {next_steps.map((step, i) => (
@@ -301,7 +311,7 @@ function ExamLandingSection({ landing }) {
       {faqs?.length > 0 && (
         <div style={glassCard}>
           <h3 style={sectionHeading}>
-            <span>❓</span> Key FAQs
+            <HelpCircle size={20} color={TEAL} /> Key FAQs
           </h3>
           <div>
             {faqs.map((faq, i) => (

@@ -8,7 +8,7 @@ import ExamLandingSection from '../components/exam/ExamLandingSection'
 import { Button } from '../design-system'
 import supabase from '../services/supabase'
 import { getOfficialResourceUrl } from '../utils/officialResources'
-import { FileText, Clock, Target, BookOpen, ExternalLink, Lock, BarChart2 } from 'lucide-react'
+import { FileText, Clock, Target, BookOpen, ExternalLink, Lock, BarChart2, GraduationCap } from 'lucide-react'
 
 function ExamDetail() {
   const { slug } = useParams()
@@ -111,7 +111,7 @@ function ExamDetail() {
 
         {/* Exam Header Card */}
         <div className="exam-header-card">
-          <div className="exam-header-icon">{exam.icon || '📚'}</div>
+          <div className="exam-header-icon"><GraduationCap className="w-11 h-11 text-[#00D4AA]" strokeWidth={1.5} /></div>
           <div className="exam-header-provider">{exam.provider}</div>
           <h1 className="exam-header-title">{exam.name}</h1>
           <p className="exam-header-description">{exam.description}</p>
@@ -239,9 +239,9 @@ function ExamDetail() {
                   ) : (
                     <button
                       onClick={() => setShowPurchaseModal(true)}
-                      className="w-full py-3 bg-[#00D4AA]/10 text-[#00D4AA] border-2 border-[#00D4AA]/30 rounded-lg font-semibold cursor-pointer text-sm hover:bg-[#00D4AA]/20 hover:border-[#00D4AA]/50 transition-all duration-200"
+                      className="w-full py-3 bg-[#00D4AA]/10 text-[#00D4AA] border-2 border-[#00D4AA]/30 rounded-lg font-semibold cursor-pointer text-sm hover:bg-[#00D4AA]/20 hover:border-[#00D4AA]/50 transition-all duration-200 inline-flex items-center justify-center gap-1.5"
                     >
-                      🔒 Subscribe to Unlock
+                      <Lock className="w-4 h-4" /> Subscribe to Unlock
                     </button>
                   )}
                 </div>
