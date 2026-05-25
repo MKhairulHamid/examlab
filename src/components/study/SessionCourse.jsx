@@ -302,84 +302,147 @@ const CONFIDENCE = {
   confused: { label: 'Confused', icon: '?', color: '#dc2626', bg: 'rgba(239,68,68,0.1)' },
 }
 
-const discloseBtnStyle = {
-  background: 'none', border: 'none', cursor: 'pointer',
-  color: TEAL_DARK, fontWeight: 700, fontSize: '0.8125rem',
-  padding: '0.25rem 0', display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
+// Renders bullets as scannable "concept cards": a "Term — definition" bullet
+// becomes a bold term with its definition beneath; plain bullets stay as a
+// simple accented line.
+function ConceptList({ bullets, bionic }) {
+  const txt = (s) => (bionic ? <BionicText text={s} /> : s)
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1rem' }}>
+      {bullets.map((b, i) => {
+        const sep = b.indexOf(' — ')
+        if (sep === -1) {
+          return (
+            <div key={i} style={{ display: 'flex', gap: '0.6rem', padding: '0.3rem 0.25rem', fontSize: '0.9rem', color: '#475569', lineHeight: 1.6 }}>
+              <span style={{ color: TEAL, fontWeight: 700, flexShrink: 0 }}>•</span>
+              <span>{txt(b)}</span>
+            </div>
+          )
+        }
+        return (
+          <div key={i} style={{
+            background: '#fafbfd', border: '1px solid #eef2f7', borderLeft: `3px solid ${TEAL}`,
+            borderRadius: '0.6rem', padding: '0.65rem 0.85rem',
+          }}>
+            <div style={{ fontWeight: 700, color: NAVY, fontSize: '0.875rem', marginBottom: '0.2rem' }}>
+              {txt(b.slice(0, sep))}
+            </div>
+            <div style={{ color: '#475569', fontSize: '0.875rem', lineHeight: 1.55 }}>
+              {txt(b.slice(sep + 3))}
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
 }
 
-// A teaching section with progressive disclosure (deep content collapsed by
-// default) and a confidence-scoring control row.
-function EnhancedSection({ section, bionic, confidenceVal, onSetConfidence }) {
-  const hasDeep = !!(section.bullets || section.table || section.callout)
+// A teaching section as a self-contained, click-to-expand card. Collapsed it
+// shows the heading + core statement (or a hint of what's inside); expanded it
+// reveals the concept cards / table / callout plus a confidence-scoring row.
+function EnhancedSection({ section, index, bionic, confidenceVal, onSetConfidence }) {
+  const expandable = !!(section.bullets || section.table || section.callout)
   const [open, setOpen] = useState(false)
+  const isOpen = expandable ? open : true
   const conf = confidenceVal ? CONFIDENCE[confidenceVal] : null
   const txt = (s) => (bionic ? <BionicText text={s} /> : s)
 
+  const hints = []
+  if (section.bullets) hints.push(`${section.bullets.length} concept${section.bullets.length === 1 ? '' : 's'}`)
+  if (section.table) hints.push('comparison table')
+  if (section.callout) hints.push('exam tip')
+  const metaHint = hints.join(' · ')
+
   return (
     <div style={{
-      marginBottom: '1.5rem', paddingLeft: '1rem',
-      borderLeft: `4px solid ${conf ? conf.color : '#e2e8f0'}`,
-      transition: 'border-color 0.2s',
+      marginBottom: '1rem', borderRadius: '0.9rem', background: 'white', overflow: 'hidden',
+      border: `1.5px solid ${conf ? conf.color : (isOpen ? 'rgba(0,212,170,0.45)' : '#e8edf3')}`,
+      boxShadow: isOpen ? '0 6px 22px rgba(10,37,64,0.08)' : '0 1px 3px rgba(0,0,0,0.04)',
+      transition: 'all 0.2s',
     }}>
-      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '0.75rem' }}>
-        <h3 style={{ fontSize: '1.0625rem', fontWeight: 700, color: NAVY, marginBottom: '0.6rem', lineHeight: 1.3 }}>
-          {txt(section.heading)}
-        </h3>
-        {conf && (
-          <span style={{
-            fontSize: '0.6875rem', fontWeight: 700, color: conf.color, background: conf.bg,
-            padding: '0.15rem 0.5rem', borderRadius: '0.3rem', whiteSpace: 'nowrap', flexShrink: 0,
-          }}>{conf.icon} {conf.label}</span>
-        )}
-      </div>
+      <button
+        onClick={() => expandable && setOpen(o => !o)}
+        aria-expanded={isOpen}
+        style={{
+          width: '100%', textAlign: 'left', background: 'transparent', border: 'none',
+          cursor: expandable ? 'pointer' : 'default',
+          padding: '1rem 1.15rem', display: 'flex', alignItems: 'flex-start', gap: '0.85rem',
+        }}
+      >
+        <span style={{
+          width: '1.85rem', height: '1.85rem', minWidth: '1.85rem', borderRadius: '0.55rem',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: '0.8125rem', fontWeight: 800, color: 'white', marginTop: '0.1rem',
+          background: conf ? conf.color : `linear-gradient(135deg, ${TEAL}, ${TEAL_DARK})`,
+        }}>
+          {conf ? conf.icon : index + 1}
+        </span>
 
-      {section.body && (
-        <p style={{ fontSize: '0.9375rem', color: '#374151', lineHeight: 1.7, margin: hasDeep ? '0 0 0.5rem' : 0 }}>
-          {txt(section.body)}
-        </p>
-      )}
-
-      {hasDeep && !open && (
-        <button onClick={() => setOpen(true)} style={discloseBtnStyle}>↓ Show details</button>
-      )}
-
-      {hasDeep && open && (
-        <div>
-          {section.bullets && (
-            <ul style={{ paddingLeft: '1.4rem', margin: '0.25rem 0', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-              {section.bullets.map((b, i) => (
-                <li key={i} style={{ fontSize: '0.9375rem', color: '#374151', lineHeight: 1.65 }}>{txt(b)}</li>
-              ))}
-            </ul>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <h3 style={{ fontSize: '1.0625rem', fontWeight: 700, color: NAVY, lineHeight: 1.3, margin: 0 }}>
+              {txt(section.heading)}
+            </h3>
+            {conf && (
+              <span style={{
+                fontSize: '0.625rem', fontWeight: 700, color: conf.color, background: conf.bg,
+                padding: '0.1rem 0.45rem', borderRadius: '0.3rem', whiteSpace: 'nowrap',
+                textTransform: 'uppercase', letterSpacing: '0.04em',
+              }}>{conf.label}</span>
+            )}
+          </div>
+          {section.body && (
+            <p style={{ fontSize: '0.9rem', color: '#475569', lineHeight: 1.6, margin: '0.35rem 0 0' }}>
+              {txt(section.body)}
+            </p>
           )}
+          {expandable && !isOpen && metaHint && (
+            <span style={{ display: 'inline-block', fontSize: '0.6875rem', fontWeight: 600, color: '#94a3b8', marginTop: section.body ? '0.4rem' : '0.3rem' }}>
+              {metaHint}
+            </span>
+          )}
+        </div>
+
+        {expandable && (
+          <span style={{
+            color: TEAL_DARK, fontSize: '0.9rem', marginTop: '0.35rem', flexShrink: 0,
+            transform: isOpen ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.25s',
+          }}>▼</span>
+        )}
+      </button>
+
+      {isOpen && (
+        <div style={{ padding: '0 1.15rem 1.15rem', borderTop: '1px solid #f1f5f9' }}>
+          {section.bullets && <ConceptList bullets={section.bullets} bionic={bionic} />}
           {section.table && <ContentTable table={section.table} />}
           {section.callout && <Callout callout={section.callout} />}
-          <button onClick={() => setOpen(false)} style={discloseBtnStyle}>↑ Hide details</button>
+
+          <div style={{
+            display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.4rem',
+            marginTop: '1.1rem', paddingTop: '0.85rem', borderTop: '1px dashed #eef2f7',
+          }}>
+            <span style={{ fontSize: '0.6875rem', color: '#94a3b8', fontWeight: 600, marginRight: '0.15rem' }}>
+              How well do you know this?
+            </span>
+            {Object.entries(CONFIDENCE).map(([key, c]) => {
+              const active = confidenceVal === key
+              return (
+                <button
+                  key={key}
+                  onClick={() => onSetConfidence(key)}
+                  style={{
+                    fontSize: '0.6875rem', fontWeight: 700, cursor: 'pointer',
+                    padding: '0.25rem 0.6rem', borderRadius: '0.4rem',
+                    border: `1.5px solid ${active ? c.color : '#e2e8f0'}`,
+                    background: active ? c.bg : 'white',
+                    color: active ? c.color : '#64748b', transition: 'all 0.15s',
+                  }}
+                >{c.icon} {c.label}</button>
+              )
+            })}
+          </div>
         </div>
       )}
-
-      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.4rem', marginTop: '0.85rem' }}>
-        <span style={{ fontSize: '0.6875rem', color: '#94a3b8', fontWeight: 600, marginRight: '0.15rem' }}>
-          How well do you know this?
-        </span>
-        {Object.entries(CONFIDENCE).map(([key, c]) => {
-          const active = confidenceVal === key
-          return (
-            <button
-              key={key}
-              onClick={() => onSetConfidence(key)}
-              style={{
-                fontSize: '0.6875rem', fontWeight: 700, cursor: 'pointer',
-                padding: '0.25rem 0.6rem', borderRadius: '0.4rem',
-                border: `1.5px solid ${active ? c.color : '#e2e8f0'}`,
-                background: active ? c.bg : 'white',
-                color: active ? c.color : '#64748b', transition: 'all 0.15s',
-              }}
-            >{c.icon} {c.label}</button>
-          )
-        })}
-      </div>
     </div>
   )
 }
@@ -525,6 +588,7 @@ function LessonBody({ session, bionic, confidence, onSetConfidence }) {
       <EnhancedSection
         key={secKey}
         section={session.sections[i]}
+        index={i}
         bionic={bionic}
         confidenceVal={confidence[secKey]}
         onSetConfidence={(lvl) => onSetConfidence(secKey, lvl)}
