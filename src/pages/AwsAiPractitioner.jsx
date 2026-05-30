@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import {
   ArrowRight, Check, X, ChevronDown, Clock, Cloud,
   BrainCircuit, ShieldCheck, Sparkles, Lock, Zap, RefreshCw,
-  BookOpen, Target, Users, Briefcase, Code2,
+  BookOpen, Target, BarChart3, Users, Briefcase, Code2,
   BadgeCheck, GraduationCap, Calendar, Gift, Lightbulb,
 } from 'lucide-react'
 import useAuthStore from '../stores/authStore'
