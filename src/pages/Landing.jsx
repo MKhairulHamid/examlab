@@ -52,7 +52,7 @@ const FAQ_ITEMS = [
   },
   {
     question: 'What\'s included in my subscription?',
-    answer: 'Full access to all 195 AWS Developer Associate practice questions (3 complete sets of 65 questions), detailed explanations, documentation references, progress tracking, and all platform features.'
+    answer: 'Full access to 16 structured study sessions (30 min each) covering every exam domain, all 195 AWS Developer Associate practice questions (3 complete sets of 65 questions), detailed explanations, documentation references, progress tracking, and all platform features.'
   },
   {
     question: 'Can I try before subscribing?',
@@ -236,7 +236,7 @@ function Landing() {
       {/* ═══════════════════════════════════════
           ZONE 1 — HERO
       ═══════════════════════════════════════ */}
-      <section className="hero-section" style={{ padding: '6rem 1.5rem 4rem', alignItems: 'flex-start' }}>
+      <section className="hero-section" style={{ paddingBottom: '4rem', paddingLeft: '1.5rem', paddingRight: '1.5rem', alignItems: 'flex-start' }}>
         <div className="hero-bg-1" />
         <div className="hero-bg-2" />
         <div className="absolute inset-0 grid-texture pointer-events-none" />
@@ -636,8 +636,8 @@ function Landing() {
               {
                 step: '03',
                 Icon: Trophy,
-                title: 'Practice & Pass',
-                desc: 'Work through exam-realistic questions with instant feedback, explanations, and official AWS doc links. Walk into exam day with no surprises.',
+                title: 'Study, Practice & Pass',
+                desc: 'Work through structured study sessions to build real understanding, then validate with full-length practice exams. Instant feedback, explanations, and official AWS doc links every step of the way.',
               },
             ].map((item, index) => (
               <Reveal key={index} delay={index * 120} className={`p-8 relative ${index > 0 ? 'md:border-l border-white/[0.08]' : ''}`}>
@@ -1112,7 +1112,7 @@ function Landing() {
                 <h3 className="text-white font-bold text-base m-0">Cloud Exam Lab</h3>
               </div>
               <p className="text-white/60 text-sm leading-relaxed">
-                Subscription-based practice questions for cloud certifications. AWS DVA-C02 available now — 20+ more coming soon.
+                Full exam preparation for cloud certifications — structured study sessions and practice exams. AWS DVA-C02 available now — 20+ more coming soon.
               </p>
             </div>
             <div>

@@ -14,6 +14,7 @@ import ResetPassword from './pages/ResetPassword'
 import PaymentSuccess from './pages/PaymentSuccess'
 import StudyMaterial from './pages/StudyMaterial'
 import AdminPage from './pages/AdminPage'
+import AwsAiPractitioner from './pages/AwsAiPractitioner'
 
 // Protected Route wrapper
 function ProtectedRoute({ children }) {
@@ -75,6 +76,7 @@ function App() {
       <Routes>
         {/* Public routes */}
         <Route path="/" element={<Landing />} />
+        <Route path="/aws-ai-practitioner" element={<AwsAiPractitioner />} />
         <Route path="/reset-password" element={<ResetPassword />} />
 
         {/* Protected routes */}
