@@ -1084,12 +1084,15 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
   const done = completedIds.length
   const pct = total > 0 ? Math.round((done / total) * 100) : 0
 
+  // Scroll to top whenever the active session changes — use effect so it fires
+  // after the new content has rendered, not on a fragile timeout.
+  useEffect(() => {
+    contentRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [activeId])
+
   const selectSession = (id) => {
     setActiveId(id)
     setMobileSidebarOpen(false)
-    setTimeout(() => {
-      contentRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
-    }, 50)
   }
 
   const handleNext = () => {
@@ -1186,72 +1189,96 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
       <nav style={{
         background: NAVY, borderBottom: `3px solid ${TEAL}`,
         height: '56px', display: 'flex', alignItems: 'center',
-        padding: '0 1.25rem', gap: '1rem',
+        padding: '0 1rem', gap: '0.625rem',
         position: 'sticky', top: 0, zIndex: 200, flexShrink: 0,
       }}>
-        <button
-          onClick={onBack}
-          style={{
-            background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)',
-            color: 'rgba(255,255,255,0.85)', cursor: 'pointer', fontWeight: 600,
-            fontSize: '0.8125rem', padding: '0.35rem 0.875rem', borderRadius: '0.5rem',
-            flexShrink: 0,
-          }}
-        >
-          ← Back
-        </button>
+        {/* Left: back + mobile sessions toggle */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
+          <button
+            onClick={onBack}
+            style={{
+              background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)',
+              color: 'rgba(255,255,255,0.85)', cursor: 'pointer', fontWeight: 600,
+              fontSize: '0.8125rem', padding: '0.35rem 0.75rem', borderRadius: '0.5rem',
+              display: 'flex', alignItems: 'center', gap: '0.3rem',
+            }}
+          >
+            ← Back
+          </button>
+          {/* Mobile-only sessions toggle */}
+          <button
+            onClick={() => setMobileSidebarOpen(o => !o)}
+            className="mobile-sidebar-toggle"
+            title="Browse sessions"
+            style={{
+              background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)',
+              color: 'white', cursor: 'pointer', borderRadius: '0.5rem',
+              width: '34px', height: '34px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '1rem', flexShrink: 0,
+            }}
+          >
+            ☰
+          </button>
+        </div>
 
-        {/* Mobile sidebar toggle */}
-        <button
-          onClick={() => setMobileSidebarOpen(o => !o)}
-          style={{
-            background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)',
-            color: 'white', cursor: 'pointer', fontSize: '0.8125rem',
-            padding: '0.35rem 0.875rem', borderRadius: '0.5rem', flexShrink: 0,
-            alignItems: 'center', gap: '0.375rem',
-          }}
-          className="mobile-sidebar-toggle"
-        >
-          ☰ Sessions
-        </button>
-
-        <div style={{ flex: 1, textAlign: 'center', minWidth: 0 }}>
-          <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-            {course.code}
+        {/* Centre: course code + session position + title */}
+        <div style={{ flex: 1, minWidth: 0, textAlign: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+            <span style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', flexShrink: 0 }}>
+              {course.code}
+            </span>
+            <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.6875rem' }}>·</span>
+            <span style={{ color: TEAL, fontSize: '0.6875rem', fontWeight: 700, flexShrink: 0 }}>
+              {activeSession ? `${activeSession.number} / ${total}` : ''}
+            </span>
           </div>
-          <div style={{ color: 'white', fontSize: '0.875rem', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <div style={{
+            color: 'white', fontSize: '0.875rem', fontWeight: 700,
+            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            lineHeight: 1.25,
+          }}>
             {activeSession?.title}
           </div>
         </div>
 
-        <button
-          onClick={() => setReviewOpen(true)}
-          title="Review what you've tagged"
-          style={{
-            flexShrink: 0, position: 'relative', display: 'flex', alignItems: 'center', gap: '0.375rem',
-            background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)',
-            color: 'rgba(255,255,255,0.9)', cursor: 'pointer', fontWeight: 600,
-            fontSize: '0.8125rem', padding: '0.35rem 0.75rem', borderRadius: '0.5rem',
-          }}
-        >
-          Review
-          {reviewAttention > 0 && (
-            <span style={{
-              minWidth: '1.15rem', height: '1.15rem', padding: '0 0.3rem', borderRadius: '999px',
-              background: '#dc2626', color: 'white', fontSize: '0.6875rem', fontWeight: 800,
-              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-            }}>{reviewAttention}</span>
-          )}
-        </button>
+        {/* Right: confidence review + progress bar */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
+          <button
+            onClick={() => setReviewOpen(true)}
+            title="See your confidence map — sections you tagged as confused or almost there"
+            style={{
+              flexShrink: 0, position: 'relative', display: 'flex', alignItems: 'center', gap: '0.3rem',
+              background: reviewAttention > 0 ? 'rgba(220,38,38,0.25)' : 'rgba(255,255,255,0.1)',
+              border: `1px solid ${reviewAttention > 0 ? 'rgba(220,38,38,0.5)' : 'rgba(255,255,255,0.15)'}`,
+              color: 'rgba(255,255,255,0.9)', cursor: 'pointer', fontWeight: 600,
+              fontSize: '0.8125rem', padding: '0.35rem 0.7rem', borderRadius: '0.5rem',
+            }}
+          >
+            {/* bookmark icon */}
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>
+            </svg>
+            <span className="review-label">Review</span>
+            {reviewAttention > 0 && (
+              <span style={{
+                minWidth: '1.1rem', height: '1.1rem', padding: '0 0.25rem', borderRadius: '999px',
+                background: '#ef4444', color: 'white', fontSize: '0.625rem', fontWeight: 800,
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              }}>{reviewAttention}</span>
+            )}
+          </button>
 
-        <div style={{
-          flexShrink: 0, display: 'flex', alignItems: 'center', gap: '0.5rem',
-          color: TEAL, fontWeight: 700, fontSize: '0.875rem',
-        }}>
-          <span style={{ color: 'rgba(255,255,255,0.5)', fontWeight: 400 }}>
-            {done}/{total}
-          </span>
-          <span>{pct}%</span>
+          {/* Progress pill */}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: '0.35rem',
+            background: 'rgba(255,255,255,0.08)', borderRadius: '0.5rem',
+            padding: '0.3rem 0.65rem', border: '1px solid rgba(255,255,255,0.1)',
+          }}>
+            <div style={{ width: '36px', height: '4px', background: 'rgba(255,255,255,0.15)', borderRadius: '999px', overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${pct}%`, background: TEAL, transition: 'width 0.4s ease' }} />
+            </div>
+            <span style={{ color: TEAL, fontSize: '0.75rem', fontWeight: 700 }}>{pct}%</span>
+          </div>
         </div>
       </nav>
 
@@ -1508,61 +1535,93 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
                 </div>
               )}
 
-              {/* ── Session navigation ──────────────────────────────────────── */}
-              <div style={{
-                display: 'flex', gap: '0.75rem', alignItems: 'center', justifyContent: 'space-between',
-                marginTop: '3rem', paddingTop: '1.5rem',
-                borderTop: '2px solid #e2e8f0',
-              }}>
-                {/* Prev */}
-                <button
-                  onClick={() => prevSession && selectSession(prevSession.id)}
-                  disabled={!prevSession}
-                  style={{
-                    padding: '0.65rem 1.125rem', borderRadius: '0.6rem', fontWeight: 600,
-                    fontSize: '0.875rem',
-                    background: prevSession ? 'white' : '#f8fafc',
-                    color: prevSession ? NAVY : '#cbd5e1',
-                    border: `1.5px solid ${prevSession ? '#e2e8f0' : '#f1f5f9'}`,
-                    cursor: prevSession ? 'pointer' : 'default',
-                  }}
-                >
-                  ← Prev
-                </button>
+              {/* ── Session footer ─────────────────────────────────────────── */}
+              <div style={{ marginTop: '3rem', paddingTop: '2rem', borderTop: '2px solid #e2e8f0' }}>
 
-                {/* Mark complete */}
-                <button
-                  onClick={() => toggleComplete(activeId)}
-                  style={{
-                    padding: '0.7rem 1.5rem', borderRadius: '0.6rem', fontWeight: 700,
-                    fontSize: '0.9375rem', cursor: 'pointer', transition: 'all 0.2s', flex: 1,
-                    maxWidth: '240px',
-                    background: isCompleted
-                      ? 'white'
-                      : `linear-gradient(135deg, ${TEAL}, ${TEAL_DARK})`,
-                    color: isCompleted ? TEAL_DARK : 'white',
-                    border: isCompleted ? `2px solid ${TEAL}` : 'none',
-                    boxShadow: isCompleted ? 'none' : '0 4px 16px rgba(0,212,170,0.35)',
-                  }}
-                >
-                  {isCompleted ? '✓ Completed' : 'Mark Complete'}
-                </button>
+                {/* Mark complete — clearly a progress checkpoint, not a quiz action */}
+                <div style={{
+                  background: isCompleted ? 'rgba(34,197,94,0.06)' : '#fafbfd',
+                  border: `1.5px solid ${isCompleted ? 'rgba(34,197,94,0.3)' : '#e2e8f0'}`,
+                  borderRadius: '0.875rem', padding: '1rem 1.25rem',
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  gap: '1rem', marginBottom: '1.25rem', flexWrap: 'wrap',
+                }}>
+                  <div>
+                    <p style={{ fontSize: '0.875rem', fontWeight: 700, color: NAVY, margin: '0 0 0.2rem' }}>
+                      {isCompleted ? 'Session marked as complete' : 'Done reading this session?'}
+                    </p>
+                    <p style={{ fontSize: '0.75rem', color: '#64748b', margin: 0 }}>
+                      {isCompleted
+                        ? 'Your progress is saved. You can unmark it any time.'
+                        : 'Mark it complete to track your progress through the course.'}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => toggleComplete(activeId)}
+                    style={{
+                      padding: '0.6rem 1.25rem', borderRadius: '0.6rem', fontWeight: 700,
+                      fontSize: '0.875rem', cursor: 'pointer', transition: 'all 0.2s',
+                      flexShrink: 0, whiteSpace: 'nowrap',
+                      background: isCompleted ? 'white' : `linear-gradient(135deg, ${TEAL}, ${TEAL_DARK})`,
+                      color: isCompleted ? '#64748b' : 'white',
+                      border: isCompleted ? '1.5px solid #e2e8f0' : 'none',
+                      boxShadow: isCompleted ? 'none' : '0 3px 12px rgba(0,212,170,0.3)',
+                    }}
+                  >
+                    {isCompleted ? '✓ Completed — undo' : 'Mark as complete'}
+                  </button>
+                </div>
 
-                {/* Next */}
-                <button
-                  onClick={handleNext}
-                  disabled={!nextSession}
-                  style={{
-                    padding: '0.65rem 1.125rem', borderRadius: '0.6rem', fontWeight: 600,
-                    fontSize: '0.875rem',
-                    background: nextSession ? NAVY : '#f8fafc',
-                    color: nextSession ? 'white' : '#cbd5e1',
-                    border: 'none',
-                    cursor: nextSession ? 'pointer' : 'default',
-                  }}
-                >
-                  Next →
-                </button>
+                {/* Prev / Next session navigation — clearly labelled */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                  {/* Prev */}
+                  {prevSession ? (
+                    <button
+                      onClick={() => selectSession(prevSession.id)}
+                      style={{
+                        padding: '0.875rem 1rem', borderRadius: '0.75rem', fontWeight: 600,
+                        background: 'white', color: NAVY,
+                        border: '1.5px solid #e2e8f0',
+                        cursor: 'pointer', textAlign: 'left', transition: 'border-color 0.15s',
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.borderColor = '#cbd5e1'}
+                      onMouseLeave={e => e.currentTarget.style.borderColor = '#e2e8f0'}
+                    >
+                      <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.25rem' }}>
+                        ← Previous session
+                      </div>
+                      <div style={{ fontSize: '0.875rem', color: NAVY, lineHeight: 1.35 }}>
+                        {prevSession.title}
+                      </div>
+                    </button>
+                  ) : (
+                    <div /> /* empty cell to keep grid alignment */
+                  )}
+
+                  {/* Next */}
+                  {nextSession ? (
+                    <button
+                      onClick={handleNext}
+                      style={{
+                        padding: '0.875rem 1rem', borderRadius: '0.75rem', fontWeight: 600,
+                        background: NAVY, color: 'white',
+                        border: 'none',
+                        cursor: 'pointer', textAlign: 'right', transition: 'opacity 0.15s',
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.opacity = '0.88'}
+                      onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+                    >
+                      <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: TEAL, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.25rem' }}>
+                        Next session →
+                      </div>
+                      <div style={{ fontSize: '0.875rem', lineHeight: 1.35 }}>
+                        {nextSession.title}
+                      </div>
+                    </button>
+                  ) : (
+                    <div />
+                  )}
+                </div>
               </div>
 
               {/* End-of-course card */}
@@ -1610,14 +1669,16 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
         />
       )}
 
-      {/* Responsive styles injected as a style tag */}
+      {/* Responsive styles */}
       <style>{`
         @media (max-width: 768px) {
           .course-sidebar { display: none !important; }
           .mobile-sidebar-toggle { display: flex !important; }
+          .review-label { display: none; }
         }
         @media (min-width: 769px) {
           .mobile-sidebar-toggle { display: none !important; }
+          .review-label { display: inline; }
         }
       `}</style>
     </div>
