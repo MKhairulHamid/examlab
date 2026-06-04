@@ -22,15 +22,20 @@ export const useAuthStore = create((set, get) => ({
     try {
       set({ loading: true })
 
-      // iOS PWA session handoff: read tokens encoded by InstallPrompt into the URL fragment
-      const hash = window.location.hash
-      if (hash.startsWith('#pwa_auth=')) {
+      // iOS PWA session handoff: read tokens encoded by InstallPrompt into the query string
+      const params = new URLSearchParams(window.location.search)
+      const pwaAuth = params.get('pwa_auth')
+      if (pwaAuth) {
         try {
-          const { access_token, refresh_token } = JSON.parse(atob(hash.slice(10)))
+          const { access_token, refresh_token } = JSON.parse(atob(pwaAuth))
           await supabase.auth.setSession({ access_token, refresh_token })
-          window.history.replaceState(null, '', window.location.pathname)
         } catch {
           // malformed token — ignore, fall through to normal session check
+        } finally {
+          // always clean up the token from the URL
+          params.delete('pwa_auth')
+          const clean = params.toString() ? `?${params}` : window.location.pathname
+          window.history.replaceState(null, '', clean)
         }
       }
 

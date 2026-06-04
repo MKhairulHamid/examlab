@@ -62,7 +62,7 @@ export default function InstallPrompt() {
         access_token: session.access_token,
         refresh_token: session.refresh_token,
       }))
-      window.history.replaceState(null, '', `/#pwa_auth=${payload}`)
+      window.history.replaceState(null, '', `/?pwa_auth=${payload}`)
     }
     setIosStep('ready')
   }
