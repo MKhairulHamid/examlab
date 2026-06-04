@@ -70,19 +70,19 @@ const aifC01Course = {
       sections: [
         {
           heading: 'You\'ve already been using AI for years',
-          body: 'Think about the last time Netflix recommended something you actually wanted to watch. Or the fact that almost no spam reaches your inbox. Or that your phone can read a photo of a restaurant menu and translate it instantly. None of that was magic — it was software making decisions. That\'s AI in the wild, and you\'ve been living with it for a long time without needing to understand how it works. This session is about pulling back the curtain. By the end you\'ll have a clear mental model of what AI actually is, how machine learning fits inside it, and why the buzzwords you keep hearing — deep learning, generative AI, large language models — are not the same thing.',
+          body: 'Netflix recommending what to watch. Spam never reaching your inbox. Your phone translating a photo of a menu in seconds. None of that is magic — it\'s software making decisions. That\'s AI in the wild.\n\nThis session pulls back the curtain. By the end, you\'ll have a clear mental model of what AI actually is, how machine learning fits inside it, and why the buzzwords — deep learning, generative AI, large language models — are not the same thing.',
         },
         {
           heading: 'The old way: writing every rule by hand',
-          body: 'Before machine learning existed, software worked the way you might expect: a programmer sat down and wrote out every rule. "If the email contains the word free and the sender is unknown, mark it as spam." This works fine for simple, predictable problems. The trouble is that spammers adapt. They write "fr3e" instead of "free." They send from new addresses. And suddenly your rule book is out of date. Real-world problems — recognising faces, understanding spoken language, predicting whether a loan will default — involve too many variables and too many edge cases for any human to write rules for. We needed a different approach.',
+          body: 'Before machine learning, software ran on hand-written rules. "If the email contains \'free\' and the sender is unknown, mark it as spam." Simple problems, reliable results.\n\nThe trouble: the world adapts. Spammers write "fr3e." New addresses appear daily. The rule book goes stale overnight.\n\nReal problems — recognising faces, understanding speech, predicting loan defaults — involve too many variables for any human to enumerate. A different approach was needed.',
         },
         {
           heading: 'The breakthrough: let the machine learn the rules',
-          body: 'Machine learning flips the approach. Instead of telling the computer the rules, you show it thousands — sometimes millions — of examples, and let it figure out the patterns itself. You feed it 100,000 emails labelled "spam" and 100,000 labelled "not spam," and the system learns to tell them apart on its own. It discovers patterns a human might never have thought to look for. This is the core idea behind ML, and everything else in this session builds on it.',
+          body: 'Machine learning flips the model. Instead of writing rules, you show the system thousands of examples and let it find patterns on its own.\n\nFeed it 100,000 spam emails and 100,000 legitimate ones — the system learns to tell them apart, discovering patterns a human might never think to look for. That\'s the core idea. Everything else in this session builds on it.',
         },
         {
           heading: 'How AI, ML, and deep learning fit together',
-          body: 'These terms are not interchangeable — they\'re nested inside each other like Russian dolls. Every ML system is an AI system, but not every AI system uses ML. Every deep learning system uses ML, but not every ML system uses deep learning. Think of it as a family tree, not a synonym list.',
+          body: 'These terms are not interchangeable — they nest inside each other like Russian dolls. Think family tree, not synonym list.',
           bullets: [
             'Artificial Intelligence (AI) — the broad field of making machines perform tasks that normally require human intelligence.',
             'Machine Learning (ML) — a subset of AI where systems learn patterns from data instead of being explicitly programmed.',
@@ -94,7 +94,7 @@ const aifC01Course = {
         },
         {
           heading: 'A few more terms you\'ll see on the exam',
-          body: 'Before we go further, let\'s quickly define some building blocks that keep coming up across all five domains.',
+          body: 'These building blocks appear across all five exam domains. Learn them once, use them everywhere.',
           bullets: [
             'Neural network — the underlying structure of most modern ML. Layers of connected "neurons" that learn weighted relationships in data, loosely inspired by the brain.',
             'Model — the trained artifact. It\'s the thing you actually use to make predictions. Think of it as the finished product.',
@@ -107,7 +107,7 @@ const aifC01Course = {
         },
         {
           heading: 'Studying vs. taking the test: training and inferencing',
-          body: 'Here\'s the analogy that makes this click for most people. Imagine a student studying for a maths exam. They work through hundreds of practice problems — that\'s training. The student is building internal rules: "when I see this pattern, do this." Exam day arrives and they apply those rules to new problems they\'ve never seen before — that\'s inferencing. For AI, training is the expensive, time-consuming phase where the model learns from data. Inferencing is using the finished model to answer new questions. Most of what you\'ll deal with in production is inferencing, and the exam tests whether you can pick the right type for a given situation.',
+          body: 'Imagine a student preparing for a maths exam. They work through hundreds of practice problems, building internal rules: "when I see this pattern, do this." That\'s training.\n\nExam day arrives. They apply those rules to problems they\'ve never seen before. That\'s inferencing.\n\nFor AI, training is the expensive phase where the model learns from data — it happens once (or periodically). Inferencing is using the finished model in production. The exam will ask you to match the right inference type to a given scenario.',
           table: {
             headers: ['Inference type', 'What it means', 'When to use it'],
             rows: [
@@ -120,7 +120,7 @@ const aifC01Course = {
         },
         {
           heading: 'Three ways a machine can learn',
-          body: 'Not all learning looks the same. The exam expects you to match a business problem to the right learning method. The key question to ask is: do we have labelled examples, or not?',
+          body: 'The exam will describe a scenario and ask you to pick the learning method. One question unlocks most of them: do we have labelled examples, or not?',
           bullets: [
             'Supervised learning — you provide labelled data: every input has a known correct answer. The model learns to map inputs to outputs. Used for classification (e.g., spam vs. not spam) and regression (e.g., predict tomorrow\'s sales figure).',
             'Unsupervised learning — no labels at all. The model explores the data and finds hidden structure on its own. Used for clustering (e.g., grouping customers by behaviour) and anomaly detection (e.g., spotting unusual network traffic).',

@@ -65,11 +65,11 @@ function ContentSection({ section }) {
       <h3 style={{ fontSize: '1.0625rem', fontWeight: 700, color: NAVY, marginBottom: '0.6rem', lineHeight: 1.3 }}>
         {section.heading}
       </h3>
-      {section.body && (
-        <p style={{ fontSize: '0.9375rem', color: '#374151', lineHeight: 1.7, marginBottom: section.bullets ? '0.5rem' : 0 }}>
-          {section.body}
+      {section.body && section.body.split('\n\n').map((para, i) => (
+        <p key={i} style={{ fontSize: '0.9375rem', color: '#374151', lineHeight: 1.7, marginBottom: i < section.body.split('\n\n').length - 1 ? '0.75rem' : (section.bullets ? '0.5rem' : 0) }}>
+          {para}
         </p>
-      )}
+      ))}
       {section.bullets && (
         <ul style={{ paddingLeft: '1.4rem', margin: '0.25rem 0', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
           {section.bullets.map((b, i) => (
@@ -394,11 +394,11 @@ function EnhancedSection({ section, index, anchorId, bionic, confidenceVal, onSe
               }}>{conf.label}</span>
             )}
           </div>
-          {section.body && (
-            <p style={{ fontSize: '0.9rem', color: '#475569', lineHeight: 1.6, margin: '0.35rem 0 0' }}>
-              {txt(section.body)}
+          {section.body && section.body.split('\n\n').map((para, i, arr) => (
+            <p key={i} style={{ fontSize: '0.9rem', color: '#475569', lineHeight: 1.6, margin: i === 0 ? '0.35rem 0 0' : '0.6rem 0 0', marginBottom: i < arr.length - 1 ? '0.1rem' : 0 }}>
+              {txt(para)}
             </p>
-          )}
+          ))}
           {expandable && !isOpen && metaHint && (
             <span style={{ display: 'inline-block', fontSize: '0.6875rem', fontWeight: 600, color: '#94a3b8', marginTop: section.body ? '0.4rem' : '0.3rem' }}>
               {metaHint}
