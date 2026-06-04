@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cloud-exam-lab-v2';
+const CACHE_NAME = 'cloud-exam-lab-v3';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -34,12 +34,20 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Navigation requests: serve app shell from cache, fall back to network
+  // Navigation requests: network-first so index.html is always fresh after a
+  // deploy (stale index.html causes 404s on hashed JS chunks). Fall back to
+  // cache only when offline.
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      caches.match('/index.html').then((cached) =>
-        cached || fetch(event.request)
-      )
+      fetch(event.request)
+        .then((response) => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(new Request('/index.html'), clone));
+          }
+          return response;
+        })
+        .catch(() => caches.match('/index.html'))
     );
     return;
   }

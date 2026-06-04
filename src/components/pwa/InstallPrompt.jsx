@@ -53,16 +53,17 @@ export default function InstallPrompt() {
   }
 
   const handleIOSHandoff = async () => {
-    // Encode the current Supabase session tokens into the URL fragment.
-    // iOS will preserve the fragment as the PWA's start URL when added to home screen.
-    // On first PWA launch, authStore reads #pwa_auth= and calls setSession().
+    // Write session tokens to a short-lived cookie.
+    // Cookies ARE shared between Safari and home-screen PWAs on iOS (unlike localStorage).
+    // The PWA reads this cookie on first launch in authStore.initialize().
     const { data: { session } } = await supabase.auth.getSession()
     if (session) {
-      const payload = btoa(JSON.stringify({
+      const payload = encodeURIComponent(btoa(JSON.stringify({
         access_token: session.access_token,
         refresh_token: session.refresh_token,
-      }))
-      window.history.replaceState(null, '', `/?pwa_auth=${payload}`)
+      })))
+      // 10-minute TTL — enough time to add to home screen and open the PWA
+      document.cookie = `pwa_auth=${payload}; max-age=600; path=/; SameSite=Lax`
     }
     setIosStep('ready')
   }
