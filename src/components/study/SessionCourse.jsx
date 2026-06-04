@@ -811,9 +811,10 @@ function VideoPanel({ videos }) {
 
 // Assembles the enhanced lesson: pre-learning check, enhanced sections + speed bumps,
 // gating any section that follows an uncleared speed bump.
-function LessonBody({ session }) {
+// `cleared`  — array of afterSection indices already cleared (from persisted state)
+// `onClear`  — callback(afterSection) to persist a newly cleared checkpoint
+function LessonBody({ session, cleared, onClear }) {
   const quizzes = session.microQuizzes || []
-  const [cleared, setCleared] = useState([])
   const elems = []
 
   if (session.preLearningCheck) {
@@ -842,10 +843,10 @@ function LessonBody({ session }) {
         <SpeedBump
           key={`quiz-${i}`}
           quiz={here}
-          cleared={cleared.includes(i)}
+          cleared={cleared.includes(here.afterSection)}
           onClear={() => {
-            setCleared(c => (c.includes(i) ? c : [...c, i]))
-            // After the state update re-renders the next section, scroll it into view
+            onClear(here.afterSection)
+            // Scroll to the newly unlocked section after re-render
             setTimeout(() => {
               const nextEl = document.getElementById(`sec-${session.id}-${i + 1}`)
               if (nextEl) nextEl.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -863,29 +864,40 @@ function LessonBody({ session }) {
 function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
   const { user } = useAuthStore()
   const userId = user?.id
-  const storageKey = `course-progress-${course.slug}`
+  const storageKey        = `course-progress-${course.slug}`
+  const checkpointsKey    = `course-checkpoints-${course.slug}`
   const [completedIds, setCompletedIds] = useState([])
+  // clearedCheckpoints: { [sessionId]: number[] } — which afterSection indices are cleared
+  const [clearedCheckpoints, setClearedCheckpoints] = useState({})
   const [activeId, setActiveId] = useState(course.sessions[0]?.id)
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
   const contentRef = useRef(null)
-  const completedRef = useRef([])
+  const completedRef       = useRef([])
+  const checkpointsRef     = useRef({})
 
-  const persistToDb = (completed) => {
+  const persistToDb = (completed, checkpoints) => {
     if (!userId) return
-    studyProgressService.save(userId, course.slug, { completedSessions: completed })
+    studyProgressService.save(userId, course.slug, {
+      completedSessions:   completed,
+      clearedCheckpoints:  checkpoints,
+    })
   }
 
   // Free preview: the first module's sessions are open; the rest require a subscription.
   const freeModuleId = course.modules[0]?.id
   const isLocked = (session) => !hasAccess && session && session.domain !== freeModuleId
 
-  // 1) Hydrate instantly from the local cache.
+  // 1) Hydrate instantly from localStorage for a snappy first paint.
   useEffect(() => {
     try {
       const saved = localStorage.getItem(storageKey)
       if (saved) { const a = JSON.parse(saved); setCompletedIds(a); completedRef.current = a }
     } catch { /* ignore */ }
-  }, [storageKey])
+    try {
+      const saved = localStorage.getItem(checkpointsKey)
+      if (saved) { const c = JSON.parse(saved); setClearedCheckpoints(c); checkpointsRef.current = c }
+    } catch { /* ignore */ }
+  }, [storageKey, checkpointsKey])
 
   // 2) Once we know the user, the DB is authoritative (cross-device sync).
   useEffect(() => {
@@ -893,19 +905,36 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
     let cancelled = false
     studyProgressService.load(userId, course.slug).then(data => {
       if (cancelled || !data) return
-      const completed = Array.isArray(data.completedSessions) ? data.completedSessions : []
-      setCompletedIds(completed); completedRef.current = completed
-      try { localStorage.setItem(storageKey, JSON.stringify(completed)) } catch { /* ignore */ }
+      const completed    = Array.isArray(data.completedSessions) ? data.completedSessions : []
+      const checkpoints  = data.clearedCheckpoints && typeof data.clearedCheckpoints === 'object'
+        ? data.clearedCheckpoints : {}
+      setCompletedIds(completed);        completedRef.current    = completed
+      setClearedCheckpoints(checkpoints); checkpointsRef.current  = checkpoints
+      try { localStorage.setItem(storageKey,     JSON.stringify(completed))   } catch { /* ignore */ }
+      try { localStorage.setItem(checkpointsKey, JSON.stringify(checkpoints)) } catch { /* ignore */ }
     })
     return () => { cancelled = true }
-  }, [userId, course.slug, storageKey])
+  }, [userId, course.slug, storageKey, checkpointsKey])
 
   const toggleComplete = (id) => {
     setCompletedIds(prev => {
       const next = prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
       try { localStorage.setItem(storageKey, JSON.stringify(next)) } catch { /* ignore */ }
       completedRef.current = next
-      persistToDb(next)
+      persistToDb(next, checkpointsRef.current)
+      return next
+    })
+  }
+
+  // Called by LessonBody when a speed-bump checkpoint is cleared.
+  const markCheckpointCleared = (sessionId, afterSection) => {
+    setClearedCheckpoints(prev => {
+      const existing = prev[sessionId] || []
+      if (existing.includes(afterSection)) return prev   // already saved
+      const next = { ...prev, [sessionId]: [...existing, afterSection] }
+      try { localStorage.setItem(checkpointsKey, JSON.stringify(next)) } catch { /* ignore */ }
+      checkpointsRef.current = next
+      persistToDb(completedRef.current, next)
       return next
     })
   }
@@ -1198,7 +1227,12 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
               ) : (
               <>
               {/* Teaching sections */}
-              <LessonBody key={activeSession.id} session={activeSession} />
+              <LessonBody
+                key={activeSession.id}
+                session={activeSession}
+                cleared={clearedCheckpoints[activeSession.id] || []}
+                onClear={(afterSection) => markCheckpointCleared(activeSession.id, afterSection)}
+              />
 
               {/* Key terms */}
               {activeSession.keyTerms?.length > 0 && (

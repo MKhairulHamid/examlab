@@ -1,34 +1,40 @@
 /**
  * Study Progress Service
- * Loads and saves per-user, per-course study progress (completed sessions +
- * per-section confidence tags) to Supabase so it follows the user across
- * devices. Mirrors the Supabase-only approach used by progressService.
+ * Loads and saves per-user, per-course study progress to Supabase so it
+ * follows the user across devices. Persists:
+ *   - completedSessions  — which session IDs are marked complete
+ *   - clearedCheckpoints — which speed-bump checkpoints have been passed
+ *                          shape: { [sessionId]: number[] }
  */
 
 import supabase from './supabase'
 
 export const studyProgressService = {
   /**
-   * Fetch a user's progress for a course. Returns
-   * { completedSessions: string[], confidence: Record<string, string> }
-   * or null on error. Returns empty defaults when there is no row yet.
+   * Fetch a user's progress for a course.
+   * Returns { completedSessions, clearedCheckpoints } or null on error.
    */
   async load(userId, courseSlug) {
     if (!userId || !courseSlug) return null
     try {
       const { data, error } = await supabase
         .from('study_course_progress')
-        .select('completed_sessions, confidence')
+        .select('completed_sessions, cleared_checkpoints')
         .eq('user_id', userId)
         .eq('course_slug', courseSlug)
         .maybeSingle()
 
       if (error) throw error
-      if (!data) return { completedSessions: [], confidence: {} }
+      if (!data) return { completedSessions: [], clearedCheckpoints: {} }
 
       return {
-        completedSessions: Array.isArray(data.completed_sessions) ? data.completed_sessions : [],
-        confidence: data.confidence && typeof data.confidence === 'object' ? data.confidence : {},
+        completedSessions: Array.isArray(data.completed_sessions)
+          ? data.completed_sessions
+          : [],
+        clearedCheckpoints:
+          data.cleared_checkpoints && typeof data.cleared_checkpoints === 'object'
+            ? data.cleared_checkpoints
+            : {},
       }
     } catch (error) {
       console.error('Error loading study progress:', error)
@@ -39,7 +45,7 @@ export const studyProgressService = {
   /**
    * Upsert the user's progress for a course (one row per user + course).
    */
-  async save(userId, courseSlug, { completedSessions, confidence }) {
+  async save(userId, courseSlug, { completedSessions, clearedCheckpoints }) {
     if (!userId || !courseSlug) return
     try {
       const { error } = await supabase
@@ -49,7 +55,7 @@ export const studyProgressService = {
             user_id: userId,
             course_slug: courseSlug,
             completed_sessions: completedSessions || [],
-            confidence: confidence || {},
+            cleared_checkpoints: clearedCheckpoints || {},
             updated_at: new Date().toISOString(),
           },
           { onConflict: 'user_id,course_slug' }
