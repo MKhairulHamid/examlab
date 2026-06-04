@@ -21,10 +21,22 @@ export const useAuthStore = create((set, get) => ({
   initialize: async () => {
     try {
       set({ loading: true })
-      
+
+      // iOS PWA session handoff: read tokens encoded by InstallPrompt into the URL fragment
+      const hash = window.location.hash
+      if (hash.startsWith('#pwa_auth=')) {
+        try {
+          const { access_token, refresh_token } = JSON.parse(atob(hash.slice(10)))
+          await supabase.auth.setSession({ access_token, refresh_token })
+          window.history.replaceState(null, '', window.location.pathname)
+        } catch {
+          // malformed token — ignore, fall through to normal session check
+        }
+      }
+
       // Check for existing session
       const { data: { user }, error } = await supabase.auth.getUser()
-      
+
       // Only throw error if it's not a session missing error (which is expected for logged out users)
       if (error && error.name !== 'AuthSessionMissingError') {
         throw error
