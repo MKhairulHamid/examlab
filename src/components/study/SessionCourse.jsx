@@ -284,31 +284,10 @@ function LockedSession({ onSubscribe, freeModuleLabel }) {
 
 // ─── Enhanced reading features (currently scoped to d1-s1) ─────────────────────
 
-// Bolds the leading ~40% of each word to create skim anchors ("bionic reading").
-function BionicText({ text }) {
-  if (typeof text !== 'string') return text
-  return text.split(/(\s+)/).map((tok, i) => {
-    if (!tok.trim()) return tok
-    const n = Math.max(1, Math.round(tok.length * 0.4))
-    return (
-      <span key={i}>
-        <b style={{ fontWeight: 700, color: 'inherit' }}>{tok.slice(0, n)}</b>{tok.slice(n)}
-      </span>
-    )
-  })
-}
-
-const CONFIDENCE = {
-  mastered: { label: 'Mastered',     icon: '✓', color: '#16a34a', bg: 'rgba(34,197,94,0.1)' },
-  almost:   { label: 'Almost there', icon: '◐', color: '#d97706', bg: 'rgba(245,158,11,0.12)' },
-  confused: { label: 'Confused',     icon: '?', color: '#dc2626', bg: 'rgba(239,68,68,0.1)' },
-}
-
 // Renders bullets as scannable "concept cards": a "Term — definition" bullet
 // becomes a bold term with its definition beneath; plain bullets stay as a
 // simple accented line.
-function ConceptList({ bullets, bionic }) {
-  const txt = (s) => (bionic ? <BionicText text={s} /> : s)
+function ConceptList({ bullets }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1rem' }}>
       {bullets.map((b, i) => {
@@ -317,7 +296,7 @@ function ConceptList({ bullets, bionic }) {
           return (
             <div key={i} style={{ display: 'flex', gap: '0.6rem', padding: '0.3rem 0.25rem', fontSize: '0.9rem', color: '#475569', lineHeight: 1.6 }}>
               <span style={{ color: TEAL, fontWeight: 700, flexShrink: 0 }}>•</span>
-              <span>{txt(b)}</span>
+              <span>{b}</span>
             </div>
           )
         }
@@ -327,10 +306,10 @@ function ConceptList({ bullets, bionic }) {
             borderRadius: '0.6rem', padding: '0.65rem 0.85rem',
           }}>
             <div style={{ fontWeight: 700, color: NAVY, fontSize: '0.875rem', marginBottom: '0.2rem' }}>
-              {txt(b.slice(0, sep))}
+              {b.slice(0, sep)}
             </div>
             <div style={{ color: '#475569', fontSize: '0.875rem', lineHeight: 1.55 }}>
-              {txt(b.slice(sep + 3))}
+              {b.slice(sep + 3)}
             </div>
           </div>
         )
@@ -339,15 +318,11 @@ function ConceptList({ bullets, bionic }) {
   )
 }
 
-// A teaching section as a self-contained, click-to-expand card. Collapsed it
-// shows the heading + core statement (or a hint of what's inside); expanded it
-// reveals the concept cards / table / callout plus a confidence-scoring row.
-function EnhancedSection({ section, index, anchorId, bionic, confidenceVal, onSetConfidence }) {
+// A teaching section as a self-contained, click-to-expand card.
+function EnhancedSection({ section, index, anchorId }) {
   const expandable = !!(section.bullets || section.table || section.callout)
   const [open, setOpen] = useState(false)
   const isOpen = expandable ? open : true
-  const conf = confidenceVal ? CONFIDENCE[confidenceVal] : null
-  const txt = (s) => (bionic ? <BionicText text={s} /> : s)
 
   const hints = []
   if (section.bullets) hints.push(`${section.bullets.length} concept${section.bullets.length === 1 ? '' : 's'}`)
@@ -359,7 +334,7 @@ function EnhancedSection({ section, index, anchorId, bionic, confidenceVal, onSe
     <div id={anchorId} style={{
       marginBottom: '1rem', borderRadius: '0.9rem', background: 'white', overflow: 'hidden',
       scrollMarginTop: '1.5rem',
-      border: `1.5px solid ${conf ? conf.color : (isOpen ? 'rgba(0,212,170,0.45)' : '#e8edf3')}`,
+      border: `1.5px solid ${isOpen ? 'rgba(0,212,170,0.45)' : '#e8edf3'}`,
       boxShadow: isOpen ? '0 6px 22px rgba(10,37,64,0.08)' : '0 1px 3px rgba(0,0,0,0.04)',
       transition: 'all 0.2s',
     }}>
@@ -376,27 +351,18 @@ function EnhancedSection({ section, index, anchorId, bionic, confidenceVal, onSe
           width: '1.85rem', height: '1.85rem', minWidth: '1.85rem', borderRadius: '0.55rem',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: '0.8125rem', fontWeight: 800, color: 'white', marginTop: '0.1rem',
-          background: conf ? conf.color : `linear-gradient(135deg, ${TEAL}, ${TEAL_DARK})`,
+          background: `linear-gradient(135deg, ${TEAL}, ${TEAL_DARK})`,
         }}>
-          {conf ? conf.icon : index + 1}
+          {index + 1}
         </span>
 
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-            <h3 style={{ fontSize: '1.0625rem', fontWeight: 700, color: NAVY, lineHeight: 1.3, margin: 0 }}>
-              {txt(section.heading)}
-            </h3>
-            {conf && (
-              <span style={{
-                fontSize: '0.625rem', fontWeight: 700, color: conf.color, background: conf.bg,
-                padding: '0.1rem 0.45rem', borderRadius: '0.3rem', whiteSpace: 'nowrap',
-                textTransform: 'uppercase', letterSpacing: '0.04em',
-              }}>{conf.label}</span>
-            )}
-          </div>
+          <h3 style={{ fontSize: '1.0625rem', fontWeight: 700, color: NAVY, lineHeight: 1.3, margin: 0 }}>
+            {section.heading}
+          </h3>
           {section.body && section.body.split('\n\n').map((para, i, arr) => (
             <p key={i} style={{ fontSize: '0.9rem', color: '#475569', lineHeight: 1.6, margin: i === 0 ? '0.35rem 0 0' : '0.6rem 0 0', marginBottom: i < arr.length - 1 ? '0.1rem' : 0 }}>
-              {txt(para)}
+              {para}
             </p>
           ))}
           {expandable && !isOpen && metaHint && (
@@ -416,34 +382,9 @@ function EnhancedSection({ section, index, anchorId, bionic, confidenceVal, onSe
 
       {isOpen && (
         <div style={{ padding: '0 1.15rem 1.15rem', borderTop: '1px solid #f1f5f9' }}>
-          {section.bullets && <ConceptList bullets={section.bullets} bionic={bionic} />}
+          {section.bullets && <ConceptList bullets={section.bullets} />}
           {section.table && <ContentTable table={section.table} />}
           {section.callout && <Callout callout={section.callout} />}
-
-          <div style={{
-            display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.4rem',
-            marginTop: '1.1rem', paddingTop: '0.85rem', borderTop: '1px dashed #eef2f7',
-          }}>
-            <span style={{ fontSize: '0.6875rem', color: '#94a3b8', fontWeight: 600, marginRight: '0.15rem' }}>
-              How well do you know this?
-            </span>
-            {Object.entries(CONFIDENCE).map(([key, c]) => {
-              const active = confidenceVal === key
-              return (
-                <button
-                  key={key}
-                  onClick={() => onSetConfidence(key)}
-                  style={{
-                    fontSize: '0.6875rem', fontWeight: 700, cursor: 'pointer',
-                    padding: '0.25rem 0.6rem', borderRadius: '0.4rem',
-                    border: `1.5px solid ${active ? c.color : '#e2e8f0'}`,
-                    background: active ? c.bg : 'white',
-                    color: active ? c.color : '#64748b', transition: 'all 0.15s',
-                  }}
-                >{c.icon} {c.label}</button>
-              )
-            })}
-          </div>
         </div>
       )}
     </div>
@@ -452,11 +393,10 @@ function EnhancedSection({ section, index, anchorId, bionic, confidenceVal, onSe
 
 // Pre-test shown BEFORE content. Getting it wrong is intentional — it primes memory.
 // Research: attempting retrieval before study improves retention even on wrong answers.
-function PreLearningCheck({ check, bionic }) {
+function PreLearningCheck({ check }) {
   const [selected, setSelected] = useState(null)
   const [revealed, setRevealed] = useState(false)
   const isCorrect = revealed && selected === check.correct
-  const txt = (s) => (bionic ? <BionicText text={s} /> : s)
 
   return (
     <div style={{
@@ -476,7 +416,7 @@ function PreLearningCheck({ check, bionic }) {
       </div>
 
       <p style={{ fontSize: '0.9375rem', fontWeight: 600, color: NAVY, lineHeight: 1.6, marginBottom: '1rem' }}>
-        {txt(check.question)}
+        {check.question}
       </p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem' }}>
@@ -540,11 +480,10 @@ function PreLearningCheck({ check, bionic }) {
 
 // Inline active-recall "speed bump" — the following sections stay locked until
 // the learner answers this correctly.
-function SpeedBump({ quiz, cleared, onClear, bionic }) {
+function SpeedBump({ quiz, cleared, onClear }) {
   const [selected, setSelected] = useState(null)
   const [checked, setChecked] = useState(false)
   const isCorrect = checked && selected === quiz.correct
-  const txt = (s) => (bionic ? <BionicText text={s} /> : s)
 
   if (cleared) {
     return (
@@ -570,7 +509,7 @@ function SpeedBump({ quiz, cleared, onClear, bionic }) {
         Quick recall checkpoint
       </div>
       <p style={{ fontSize: '0.9375rem', fontWeight: 600, color: NAVY, lineHeight: 1.6, marginBottom: '1rem' }}>
-        {bionic ? <BionicText text={quiz.question} /> : quiz.question}
+        {quiz.question}
       </p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem' }}>
@@ -631,7 +570,7 @@ function SpeedBump({ quiz, cleared, onClear, bionic }) {
                 Think deeper
               </div>
               <p style={{ fontSize: '0.875rem', color: NAVY, lineHeight: 1.65, margin: 0, fontStyle: 'italic' }}>
-                {txt(quiz.elaborativePrompt)}
+                {quiz.elaborativePrompt}
               </p>
             </div>
           )}
@@ -849,18 +788,14 @@ function VideoPanel({ videos }) {
 
 // Assembles the enhanced lesson: pre-learning check, enhanced sections + speed bumps,
 // gating any section that follows an uncleared speed bump.
-function LessonBody({ session, bionic, confidence, onSetConfidence }) {
+function LessonBody({ session }) {
   const quizzes = session.microQuizzes || []
   const [cleared, setCleared] = useState([])
   const elems = []
 
   if (session.preLearningCheck) {
     elems.push(
-      <PreLearningCheck
-        key="pre-check"
-        check={session.preLearningCheck}
-        bionic={bionic}
-      />
+      <PreLearningCheck key="pre-check" check={session.preLearningCheck} />
     )
   }
 
@@ -870,16 +805,12 @@ function LessonBody({ session, bionic, confidence, onSetConfidence }) {
       elems.push(<LockedNotice key="locked" />)
       break
     }
-    const secKey = `${session.id}::${i}`
     elems.push(
       <EnhancedSection
-        key={secKey}
+        key={`${session.id}::${i}`}
         section={session.sections[i]}
         index={i}
         anchorId={`sec-${session.id}-${i}`}
-        bionic={bionic}
-        confidenceVal={confidence[secKey]}
-        onSetConfidence={(lvl) => onSetConfidence(secKey, lvl)}
       />
     )
     const here = quizzes.find(q => q.afterSection === i)
@@ -888,7 +819,6 @@ function LessonBody({ session, bionic, confidence, onSetConfidence }) {
         <SpeedBump
           key={`quiz-${i}`}
           quiz={here}
-          bionic={bionic}
           cleared={cleared.includes(i)}
           onClear={() => setCleared(c => (c.includes(i) ? c : [...c, i]))}
         />
@@ -898,130 +828,34 @@ function LessonBody({ session, bionic, confidence, onSetConfidence }) {
   return <>{elems}</>
 }
 
-// Overview of every section the learner has tagged, grouped by confidence so
-// they can jump back to whatever they're confused about or still learning.
-function ReviewPanel({ course, confidence, onJump, onClose }) {
-  const items = []
-  course.sessions.forEach(s => {
-    (s.sections || []).forEach((sec, idx) => {
-      const level = confidence[`${s.id}::${idx}`]
-      if (level) items.push({ sessionId: s.id, sessionNumber: s.number, idx, heading: sec.heading, level })
-    })
-  })
-
-  // Confused first (most urgent), then Almost there, then Mastered.
-  const order = ['confused', 'almost', 'mastered']
-  const groups = order
-    .map(key => ({ key, meta: CONFIDENCE[key], list: items.filter(i => i.level === key) }))
-    .filter(g => g.meta)
-
-  return (
-    <div
-      onClick={onClose}
-      style={{ position: 'fixed', inset: 0, background: 'rgba(10,37,64,0.55)', zIndex: 400, display: 'flex', justifyContent: 'center', alignItems: 'flex-start', padding: '4vh 1rem' }}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{ background: '#f8fafc', borderRadius: '1.1rem', width: '100%', maxWidth: '620px', maxHeight: '88vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}
-      >
-        <div style={{ position: 'sticky', top: 0, background: 'white', borderBottom: '1px solid #eef2f7', padding: '1.1rem 1.35rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
-          <div>
-            <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: NAVY, margin: 0 }}>Review your confidence map</h2>
-            <p style={{ fontSize: '0.8125rem', color: '#64748b', margin: '0.2rem 0 0' }}>
-              Tap any section to jump back and study it again.
-            </p>
-          </div>
-          <button onClick={onClose} style={{ background: '#f1f5f9', border: 'none', borderRadius: '0.5rem', width: '2rem', height: '2rem', fontSize: '1.1rem', cursor: 'pointer', color: '#64748b', flexShrink: 0 }}>×</button>
-        </div>
-
-        <div style={{ padding: '1.1rem 1.35rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          {items.length === 0 && (
-            <div style={{ textAlign: 'center', color: '#64748b', fontSize: '0.9rem', padding: '2rem 1rem', lineHeight: 1.6 }}>
-              Nothing tagged yet. As you read, use <strong>How well do you know this?</strong> on each section to build your review list.
-            </div>
-          )}
-          {groups.map(g => (
-            <div key={g.key}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.6rem' }}>
-                <span style={{ width: '1.5rem', height: '1.5rem', borderRadius: '0.4rem', background: g.meta.color, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 800 }}>{g.meta.icon}</span>
-                <span style={{ fontWeight: 700, color: NAVY, fontSize: '0.9375rem' }}>{g.meta.label}</span>
-                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: g.meta.color, background: g.meta.bg, padding: '0.1rem 0.5rem', borderRadius: '0.3rem' }}>{g.list.length}</span>
-              </div>
-              {g.list.length === 0 ? (
-                <p style={{ fontSize: '0.8125rem', color: '#94a3b8', margin: '0 0 0 2rem' }}>None.</p>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                  {g.list.map(it => (
-                    <button
-                      key={`${it.sessionId}-${it.idx}`}
-                      onClick={() => onJump(it.sessionId, it.idx)}
-                      style={{ width: '100%', textAlign: 'left', background: 'white', border: `1px solid #eef2f7`, borderLeft: `3px solid ${g.meta.color}`, borderRadius: '0.6rem', padding: '0.65rem 0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}
-                    >
-                      <span style={{ minWidth: 0 }}>
-                        <span style={{ display: 'block', fontSize: '0.65rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Session {it.sessionNumber}</span>
-                        <span style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: NAVY, lineHeight: 1.35 }}>{it.heading}</span>
-                      </span>
-                      <span style={{ color: g.meta.color, fontWeight: 700, flexShrink: 0 }}>→</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
-
 // ─── Main component ───────────────────────────────────────────────────────────
 
 function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
   const { user } = useAuthStore()
   const userId = user?.id
   const storageKey = `course-progress-${course.slug}`
-  const bionicKey = 'study-bionic'
-  const confidenceKey = `study-confidence-${course.slug}`
   const [completedIds, setCompletedIds] = useState([])
   const [activeId, setActiveId] = useState(course.sessions[0]?.id)
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
-  const [bionic, setBionic] = useState(false)
-  const [confidence, setConfidence] = useState({})
-  const [reviewOpen, setReviewOpen] = useState(false)
   const contentRef = useRef(null)
-  // Refs mirror the latest progress so DB writes always upsert both fields.
   const completedRef = useRef([])
-  const confidenceRef = useRef({})
 
-  // Normalize any legacy 'review' tag to the renamed 'almost'.
-  const normalizeConfidence = (obj) => {
-    if (!obj || typeof obj !== 'object') return {}
-    const out = {}
-    for (const [k, v] of Object.entries(obj)) out[k] = v === 'review' ? 'almost' : v
-    return out
-  }
-
-  const persistToDb = (completed, conf) => {
+  const persistToDb = (completed) => {
     if (!userId) return
-    studyProgressService.save(userId, course.slug, { completedSessions: completed, confidence: conf })
+    studyProgressService.save(userId, course.slug, { completedSessions: completed })
   }
 
   // Free preview: the first module's sessions are open; the rest require a subscription.
   const freeModuleId = course.modules[0]?.id
   const isLocked = (session) => !hasAccess && session && session.domain !== freeModuleId
 
-  // 1) Hydrate instantly from the local cache for a snappy first paint.
+  // 1) Hydrate instantly from the local cache.
   useEffect(() => {
     try {
       const saved = localStorage.getItem(storageKey)
       if (saved) { const a = JSON.parse(saved); setCompletedIds(a); completedRef.current = a }
     } catch { /* ignore */ }
-    try { setBionic(localStorage.getItem(bionicKey) === '1') } catch { /* ignore */ }
-    try {
-      const c = localStorage.getItem(confidenceKey)
-      if (c) { const o = normalizeConfidence(JSON.parse(c)); setConfidence(o); confidenceRef.current = o }
-    } catch { /* ignore */ }
-  }, [storageKey, confidenceKey])
+  }, [storageKey])
 
   // 2) Once we know the user, the DB is authoritative (cross-device sync).
   useEffect(() => {
@@ -1030,51 +864,23 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
     studyProgressService.load(userId, course.slug).then(data => {
       if (cancelled || !data) return
       const completed = Array.isArray(data.completedSessions) ? data.completedSessions : []
-      const conf = normalizeConfidence(data.confidence)
       setCompletedIds(completed); completedRef.current = completed
-      setConfidence(conf); confidenceRef.current = conf
       try { localStorage.setItem(storageKey, JSON.stringify(completed)) } catch { /* ignore */ }
-      try { localStorage.setItem(confidenceKey, JSON.stringify(conf)) } catch { /* ignore */ }
     })
     return () => { cancelled = true }
-  }, [userId, course.slug, storageKey, confidenceKey])
+  }, [userId, course.slug, storageKey])
 
   const toggleComplete = (id) => {
     setCompletedIds(prev => {
       const next = prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
       try { localStorage.setItem(storageKey, JSON.stringify(next)) } catch { /* ignore */ }
       completedRef.current = next
-      persistToDb(next, confidenceRef.current)
-      return next
-    })
-  }
-
-  const toggleBionic = () => {
-    setBionic(prev => {
-      const next = !prev
-      try { localStorage.setItem(bionicKey, next ? '1' : '0') } catch { /* ignore */ }
-      return next
-    })
-  }
-
-  const setConfidenceFor = (secKey, level) => {
-    setConfidence(prev => {
-      const next = { ...prev }
-      if (next[secKey] === level) delete next[secKey]
-      else next[secKey] = level
-      try { localStorage.setItem(confidenceKey, JSON.stringify(next)) } catch { /* ignore */ }
-      confidenceRef.current = next
-      persistToDb(completedRef.current, next)
+      persistToDb(next)
       return next
     })
   }
 
   const activeSession = course.sessions.find(s => s.id === activeId)
-  const enhanced = true
-  const reviewAttention = useMemo(
-    () => Object.values(confidence).filter(v => v === 'confused' || v === 'almost').length,
-    [confidence]
-  )
   const activeIdx = course.sessions.findIndex(s => s.id === activeId)
   const prevSession = activeIdx > 0 ? course.sessions[activeIdx - 1] : null
   const nextSession = activeIdx < course.sessions.length - 1 ? course.sessions[activeIdx + 1] : null
@@ -1098,18 +904,6 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
   const handleNext = () => {
     if (!isCompleted) toggleComplete(activeId)
     if (nextSession) selectSession(nextSession.id)
-  }
-
-  // From the Review panel: open the right session and scroll to the section.
-  const jumpToSection = (sessionId, sectionIdx) => {
-    setReviewOpen(false)
-    const switching = sessionId !== activeId
-    if (switching) { setActiveId(sessionId); setMobileSidebarOpen(false) }
-    setTimeout(() => {
-      const el = document.getElementById(`sec-${sessionId}-${sectionIdx}`)
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      else contentRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
-    }, switching ? 220 : 60)
   }
 
   // ── Sidebar ────────────────────────────────────────────────────────────────
@@ -1241,34 +1035,8 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
           </div>
         </div>
 
-        {/* Right: confidence review + progress bar */}
+        {/* Right: progress pill */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
-          <button
-            onClick={() => setReviewOpen(true)}
-            title="See your confidence map — sections you tagged as confused or almost there"
-            style={{
-              flexShrink: 0, position: 'relative', display: 'flex', alignItems: 'center', gap: '0.3rem',
-              background: reviewAttention > 0 ? 'rgba(220,38,38,0.25)' : 'rgba(255,255,255,0.1)',
-              border: `1px solid ${reviewAttention > 0 ? 'rgba(220,38,38,0.5)' : 'rgba(255,255,255,0.15)'}`,
-              color: 'rgba(255,255,255,0.9)', cursor: 'pointer', fontWeight: 600,
-              fontSize: '0.8125rem', padding: '0.35rem 0.7rem', borderRadius: '0.5rem',
-            }}
-          >
-            {/* bookmark icon */}
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>
-            </svg>
-            <span className="review-label">Review</span>
-            {reviewAttention > 0 && (
-              <span style={{
-                minWidth: '1.1rem', height: '1.1rem', padding: '0 0.25rem', borderRadius: '999px',
-                background: '#ef4444', color: 'white', fontSize: '0.625rem', fontWeight: 800,
-                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-              }}>{reviewAttention}</span>
-            )}
-          </button>
-
-          {/* Progress pill */}
           <div style={{
             display: 'flex', alignItems: 'center', gap: '0.35rem',
             background: 'rgba(255,255,255,0.08)', borderRadius: '0.5rem',
@@ -1396,45 +1164,7 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
               ) : (
               <>
               {/* Teaching sections */}
-              {enhanced ? (
-                <>
-                  <div style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
-                    gap: '0.6rem', marginBottom: '1.5rem',
-                  }}>
-                    <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 600 }}>
-                      Bionic reading
-                    </span>
-                    <button
-                      onClick={toggleBionic}
-                      aria-pressed={bionic}
-                      style={{
-                        width: '44px', height: '24px', borderRadius: '999px', border: 'none',
-                        cursor: 'pointer', padding: 0, position: 'relative',
-                        background: bionic ? `linear-gradient(135deg, ${TEAL}, ${TEAL_DARK})` : '#cbd5e1',
-                        transition: 'background 0.2s',
-                      }}
-                    >
-                      <span style={{
-                        position: 'absolute', top: '2px', left: bionic ? '22px' : '2px',
-                        width: '20px', height: '20px', borderRadius: '50%', background: 'white',
-                        transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
-                      }} />
-                    </button>
-                  </div>
-                  <LessonBody
-                    key={activeSession.id}
-                    session={activeSession}
-                    bionic={bionic}
-                    confidence={confidence}
-                    onSetConfidence={setConfidenceFor}
-                  />
-                </>
-              ) : (
-                activeSession.sections.map((sec, i) => (
-                  <ContentSection key={i} section={sec} />
-                ))
-              )}
+              <LessonBody key={activeSession.id} session={activeSession} />
 
               {/* Key terms */}
               {activeSession.keyTerms?.length > 0 && (
@@ -1660,25 +1390,14 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
         </main>
       </div>
 
-      {reviewOpen && (
-        <ReviewPanel
-          course={course}
-          confidence={confidence}
-          onJump={jumpToSection}
-          onClose={() => setReviewOpen(false)}
-        />
-      )}
-
       {/* Responsive styles */}
       <style>{`
         @media (max-width: 768px) {
           .course-sidebar { display: none !important; }
           .mobile-sidebar-toggle { display: flex !important; }
-          .review-label { display: none; }
         }
         @media (min-width: 769px) {
           .mobile-sidebar-toggle { display: none !important; }
-          .review-label { display: inline; }
         }
       `}</style>
     </div>
