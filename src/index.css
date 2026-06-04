@@ -133,7 +133,9 @@ footer { width: 100%; box-sizing: border-box; }
 /* ─── Landing Page: Header ──────────────────────────────────────── */
 .header-button {
   position: fixed; top: 0; left: 0; right: 0; width: 100%; z-index: 50;
+  /* padding-top absorbs the iPhone notch / Dynamic Island safe area */
   padding: 0.75rem 1rem;
+  padding-top: calc(0.75rem + env(safe-area-inset-top, 0px));
   background: rgba(10, 37, 64, 0.96);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -178,11 +180,13 @@ footer { width: 100%; box-sizing: border-box; }
 .hero-section {
   min-height: 100vh; background: var(--gradient-brand);
   display: flex; align-items: center; justify-content: center;
-  padding: 1rem; padding-top: 7rem;
+  padding: 1rem;
+  /* account for fixed header height + iPhone safe area inset */
+  padding-top: calc(7rem + env(safe-area-inset-top, 0px));
   position: relative; overflow: hidden;
 }
 @media (max-width: 479px) {
-  .hero-section { padding-top: 9.5rem; }
+  .hero-section { padding-top: calc(9.5rem + env(safe-area-inset-top, 0px)); }
 }
 .hero-bg-1 {
   position: absolute; width: 24rem; height: 24rem;

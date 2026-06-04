@@ -22,25 +22,6 @@ export const useAuthStore = create((set, get) => ({
     try {
       set({ loading: true })
 
-      // iOS PWA session handoff via cookie (cookies are shared between Safari
-      // and home-screen PWAs on the same domain; localStorage is not)
-      const cookieVal = document.cookie
-        .split(';')
-        .map(c => c.trim())
-        .find(c => c.startsWith('pwa_auth='))
-        ?.split('=').slice(1).join('=')
-
-      if (cookieVal) {
-        // Always delete the cookie immediately — it's one-time use
-        document.cookie = 'pwa_auth=; max-age=0; path=/; SameSite=Lax'
-        try {
-          const { access_token, refresh_token } = JSON.parse(atob(decodeURIComponent(cookieVal)))
-          const { error: sessionError } = await supabase.auth.setSession({ access_token, refresh_token })
-          if (sessionError) console.warn('PWA session handoff failed:', sessionError.message)
-        } catch (e) {
-          console.warn('PWA auth cookie parse error:', e.message)
-        }
-      }
 
       // Check for existing session
       const { data: { user }, error } = await supabase.auth.getUser()

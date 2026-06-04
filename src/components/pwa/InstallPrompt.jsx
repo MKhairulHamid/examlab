@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Download, X, Share, ArrowDown } from 'lucide-react'
-import supabase from '../../services/supabase'
+import { Download, X, Share } from 'lucide-react'
 
 function isIOS() {
   return /iphone|ipad|ipod/i.test(navigator.userAgent)
@@ -15,20 +14,16 @@ export default function InstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState(null)
   const [showAndroid, setShowAndroid] = useState(false)
   const [showIOS, setShowIOS] = useState(false)
-  const [iosStep, setIosStep] = useState('guide') // 'guide' | 'ready'
 
   useEffect(() => {
-    // Never show if already installed
     if (isInStandaloneMode()) return
     if (localStorage.getItem('pwa-install-dismissed')) return
 
     if (isIOS()) {
-      // Show iOS guide after a short delay
       const t = setTimeout(() => setShowIOS(true), 3000)
       return () => clearTimeout(t)
     }
 
-    // Android/Chrome: wait for browser install prompt
     const handler = (e) => {
       e.preventDefault()
       setDeferredPrompt(e)
@@ -52,22 +47,7 @@ export default function InstallPrompt() {
     setDeferredPrompt(null)
   }
 
-  const handleIOSHandoff = async () => {
-    // Write session tokens to a short-lived cookie.
-    // Cookies ARE shared between Safari and home-screen PWAs on iOS (unlike localStorage).
-    // The PWA reads this cookie on first launch in authStore.initialize().
-    const { data: { session } } = await supabase.auth.getSession()
-    if (session) {
-      const payload = encodeURIComponent(btoa(JSON.stringify({
-        access_token: session.access_token,
-        refresh_token: session.refresh_token,
-      })))
-      // 10-minute TTL — enough time to add to home screen and open the PWA
-      document.cookie = `pwa_auth=${payload}; max-age=600; path=/; SameSite=Lax`
-    }
-    setIosStep('ready')
-  }
-
+  // ── Android / Chrome ──────────────────────────────────────────────
   if (showAndroid) {
     return (
       <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-80 z-50 bg-[#0A2540] border border-[#00D4AA]/30 rounded-xl shadow-2xl p-4 flex items-start gap-3">
@@ -85,10 +65,7 @@ export default function InstallPrompt() {
               <Download size={12} />
               Install
             </button>
-            <button
-              onClick={dismiss}
-              className="text-white/50 text-xs px-2 py-1.5 rounded-lg hover:text-white/80 transition-colors"
-            >
+            <button onClick={dismiss} className="text-white/50 text-xs px-2 py-1.5 rounded-lg hover:text-white/80 transition-colors">
               Not now
             </button>
           </div>
@@ -100,54 +77,42 @@ export default function InstallPrompt() {
     )
   }
 
+  // ── iOS Safari ───────────────────────────────────────────────────
   if (showIOS) {
     return (
       <div className="fixed bottom-4 left-4 right-4 z-50 bg-[#0A2540] border border-[#00D4AA]/30 rounded-xl shadow-2xl p-4">
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-2">
             <img src="/icons/icon-192x192.png" alt="" className="w-8 h-8 rounded-lg" />
-            <p className="text-white text-sm font-semibold">Install Cloud Exam Lab</p>
+            <div>
+              <p className="text-white text-sm font-semibold">Install Cloud Exam Lab</p>
+              <p className="text-white/50 text-xs">Study offline, anytime</p>
+            </div>
           </div>
           <button onClick={dismiss} className="text-white/40 hover:text-white/70 transition-colors">
             <X size={16} />
           </button>
         </div>
 
-        {iosStep === 'guide' ? (
-          <>
-            <p className="text-white/60 text-xs mb-3">
-              Stay logged in after installing — tap below first, then add to your home screen.
-            </p>
-            <button
-              onClick={handleIOSHandoff}
-              className="w-full flex items-center justify-center gap-2 bg-[#00D4AA] text-[#0A2540] text-sm font-semibold px-4 py-2.5 rounded-lg hover:bg-[#00D4AA]/90 transition-colors mb-2"
-            >
-              Prepare install link
-            </button>
-            <p className="text-white/40 text-xs text-center">Skip this step to install without staying logged in</p>
-          </>
-        ) : (
-          <>
-            <p className="text-white/70 text-xs mb-3">
-              Ready. Now tap the <strong className="text-white">Share</strong> button in Safari, then choose <strong className="text-white">Add to Home Screen</strong>.
-            </p>
-            <div className="flex items-center justify-center gap-6 text-white/50 text-xs">
-              <div className="flex flex-col items-center gap-1">
-                <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
-                  <Share size={16} className="text-[#00D4AA]" />
-                </div>
-                <span>Share</span>
-              </div>
-              <ArrowDown size={14} className="rotate-[-90deg]" />
-              <div className="flex flex-col items-center gap-1">
-                <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
-                  <Download size={16} className="text-[#00D4AA]" />
-                </div>
-                <span>Add to Home</span>
-              </div>
-            </div>
-          </>
-        )}
+        {/* Step-by-step install guide */}
+        <div className="space-y-2 mb-3">
+          <div className="flex items-center gap-3 text-white/70 text-xs">
+            <div className="w-6 h-6 rounded-full bg-[#00D4AA]/20 text-[#00D4AA] flex items-center justify-center text-[10px] font-bold flex-shrink-0">1</div>
+            <span>Tap the <Share size={11} className="inline mx-0.5 -mt-0.5" /> <strong className="text-white">Share</strong> button in Safari</span>
+          </div>
+          <div className="flex items-center gap-3 text-white/70 text-xs">
+            <div className="w-6 h-6 rounded-full bg-[#00D4AA]/20 text-[#00D4AA] flex items-center justify-center text-[10px] font-bold flex-shrink-0">2</div>
+            <span>Choose <strong className="text-white">Add to Home Screen</strong></span>
+          </div>
+          <div className="flex items-center gap-3 text-white/70 text-xs">
+            <div className="w-6 h-6 rounded-full bg-[#00D4AA]/20 text-[#00D4AA] flex items-center justify-center text-[10px] font-bold flex-shrink-0">3</div>
+            <span>Open the app and <strong className="text-white">sign in once</strong> — you'll stay logged in</span>
+          </div>
+        </div>
+
+        <button onClick={dismiss} className="text-white/40 text-xs hover:text-white/60 transition-colors">
+          Dismiss
+        </button>
       </div>
     )
   }
