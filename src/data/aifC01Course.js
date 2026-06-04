@@ -3,11 +3,13 @@
 // the official AIF-C01 exam guide. Each session ends with a realistic,
 // scenario-based sample exam question and a full explanation.
 //
-// Session schema:
+// Session schema (see .claude/skills/create-study-session.md for authoring guide):
 // {
 //   id, number, module, domain, weight, task, title, duration (minutes),
 //   summary,
 //   objectives: string[],
+//   preLearningCheck: { question, options, correct, note }   — pre-test before content
+//   selfExplanationPrompt: string                            — shown before sample question
 //   sections: [{ heading, body?, bullets?, table?: {headers, rows}, callout?: {type, text} }],
 //   keyTerms: [{ term, def }],
 //   awsServices: [{ name, purpose }],
@@ -54,6 +56,17 @@ const aifC01Course = {
         'Explain training vs inferencing and the four inference types',
         'Identify learning methods (supervised, unsupervised, reinforcement) and data types',
       ],
+      preLearningCheck: {
+        question: 'Before we start — which statement best describes Machine Learning?',
+        options: [
+          'Software where a programmer writes every rule for every decision',
+          'Software that learns patterns from data instead of being explicitly programmed',
+          'A broader category that contains Artificial Intelligence inside it',
+          'Another name for deep learning and neural networks',
+        ],
+        correct: 1,
+        note: 'No pressure if you got that wrong — attempting the question before reading actually helps your brain prepare to absorb the answer. That\'s the point.',
+      },
       sections: [
         {
           heading: 'You\'ve already been using AI for years',
@@ -119,15 +132,54 @@ const aifC01Course = {
       microQuizzes: [
         {
           afterSection: 3,
-          question: 'Based on what you just read about the nested hierarchy, which statement is correct?',
+          question: 'A product manager says their new feature uses "deep learning." Based on the hierarchy, which statements are necessarily true?',
           options: [
-            'Deep learning is a subset of machine learning',
-            'Machine learning is a subset of deep learning',
-            'Generative AI is broader than artificial intelligence',
-            'A "model" is the procedure used to train an "algorithm"',
+            'The feature uses machine learning and is therefore also an AI system',
+            'The feature is a type of generative AI',
+            'The feature does not use machine learning — deep learning is a separate category',
+            'Deep learning and machine learning are interchangeable terms',
           ],
           correct: 0,
-          explainCorrect: 'Correct — the terms nest inside each other: AI ⊃ ML ⊃ deep learning ⊃ generative AI. Deep learning is always a subset of ML, never the other way around.',
+          explainCorrect: 'Correct — the hierarchy nests: AI ⊃ ML ⊃ deep learning. Every deep learning system is also an ML system and an AI system by definition.',
+          elaborativePrompt: 'Why does it matter that these terms nest inside each other rather than sit side by side? Think about what a product team might misunderstand if they treated "ML" and "deep learning" as synonyms.',
+        },
+        {
+          afterSection: 5,
+          question: 'A bank runs a nightly job that scores one million loan applications and flags high-risk ones. No customer is waiting for an instant result. Which inference type is the best fit?',
+          options: [
+            'Real-time inference',
+            'Batch inference',
+            'Serverless inference',
+            'Asynchronous inference',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — batch inference is designed for large volumes processed on a schedule where latency is not critical. The nightly timing and large volume are the giveaways.',
+          elaborativePrompt: 'Why would real-time inference be the wrong choice here even if it technically could work? Think about cost, architecture complexity, and what "the customer is waiting" implies about system design.',
+        },
+        {
+          afterSection: 6,
+          question: 'A startup wants to group website visitors into segments by browsing behaviour, but they have no pre-defined segment names or labels. Which learning method applies?',
+          options: [
+            'Supervised learning with a classification model',
+            'Supervised learning with a regression model',
+            'Unsupervised learning with a clustering algorithm',
+            'Reinforcement learning with a reward function',
+          ],
+          correct: 2,
+          explainCorrect: 'Correct — no pre-defined labels means the model must discover natural groupings on its own. That is clustering, an unsupervised technique.',
+          elaborativePrompt: 'Why does the absence of labels make supervised learning impossible here — not just inconvenient, but fundamentally incompatible? What would you actually need to collect to make supervised learning viable for this same problem?',
+        },
+      ],
+      videos: [
+        {
+          videoId: 'qYNweeDHiyU',
+          title: 'AI, Machine Learning, Deep Learning and Generative AI Explained',
+          channel: 'IBM Technology',
+          // Full video is relevant — covers the exact AI→ML→DL→GenAI hierarchy this session teaches.
+          // startSeconds / endSeconds are optional; omit or set to null to play the full video.
+          startSeconds: null,
+          endSeconds: null,
+          relevance: 'Explains the AI → ML → Deep Learning → Generative AI hierarchy covered in this session, with clear visual analogies.',
         },
       ],
       keyTerms: [
@@ -144,6 +196,7 @@ const aifC01Course = {
         'When the exam describes spiky or unpredictable traffic, the answer for inference is almost always serverless.',
         'Batch inference = large volume + latency not critical. Real-time inference = someone is actively waiting for an answer.',
       ],
+      selfExplanationPrompt: 'Before you try the practice question, think through this in your own words: a colleague asks you to explain the difference between supervised and unsupervised learning, and why that difference determines which one to use. How would you explain it without using the words "supervised" or "unsupervised"?',
       sample: {
         type: 'multiple-choice',
         stem: 'A retailer wants to group its customers into segments based on purchasing behavior. It has transaction data but no predefined segment labels. Which machine learning approach is most appropriate?',

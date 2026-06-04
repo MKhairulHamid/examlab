@@ -450,12 +450,101 @@ function EnhancedSection({ section, index, anchorId, bionic, confidenceVal, onSe
   )
 }
 
+// Pre-test shown BEFORE content. Getting it wrong is intentional — it primes memory.
+// Research: attempting retrieval before study improves retention even on wrong answers.
+function PreLearningCheck({ check, bionic }) {
+  const [selected, setSelected] = useState(null)
+  const [revealed, setRevealed] = useState(false)
+  const isCorrect = revealed && selected === check.correct
+  const txt = (s) => (bionic ? <BionicText text={s} /> : s)
+
+  return (
+    <div style={{
+      background: 'rgba(10,37,64,0.04)', border: `2px solid ${NAVY}`,
+      borderRadius: '1rem', padding: '1.35rem 1.5rem', marginBottom: '2rem',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+        <span style={{
+          fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em',
+          color: 'white', background: NAVY, padding: '0.2rem 0.65rem', borderRadius: '0.35rem',
+        }}>
+          Before you read
+        </span>
+        <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>
+          Attempt this first — it helps your memory
+        </span>
+      </div>
+
+      <p style={{ fontSize: '0.9375rem', fontWeight: 600, color: NAVY, lineHeight: 1.6, marginBottom: '1rem' }}>
+        {txt(check.question)}
+      </p>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem' }}>
+        {check.options.map((opt, idx) => {
+          const isSel = selected === idx
+          const isCorr = check.correct === idx
+          let bg = '#fafbfd', border = '1.5px solid #e2e8f0', color = NAVY
+          if (revealed) {
+            if (isCorr)     { bg = 'rgba(34,197,94,0.09)'; border = '2px solid #22c55e' }
+            else if (isSel) { bg = 'rgba(239,68,68,0.09)'; border = '2px solid #ef4444' }
+          } else if (isSel) { bg = 'rgba(10,37,64,0.08)'; border = `2px solid ${NAVY}` }
+          return (
+            <button
+              key={idx}
+              onClick={() => { if (!revealed) setSelected(idx) }}
+              disabled={revealed}
+              style={{
+                width: '100%', textAlign: 'left', padding: '0.7rem 1rem',
+                background: bg, border, borderRadius: '0.6rem', color,
+                cursor: revealed ? 'default' : 'pointer', fontSize: '0.875rem',
+                fontWeight: isSel ? 600 : 400, transition: 'all 0.15s', lineHeight: 1.5,
+              }}
+            >
+              {revealed && isCorr && '✅ '}{revealed && isSel && !isCorr && '❌ '}{opt}
+            </button>
+          )
+        })}
+      </div>
+
+      {!revealed ? (
+        <button
+          onClick={() => setRevealed(true)}
+          disabled={selected === null}
+          style={{
+            padding: '0.55rem 1.25rem',
+            background: selected !== null ? NAVY : '#e2e8f0',
+            color: selected !== null ? 'white' : '#94a3b8',
+            border: 'none', borderRadius: '0.6rem', fontWeight: 700,
+            fontSize: '0.875rem', cursor: selected !== null ? 'pointer' : 'not-allowed',
+          }}
+        >
+          See answer
+        </button>
+      ) : (
+        <div style={{
+          marginTop: '0.5rem', padding: '0.875rem 1.125rem', borderRadius: '0.75rem',
+          background: isCorrect ? 'rgba(34,197,94,0.07)' : 'rgba(59,130,246,0.06)',
+          border: `1.5px solid ${isCorrect ? '#86efac' : '#93c5fd'}`,
+        }}>
+          <p style={{ fontSize: '0.875rem', fontWeight: 700, color: isCorrect ? '#15803d' : '#1d4ed8', marginBottom: '0.3rem' }}>
+            {isCorrect ? 'You already had it — read on to reinforce why.' : 'Good — your brain is now primed.'}
+          </p>
+          <p style={{ fontSize: '0.8125rem', color: '#475569', lineHeight: 1.6, margin: 0 }}>
+            {check.note}
+          </p>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // Inline active-recall "speed bump" — the following sections stay locked until
 // the learner answers this correctly.
 function SpeedBump({ quiz, cleared, onClear, bionic }) {
   const [selected, setSelected] = useState(null)
   const [checked, setChecked] = useState(false)
   const isCorrect = checked && selected === quiz.correct
+  const txt = (s) => (bionic ? <BionicText text={s} /> : s)
 
   if (cleared) {
     return (
@@ -478,7 +567,7 @@ function SpeedBump({ quiz, cleared, onClear, bionic }) {
         fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em',
         color: TEAL_DARK, marginBottom: '0.6rem',
       }}>
-        🚦 Speed bump · quick recall
+        Quick recall checkpoint
       </div>
       <p style={{ fontSize: '0.9375rem', fontWeight: 600, color: NAVY, lineHeight: 1.6, marginBottom: '1rem' }}>
         {bionic ? <BionicText text={quiz.question} /> : quiz.question}
@@ -528,11 +617,24 @@ function SpeedBump({ quiz, cleared, onClear, bionic }) {
       ) : (
         <div>
           <p style={{
-            fontSize: '0.9rem', fontWeight: 700, marginBottom: '0.5rem',
+            fontSize: '0.9rem', fontWeight: 700, marginBottom: quiz.elaborativePrompt && isCorrect ? '0.75rem' : '0.5rem',
             color: isCorrect ? '#15803d' : '#991b1b',
           }}>
-            {isCorrect ? `🎉 Correct! ${quiz.explainCorrect || ''}` : '❌ Not quite — give it another try.'}
+            {isCorrect ? `Correct! ${quiz.explainCorrect || ''}` : 'Not quite — give it another try.'}
           </p>
+          {isCorrect && quiz.elaborativePrompt && (
+            <div style={{
+              background: 'rgba(0,212,170,0.06)', border: `1.5px solid rgba(0,212,170,0.3)`,
+              borderRadius: '0.75rem', padding: '0.875rem 1.125rem', marginBottom: '0.875rem',
+            }}>
+              <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: TEAL_DARK, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.35rem' }}>
+                Think deeper
+              </div>
+              <p style={{ fontSize: '0.875rem', color: NAVY, lineHeight: 1.65, margin: 0, fontStyle: 'italic' }}>
+                {txt(quiz.elaborativePrompt)}
+              </p>
+            </div>
+          )}
           {isCorrect ? (
             <button
               onClick={onClear}
@@ -573,12 +675,194 @@ function LockedNotice() {
   )
 }
 
-// Assembles the enhanced lesson: enhanced sections + speed bumps, gating any
-// section that follows an uncleared speed bump.
+// YouTube video supplement — shown after exam tips, before the sample question.
+// Uses the YouTube embed API with optional start/end parameters for timeline clips.
+// Only public videos. A disclaimer is always shown.
+function VideoPanel({ videos }) {
+  const [activeIdx, setActiveIdx] = useState(0)
+  const [playing, setPlaying] = useState(false)
+
+  if (!videos || videos.length === 0) return null
+
+  const v = videos[activeIdx]
+  const params = new URLSearchParams({
+    rel: '0',
+    modestbranding: '1',
+    autoplay: playing ? '1' : '0',
+  })
+  if (v.startSeconds != null) params.set('start', v.startSeconds)
+  if (v.endSeconds != null) params.set('end', v.endSeconds)
+  const embedSrc = `https://www.youtube.com/embed/${v.videoId}?${params.toString()}`
+  const watchUrl = v.startSeconds != null
+    ? `https://www.youtube.com/watch?v=${v.videoId}&t=${v.startSeconds}s`
+    : `https://www.youtube.com/watch?v=${v.videoId}`
+
+  return (
+    <div style={{ margin: '1.75rem 0' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+        <div style={{ flex: 1, height: '1px', background: '#e2e8f0' }} />
+        <h4 style={{
+          fontSize: '0.6875rem', fontWeight: 700, color: NAVY,
+          textTransform: 'uppercase', letterSpacing: '0.07em', margin: 0,
+        }}>
+          Watch to reinforce
+        </h4>
+        <div style={{ flex: 1, height: '1px', background: '#e2e8f0' }} />
+      </div>
+
+      {/* Tab row — only shown if multiple videos */}
+      {videos.length > 1 && (
+        <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.875rem', flexWrap: 'wrap' }}>
+          {videos.map((vid, i) => (
+            <button
+              key={vid.videoId}
+              onClick={() => { setActiveIdx(i); setPlaying(false) }}
+              style={{
+                fontSize: '0.75rem', fontWeight: 700, padding: '0.3rem 0.75rem',
+                borderRadius: '0.4rem', cursor: 'pointer',
+                background: i === activeIdx ? NAVY : 'white',
+                color: i === activeIdx ? 'white' : '#64748b',
+                border: `1.5px solid ${i === activeIdx ? NAVY : '#e2e8f0'}`,
+              }}
+            >
+              {vid.title.length > 40 ? vid.title.slice(0, 40) + '…' : vid.title}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Video card */}
+      <div style={{
+        background: 'white', borderRadius: '1rem', overflow: 'hidden',
+        border: '1.5px solid #e2e8f0', boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+      }}>
+        {/* Embed */}
+        <div style={{ position: 'relative', paddingBottom: '56.25%', background: '#0f0f0f' }}>
+          {playing ? (
+            <iframe
+              key={`${v.videoId}-${v.startSeconds}`}
+              src={embedSrc}
+              title={v.title}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }}
+            />
+          ) : (
+            <button
+              onClick={() => setPlaying(true)}
+              style={{
+                position: 'absolute', inset: 0, width: '100%', height: '100%',
+                background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+              }}
+              aria-label={`Play ${v.title}`}
+            >
+              <img
+                src={`https://img.youtube.com/vi/${v.videoId}/hqdefault.jpg`}
+                alt={v.title}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+              />
+              {/* Play button overlay */}
+              <div style={{
+                position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'rgba(0,0,0,0.25)',
+              }}>
+                <div style={{
+                  width: '64px', height: '64px', borderRadius: '50%',
+                  background: 'rgba(255,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
+                }}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                    <path d="M8 5v14l11-7z"/>
+                  </svg>
+                </div>
+              </div>
+              {/* Timeline badge */}
+              {(v.startSeconds != null || v.endSeconds != null) && (
+                <div style={{
+                  position: 'absolute', top: '0.75rem', right: '0.75rem',
+                  background: 'rgba(0,0,0,0.75)', color: 'white',
+                  fontSize: '0.6875rem', fontWeight: 700, padding: '0.25rem 0.6rem',
+                  borderRadius: '0.35rem', backdropFilter: 'blur(4px)',
+                }}>
+                  {v.startSeconds != null
+                    ? `${Math.floor(v.startSeconds / 60)}:${String(v.startSeconds % 60).padStart(2, '0')}`
+                    : '0:00'}
+                  {' → '}
+                  {v.endSeconds != null
+                    ? `${Math.floor(v.endSeconds / 60)}:${String(v.endSeconds % 60).padStart(2, '0')}`
+                    : 'end'}
+                </div>
+              )}
+            </button>
+          )}
+        </div>
+
+        {/* Metadata */}
+        <div style={{ padding: '0.875rem 1.125rem' }}>
+          <div style={{ marginBottom: '0.5rem' }}>
+            <p style={{ fontSize: '0.9375rem', fontWeight: 700, color: NAVY, margin: '0 0 0.2rem' }}>
+              {v.title}
+            </p>
+            <p style={{ fontSize: '0.75rem', color: '#64748b', margin: 0 }}>
+              {v.channel}
+              {(v.startSeconds != null || v.endSeconds != null) && (
+                <span style={{ marginLeft: '0.5rem', color: TEAL_DARK, fontWeight: 600 }}>
+                  · Relevant clip only
+                </span>
+              )}
+            </p>
+          </div>
+          {v.relevance && (
+            <p style={{ fontSize: '0.8125rem', color: '#475569', lineHeight: 1.55, margin: '0 0 0.75rem' }}>
+              {v.relevance}
+            </p>
+          )}
+          <a
+            href={watchUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              fontSize: '0.75rem', fontWeight: 600, color: TEAL_DARK,
+              textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.25rem',
+            }}
+          >
+            Open on YouTube
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/>
+            </svg>
+          </a>
+        </div>
+
+        {/* Disclaimer */}
+        <div style={{
+          padding: '0.6rem 1.125rem', borderTop: '1px solid #f1f5f9',
+          background: '#fafbfd',
+          fontSize: '0.6875rem', color: '#94a3b8', lineHeight: 1.5,
+        }}>
+          This is a public YouTube video. CloudExamLab is not affiliated with the channel and does not host or own this content. We link to it as a free supplementary resource to support your learning.
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Assembles the enhanced lesson: pre-learning check, enhanced sections + speed bumps,
+// gating any section that follows an uncleared speed bump.
 function LessonBody({ session, bionic, confidence, onSetConfidence }) {
   const quizzes = session.microQuizzes || []
   const [cleared, setCleared] = useState([])
   const elems = []
+
+  if (session.preLearningCheck) {
+    elems.push(
+      <PreLearningCheck
+        key="pre-check"
+        check={session.preLearningCheck}
+        bionic={bionic}
+      />
+    )
+  }
 
   for (let i = 0; i < session.sections.length; i++) {
     const blocking = quizzes.find(q => q.afterSection < i && !cleared.includes(q.afterSection))
@@ -1191,7 +1475,10 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
                 </div>
               )}
 
-              {/* Practice question */}
+              {/* Video supplement */}
+              <VideoPanel videos={activeSession.videos} />
+
+              {/* Self-explanation prompt + practice question */}
               {activeSession.sample && (
                 <div style={{ margin: '2.5rem 0 0' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
@@ -1204,6 +1491,19 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
                     </h4>
                     <div style={{ flex: 1, height: '1px', background: '#e2e8f0' }} />
                   </div>
+                  {activeSession.selfExplanationPrompt && (
+                    <div style={{
+                      background: 'rgba(59,130,246,0.05)', border: '1.5px solid rgba(59,130,246,0.2)',
+                      borderRadius: '0.875rem', padding: '1rem 1.25rem', marginBottom: '1.25rem',
+                    }}>
+                      <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#1d4ed8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.35rem' }}>
+                        Explain it first
+                      </div>
+                      <p style={{ fontSize: '0.875rem', color: '#1e293b', lineHeight: 1.65, margin: 0 }}>
+                        {activeSession.selfExplanationPrompt}
+                      </p>
+                    </div>
+                  )}
                   <SampleQuestion sample={activeSession.sample} />
                 </div>
               )}
