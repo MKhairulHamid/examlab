@@ -6,6 +6,7 @@ import useSyncStore from './stores/syncStore'
 import InstallPrompt from './components/pwa/InstallPrompt'
 import OfflineBanner from './components/pwa/OfflineBanner'
 import UpdatePrompt from './components/pwa/UpdatePrompt'
+import ErrorBoundary from './components/pwa/ErrorBoundary'
 
 const Landing = lazy(() => import('./pages/Landing'))
 const Dashboard = lazy(() => import('./pages/Dashboard'))
@@ -78,6 +79,7 @@ function App() {
       <OfflineBanner />
       <InstallPrompt />
       <UpdatePrompt />
+      <ErrorBoundary>
       <Suspense fallback={
         <div className="loading-container">
           <div className="loading-content">
@@ -155,6 +157,7 @@ function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       </Suspense>
+      </ErrorBoundary>
     </BrowserRouter>
   )
 }

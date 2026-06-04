@@ -23,12 +23,13 @@ export default function UpdatePrompt() {
       })
     })
 
-    // When SW activates after SKIP_WAITING, reload
+    // When SW activates after SKIP_WAITING, reload — short delay avoids
+    // firing mid-navigation on iOS which produces a blank page
     let refreshing = false
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (!refreshing) {
         refreshing = true
-        window.location.reload()
+        setTimeout(() => window.location.reload(), 200)
       }
     })
   }, [])
