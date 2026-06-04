@@ -318,11 +318,12 @@ function ConceptList({ bullets }) {
   )
 }
 
-// A teaching section as a self-contained, click-to-expand card.
+// A teaching section as a self-contained, click-to-collapse card.
+// All sections start open and can be minimised — body-only sections collapse to
+// just their heading; sections with bullets/table/callout also hide that content.
 function EnhancedSection({ section, index, anchorId }) {
-  const expandable = !!(section.bullets || section.table || section.callout)
-  const [open, setOpen] = useState(false)
-  const isOpen = expandable ? open : true
+  const hasExtra = !!(section.bullets || section.table || section.callout)
+  const [open, setOpen] = useState(true)   // always start expanded
 
   const hints = []
   if (section.bullets) hints.push(`${section.bullets.length} concept${section.bullets.length === 1 ? '' : 's'}`)
@@ -330,20 +331,24 @@ function EnhancedSection({ section, index, anchorId }) {
   if (section.callout) hints.push('exam tip')
   const metaHint = hints.join(' · ')
 
+  // First paragraph of body — shown as a teaser when collapsed
+  const firstPara = section.body ? section.body.split('\n\n')[0] : null
+
   return (
     <div id={anchorId} style={{
       marginBottom: '1rem', borderRadius: '0.9rem', background: 'white', overflow: 'hidden',
-      scrollMarginTop: '1.5rem',
-      border: `1.5px solid ${isOpen ? 'rgba(0,212,170,0.45)' : '#e8edf3'}`,
-      boxShadow: isOpen ? '0 6px 22px rgba(10,37,64,0.08)' : '0 1px 3px rgba(0,0,0,0.04)',
-      transition: 'all 0.2s',
+      scrollMarginTop: '4rem',
+      border: `1.5px solid ${open ? 'rgba(0,212,170,0.45)' : '#e8edf3'}`,
+      boxShadow: open ? '0 6px 22px rgba(10,37,64,0.08)' : '0 1px 3px rgba(0,0,0,0.04)',
+      transition: 'border-color 0.2s, box-shadow 0.2s',
     }}>
+      {/* Header row — always visible, click to toggle */}
       <button
-        onClick={() => expandable && setOpen(o => !o)}
-        aria-expanded={isOpen}
+        onClick={() => setOpen(o => !o)}
+        aria-expanded={open}
         style={{
           width: '100%', textAlign: 'left', background: 'transparent', border: 'none',
-          cursor: expandable ? 'pointer' : 'default',
+          cursor: 'pointer',
           padding: '1rem 1.15rem', display: 'flex', alignItems: 'flex-start', gap: '0.85rem',
         }}
       >
@@ -360,31 +365,49 @@ function EnhancedSection({ section, index, anchorId }) {
           <h3 style={{ fontSize: '1.0625rem', fontWeight: 700, color: NAVY, lineHeight: 1.3, margin: 0 }}>
             {section.heading}
           </h3>
-          {section.body && section.body.split('\n\n').map((para, i, arr) => (
-            <p key={i} style={{ fontSize: '0.9rem', color: '#475569', lineHeight: 1.6, margin: i === 0 ? '0.35rem 0 0' : '0.6rem 0 0', marginBottom: i < arr.length - 1 ? '0.1rem' : 0 }}>
-              {para}
-            </p>
-          ))}
-          {expandable && !isOpen && metaHint && (
-            <span style={{ display: 'inline-block', fontSize: '0.6875rem', fontWeight: 600, color: '#94a3b8', marginTop: section.body ? '0.4rem' : '0.3rem' }}>
-              {metaHint}
-            </span>
+          {/* When collapsed: show first paragraph as a teaser + content hint */}
+          {!open && (
+            <>
+              {firstPara && (
+                <p style={{
+                  fontSize: '0.8125rem', color: '#94a3b8', lineHeight: 1.5,
+                  margin: '0.3rem 0 0',
+                  overflow: 'hidden', display: '-webkit-box',
+                  WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
+                }}>
+                  {firstPara}
+                </p>
+              )}
+              {metaHint && (
+                <span style={{ display: 'inline-block', fontSize: '0.6875rem', fontWeight: 600, color: '#94a3b8', marginTop: '0.25rem' }}>
+                  {metaHint}
+                </span>
+              )}
+            </>
           )}
         </div>
 
-        {expandable && (
-          <span style={{
-            color: TEAL_DARK, fontSize: '0.9rem', marginTop: '0.35rem', flexShrink: 0,
-            transform: isOpen ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.25s',
-          }}>▼</span>
-        )}
+        <span style={{
+          color: TEAL_DARK, fontSize: '0.9rem', marginTop: '0.35rem', flexShrink: 0,
+          transform: open ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.25s',
+        }}>▼</span>
       </button>
 
-      {isOpen && (
+      {/* Body — hidden when collapsed */}
+      {open && (
         <div style={{ padding: '0 1.15rem 1.15rem', borderTop: '1px solid #f1f5f9' }}>
-          {section.bullets && <ConceptList bullets={section.bullets} />}
-          {section.table && <ContentTable table={section.table} />}
-          {section.callout && <Callout callout={section.callout} />}
+          {section.body && section.body.split('\n\n').map((para, i, arr) => (
+            <p key={i} style={{ fontSize: '0.9rem', color: '#475569', lineHeight: 1.6, margin: i === 0 ? '0.75rem 0 0' : '0.6rem 0 0', marginBottom: i < arr.length - 1 ? '0.1rem' : 0 }}>
+              {para}
+            </p>
+          ))}
+          {hasExtra && (
+            <div style={{ marginTop: section.body ? '0.75rem' : 0 }}>
+              {section.bullets && <ConceptList bullets={section.bullets} />}
+              {section.table && <ContentTable table={section.table} />}
+              {section.callout && <Callout callout={section.callout} />}
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -820,7 +843,14 @@ function LessonBody({ session }) {
           key={`quiz-${i}`}
           quiz={here}
           cleared={cleared.includes(i)}
-          onClear={() => setCleared(c => (c.includes(i) ? c : [...c, i]))}
+          onClear={() => {
+            setCleared(c => (c.includes(i) ? c : [...c, i]))
+            // After the state update re-renders the next section, scroll it into view
+            setTimeout(() => {
+              const nextEl = document.getElementById(`sec-${session.id}-${i + 1}`)
+              if (nextEl) nextEl.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            }, 80)
+          }}
         />
       )
     }
