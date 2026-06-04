@@ -1,20 +1,22 @@
-import React from 'react'
+import React, { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useEffect } from 'react'
 import useAuthStore from './stores/authStore'
 import useSyncStore from './stores/syncStore'
+import InstallPrompt from './components/pwa/InstallPrompt'
+import OfflineBanner from './components/pwa/OfflineBanner'
+import UpdatePrompt from './components/pwa/UpdatePrompt'
 
-// Pages (will be created)
-import Landing from './pages/Landing'
-import Dashboard from './pages/Dashboard'
-import ExamDetail from './pages/ExamDetail'
-import ExamInterface from './pages/ExamInterface'
-import ExamResults from './pages/ExamResults'
-import ResetPassword from './pages/ResetPassword'
-import PaymentSuccess from './pages/PaymentSuccess'
-import StudyMaterial from './pages/StudyMaterial'
-import AdminPage from './pages/AdminPage'
-import AwsAiPractitioner from './pages/AwsAiPractitioner'
+const Landing = lazy(() => import('./pages/Landing'))
+const Dashboard = lazy(() => import('./pages/Dashboard'))
+const ExamDetail = lazy(() => import('./pages/ExamDetail'))
+const ExamInterface = lazy(() => import('./pages/ExamInterface'))
+const ExamResults = lazy(() => import('./pages/ExamResults'))
+const ResetPassword = lazy(() => import('./pages/ResetPassword'))
+const PaymentSuccess = lazy(() => import('./pages/PaymentSuccess'))
+const StudyMaterial = lazy(() => import('./pages/StudyMaterial'))
+const AdminPage = lazy(() => import('./pages/AdminPage'))
+const AwsAiPractitioner = lazy(() => import('./pages/AwsAiPractitioner'))
 
 // Protected Route wrapper
 function ProtectedRoute({ children }) {
@@ -73,6 +75,17 @@ function App() {
 
   return (
     <BrowserRouter>
+      <OfflineBanner />
+      <InstallPrompt />
+      <UpdatePrompt />
+      <Suspense fallback={
+        <div className="loading-container">
+          <div className="loading-content">
+            <div className="spinner"></div>
+            <p>Loading...</p>
+          </div>
+        </div>
+      }>
       <Routes>
         {/* Public routes */}
         <Route path="/" element={<Landing />} />
@@ -141,6 +154,7 @@ function App() {
         {/* Catch all - redirect to home */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      </Suspense>
     </BrowserRouter>
   )
 }
