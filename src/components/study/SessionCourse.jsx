@@ -920,10 +920,14 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
   const done = completedIds.length
   const pct = total > 0 ? Math.round((done / total) * 100) : 0
 
-  // Scroll to top whenever the active session changes — use effect so it fires
-  // after the new content has rendered, not on a fragile timeout.
+  // Instant scroll to top whenever the active session changes.
+  // Must be 'instant' (not 'smooth') — smooth races with the new content
+  // rendering and can leave the user mid-page on the new session.
   useEffect(() => {
-    contentRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
+    if (contentRef.current) {
+      contentRef.current.scrollTop = 0
+    }
+    window.scrollTo(0, 0)
   }, [activeId])
 
   const selectSession = (id) => {
