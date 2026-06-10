@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Navigate } from 'react-router-dom'
 import {
   ArrowRight, Check, X, ChevronDown, Clock, Cloud,
   BrainCircuit, ShieldCheck, Sparkles, Lock, Zap, RefreshCw,
@@ -125,11 +125,12 @@ function Landing() {
   const openSignup = () => { setAuthModalMode('signup'); setShowAuthModal(true) }
   const openLogin  = () => { setAuthModalMode('login');  setShowAuthModal(true) }
 
-  useEffect(() => {
-    const hasAuthTokens = window.location.hash.includes('access_token') ||
-      window.location.hash.includes('refresh_token')
-    if (user && !hasAuthTokens) navigate('/dashboard')
-  }, [user, navigate])
+  // Auth is already resolved by App before Landing renders, so redirect synchronously.
+  const hasAuthTokens = window.location.hash.includes('access_token') ||
+    window.location.hash.includes('refresh_token')
+  if (user && !hasAuthTokens) {
+    return <Navigate to="/dashboard" replace />
+  }
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8)

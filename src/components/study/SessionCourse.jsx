@@ -869,11 +869,29 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
   const [completedIds, setCompletedIds] = useState([])
   // clearedCheckpoints: { [sessionId]: number[] } — which afterSection indices are cleared
   const [clearedCheckpoints, setClearedCheckpoints] = useState({})
-  const [activeId, setActiveId] = useState(course.sessions[0]?.id)
+
+  // Lazy-initialise to the first incomplete session from localStorage so that
+  // "Continue" from the dashboard lands on the right session immediately,
+  // even before the async DB load completes.
+  const [activeId, setActiveId] = useState(() => {
+    try {
+      const saved = localStorage.getItem(`course-progress-${course.slug}`)
+      if (saved) {
+        const ids = JSON.parse(saved)
+        const resume = course.sessions.find(s => !ids.includes(s.id))
+        return resume?.id ?? course.sessions[0]?.id
+      }
+    } catch { /* ignore */ }
+    return course.sessions[0]?.id
+  })
+
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
   const contentRef = useRef(null)
   const completedRef       = useRef([])
   const checkpointsRef     = useRef({})
+  // Track whether the user manually picked a session so a cross-device DB
+  // load doesn't override an intentional navigation.
+  const userNavigatedRef   = useRef(false)
 
   const persistToDb = (completed, checkpoints) => {
     if (!userId) return
@@ -912,6 +930,13 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
       setClearedCheckpoints(checkpoints); checkpointsRef.current  = checkpoints
       try { localStorage.setItem(storageKey,     JSON.stringify(completed))   } catch { /* ignore */ }
       try { localStorage.setItem(checkpointsKey, JSON.stringify(checkpoints)) } catch { /* ignore */ }
+
+      // If the user hasn't manually navigated, jump to first incomplete session
+      // (handles cross-device resume where localStorage was empty/stale).
+      if (!userNavigatedRef.current) {
+        const resume = course.sessions.find(s => !completed.includes(s.id))
+        if (resume) setActiveId(resume.id)
+      }
     })
     return () => { cancelled = true }
   }, [userId, course.slug, storageKey, checkpointsKey])
@@ -960,6 +985,7 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
   }, [activeId])
 
   const selectSession = (id) => {
+    userNavigatedRef.current = true
     setActiveId(id)
     setMobileSidebarOpen(false)
   }

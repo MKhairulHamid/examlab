@@ -29,7 +29,16 @@
     </script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Pre-React loading shell — replaced once JS hydrates -->
+      <div id="preload-shell" style="position:fixed;inset:0;background:linear-gradient(135deg,#0A2540 0%,#1A3B5C 100%);display:flex;align-items:center;justify-content:center;z-index:9999;">
+        <div style="text-align:center;color:white;">
+          <div style="width:4rem;height:4rem;border-radius:9999px;border:3px solid transparent;border-bottom-color:#00D4AA;animation:_pl-spin 0.8s linear infinite;margin:0 auto 1rem;"></div>
+          <p style="font-size:0.9375rem;opacity:0.7;margin:0;">Loading&hellip;</p>
+        </div>
+      </div>
+      <style>@keyframes _pl-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}</style>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

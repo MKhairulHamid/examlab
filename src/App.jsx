@@ -19,21 +19,20 @@ const StudyMaterial = lazy(() => import('./pages/StudyMaterial'))
 const AdminPage = lazy(() => import('./pages/AdminPage'))
 const AwsAiPractitioner = lazy(() => import('./pages/AwsAiPractitioner'))
 
-// Protected Route wrapper
+// Protected Route wrapper — by the time this renders, auth loading is already done
 function ProtectedRoute({ children }) {
-  const { user, loading } = useAuthStore()
+  const { user } = useAuthStore()
 
-  // Check if URL contains auth tokens (from magic link or OAuth callback)
+  // Handle magic link / OAuth callback tokens still in the hash
   const hasAuthTokens = window.location.hash.includes('access_token') ||
     window.location.hash.includes('refresh_token')
 
-  // If we're still loading OR processing auth tokens, show loading state
-  if (loading || hasAuthTokens) {
+  if (hasAuthTokens) {
     return (
       <div className="loading-container">
         <div className="loading-content">
           <div className="spinner"></div>
-          <p>{hasAuthTokens ? 'Signing you in...' : 'Loading...'}</p>
+          <p>Signing you in...</p>
         </div>
       </div>
     )
@@ -47,32 +46,35 @@ function ProtectedRoute({ children }) {
 }
 
 function App() {
+  const { loading: authLoading } = useAuthStore()
   const initializeAuth = useAuthStore(state => state.initialize)
   const initializeSync = useSyncStore(state => state.initialize)
 
   useEffect(() => {
-    // Initialize auth state
     initializeAuth()
-
-    // Initialize sync monitoring
     const unsubscribe = initializeSync()
 
-    // Register service worker for PWA
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js')
-        .then(registration => {
-          // Service worker registered successfully
-        })
-        .catch(error => {
-          // Service worker registration failed
-        })
+      navigator.serviceWorker.register('/sw.js').catch(() => {})
     }
 
-    // Cleanup
     return () => {
       if (unsubscribe) unsubscribe()
     }
   }, [initializeAuth, initializeSync])
+
+  // Wait for auth check before rendering routes — prevents the Landing page
+  // flashing briefly for logged-in users before the redirect fires.
+  if (authLoading) {
+    return (
+      <div className="loading-container">
+        <div className="loading-content">
+          <div className="spinner"></div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <BrowserRouter>
