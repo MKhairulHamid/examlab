@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Study Materials Standard — CloudExamLab Wiki</title>
+  <style>
+    :root {
+      --sidebar-w: 255px;
+      --sidebar-bg: #0f172a;
+      --sidebar-text: #94a3b8;
+      --sidebar-active-text: #38bdf8;
+      --sidebar-active-bg: rgba(56,189,248,0.08);
+      --sidebar-hover: #1e293b;
+      --accent: #2563eb;
+      --accent-light: #eff6ff;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --heading: #0f172a;
+      --code-bg: #1e293b;
+      --code-text: #e2e8f0;
+      --stripe: #f8fafc;
+      --warn-bg: #fef2f2;
+      --warn-border: #ef4444;
+      --tip-bg: #f0fdf4;
+      --tip-border: #22c55e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--text);
+      line-height: 1.65;
+      background: #fff;
+    }
+
+    /* ── Sidebar ── */
+    #sidebar {
+      position: fixed; top: 0; left: 0;
+      width: var(--sidebar-w); height: 100vh;
+      background: var(--sidebar-bg);
+      overflow-y: auto; z-index: 100;
+      display: flex; flex-direction: column;
+    }
+    #sidebar::-webkit-scrollbar { width: 4px; }
+    #sidebar::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+    .sb-header {
+      padding: 20px 16px 14px;
+      border-bottom: 1px solid #1e293b;
+    }
+    .sb-logo { font-size: 13px; font-weight: 700; color: #f1f5f9; letter-spacing: .06em; text-transform: uppercase; }
+    .sb-sub  { font-size: 11px; color: var(--sidebar-text); margin-top: 2px; }
+    .sb-group { padding: 10px 0 2px; }
+    .sb-group-label {
+      font-size: 10px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: #475569;
+      padding: 0 16px; margin-bottom: 3px;
+    }
+    .sb-item {
+      display: block; padding: 6px 16px;
+      font-size: 12.5px; color: var(--sidebar-text);
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: background .12s, color .12s;
+    }
+    .sb-item:hover { background: var(--sidebar-hover); color: #f1f5f9; }
+    .sb-item.active { color: var(--sidebar-active-text); border-left-color: var(--sidebar-active-text); background: var(--sidebar-active-bg); }
+    .sb-item.ext { color: #60a5fa; }
+    .sb-item.ext::after { content: ' ↗'; font-size: 10px; }
+
+    /* ── Main ── */
+    #main {
+      margin-left: var(--sidebar-w);
+      padding: 48px 64px 96px;
+      max-width: calc(var(--sidebar-w) + 880px);
+    }
+
+    /* ── Section ── */
+    .section { padding-top: 52px; border-top: 1px solid var(--border); margin-top: 28px; }
+    .section:first-of-type { border-top: none; margin-top: 0; padding-top: 0; }
+
+    /* ── Typography ── */
+    h1 { font-size: 27px; font-weight: 700; color: var(--heading); margin-bottom: 10px; }
+    h2 { font-size: 19px; font-weight: 700; color: var(--heading); margin-top: 38px; margin-bottom: 14px; }
+    h3 { font-size: 15px; font-weight: 600; color: var(--heading); margin-top: 24px; margin-bottom: 8px; }
+    p  { margin-bottom: 12px; }
+    a  { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ul, ol { padding-left: 22px; margin-bottom: 12px; }
+    li { margin-bottom: 4px; }
+    hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+    .section-meta { font-size: 14px; color: var(--text-muted); margin-bottom: 26px; margin-top: -4px; }
+
+    /* ── Chip label ── */
+    .chip {
+      display: inline-block; padding: 2px 9px; border-radius: 4px;
+      font-size: 10px; font-weight: 700; letter-spacing: .05em;
+      text-transform: uppercase; margin-bottom: 6px;
+    }
+    .chip-standard { background: #dbeafe; color: #0c4a6e; }
+
+    /* ── Tables ── */
+    .tw { overflow-x: auto; margin: 16px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    th {
+      background: #f1f5f9; padding: 7px 12px;
+      text-align: left; font-size: 11px; font-weight: 700;
+      color: var(--text-muted); border-bottom: 2px solid var(--border);
+      white-space: nowrap;
+    }
+    td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:nth-child(even) td { background: var(--stripe); }
+
+    /* ── Code ── */
+    code {
+      font-family: 'SF Mono','Fira Code','Cascadia Code',Consolas,monospace;
+      font-size: 12px; background: #f1f5f9; color: #be185d;
+      padding: 2px 5px; border-radius: 3px;
+    }
+    pre {
+      background: var(--code-bg); color: var(--code-text);
+      padding: 18px 20px; border-radius: 8px;
+      overflow-x: auto; margin: 14px 0;
+      font-size: 12.5px; line-height: 1.65;
+    }
+    pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+
+    /* ── Callouts ── */
+    .callout {
+      padding: 12px 16px; border-radius: 6px;
+      margin: 14px 0; font-size: 13.5px;
+    }
+    .callout-note    { background: var(--accent-light); border-left: 4px solid var(--accent); }
+    .callout-warning { background: var(--warn-bg);      border-left: 4px solid var(--warn-border); }
+    .callout-tip     { background: var(--tip-bg);       border-left: 4px solid var(--tip-border); }
+
+    /* ── Badge ── */
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 10px;
+      font-size: 11px; font-weight: 600;
+    }
+    .badge-research { background: #f0fdf4; color: #15803d; }
+    .badge-impl     { background: #fef3c7; color: #b45309; }
+
+    /* ── Page title ── */
+    .page-title { margin-bottom: 36px; }
+    .page-title h1 { font-size: 30px; margin-bottom: 8px; }
+    .page-title p  { font-size: 15px; color: var(--text-muted); margin: 0; }
+
+    /* ── Numbered steps ── */
+    .steps { counter-reset: step; list-style: none; padding: 0; margin-bottom: 14px; }
+    .steps li {
+      counter-increment: step;
+      padding: 7px 0 7px 36px; position: relative;
+      border-left: 2px solid var(--border); margin-left: 11px;
+    }
+    .steps li::before {
+      content: counter(step);
+      position: absolute; left: -11px; top: 7px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--accent); color: #fff;
+      font-size: 10px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── Jump-to-top ── */
+    #top-btn {
+      position: fixed; bottom: 28px; right: 28px;
+      background: var(--accent); color: #fff;
+      border: none; border-radius: 50%; width: 38px; height: 38px;
+      font-size: 18px; cursor: pointer; display: none;
+      align-items: center; justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+      transition: opacity .2s;
+    }
+    #top-btn:hover { background: #1d4ed8; }
+  </style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<nav id="sidebar">
+  <div class="sb-header">
+    <div class="sb-logo">CloudExamLab</div>
+    <div class="sb-sub">Developer Wiki</div>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Start here</div>
+    <a class="sb-item" href="index.html#intro">Overview</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Platform</div>
+    <a class="sb-item" href="index.html#platform-overview">What is CloudExamLab</a>
+    <a class="sb-item" href="index.html#user-flow">User Flow</a>
+    <a class="sb-item" href="index.html#authentication">Authentication</a>
+    <a class="sb-item" href="index.html#access-control">Access Control</a>
+    <a class="sb-item" href="index.html#exam-flow">Exam Flow</a>
+    <a class="sb-item" href="index.html#subscription">Subscription &amp; Payment</a>
+    <a class="sb-item" href="index.html#admin">Admin</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Technical</div>
+    <a class="sb-item" href="index.html#architecture">Architecture</a>
+    <a class="sb-item" href="index.html#database">Database Schema</a>
+    <a class="sb-item" href="index.html#edge-functions">Edge Functions</a>
+    <a class="sb-item" href="index.html#state-management">State Management</a>
+    <a class="sb-item" href="index.html#offline-sync">Offline &amp; Sync</a>
+    <a class="sb-item" href="index.html#environment">Environment Setup</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">UI &amp; Content</div>
+    <a class="sb-item" href="design-system.html">Design System</a>
+    <a class="sb-item active" href="study-materials-standard.html">Study Materials Standard</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Reference</div>
+    <a class="sb-item ext" href="aws-certification-roadmap.html">AWS Cert Roadmap</a>
+  </div>
+</nav>
+
+<!-- ══ MAIN ══ -->
+<main id="main">
+
+  <!-- INTRO -->
+  <div class="page-title" id="intro">
+    <h1>Study Materials Standard</h1>
+    <p>Research-backed session schema and content guidelines for building certification exam prep courses. All sessions follow <code>src/data/*.js</code> data files and the <code>SessionCourse.jsx</code> renderer.</p>
+  </div>
+
+  <div class="callout callout-note">
+    <strong>Why this standard exists:</strong> Research from Dunlosky et al. (2013) ranked study techniques by effectiveness. Only practice testing and distributed practice rated HIGH. This standard bakes in high-utility techniques so every session is effective by default, preventing low-value study methods.
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       OVERVIEW
+  ═══════════════════════════════════════════════════ -->
+  <div class="section" id="overview">
+    <span class="chip chip-standard">Standard</span>
+    <h1>Overview</h1>
+    <p class="section-meta">What makes a study session research-backed and how it maps to the exam prep cycle.</p>
+
+    <h2>The Research Foundation</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Technique</th><th>Research rating</th><th>Implementation in sessions</th></tr></thead>
+      <tbody>
+        <tr><td>Practice testing / retrieval</td><td><span class="badge badge-research">HIGH</span></td><td><code>preLearningCheck</code> + <code>microQuizzes</code> + sample question</td></tr>
+        <tr><td>Spaced / distributed practice</td><td><span class="badge badge-research">HIGH</span></td><td>Checkpoint state persisted to Supabase; cross-device sync</td></tr>
+        <tr><td>Elaborative interrogation</td><td><span class="badge badge-impl">Moderate</span></td><td>"Why?" prompts after SpeedBump quiz correct answers</td></tr>
+        <tr><td>Self-explanation</td><td><span class="badge badge-impl">Moderate</span></td><td>Prompt shown before the sample question</td></tr>
+        <tr><td>Interleaving</td><td><span class="badge badge-impl">Moderate</span></td><td>Mix topics from previous sessions in later practice</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Session Lifecycle</h2>
+    <ol class="steps">
+      <li><strong>Pre-test (preLearningCheck)</strong> — One question on the session's core concept. Shown before any teaching content. Research shows attempting retrieval before studying improves retention even on wrong answers.</li>
+      <li><strong>Teaching sections</strong> — Narrative + structured content (bullets, tables, callouts). Sections 0–1 are pure prose; sections 2+ mix narrative leads with structured detail.</li>
+      <li><strong>Retrieval checkpoints (microQuizzes)</strong> — 1 quiz per 2–3 sections. Scenario-based multiple choice. Learner must pass to unlock next section. State persisted to Supabase.</li>
+      <li><strong>Self-explanation prompt</strong> — Shown before the final practice question. Learner reflects on the core concept without seeing an answer yet.</li>
+      <li><strong>Sample exam question</strong> — Realistic business/scenario stem (never definition recall). Includes per-option explanation of why each choice is right or wrong.</li>
+      <li><strong>Video + reference material</strong> — Supplementary YouTube video + key terms + AWS services + exam tips. Shown after the sample question.</li>
+    </ol>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       SESSION SCHEMA
+  ═══════════════════════════════════════════════════ -->
+  <div class="section" id="schema">
+    <span class="chip chip-standard">Schema</span>
+    <h1>Full Session Schema</h1>
+    <p class="section-meta">The object structure for every session in <code>src/data/*.js</code>. All fields are typed and required unless noted.</p>
+
+    <h2>Identity &amp; Metadata</h2>
+    <pre><code>{
+  id: 'd1-s1',                         // Exam ID + session number (e.g. 'd1-s1' = Domain 1, Session 1)
+  number: 1,                           // Sequential session number (1–16 for AIF-C01)
+  module: 'Domain 1 · Fundamentals of AI &amp; ML',
+  domain: 'd1',                        // Module ID for access gating
+  weight: '20%',                       // Exam domain weight (e.g. '20%' or '—' for non-exam sessions)
+  task: 'Task 1.1',                    // Official exam task statement ID
+  title: 'AI, ML &amp; Deep Learning — Core Concepts',
+  duration: 30,                        // Minutes; target 25–35
+  summary: 'Start from zero. We'll build...'  // 1–2 sentences, conversational, no jargon
+}</code></pre>
+
+    <h2>Learning Objectives &amp; Pre-Test</h2>
+    <pre><code>  objectives: [
+    'Define AI, ML, deep learning, neural networks, NLP, and computer vision',
+    'Distinguish AI vs ML vs deep learning vs generative AI',
+    '...'  // 3–5 bullets starting with a verb (Define / Explain / Select / Compare)
+  ],
+
+  preLearningCheck: {
+    question: 'Before we start — which statement best describes Machine Learning?',
+    options: [
+      'Software where a programmer writes every rule...',
+      'Software that learns patterns from data...',
+      '...'  // 4 plausible options — all defensible before reading the content
+    ],
+    correct: 1,  // 0-indexed
+    note: 'No pressure if you got that wrong — attempting the question before reading...'  // Normalizes failure
+  }
+}</code></pre>
+
+    <h2>Teaching Sections</h2>
+    <pre><code>  sections: [
+    {
+      heading: 'You've already been using AI for years',
+      body: 'Netflix recommending what to watch...\n\nThis session pulls back the curtain...',  // '\n\n' = paragraph break
+      // NO bullets or table on sections 0–1 — narrative only
+    },
+    {
+      heading: 'The breakthrough: let the machine learn the rules',
+      body: 'Machine learning flips the model...',
+      // Still narrative — no structured content yet
+    },
+    {
+      heading: 'How AI, ML, and deep learning fit together',
+      body: 'These terms are not interchangeable...',  // Lead sentence — 1–2 sentences only
+      bullets: [
+        'Artificial Intelligence (AI) — the broad field...',
+        'Machine Learning (ML) — a subset...',
+        '...'  // 'Term — definition' format creates concept cards in the UI
+      ],
+      callout: { type: 'tip', text: 'Exam shortcut: if a question asks...' }
+    },
+    {
+      heading: 'Three ways a machine can learn',
+      table: {
+        headers: ['Learning method', 'How it works', 'Example'],
+        rows: [
+          ['Supervised learning', 'Model learns from labeled examples', 'Spam filter trained on labeled emails'],
+          ['Unsupervised learning', 'Model finds patterns without labels', 'Customer clustering by purchase history'],
+          ['...' /* Each table = a decision the exam forces */ ]
+        ]
+      }
+    }
+    // ... more sections
+  ]
+}</code></pre>
+
+    <h2>Retrieval Checkpoints (SpeedBumps)</h2>
+    <pre><code>  microQuizzes: [
+    {
+      afterSection: 3,  // 0-indexed; insert after this section
+      question: 'A product manager says their new feature uses "deep learning." Based on the hierarchy...',
+      options: [
+        'The feature uses machine learning and is therefore...',
+        'The feature is a type of generative AI',
+        'The feature does not use machine learning...',
+        'Deep learning and machine learning are interchangeable'
+      ],
+      correct: 0,  // 0-indexed
+      explainCorrect: 'Correct — the hierarchy nests: AI ⊃ ML ⊃ deep learning...',
+      elaborativePrompt: 'Why does it matter that these terms nest inside each other...' // WHY or HOW, no answer expected
+    },
+    {
+      afterSection: 5,
+      question: 'A bank runs a nightly job that scores one million loan applications...',
+      options: [ /* ... */ ],
+      correct: 1,
+      explainCorrect: 'Correct — batch inference is designed for large volumes...',
+      elaborativePrompt: 'Why would real-time inference be the wrong choice...'
+    }
+    // Minimum: 1 quiz per 2 sections
+  ]
+}</code></pre>
+
+    <h2>Self-Explanation &amp; Sample Question</h2>
+    <pre><code>  selfExplanationPrompt: 'Before you try the practice question, think through this in your own words: a colleague asks you to explain the difference between supervised and unsupervised learning...',
+
+  sample: {
+    type: 'multiple-choice',  // or 'multiple-response' for "select N"
+    stem: 'A retailer wants to group its customers into segments based on purchasing behavior. It has transaction data but no predefined segment labels. Which machine learning approach is most appropriate?',
+    options: [
+      'Supervised learning with a classification algorithm',
+      'Unsupervised learning with a clustering algorithm',
+      'Reinforcement learning with a reward function',
+      'Supervised learning with a regression algorithm'
+    ],
+    correct: 1,  // 0-indexed, or [0, 2] for multiple-response
+    explanation: {
+      summary: 'No predefined labels means the model must discover natural groupings on its own...',
+      perOption: [
+        'Classification is supervised and needs labelled examples...',
+        'Correct — clustering is unsupervised and finds natural groupings...',
+        'Reinforcement learning is designed for sequential decision-making...',
+        'Regression predicts a continuous numeric value...'
+      ],
+      link: 'Domain 1 · Task 1.1 — Learning methods'
+    }
+  }
+}</code></pre>
+
+    <h2>Supplementary Content</h2>
+    <pre><code>  videos: [
+    {
+      videoId: 'qYNweeDHiyU',  // YouTube ID only — no URL
+      title: 'AI, Machine Learning, Deep Learning and Generative AI Explained',
+      channel: 'IBM Technology',
+      startSeconds: null,  // null = full video; otherwise clip to segment
+      endSeconds: null,
+      relevance: 'Explains the AI → ML → Deep Learning → Generative AI hierarchy...'
+    }
+    // Only public YouTube videos. Disclaimer auto-rendered.
+  ],
+
+  keyTerms: [
+    { term: 'Training', def: 'The process of feeding labelled examples to a model...' },
+    { term: 'Inferencing', def: 'Using a finished, trained model to make predictions...' }
+    // 4–6 key terms per session
+  ],
+
+  awsServices: [
+    { name: 'Amazon SageMaker AI', purpose: 'End-to-end ML lifecycle — build, train, deploy...' }
+    // Only services mentioned in THIS session
+  ],
+
+  examTips: [
+    '"Learns from data instead of being explicitly programmed" is the exam\'s definition...',
+    'Supervised = labeled data. Unsupervised = no labels. Reinforcement = rewards...',
+    'When the exam describes spiky or unpredictable traffic → serverless.'
+    // Format: "[signal in question] → [answer]"
+    // 3–5 tips per session
+  ]
+}</code></pre>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       WRITING GUIDELINES
+  ═══════════════════════════════════════════════════ -->
+  <div class="section" id="guidelines">
+    <span class="chip chip-standard">Guidelines</span>
+    <h1>Writing Guidelines</h1>
+    <p class="section-meta">How to author each section type for clarity, retention, and exam readiness.</p>
+
+    <h2>Section Narrative Arc</h2>
+    <ul>
+      <li><strong>Sections 0–1 (pure narrative):</strong> Real-world story first, then the problem it illustrates. Goal: make learners feel the need for the concept before defining it. No bullets, no tables.</li>
+      <li><strong>Section 2 (bridge):</strong> One short narrative paragraph, then transition to first structured content (usually a table or bullets).</li>
+      <li><strong>Sections 3+ (fully structured):</strong> Lead with one sentence, then bullets/table/callout. Every section is self-contained and scannable.</li>
+    </ul>
+
+    <h2>Content Principles</h2>
+    <ul>
+      <li><strong>Conversational tone throughout.</strong> Write for someone smart but new to the domain. Avoid jargon until it's defined.</li>
+      <li><strong>Every table = a decision the exam will force.</strong> Tables should answer "when to use X vs Y" — not just list facts.</li>
+      <li><strong>Every tip callout = one rule that resolves a class of exam questions.</strong> One sentence.</li>
+      <li><strong>Every warning callout = the most common distractor and why students fall for it.</strong></li>
+      <li><strong>Paragraph breaks matter.</strong> Split long prose with <code>\n\n</code> into 2–3 focused paragraphs. No walls of text.</li>
+    </ul>
+
+    <h2>preLearningCheck</h2>
+    <ul>
+      <li>Tests the session's <strong>primary concept</strong> — not a detail, not trivia.</li>
+      <li>All four options must be plausible before reading.</li>
+      <li><code>note</code> must normalize failure: "Attempting this before reading improves retention even on wrong answers."</li>
+    </ul>
+
+    <h2>microQuizzes</h2>
+    <ul>
+      <li><strong>Minimum:</strong> 1 per 2 sections. <strong>Ideal:</strong> 1 per 2–3 sections.</li>
+      <li>Question must be <strong>scenario-based</strong> — not "what is the definition of X?"</li>
+      <li><code>elaborativePrompt</code> asks <strong>why</strong> or <strong>how</strong>, never <strong>what</strong>. It has no answer in the UI — it triggers reflection.</li>
+      <li>Good elaborativePrompt: "Why would using a supervised model here require more setup than unsupervised?"</li>
+      <li>Bad elaborativePrompt: "What is supervised learning?"</li>
+    </ul>
+
+    <h2>selfExplanationPrompt</h2>
+    <ul>
+      <li>One or two sentences placed before the sample question.</li>
+      <li>Frame as: "Before trying the question, explain to yourself: [core contrast or concept]."</li>
+      <li>Do <strong>not</strong> hint at the sample question's answer.</li>
+    </ul>
+
+    <h2>examTips</h2>
+    <ul>
+      <li>Format: <code>"[signal in question stem] → [answer]"</code></li>
+      <li>Each tip neutralizes a specific distractor.</li>
+      <li>3–5 tips; quality over quantity.</li>
+    </ul>
+
+    <h2>Sample Question</h2>
+    <ul>
+      <li><strong>Stem:</strong> Always a business or engineering scenario. A company / developer / team wants X. Which approach fits best?</li>
+      <li><strong>Never:</strong> "Which of the following is the definition of…?"</li>
+      <li><strong>perOption:</strong> Every wrong option needs an explanation of <strong>why</strong> it's wrong. This is where the deepest exam prep happens.</li>
+    </ul>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       CHECKLIST
+  ═══════════════════════════════════════════════════ -->
+  <div class="section" id="checklist">
+    <span class="chip chip-standard">QA</span>
+    <h1>Content Checklist</h1>
+    <p class="section-meta">Verify before committing any session.</p>
+
+    <h2>Structure</h2>
+    <ul>
+      <li>☐ <code>preLearningCheck</code> tests the session's single most important concept</li>
+      <li>☐ At least 1 <code>microQuiz</code> per 2 teaching sections</li>
+      <li>☐ Every <code>microQuiz</code> has an <code>elaborativePrompt</code> asking WHY or HOW</li>
+      <li>☐ Sections 0–1 are pure narrative (no bullets/table)</li>
+      <li>☐ Long body strings use <code>\n\n</code> for paragraph breaks — no single wall of text</li>
+      <li>☐ <code>selfExplanationPrompt</code> is present and doesn't hint at the sample answer</li>
+    </ul>
+
+    <h2>Content Quality</h2>
+    <ul>
+      <li>☐ <code>videos</code> has at least one relevant public YouTube video</li>
+      <li>☐ Every AWS service mentioned in sections appears in <code>awsServices[]</code></li>
+      <li>☐ <code>sample</code> stem is scenario-based, not definition-recall</li>
+      <li>☐ <code>sample.explanation.perOption</code> explains WHY each wrong answer is wrong</li>
+      <li>☐ <code>examTips</code> follow the "[signal] → [answer]" format</li>
+    </ul>
+
+    <h2>Common Mistakes to Avoid</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Mistake</th><th>Why it fails</th><th>Fix</th></tr></thead>
+      <tbody>
+        <tr><td>All sections start with bullets</td><td>Learners skip to bullets without context</td><td>Sections 0–1 must be pure prose with a real-world hook</td></tr>
+        <tr><td><code>preLearningCheck</code> tests a detail</td><td>Doesn't prime the most important memory trace</td><td>Test the ONE thing you most want them to remember</td></tr>
+        <tr><td><code>microQuiz</code> is definition recall</td><td>Low cognitive depth; won't transfer to exam</td><td>Rewrite as scenario: "A company needs to… which approach?"</td></tr>
+        <tr><td><code>elaborativePrompt</code> has an obvious answer</td><td>Learner skips the reflection</td><td>Make it genuinely open: "Why does X exist at all, given Y?"</td></tr>
+        <tr><td>Single wall-of-text <code>body</code> paragraph</td><td>Hard to read; no visual breathing room</td><td>Split with <code>\n\n</code> into 2–3 short focused paragraphs</td></tr>
+        <tr><td>Sample question stem is a definition</td><td>Not what the real exam looks like</td><td>Always use a business/engineering scenario</td></tr>
+        <tr><td><code>examTips</code> list facts instead of decision rules</td><td>Learner still has to figure out when to apply them</td><td>Format as "[when you see this signal] → [do this]"</td></tr>
+      </tbody>
+    </table></div>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       EXAMPLES
+  ═══════════════════════════════════════════════════ -->
+  <div class="section" id="examples">
+    <span class="chip chip-standard">Reference</span>
+    <h1>Real Examples</h1>
+    <p class="section-meta">Live sessions that follow this standard. Use these as templates.</p>
+
+    <h2>AIF-C01 Course (<code>src/data/aifC01Course.js</code>)</h2>
+    <p>All 16 sessions follow the standard. Key examples:</p>
+    <ul>
+      <li><strong>Session 1:</strong> d1-s1 — Covers AI/ML/Deep Learning hierarchy. Opens with Netflix &amp; spam filters (real-world story), builds to formal definitions.</li>
+      <li><strong>Session 3:</strong> d1-s3 — ML pipeline &amp; metrics. Opens with the story of a rejected loan applicant asking "why?" (connects to interpretability later in Domain 4).</li>
+      <li><strong>Session 4:</strong> d2-s4 — Generative AI fundamentals. Starts with "the most powerful autocomplete ever built" → tokens/embeddings/transformers.</li>
+      <li><strong>Session 8:</strong> d3-s8 — RAG. Opens with "the open-book exam" analogy: two students, same knowledge, but one has access to relevant sources at question time.</li>
+    </ul>
+
+    <h2>Why This Pattern Works for Exams</h2>
+    <ul>
+      <li><strong>Spaced retrieval:</strong> Pre-test → teaching → microQuizzes → sample question. Multiple retrieval cycles, spaced over a single session.</li>
+      <li><strong>Transfer to exam format:</strong> Sample questions use the exact same scenario-based stem format as real exams. Exam tips encode decision rules learners can apply in 80 seconds.</li>
+      <li><strong>Reducing cognitive load:</strong> Narrative first (low barrier to entry) → structured content (scannable). Learners get the context before they see the reference material.</li>
+      <li><strong>Reducing hallucination:</strong> Elaborative prompts force learners to *generate* explanations (high-utility technique), not just read ours. This deepens encoding and surfaces gaps in understanding.</li>
+    </ul>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       REFERENCE
+  ═══════════════════════════════════════════════════ -->
+  <div class="section" id="reference">
+    <span class="chip chip-standard">Reference</span>
+    <h1>Implementation Files</h1>
+    <p class="section-meta">Where the standard lives in the codebase.</p>
+
+    <h2>Source</h2>
+    <ul>
+      <li><code>~/.claude/skills/create-study-session.md</code> — The authoritative skill file with full schema + guidelines. Check here for edge cases.</li>
+    </ul>
+
+    <h2>Data</h2>
+    <ul>
+      <li><code>src/data/aifC01Course.js</code> — AWS Certified AI Practitioner course. 16 sessions, all following the standard.</li>
+      <li><code>src/data/*.js</code> — Other certification courses (DVA, Azure, GCP). Same schema.</li>
+    </ul>
+
+    <h2>Components</h2>
+    <ul>
+      <li><code>src/components/study/SessionCourse.jsx</code> — Renders the standard session structure. Handles navigation, collapsible sections, microQuiz state, video embeds.</li>
+      <li><code>src/components/study/PreLearningCheck.jsx</code> — Pre-test component. Prevents cheating with state reset between attempts.</li>
+      <li><code>src/components/study/SpeedBump.jsx</code> — microQuiz component. Locks next section until passed. Persists state to Supabase.</li>
+      <li><code>src/components/study/ExamQuestion.jsx</code> — Sample question + per-option explanations.</li>
+    </ul>
+
+    <h2>Research Reference</h2>
+    <ul>
+      <li><strong>Dunlosky et al. (2013).</strong> "Improving Students' Learning With Effective Learning Techniques: Promising Directions From Cognitive and Educational Psychology." <em>Psychological Science in the Public Interest</em>, 14(1), 4–58. <a href="https://doi.org/10.1177/1529100612453266">https://doi.org/10.1177/1529100612453266</a></li>
+      <li>The definitive meta-analysis of study techniques. Only practice testing and distributed practice rated HIGH utility.</li>
+    </ul>
+
+</main>
+
+<button id="top-btn" title="Back to top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+  const sections = document.querySelectorAll('[id]');
+  const navItems = document.querySelectorAll('.sb-item[href^="#"], .sb-item[href$=".html"]');
+  const topBtn   = document.getElementById('top-btn');
+
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const id = e.target.id;
+        navItems.forEach(a => {
+          const href = a.getAttribute('href');
+          const isCurrentFile = !href.includes('.html') || href === 'study-materials-standard.html';
+          const targetId = href.split('#')[1];
+          a.classList.toggle('active', isCurrentFile && a.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  }, { rootMargin: '-8% 0px -80% 0px' });
+
+  sections.forEach(s => io.observe(s));
+
+  window.addEventListener('scroll', () => {
+    topBtn.style.display = window.scrollY > 400 ? 'flex' : 'none';
+  });
+</script>
+</body>
+</html>
