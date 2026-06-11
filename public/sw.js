@@ -1,4 +1,9 @@
-const CACHE_NAME = 'cloud-exam-lab-v3';
+// __BUILD_ID__ is replaced with a unique id at build time (see vite.config.js)
+// so every deploy produces a byte-different sw.js. That makes the browser
+// detect the new worker, purge the previous cache on activate, and pick up the
+// freshly hashed JS/CSS instead of serving a stale (possibly broken) bundle.
+// In dev the placeholder stays literal, which is fine — the name is just constant.
+const CACHE_NAME = 'cloud-exam-lab-__BUILD_ID__';
 const APP_SHELL = [
   '/',
   '/index.html',
