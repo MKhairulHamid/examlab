@@ -9,36 +9,104 @@ const NAVY = '#0A2540'
 // ─── Interactive widgets ──────────────────────────────────────────────────────
 
 function PrecisionRecallWidget() {
-  // Threshold = rightmost column included in the prediction box (0–9)
-  const [threshold, setThreshold] = useState(1)
-
-  // 10×10 grid: 10 red (actual fraud, minority) + 90 green (innocent, majority)
-  // Fraud dots clustered in LEFT columns — the model's high-confidence zone.
-  // Extending the box right catches more fraud (↑ recall) but sweeps in more
-  // innocent customers (↓ precision).
-  //   col0 → rows 1,3,6,9  col1 → rows 2,5,8  col2 → rows 0,7  col3 → row 4
-  const FRAUD_SET = new Set([2, 10, 21, 30, 43, 51, 60, 72, 81, 90])
-  const TOTAL = 100, FRAUD_TOTAL = 10, COLS = 10
-  const CELL = 40, DOT_R = 13
+  const COLS = 10, CELL = 40, DOT_R = 13
   const SVG_W = COLS * CELL, SVG_H = COLS * CELL
+  const FRAUD_TOTAL = 10, TOTAL = 100
+  // 10×10 grid: 10 red (fraud, minority) clustered in left cols, 90 green (innocent, majority)
+  // col0→rows1,3,6,9  col1→rows2,5,8  col2→rows0,7  col3→row4
+  const FRAUD_SET = new Set([2, 10, 21, 30, 43, 51, 60, 72, 81, 90])
 
+  // Box position/size in SVG coordinates (starts covering cols 0-2, full height)
+  const [box, setBox] = useState({ x: 0, y: 0, width: CELL * 3, height: SVG_H })
+  const svgRef = useRef(null)
+
+  const getSvgCoords = (clientX, clientY) => {
+    const svg = svgRef.current
+    if (!svg) return { x: 0, y: 0 }
+    const r = svg.getBoundingClientRect()
+    return {
+      x: ((clientX - r.left) / r.width)  * SVG_W,
+      y: ((clientY - r.top)  / r.height) * SVG_H,
+    }
+  }
+
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v))
+  const MIN = CELL  // minimum box dimension
+
+  const startDrag = (type, e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const client = e.touches ? e.touches[0] : e
+    const start  = getSvgCoords(client.clientX, client.clientY)
+    const sb     = { ...box }
+
+    const onMove = (ev) => {
+      const c   = ev.touches ? ev.touches[0] : ev
+      const pos = getSvgCoords(c.clientX, c.clientY)
+      const dx  = pos.x - start.x
+      const dy  = pos.y - start.y
+      let { x, y, width, height } = sb
+
+      if (type === 'move') {
+        x = clamp(x + dx, 0, SVG_W - width)
+        y = clamp(y + dy, 0, SVG_H - height)
+      } else {
+        if (type.includes('e')) width  = clamp(width  + dx, MIN, SVG_W - x)
+        if (type.includes('s')) height = clamp(height + dy, MIN, SVG_H - y)
+        if (type.includes('w')) {
+          const nx = clamp(x + dx, 0, x + width - MIN)
+          width += x - nx; x = nx
+        }
+        if (type.includes('n')) {
+          const ny = clamp(y + dy, 0, y + height - MIN)
+          height += y - ny; y = ny
+        }
+      }
+      setBox({ x, y, width, height })
+    }
+
+    const onUp = () => {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup',   onUp)
+      window.removeEventListener('touchmove', onMove)
+      window.removeEventListener('touchend',  onUp)
+    }
+
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup',   onUp)
+    window.addEventListener('touchmove', onMove, { passive: false })
+    window.addEventListener('touchend',  onUp)
+  }
+
+  // Compute stats — dot center must fall strictly inside the box
   let tp = 0, fp = 0, fn = 0
   for (let i = 0; i < TOTAL; i++) {
-    const inBox   = (i % COLS) <= threshold
+    const cx      = (i % COLS) * CELL + CELL / 2
+    const cy      = Math.floor(i / COLS) * CELL + CELL / 2
+    const inBox   = cx > box.x && cx < box.x + box.width && cy > box.y && cy < box.y + box.height
     const isFraud = FRAUD_SET.has(i)
     if (isFraud  &&  inBox) tp++
     else if (!isFraud &&  inBox) fp++
     else if (isFraud  && !inBox) fn++
   }
 
-  const precision = tp + fp > 0 ? tp / (tp + fp) : 1
+  const precision = tp + fp > 0 ? tp / (tp + fp) : 0
   const recall    = tp / FRAUD_TOTAL
-  const f1        = precision + recall > 0
-    ? 2 * precision * recall / (precision + recall) : 0
-
+  const f1        = precision + recall > 0 ? 2 * precision * recall / (precision + recall) : 0
   const pct       = v => `${Math.round(v * 100)}%`
-  const mColor    = v => v >= 0.85 ? '#16a34a' : v >= 0.65 ? '#d97706' : '#dc2626'
-  const PRED_W    = (threshold + 1) * CELL
+
+  // 8 resize handle positions
+  const H = 9
+  const handles = [
+    { id: 'n',  x: box.x + box.width / 2, y: box.y,                  cur: 'n-resize'  },
+    { id: 's',  x: box.x + box.width / 2, y: box.y + box.height,     cur: 's-resize'  },
+    { id: 'e',  x: box.x + box.width,     y: box.y + box.height / 2, cur: 'e-resize'  },
+    { id: 'w',  x: box.x,                 y: box.y + box.height / 2, cur: 'w-resize'  },
+    { id: 'ne', x: box.x + box.width,     y: box.y,                  cur: 'ne-resize' },
+    { id: 'nw', x: box.x,                 y: box.y,                  cur: 'nw-resize' },
+    { id: 'se', x: box.x + box.width,     y: box.y + box.height,     cur: 'se-resize' },
+    { id: 'sw', x: box.x,                 y: box.y + box.height,     cur: 'sw-resize' },
+  ]
 
   return (
     <div style={{
@@ -59,9 +127,8 @@ function PrecisionRecallWidget() {
 
       <p style={{ fontSize: '0.8125rem', color: '#475569', lineHeight: 1.6, margin: '0 0 0.875rem' }}>
         100 transactions: <strong style={{ color: '#16a34a' }}>90 innocent</strong> and{' '}
-        <strong style={{ color: '#dc2626' }}>10 actual fraud</strong>. The dashed box is what
-        the model <em>predicts</em> as fraud. Drag the slider to widen or narrow the prediction
-        boundary and watch Precision and Recall trade off.
+        <strong style={{ color: '#dc2626' }}>10 actual fraud</strong>. The red dashed box = what
+        the model predicts as fraud. <strong>Drag to move · drag handles to resize.</strong>
       </p>
 
       {/* Legend */}
@@ -75,55 +142,61 @@ function PrecisionRecallWidget() {
               <circle cx="8"  cy="8" r="7" fill={bright} />
               <circle cx="22" cy="8" r="7" fill={dim} />
             </svg>
-            <span>{label} <span style={{ color: '#94a3b8' }}>(bright = inside box, dim = outside)</span></span>
+            <span>{label} <span style={{ color: '#94a3b8' }}>(bright = inside box)</span></span>
           </div>
         ))}
       </div>
 
       {/* SVG dot grid */}
-      <div style={{ overflowX: 'auto', marginBottom: '0.75rem' }}>
+      <div style={{ overflowX: 'auto', marginBottom: '0.875rem' }}>
         <svg
+          ref={svgRef}
           viewBox={`0 0 ${SVG_W} ${SVG_H}`}
-          style={{ display: 'block', width: '100%', maxWidth: SVG_W }}
+          style={{ display: 'block', width: '100%', maxWidth: SVG_W, userSelect: 'none', touchAction: 'none' }}
         >
-          {/* Prediction rectangle — the "green line" area */}
+          {/* Prediction rectangle */}
           <rect
-            x={1} y={1} width={PRED_W - 2} height={SVG_H - 2}
-            fill="rgba(34,197,94,0.08)"
-            stroke="#16a34a" strokeWidth={2.5} strokeDasharray="9 5"
-            rx={5}
-            style={{ transition: 'width 0.25s ease' }}
+            x={box.x} y={box.y} width={box.width} height={box.height}
+            fill="rgba(220,38,38,0.07)"
+            stroke="#dc2626" strokeWidth={2.5} strokeDasharray="9 5"
+            rx={3}
+            style={{ pointerEvents: 'none' }}
           />
 
-          {/* Dots */}
+          {/* Dots (pointerEvents off so drag hits the handle rects) */}
           {Array.from({ length: TOTAL }, (_, i) => {
-            const col   = i % COLS
-            const row   = Math.floor(i / COLS)
-            const inBox = col <= threshold
+            const cx      = (i % COLS) * CELL + CELL / 2
+            const cy      = Math.floor(i / COLS) * CELL + CELL / 2
+            const inBox   = cx > box.x && cx < box.x + box.width && cy > box.y && cy < box.y + box.height
             const isFraud = FRAUD_SET.has(i)
             const fill    = isFraud
               ? (inBox ? '#dc2626' : '#fecaca')
               : (inBox ? '#16a34a' : '#bbf7d0')
-            return (
-              <circle
-                key={i}
-                cx={col * CELL + CELL / 2}
-                cy={row * CELL + CELL / 2}
-                r={DOT_R}
-                fill={fill}
-                style={{ transition: 'fill 0.2s' }}
-              />
-            )
+            return <circle key={i} cx={cx} cy={cy} r={DOT_R} fill={fill} style={{ pointerEvents: 'none' }} />
           })}
 
-          {/* "Predicted fraud" label inside box */}
-          <text
-            x={PRED_W / 2} y={SVG_H - 6}
-            textAnchor="middle" fontSize={11} fontWeight="700" fill="#16a34a"
-            style={{ transition: 'x 0.25s ease' }}
-          >
-            {tp + fp > 0 ? `Predicted fraud (${tp + fp})` : ''}
-          </text>
+          {/* Interior move handle */}
+          <rect
+            x={box.x + H} y={box.y + H}
+            width={Math.max(1, box.width - H * 2)}
+            height={Math.max(1, box.height - H * 2)}
+            fill="transparent" stroke="none"
+            style={{ cursor: 'move' }}
+            onMouseDown={e => startDrag('move', e)}
+            onTouchStart={e => startDrag('move', e)}
+          />
+
+          {/* Resize handles */}
+          {handles.map(h => (
+            <rect
+              key={h.id}
+              x={h.x - H / 2} y={h.y - H / 2} width={H} height={H}
+              fill="white" stroke="#dc2626" strokeWidth={1.5} rx={2}
+              style={{ cursor: h.cur }}
+              onMouseDown={e => startDrag(h.id, e)}
+              onTouchStart={e => startDrag(h.id, e)}
+            />
+          ))}
         </svg>
       </div>
 
@@ -146,7 +219,7 @@ function PrecisionRecallWidget() {
         ))}
       </div>
 
-      {/* Metric progress bars */}
+      {/* Metric bars */}
       {[
         { label: 'Precision', value: precision, color: '#dc2626', formula: `${tp} ÷ (${tp}+${fp})` },
         { label: 'Recall',    value: recall,    color: '#2563eb', formula: `${tp} ÷ ${FRAUD_TOTAL}` },
@@ -157,38 +230,15 @@ function PrecisionRecallWidget() {
           <div style={{ flex: 1, position: 'relative', height: 10, background: '#e2e8f0', borderRadius: 5 }}>
             <div style={{
               position: 'absolute', left: 0, top: 0, bottom: 0,
-              width: `${value * 100}%`,
-              background: color, borderRadius: 5, transition: 'width 0.25s ease',
+              width: `${value * 100}%`, background: color, borderRadius: 5,
             }} />
           </div>
-          <span style={{ fontSize: '0.8125rem', fontWeight: 800, color: mColor(value), width: 40, textAlign: 'right' }}>
+          <span style={{ fontSize: '0.8125rem', fontWeight: 800, color: NAVY, width: 40, textAlign: 'right' }}>
             {label === 'F1 Score' ? f1.toFixed(2) : pct(value)}
           </span>
-          <span style={{ fontSize: '0.6875rem', color: '#94a3b8', width: 90, flexShrink: 0, display: 'none' }}
-            className="pr-formula">
-            {formula}
-          </span>
+          <span style={{ fontSize: '0.6875rem', color: '#94a3b8', width: 90, flexShrink: 0 }}>{formula}</span>
         </div>
       ))}
-
-      {/* Slider */}
-      <div style={{ marginTop: '1rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.3rem' }}>
-          <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: NAVY }}>Prediction boundary</span>
-          <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
-            {threshold + 1} of 10 confidence levels · {tp + fp} flagged
-          </span>
-        </div>
-        <input
-          type="range" min={0} max={9} step={1} value={threshold}
-          onChange={e => setThreshold(Number(e.target.value))}
-          style={{ width: '100%', accentColor: TEAL, cursor: 'pointer' }}
-        />
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.6875rem', color: '#94a3b8', marginTop: '0.2rem' }}>
-          <span>← Narrow box: high precision, low recall</span>
-          <span>Wide box: high recall, lower precision →</span>
-        </div>
-      </div>
     </div>
   )
 }
