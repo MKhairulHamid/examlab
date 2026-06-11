@@ -31,7 +31,6 @@ export default function TeachToLearn({ session, courseSlug, examCode, officialVi
   const [communityVideos, setCommunityVideos] = useState([])
   const [mySubmission, setMySubmission] = useState(null)
   const [loaded, setLoaded] = useState(false)
-  const [showRelated, setShowRelated] = useState(false)
   const [deckOpen, setDeckOpen] = useState(false)
 
   useEffect(() => {
@@ -78,30 +77,11 @@ export default function TeachToLearn({ session, courseSlug, examCode, officialVi
             2 · Watch
           </div>
 
-          {hasCommunity && !showRelated ? (
-            <>
-              <CommunityVideoPanel videos={communityVideos} currentUserId={userId} />
-              {hasOfficial && (
-                <button
-                  onClick={() => setShowRelated(true)}
-                  style={linkBtn}
-                >
-                  Prefer a curated video? Show the related video instead →
-                </button>
-              )}
-            </>
+          {/* Learner videos fully replace the curated one when any exist. */}
+          {hasCommunity ? (
+            <CommunityVideoPanel videos={communityVideos} currentUserId={userId} />
           ) : (
-            <>
-              {hasOfficial && <VideoPanel videos={officialVideos} showHeader={false} />}
-              {hasCommunity && (
-                <button
-                  onClick={() => setShowRelated(false)}
-                  style={linkBtn}
-                >
-                  ← Back to learner explanations ({communityVideos.length})
-                </button>
-              )}
-            </>
+            hasOfficial && <VideoPanel videos={officialVideos} showHeader={false} />
           )}
         </div>
       )}
