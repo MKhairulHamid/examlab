@@ -1248,6 +1248,7 @@ const aifC01Course = {
         {
           heading: 'Inference parameters',
           body: 'Three parameters cover almost every exam question on generation control.',
+          interactive: 'inference-parameters',
           table: {
             headers: ['Parameter', 'Effect'],
             rows: [

@@ -289,8 +289,209 @@ function PrecisionRecallWidget() {
   )
 }
 
+function InferenceParametersWidget() {
+  // Candidate next tokens for a fixed prompt, with preset logits (model scores).
+  // The absurd tail ("spaghetti", "purple") shows what high temperature unlocks.
+  const PROMPT = 'The weather today is'
+  const TOKENS = [
+    ['sunny', 3.0], ['warm', 2.4], ['cloudy', 2.1], ['fine', 1.7],
+    ['cold', 1.3], ['rainy', 1.0], ['perfect', 0.4], ['spaghetti', -1.5], ['purple', -2.0],
+  ]
+  const N = TOKENS.length
+
+  const [temp, setTemp]   = useState(0.7)
+  const [topK, setTopK]   = useState(N)
+  const [topP, setTopP]   = useState(1)
+  const [seed, setSeed]   = useState(1)
+
+  // Reshape the distribution: softmax(logit / T) → top-K cut → top-P (nucleus) cut
+  const dist = useMemo(() => {
+    const T = Math.max(0.05, temp)
+    let ex = TOKENS.map(([w, l]) => ({ w, e: Math.exp(l / T) }))
+    const Z = ex.reduce((s, o) => s + o.e, 0)
+    ex.forEach(o => { o.p = o.e / Z })
+    ex.sort((a, b) => b.p - a.p)
+    ex.forEach((o, i) => { o.keep = i < topK })       // top-K
+    let cum = 0                                         // top-P (nucleus)
+    ex.forEach(o => { if (o.keep) { if (cum >= topP) o.keep = false; cum += o.p } })
+    const Zk = ex.filter(o => o.keep).reduce((s, o) => s + o.p, 0) || 1
+    ex.forEach(o => { o.fp = o.keep ? o.p / Zk : 0 })
+    return ex
+  }, [temp, topK, topP])
+
+  const eligible = dist.filter(o => o.keep).length
+  const maxVal   = Math.max(...dist.map(o => (o.keep ? o.fp : o.p)))
+
+  // Draw 6 sampled completions from the reshaped distribution (seeded, re-rollable)
+  const samples = useMemo(() => {
+    let s = seed * 2654435761 >>> 0
+    const rnd = () => {
+      s += 0x6D2B79F5; let t = s
+      t = Math.imul(t ^ t >>> 15, t | 1)
+      t ^= t + Math.imul(t ^ t >>> 7, t | 61)
+      return ((t ^ t >>> 14) >>> 0) / 4294967296
+    }
+    return Array.from({ length: 6 }, () => {
+      let r = rnd(), acc = 0, pick = dist.find(o => o.keep)
+      for (const o of dist) { if (!o.keep) continue; acc += o.fp; if (r <= acc) { pick = o; return pick.w } }
+      return pick.w
+    })
+  }, [dist, seed])
+
+  // Coaching banner reacts to the temperature regime + truncation state
+  const regime = temp <= 0.3
+    ? { bg: '#eff6ff', bd: '#2563eb', fg: '#1d4ed8',
+        text: `Low temperature (${temp.toFixed(1)}) — the odds collapse onto the single most likely token. Output is focused, factual and repeatable. This is what you want for extraction, classification, or anything that must be consistent.` }
+    : temp <= 0.9
+    ? { bg: '#f0fdfa', bd: TEAL_DARK, fg: '#0f766e',
+        text: `Balanced temperature (${temp.toFixed(1)}) — likely words dominate but there's room for variety. A safe everyday default for chat and drafting.` }
+    : { bg: '#fef2f2', bd: '#dc2626', fg: '#b91c1c',
+        text: `High temperature (${temp.toFixed(1)}) — the odds flatten so even absurd tokens like "spaghetti" can be chosen. Great for brainstorming and creative variety, but the hallucination risk climbs.` }
+
+  const sliders = [
+    { label: 'Temperature', val: temp, set: setTemp, min: 0.1, max: 2, step: 0.1,
+      fmt: v => v.toFixed(1), hint: 'Flattens or sharpens the odds' },
+    { label: 'Top-K', val: topK, set: setTopK, min: 1, max: N, step: 1,
+      fmt: v => `${v}`, hint: `Keep only the K most likely tokens` },
+    { label: 'Top-P', val: topP, set: setTopP, min: 0.1, max: 1, step: 0.05,
+      fmt: v => v.toFixed(2), hint: 'Keep the smallest set covering P of the probability' },
+  ]
+
+  return (
+    <div style={{
+      background: '#fafbfd', border: `2px solid rgba(0,212,170,0.3)`,
+      borderRadius: '1rem', padding: '1.25rem', margin: '1.25rem 0',
+    }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.6rem' }}>
+        <span style={{
+          fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase',
+          letterSpacing: '0.06em', color: 'white', background: TEAL_DARK,
+          padding: '0.2rem 0.6rem', borderRadius: '0.35rem',
+        }}>Try it</span>
+        <span style={{ fontSize: '0.875rem', fontWeight: 700, color: NAVY }}>
+          Inference Parameters — Interactive
+        </span>
+      </div>
+
+      <p style={{ fontSize: '0.8125rem', color: '#475569', lineHeight: 1.6, margin: '0 0 0.875rem' }}>
+        The model scores every possible next word. These parameters reshape those odds before
+        one is picked. Watch the bars — and the sampled outputs — react.
+      </p>
+
+      {/* Prompt */}
+      <div style={{
+        background: 'white', border: '1.5px solid #e2e8f0', borderRadius: '0.6rem',
+        padding: '0.6rem 0.85rem', marginBottom: '0.875rem', fontSize: '0.9rem', color: NAVY,
+      }}>
+        <span style={{ fontFamily: 'ui-monospace, monospace' }}>{PROMPT} </span>
+        <span style={{
+          fontFamily: 'ui-monospace, monospace', fontWeight: 800, color: TEAL_DARK,
+          borderBottom: `2px solid ${TEAL}`, padding: '0 0.15rem',
+        }}>{dist.find(o => o.keep)?.w} ?</span>
+      </div>
+
+      {/* Probability bars */}
+      <div style={{ marginBottom: '1rem' }}>
+        {dist.map(o => {
+          const val = o.keep ? o.fp : o.p
+          const w   = maxVal > 0 ? (val / maxVal) * 100 : 0
+          return (
+            <div key={o.w} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.3rem' }}>
+              <span style={{
+                width: 74, flexShrink: 0, textAlign: 'right', fontSize: '0.8rem',
+                fontFamily: 'ui-monospace, monospace',
+                fontWeight: o.keep ? 700 : 400,
+                color: o.keep ? NAVY : '#cbd5e1',
+                textDecoration: o.keep ? 'none' : 'line-through',
+              }}>{o.w}</span>
+              <div style={{ flex: 1, position: 'relative', height: 18, background: '#eef2f7', borderRadius: 4, overflow: 'hidden' }}>
+                <div style={{
+                  position: 'absolute', left: 0, top: 0, bottom: 0,
+                  width: `${w}%`,
+                  background: o.keep ? `linear-gradient(90deg, ${TEAL}, ${TEAL_DARK})` : '#e2e8f0',
+                  borderRadius: 4, transition: 'width 0.18s ease, background 0.18s ease',
+                }} />
+              </div>
+              <span style={{
+                width: 42, flexShrink: 0, textAlign: 'right', fontSize: '0.8rem', fontWeight: 800,
+                color: o.keep ? TEAL_DARK : '#cbd5e1',
+              }}>{Math.round((o.keep ? o.fp : 0) * 100)}%</span>
+            </div>
+          )
+        })}
+        <div style={{ fontSize: '0.6875rem', color: '#94a3b8', marginTop: '0.35rem' }}>
+          {eligible} of {N} tokens eligible · greyed + struck-through = cut by Top-K / Top-P
+        </div>
+      </div>
+
+      {/* Sliders */}
+      {sliders.map(s => (
+        <div key={s.label} style={{ marginBottom: '0.7rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.15rem' }}>
+            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: NAVY }}>
+              {s.label} <span style={{ fontWeight: 400, color: '#94a3b8', fontSize: '0.7rem' }}>· {s.hint}</span>
+            </span>
+            <span style={{ fontSize: '0.85rem', fontWeight: 800, color: TEAL_DARK, fontFamily: 'ui-monospace, monospace' }}>{s.fmt(s.val)}</span>
+          </div>
+          <input
+            type="range" min={s.min} max={s.max} step={s.step} value={s.val}
+            onChange={e => s.set(Number(e.target.value))}
+            style={{ width: '100%', accentColor: TEAL, cursor: 'pointer', height: 24 }}
+          />
+        </div>
+      ))}
+
+      {/* Coaching banner */}
+      <div style={{
+        background: regime.bg, border: `1.5px solid ${regime.bd}`, borderRadius: '0.6rem',
+        padding: '0.55rem 0.75rem', margin: '0.5rem 0 0.875rem',
+        fontSize: '0.75rem', lineHeight: 1.5, color: regime.fg, fontWeight: 600,
+      }}>
+        {regime.text}
+        {(topK < N || topP < 1) && (
+          <span> Top-K/Top-P is trimming the tail to <strong>{eligible}</strong> eligible token{eligible === 1 ? '' : 's'}, which caps the randomness no matter how high temperature goes.</span>
+        )}
+      </div>
+
+      {/* Sampled outputs */}
+      <div style={{
+        background: 'white', border: '1.5px solid #e2e8f0', borderRadius: '0.6rem', padding: '0.7rem 0.85rem',
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+          <span style={{ fontSize: '0.75rem', fontWeight: 700, color: NAVY, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+            6 sampled completions
+          </span>
+          <button
+            onClick={() => setSeed(s => s + 1)}
+            style={{
+              fontSize: '0.72rem', fontWeight: 700, color: 'white', background: TEAL_DARK,
+              border: 'none', borderRadius: '0.4rem', padding: '0.3rem 0.7rem', cursor: 'pointer',
+            }}
+          >Re-roll</button>
+        </div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+          {samples.map((w, i) => (
+            <span key={i} style={{
+              fontSize: '0.78rem', fontFamily: 'ui-monospace, monospace',
+              background: w === dist[0].w ? '#f0fdfa' : '#fef3f2',
+              color: w === dist[0].w ? TEAL_DARK : '#b91c1c',
+              border: `1px solid ${w === dist[0].w ? 'rgba(0,168,132,0.3)' : 'rgba(220,38,38,0.25)'}`,
+              borderRadius: '0.35rem', padding: '0.2rem 0.55rem',
+            }}>{w}</span>
+          ))}
+        </div>
+        <div style={{ fontSize: '0.6875rem', color: '#94a3b8', marginTop: '0.5rem' }}>
+          Low temperature → every sample is the same safe word. High temperature → variety, and the occasional surprise.
+        </div>
+      </div>
+    </div>
+  )
+}
+
 const INTERACTIVE_WIDGETS = {
   'precision-recall': PrecisionRecallWidget,
+  'inference-parameters': InferenceParametersWidget,
 }
 
 // ─── Small renderers ──────────────────────────────────────────────────────────
