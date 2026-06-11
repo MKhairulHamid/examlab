@@ -6,6 +6,197 @@ const TEAL = '#00D4AA'
 const TEAL_DARK = '#00A884'
 const NAVY = '#0A2540'
 
+// ─── Interactive widgets ──────────────────────────────────────────────────────
+
+function PrecisionRecallWidget() {
+  const [precSlider, setPrecSlider] = useState(0.80)
+  const [recSlider,  setRecSlider]  = useState(0.70)
+
+  const TOTAL = 15
+  const tp = Math.max(1, Math.round(recSlider * TOTAL))
+  const fn = TOTAL - tp
+  const fp = precSlider < 1
+    ? Math.round(tp * (1 - precSlider) / precSlider)
+    : 0
+
+  const precision = tp + fp > 0 ? tp / (tp + fp) : 1
+  const recall    = tp / TOTAL
+  const f1        = precision + recall > 0
+    ? 2 * precision * recall / (precision + recall)
+    : 0
+
+  const MAX_DOTS = 12
+
+  const DotGrid = ({ count, color }) => {
+    const shown = Math.min(count, MAX_DOTS)
+    return (
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', minHeight: '44px', alignContent: 'flex-start', transition: 'all 0.2s' }}>
+        {Array.from({ length: shown }, (_, i) => (
+          <div key={i} style={{
+            width: 13, height: 13, borderRadius: '50%',
+            background: color, flexShrink: 0, transition: 'all 0.2s',
+          }} />
+        ))}
+        {count > MAX_DOTS && (
+          <span style={{ fontSize: '0.6875rem', color: '#64748b', alignSelf: 'center', fontWeight: 600 }}>
+            +{count - MAX_DOTS}
+          </span>
+        )}
+      </div>
+    )
+  }
+
+  const pct = v => `${Math.round(v * 100)}%`
+
+  const metricColor = (v) => v >= 0.8 ? '#16a34a' : v >= 0.5 ? '#d97706' : '#dc2626'
+
+  return (
+    <div style={{
+      background: '#fafbfd', border: `2px solid rgba(0,212,170,0.3)`,
+      borderRadius: '1rem', padding: '1.25rem', margin: '1.25rem 0',
+    }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+        <span style={{
+          fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase',
+          letterSpacing: '0.06em', color: 'white', background: TEAL_DARK,
+          padding: '0.2rem 0.6rem', borderRadius: '0.35rem',
+        }}>Try it</span>
+        <span style={{ fontSize: '0.875rem', fontWeight: 700, color: NAVY }}>
+          Precision &amp; Recall — Interactive
+        </span>
+      </div>
+      <p style={{ fontSize: '0.8125rem', color: '#475569', lineHeight: 1.6, margin: '0 0 1.1rem' }}>
+        Imagine a fraud model scanning {TOTAL} real fraud cases. Drag the sliders to see how the dots move between buckets — and watch Precision, Recall, and F1 update live.
+      </p>
+
+      {/* Sliders */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.875rem', marginBottom: '1.25rem' }}>
+        {[
+          { label: 'Precision', value: precSlider, set: setPrecSlider, color: '#dc2626',
+            hint: 'Of all we flagged, what fraction are actual fraud?' },
+          { label: 'Recall',    value: recSlider,  set: setRecSlider,  color: '#2563eb',
+            hint: 'Of all real fraud, how many did we catch?' },
+        ].map(({ label, value, set, color, hint }) => (
+          <div key={label}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
+              <span style={{ fontSize: '0.8125rem', fontWeight: 700, color }}>{label}</span>
+              <span style={{ fontSize: '0.8125rem', fontWeight: 800, color }}>{pct(value)}</span>
+            </div>
+            <input
+              type="range" min="0.05" max="1" step="0.05"
+              value={value}
+              onChange={e => set(Number(e.target.value))}
+              style={{ width: '100%', accentColor: color, cursor: 'pointer' }}
+            />
+            <div style={{ fontSize: '0.6875rem', color: '#94a3b8', marginTop: '0.15rem' }}>{hint}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Dot visualization — three zones */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 0, marginBottom: '0.5rem' }}>
+        {/* FP */}
+        <div style={{
+          background: 'rgba(220,38,38,0.06)', border: '1.5px solid rgba(220,38,38,0.25)',
+          borderRadius: '0.65rem 0 0 0.65rem', padding: '0.75rem 0.75rem 0.6rem',
+        }}>
+          <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#dc2626', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.2rem' }}>
+            False Positives ({fp})
+          </div>
+          <div style={{ fontSize: '0.6875rem', color: '#94a3b8', marginBottom: '0.5rem' }}>Flagged, but innocent</div>
+          <DotGrid count={fp} color="#dc2626" />
+        </div>
+        {/* TP */}
+        <div style={{
+          background: 'rgba(34,197,94,0.09)',
+          borderTop: '1.5px solid rgba(34,197,94,0.4)', borderBottom: '1.5px solid rgba(34,197,94,0.4)',
+          padding: '0.75rem 0.75rem 0.6rem',
+          display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
+        }}>
+          <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#16a34a', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.2rem' }}>
+            True Positives ({tp})
+          </div>
+          <div style={{ fontSize: '0.6875rem', color: '#94a3b8', marginBottom: '0.5rem' }}>Caught fraud</div>
+          <DotGrid count={tp} color="#16a34a" />
+        </div>
+        {/* FN */}
+        <div style={{
+          background: 'rgba(245,158,11,0.06)', border: '1.5px solid rgba(245,158,11,0.3)',
+          borderRadius: '0 0.65rem 0.65rem 0', padding: '0.75rem 0.75rem 0.6rem',
+        }}>
+          <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#b45309', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.2rem' }}>
+            False Negatives ({fn})
+          </div>
+          <div style={{ fontSize: '0.6875rem', color: '#94a3b8', marginBottom: '0.5rem' }}>Fraud we missed</div>
+          <DotGrid count={fn} color="#f59e0b" />
+        </div>
+      </div>
+
+      {/* Formula spans */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', marginBottom: '1.1rem' }}>
+        <div style={{ gridColumn: '1 / 3' }}>
+          <div style={{
+            height: '3px', background: 'rgba(220,38,38,0.4)', borderRadius: '2px',
+            margin: '0 2px', position: 'relative',
+          }}>
+            <span style={{
+              position: 'absolute', top: '5px', left: 0, right: 0,
+              textAlign: 'center', fontSize: '0.6875rem', fontWeight: 700, color: '#dc2626',
+              whiteSpace: 'nowrap',
+            }}>
+              ← Precision = TP ÷ (TP + FP) →
+            </span>
+          </div>
+        </div>
+        <div style={{ gridColumn: '2 / 4' }}>
+          <div style={{
+            height: '3px', background: 'rgba(37,99,235,0.4)', borderRadius: '2px',
+            margin: '0 2px', position: 'relative',
+          }}>
+            <span style={{
+              position: 'absolute', top: '5px', left: 0, right: 0,
+              textAlign: 'center', fontSize: '0.6875rem', fontWeight: 700, color: '#2563eb',
+              whiteSpace: 'nowrap',
+            }}>
+              ← Recall = TP ÷ (TP + FN) →
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Metric badges */}
+      <div style={{
+        display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
+        background: 'white', borderRadius: '0.75rem',
+        border: '1.5px solid #e2e8f0',
+        overflow: 'hidden', marginTop: '1rem',
+      }}>
+        {[
+          { label: 'Precision', value: pct(precision), sub: `${tp} ÷ ${tp + fp}` },
+          { label: 'Recall',    value: pct(recall),    sub: `${tp} ÷ ${TOTAL}` },
+          { label: 'F1 Score',  value: f1.toFixed(2),  sub: 'harmonic mean' },
+        ].map(({ label, value, sub }, i) => (
+          <div key={label} style={{
+            padding: '0.875rem', textAlign: 'center',
+            borderLeft: i > 0 ? '1.5px solid #e2e8f0' : 'none',
+          }}>
+            <div style={{ fontSize: '1.5rem', fontWeight: 800, color: metricColor(value.endsWith('%') ? parseFloat(value) / 100 : parseFloat(value)), lineHeight: 1 }}>
+              {value}
+            </div>
+            <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: NAVY, marginTop: '0.2rem' }}>{label}</div>
+            <div style={{ fontSize: '0.625rem', color: '#94a3b8', marginTop: '0.1rem' }}>{sub}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+const INTERACTIVE_WIDGETS = {
+  'precision-recall': PrecisionRecallWidget,
+}
+
 // ─── Small renderers ──────────────────────────────────────────────────────────
 
 function ContentTable({ table }) {
@@ -407,6 +598,9 @@ function EnhancedSection({ section, index, anchorId }) {
               {section.table && <ContentTable table={section.table} />}
               {section.callout && <Callout callout={section.callout} />}
             </div>
+          )}
+          {section.interactive && INTERACTIVE_WIDGETS[section.interactive] && (
+            React.createElement(INTERACTIVE_WIDGETS[section.interactive])
           )}
         </div>
       )}

@@ -448,6 +448,7 @@ const aifC01Course = {
         {
           heading: 'Metrics: measuring what actually matters',
           body: 'This is where most candidates lose points. Accuracy feels intuitive but is the most dangerous metric to trust alone.',
+          interactive: 'precision-recall',
           table: {
             headers: ['Metric', 'What it measures', 'When it matters most'],
             rows: [
