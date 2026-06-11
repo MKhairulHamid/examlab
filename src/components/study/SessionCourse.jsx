@@ -1464,15 +1464,35 @@ function SpeedBump({ quiz, cleared, onClear }) {
   )
 }
 
-function LockedNotice() {
+// A section that's still gated: shows only its title behind a lock. Tapping it
+// scrolls back to the checkpoint that's blocking it.
+function LockedSection({ heading, onJump }) {
   return (
-    <div style={{
-      background: '#f8fafc', border: '1.5px dashed #cbd5e1', borderRadius: '1rem',
-      padding: '1.5rem', textAlign: 'center', color: '#64748b',
-      fontSize: '0.9rem', fontWeight: 600,
-    }}>
-      🔒 The rest of this session unlocks once you clear the speed bump above.
-    </div>
+    <button
+      onClick={onJump}
+      style={{
+        display: 'flex', alignItems: 'center', gap: '0.75rem', width: '100%', textAlign: 'left',
+        background: '#f8fafc', border: '1.5px dashed #cbd5e1', borderRadius: '0.85rem',
+        padding: '0.85rem 1rem', margin: '0.5rem 0', cursor: 'pointer',
+      }}
+    >
+      <span style={{
+        flexShrink: 0, width: 30, height: 30, borderRadius: '50%', background: '#e2e8f0',
+        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#64748b"
+          strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" />
+          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+        </svg>
+      </span>
+      <span style={{ flex: 1, fontSize: '0.95rem', fontWeight: 700, color: '#94a3b8', lineHeight: 1.4 }}>
+        {heading}
+      </span>
+      <span style={{ flexShrink: 0, fontSize: '0.7rem', fontWeight: 700, color: TEAL_DARK, whiteSpace: 'nowrap' }}>
+        Checkpoint ↑
+      </span>
+    </button>
   )
 }
 
@@ -1493,8 +1513,19 @@ function LessonBody({ session, cleared, onClear }) {
   for (let i = 0; i < session.sections.length; i++) {
     const blocking = quizzes.find(q => q.afterSection < i && !cleared.includes(q.afterSection))
     if (blocking) {
-      elems.push(<LockedNotice key="locked" />)
-      break
+      // Still locked: render only the title behind a lock that jumps to the
+      // gating checkpoint. The lesson stays visible as an outline, not hidden.
+      elems.push(
+        <LockedSection
+          key={`locked-${i}`}
+          heading={session.sections[i].heading}
+          onJump={() => {
+            const el = document.getElementById(`checkpoint-${session.id}-${blocking.afterSection}`)
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          }}
+        />
+      )
+      continue
     }
     elems.push(
       <EnhancedSection
@@ -1507,19 +1538,20 @@ function LessonBody({ session, cleared, onClear }) {
     const here = quizzes.find(q => q.afterSection === i)
     if (here) {
       elems.push(
-        <SpeedBump
-          key={`quiz-${i}`}
-          quiz={here}
-          cleared={cleared.includes(here.afterSection)}
-          onClear={() => {
-            onClear(here.afterSection)
-            // Scroll to the newly unlocked section after re-render
-            setTimeout(() => {
-              const nextEl = document.getElementById(`sec-${session.id}-${i + 1}`)
-              if (nextEl) nextEl.scrollIntoView({ behavior: 'smooth', block: 'start' })
-            }, 80)
-          }}
-        />
+        <div key={`quiz-${i}`} id={`checkpoint-${session.id}-${i}`}>
+          <SpeedBump
+            quiz={here}
+            cleared={cleared.includes(here.afterSection)}
+            onClear={() => {
+              onClear(here.afterSection)
+              // Scroll to the newly unlocked section after re-render
+              setTimeout(() => {
+                const nextEl = document.getElementById(`sec-${session.id}-${i + 1}`)
+                if (nextEl) nextEl.scrollIntoView({ behavior: 'smooth', block: 'start' })
+              }, 80)
+            }}
+          />
+        </div>
       )
     }
   }
