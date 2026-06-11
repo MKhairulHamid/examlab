@@ -26,7 +26,7 @@ function Dashboard() {
   const navigate = useNavigate()
   const { user, profile } = useAuthStore()
   const { exams, fetchExams } = useExamStore()
-  const { isSubscribed, fetchSubscription, fetchEnrollments } = usePurchaseStore()
+  const { isSubscribed, fetchSubscription, fetchEnrollments, fetchPromoAccess, hasExamAccess } = usePurchaseStore()
   const [showEnrollmentModal, setShowEnrollmentModal] = useState(false)
   const [streakStats, setStreakStats] = useState(null)
   const [examResults, setExamResults] = useState([])
@@ -42,6 +42,7 @@ function Dashboard() {
     if (user) {
       fetchSubscription(user.id)
       fetchEnrollments(user.id)
+      fetchPromoAccess(user.id)
       initializeStreak()
       loadExamResults()
       loadExamDates()
@@ -513,7 +514,7 @@ function Dashboard() {
                   <div className="flex gap-2">
                     <Button variant="primary" size="sm" className="flex-1"
                             onClick={e => { e.stopPropagation(); navigate(`/exam/${exam.slug}`) }}>
-                      {isSubscribed ? 'Start Practicing' : 'Try Free'}
+                      {(isSubscribed || hasExamAccess(exam.id)) ? 'Start Practicing' : 'Try Free'}
                     </Button>
                     <Button variant="outline" size="sm"
                             onClick={e => { e.stopPropagation(); setSelectedExamForDate(exam); setShowExamDateModal(true) }}

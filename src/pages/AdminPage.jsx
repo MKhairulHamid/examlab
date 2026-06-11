@@ -5,12 +5,14 @@ import { getExamTypes } from '../services/adminService'
 import ExamTypeForm from '../components/admin/ExamTypeForm'
 import QuestionSetForm from '../components/admin/QuestionSetForm'
 import QuestionSetManager from '../components/admin/QuestionSetManager'
+import PromoCodeManager from '../components/admin/PromoCodeManager'
 import './AdminPage.css'
 
 const TABS = [
   { id: 'exam-types', label: 'Exam Types' },
   { id: 'question-sets', label: 'Question Sets' },
   { id: 'manage-questions', label: 'Manage Questions' },
+  { id: 'promo-codes', label: 'Promo Codes' },
 ]
 
 export default function AdminPage() {
@@ -124,6 +126,12 @@ export default function AdminPage() {
 
         {activeTab === 'manage-questions' && (
           <QuestionSetManager
+            examTypes={examTypes}
+          />
+        )}
+
+        {activeTab === 'promo-codes' && (
+          <PromoCodeManager
             examTypes={examTypes}
           />
         )}

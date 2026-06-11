@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import SessionCourse from '../components/study/SessionCourse'
 import useAuthStore from '../stores/authStore'
 import usePurchaseStore from '../stores/purchaseStore'
+import useExamStore from '../stores/examStore'
 import EnrollmentModal from '../components/enrollment/EnrollmentModal'
 import DashboardHeader from '../components/layout/DashboardHeader'
 import { getSessionCourse } from '../utils/sessionCourses'
@@ -657,14 +658,28 @@ function StudyMaterial() {
     const { slug } = useParams()
     const navigate = useNavigate()
     const { user } = useAuthStore()
-    const { isSubscribed, fetchSubscription } = usePurchaseStore()
+    const { getExamBySlug } = useExamStore()
+    const { isSubscribed, fetchSubscription, fetchPromoAccess, hasExamAccess } = usePurchaseStore()
     const [showPurchaseModal, setShowPurchaseModal] = useState(false)
+    const [examTypeId, setExamTypeId] = useState(null)
 
     useEffect(() => {
-        if (user) fetchSubscription(user.id)
+        if (user) {
+            fetchSubscription(user.id)
+            fetchPromoAccess(user.id)
+        }
     }, [user])
 
-    const hasAccess = isSubscribed
+    useEffect(() => {
+        let cancelled = false
+        getExamBySlug(slug).then(exam => {
+            if (!cancelled) setExamTypeId(exam?.id || null)
+        })
+        return () => { cancelled = true }
+    }, [slug])
+
+    // Paid subscription unlocks all exams; a redeemed promo unlocks just this one.
+    const hasAccess = isSubscribed || hasExamAccess(examTypeId)
     const onSubscribe = () => setShowPurchaseModal(true)
 
     const sessionCourse = getSessionCourse(slug)

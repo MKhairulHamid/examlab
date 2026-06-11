@@ -24,7 +24,7 @@ function ExamInterface() {
   
   const { user } = useAuthStore()
   const { loadQuestionSet, currentQuestionSet, getExamBySlug } = useExamStore()
-  const { isSubscribed, fetchSubscription } = usePurchaseStore()
+  const { isSubscribed, fetchSubscription, fetchPromoAccess } = usePurchaseStore()
   const { 
     startExam,
     startOrResumeExam,
@@ -57,8 +57,9 @@ function ExamInterface() {
     const initialize = async () => {
       if (setId && user) {
         try {
-          // SECURITY: Step 1 - Fetch user's subscription
+          // SECURITY: Step 1 - Fetch user's subscription and promo access
           await fetchSubscription(user.id)
+          await fetchPromoAccess(user.id)
 
           // SECURITY: Step 2 - Load question set metadata
           const questionSet = await loadQuestionSet(setId)
@@ -73,12 +74,12 @@ function ExamInterface() {
           // SECURITY: Step 3 - Check if it's a free sample
           const isFree = questionSet.is_free_sample || questionSet.price_cents === 0
 
-          // SECURITY: Step 4 - Verify access (subscription OR free)
-          const { isSubscribed: subscribed } = usePurchaseStore.getState()
-          if (!isFree && !subscribed) {
-            console.warn('🔒 Access denied: Subscription required', { setId, userId: user.id, isFree })
+          // SECURITY: Step 4 - Verify access (free, subscription, OR promo for this exam)
+          const hasExamAccess = usePurchaseStore.getState().hasExamAccess(questionSet.exam_type_id)
+          if (!isFree && !hasExamAccess) {
+            console.warn('🔒 Access denied: Subscription or promo code required', { setId, userId: user.id, isFree })
             setAccessDenied(true)
-            setAccessMessage('This question set requires an active subscription to access.')
+            setAccessMessage('This question set requires an active subscription or a promo code to access.')
             setLoading(false)
             return
           }

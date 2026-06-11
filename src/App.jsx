@@ -18,6 +18,7 @@ const PaymentSuccess = lazy(() => import('./pages/PaymentSuccess'))
 const StudyMaterial = lazy(() => import('./pages/StudyMaterial'))
 const AdminPage = lazy(() => import('./pages/AdminPage'))
 const AwsAiPractitioner = lazy(() => import('./pages/AwsAiPractitioner'))
+const RedeemPromo = lazy(() => import('./pages/RedeemPromo'))
 
 // Protected Route wrapper — by the time this renders, auth loading is already done
 function ProtectedRoute({ children }) {
@@ -95,6 +96,8 @@ function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/aws-ai-practitioner" element={<AwsAiPractitioner />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        {/* Public so logged-out visitors land here; sign-in happens in-page. */}
+        <Route path="/redeem" element={<RedeemPromo />} />
 
         {/* Protected routes */}
         <Route

@@ -68,3 +68,21 @@ export async function upsertQuestionItems(questionSetId, items) {
 export async function deleteQuestionItems(ids) {
   return callAdminApi({ action: 'deleteQuestionItems', ids })
 }
+
+// ── Promo Codes ───────────────────────────────────────────────────────────────
+
+export async function getPromoCodes() {
+  return callAdminApi({ action: 'getPromoCodes' })
+}
+
+export async function createPromoCode(fields) {
+  return callAdminApi({ action: 'createPromoCode', ...fields })
+}
+
+export async function updatePromoCode(id, isActive) {
+  return callAdminApi({ action: 'updatePromoCode', id, is_active: isActive })
+}
+
+export async function getPromoRedemptions(promoCodeId) {
+  return callAdminApi({ action: 'getPromoRedemptions', promo_code_id: promoCodeId })
+}

@@ -198,13 +198,23 @@ function Landing() {
                 The AWS AI Practitioner proves you understand AI, machine learning, and generative AI at the depth that matters — for every role, not just developers. 16 structured study sessions + exam-realistic practice questions.
               </p>
 
-              <div className="hero-buttons" style={{ marginBottom: '2rem' }}>
+              <div className="hero-buttons" style={{ marginBottom: '1rem' }}>
                 <button onClick={openSignup} className="btn-primary inline-flex items-center justify-center gap-2" style={{ fontSize: '1.0625rem', padding: '1rem 2rem' }}>
                   Start Free <ArrowRight size={18} />
                 </button>
                 <button onClick={() => scrollTo('domains')} className="btn-secondary" style={{ fontSize: '0.9375rem', padding: '1rem 1.5rem' }}>
                   See What's Covered
                 </button>
+              </div>
+
+              <div style={{ marginBottom: '2rem' }}>
+                <button
+                  onClick={() => navigate('/redeem')}
+                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#00D4AA] bg-transparent border-none cursor-pointer p-0 hover:underline"
+                >
+                  Have a promo code from a friend? Redeem it <ArrowRight size={15} />
+                </button>
+                <p className="text-white/45 text-xs mt-1">Sign in to apply your code.</p>
               </div>
 
               <div className="flex gap-x-6 gap-y-2 flex-wrap text-white/65 text-sm">

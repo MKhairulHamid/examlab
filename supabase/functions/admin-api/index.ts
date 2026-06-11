@@ -16,6 +16,23 @@ function jsonResponse(body: unknown, status = 200) {
   })
 }
 
+// Build a promo code "based on the target": slugify the target group into an
+// uppercase prefix, then append a short random suffix for uniqueness.
+// e.g. "Uni Friends WA" -> "UNIFRIENDS-7K2D"
+function generatePromoCode(targetGroup: string): string {
+  const prefix = (targetGroup || 'PROMO')
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, '')
+    .slice(0, 12) || 'PROMO'
+  // Avoid ambiguous characters (0/O, 1/I) in the random part.
+  const alphabet = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'
+  let suffix = ''
+  for (let i = 0; i < 4; i++) {
+    suffix += alphabet[Math.floor(Math.random() * alphabet.length)]
+  }
+  return `${prefix}-${suffix}`
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -262,6 +279,91 @@ Deno.serve(async (req) => {
 
         if (error) return jsonResponse({ error: error.message }, 500)
         return jsonResponse({ success: true, deleted: ids.length })
+      }
+
+      // ── Promo Codes ─────────────────────────────────────────────────────────
+      case 'getPromoCodes': {
+        const { data, error } = await supabase
+          .from('promo_codes')
+          .select('id, code, exam_type_id, target_group, duration_days, max_uses, used_count, is_active, created_at, exam_types ( name, slug )')
+          .order('created_at', { ascending: false })
+
+        if (error) return jsonResponse({ error: error.message }, 500)
+        return jsonResponse({ data })
+      }
+
+      case 'createPromoCode': {
+        const { exam_type_id, target_group, duration_days, max_uses } = body
+
+        if (!exam_type_id || !target_group) {
+          return jsonResponse({ error: 'exam_type_id and target_group are required.' }, 400)
+        }
+        if (![1, 3, 7, 30].includes(Number(duration_days))) {
+          return jsonResponse({ error: 'duration_days must be one of 1, 3, 7, 30.' }, 400)
+        }
+        if (!Number.isInteger(Number(max_uses)) || Number(max_uses) < 1) {
+          return jsonResponse({ error: 'max_uses must be a positive integer.' }, 400)
+        }
+
+        // Generate a unique code, retrying on the rare collision.
+        let inserted = null
+        let lastError = null
+        for (let attempt = 0; attempt < 5; attempt++) {
+          const code = generatePromoCode(target_group)
+          const { data, error } = await supabase
+            .from('promo_codes')
+            .insert({
+              code,
+              exam_type_id,
+              target_group,
+              duration_days: Number(duration_days),
+              max_uses: Number(max_uses),
+            })
+            .select('id, code, exam_type_id, target_group, duration_days, max_uses, used_count, is_active, created_at, exam_types ( name, slug )')
+            .single()
+
+          if (!error) { inserted = data; break }
+          // 23505 = unique_violation (code collision) — retry with a new code.
+          if (error.code !== '23505') return jsonResponse({ error: error.message }, 500)
+          lastError = error
+        }
+
+        if (!inserted) {
+          return jsonResponse({ error: lastError?.message || 'Could not generate a unique code.' }, 500)
+        }
+        return jsonResponse({ data: inserted })
+      }
+
+      case 'updatePromoCode': {
+        const { id, is_active } = body
+        if (!id) return jsonResponse({ error: 'id is required.' }, 400)
+        if (typeof is_active !== 'boolean') {
+          return jsonResponse({ error: 'is_active (boolean) is required.' }, 400)
+        }
+
+        const { data, error } = await supabase
+          .from('promo_codes')
+          .update({ is_active })
+          .eq('id', id)
+          .select('id, code, exam_type_id, target_group, duration_days, max_uses, used_count, is_active, created_at, exam_types ( name, slug )')
+          .single()
+
+        if (error) return jsonResponse({ error: error.message }, 500)
+        return jsonResponse({ data })
+      }
+
+      case 'getPromoRedemptions': {
+        const { promo_code_id } = body
+        if (!promo_code_id) return jsonResponse({ error: 'promo_code_id is required.' }, 400)
+
+        const { data, error } = await supabase
+          .from('promo_redemptions')
+          .select('id, user_id, redeemed_at, expires_at')
+          .eq('promo_code_id', promo_code_id)
+          .order('redeemed_at', { ascending: false })
+
+        if (error) return jsonResponse({ error: error.message }, 500)
+        return jsonResponse({ data })
       }
 
       default:

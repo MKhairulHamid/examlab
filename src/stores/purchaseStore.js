@@ -4,6 +4,7 @@
 
 import { create } from 'zustand'
 import paymentService from '../services/paymentService'
+import supabase from '../services/supabase'
 
 const usePurchaseStore = create((set, get) => ({
   // State
@@ -11,6 +12,8 @@ const usePurchaseStore = create((set, get) => ({
   subscriptionPlans: [],
   isSubscribed: false,
   enrolledExamIds: [],
+  // exam_type_ids the user has active (non-expired) promo access to
+  promoAccessExamIds: [],
   loading: false,
   error: null,
   checkoutLoading: false,
@@ -88,10 +91,44 @@ const usePurchaseStore = create((set, get) => ({
   },
 
   /**
+   * Fetch the exam_type_ids this user has active (non-expired) promo access to.
+   * Backed by the promo_redemptions table (RLS: users read only their own rows).
+   */
+  fetchPromoAccess: async (userId) => {
+    if (!userId) return
+    try {
+      const { data, error } = await supabase
+        .from('promo_redemptions')
+        .select('exam_type_id')
+        .eq('user_id', userId)
+        .gt('expires_at', new Date().toISOString())
+
+      if (error) {
+        console.error('Error fetching promo access:', error)
+        return
+      }
+      const ids = [...new Set((data || []).map((r) => r.exam_type_id))]
+      set({ promoAccessExamIds: ids })
+    } catch (error) {
+      console.error('Error fetching promo access:', error)
+    }
+  },
+
+  /**
    * Check if user has access (subscription grants full access)
    */
   hasAccess: (questionSetId) => {
     return get().isSubscribed
+  },
+
+  /**
+   * Exam-aware access check: a paid subscription unlocks everything, while a
+   * redeemed promo code unlocks only its specific exam for the duration.
+   */
+  hasExamAccess: (examTypeId) => {
+    const { isSubscribed, promoAccessExamIds } = get()
+    if (isSubscribed) return true
+    return !!examTypeId && promoAccessExamIds.includes(examTypeId)
   },
 
   // ===== ENROLLMENT ACTIONS =====
@@ -147,7 +184,7 @@ const usePurchaseStore = create((set, get) => ({
    * Clear subscription and enrollment state
    */
   clearCache: () => {
-    set({ subscription: null, isSubscribed: false, enrolledExamIds: [] })
+    set({ subscription: null, isSubscribed: false, enrolledExamIds: [], promoAccessExamIds: [] })
   }
 }))
 

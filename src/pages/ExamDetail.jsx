@@ -21,7 +21,7 @@ function ExamDetail() {
   const navigate = useNavigate()
   const { getExamBySlug, fetchQuestionSets, questionSets } = useExamStore()
   const { user } = useAuthStore()
-  const { isSubscribed, fetchSubscription } = usePurchaseStore()
+  const { isSubscribed, fetchSubscription, fetchPromoAccess, hasExamAccess } = usePurchaseStore()
   const [exam, setExam] = useState(null)
   const [showPurchaseModal, setShowPurchaseModal] = useState(false)
   const [examResults, setExamResults] = useState([])
@@ -47,6 +47,7 @@ function ExamDetail() {
 
         if (user) {
           await fetchSubscription(user.id)
+          await fetchPromoAccess(user.id)
           await loadExamResults(examData.id)
         }
       }
@@ -140,7 +141,8 @@ function ExamDetail() {
     }
   }
 
-  const hasAccess = isSubscribed
+  // Paid subscription unlocks all exams; a redeemed promo unlocks just this one.
+  const hasAccess = isSubscribed || (exam ? hasExamAccess(exam.id) : false)
   const freeSet = questionSets.find(set => set.is_free_sample || set.price_cents === 0)
   const paidSets = questionSets.filter(set => !set.is_free_sample && set.price_cents > 0)
   const officialUrl = exam ? getOfficialResourceUrl(exam) : null
@@ -474,7 +476,7 @@ function ExamDetail() {
             <div className="col-span-full empty-state">
               <div>Loading question sets...</div>
             </div>
-          ) : paidSets.length > 0 && !freeSet && !isSubscribed ? (
+          ) : paidSets.length > 0 && !freeSet && !hasAccess ? (
             <div className="col-span-full bg-white/[0.08] backdrop-blur-xl rounded-2xl p-10 border border-white/15 text-center">
               <div className="mb-4 flex justify-center"><Lock className="w-10 h-10 text-white/60" /></div>
               <h3 className="text-xl font-bold text-white mb-2">Subscribe to Access Question Sets</h3>
