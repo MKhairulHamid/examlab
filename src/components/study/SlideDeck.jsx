@@ -24,6 +24,50 @@ function BrandLockup({ size = 22, faded = false }) {
   )
 }
 
+// A small neural-network / cloud-graph: layered nodes that pulse while signal
+// pulses travel along the connections. On-theme motion for AI/cloud material
+// that keeps the recorded video alive without distracting from the content.
+const NET = (() => {
+  const L0 = [50, 100, 150].map(y => ({ x: 30, y }))
+  const L1 = [40, 90, 140, 180].map(y => ({ x: 100, y }))
+  const L2 = [75, 125].map(y => ({ x: 170, y }))
+  const edges = []
+  L0.forEach(a => L1.forEach(b => edges.push([a, b])))
+  L1.forEach(a => L2.forEach(b => edges.push([a, b])))
+  return { edges, nodes: [...L0, ...L1, ...L2] }
+})()
+
+function NetworkMotif({ size = 360, opacity = 0.16, style }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 200 200" style={{ opacity, ...style }} aria-hidden="true">
+      {/* Connections */}
+      <g stroke={TEAL} strokeWidth="0.5" opacity="0.45">
+        {NET.edges.map(([a, b], i) => (
+          <line key={i} x1={a.x} y1={a.y} x2={b.x} y2={b.y} />
+        ))}
+      </g>
+      {/* Signal pulses travelling along a subset of edges */}
+      {NET.edges.filter((_, i) => i % 2 === 0).map(([a, b], i) => (
+        <circle key={i} r="2.2" fill="#7CF5DE">
+          <animateMotion
+            dur={`${2.4 + (i % 5) * 0.5}s`}
+            begin={`${(i * 0.35).toFixed(2)}s`}
+            repeatCount="indefinite"
+            path={`M${a.x},${a.y} L${b.x},${b.y}`}
+          />
+        </circle>
+      ))}
+      {/* Nodes pulse */}
+      {NET.nodes.map((n, i) => (
+        <circle key={i} cx={n.x} cy={n.y} r="3" fill={TEAL}>
+          <animate attributeName="r" values="2.4;3.8;2.4" dur="3s" begin={`${(i * 0.2).toFixed(2)}s`} repeatCount="indefinite" />
+          <animate attributeName="opacity" values="0.5;1;0.5" dur="3s" begin={`${(i * 0.2).toFixed(2)}s`} repeatCount="indefinite" />
+        </circle>
+      ))}
+    </svg>
+  )
+}
+
 // Builds the viewer-facing slide list from existing session data. These slides
 // are the on-screen backdrop the learner records over — content only, no
 // instructions directed at the presenter.
@@ -118,12 +162,16 @@ export default function SlideDeck({ session, onClose }) {
     >
       <style>{KEYFRAMES}</style>
 
-      {/* Animated ambient background — subtle, material-agnostic motion */}
+      {/* Animated ambient background — subtle, on-theme motion */}
       <div aria-hidden="true" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
         <span style={orb('-10%', '-8%', 460, 'rgba(0,212,170,0.18)', 0)} />
         <span style={orb('70%', '55%', 520, 'rgba(59,130,246,0.16)', 3)} />
         <span style={orb('35%', '80%', 360, 'rgba(0,212,170,0.10)', 6)} />
         <span style={{ ...gridStyle }} />
+        {/* Neural/cloud network — drifts slowly in the top-right */}
+        <div style={{ position: 'absolute', top: '-4%', right: '-3%', animationName: 'sd-float', animationDuration: '18s', animationTimingFunction: 'ease-in-out', animationIterationCount: 'infinite' }}>
+          <NetworkMotif size={420} opacity={0.16} />
+        </div>
       </div>
 
       {/* Top bar — branded */}
