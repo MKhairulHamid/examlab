@@ -232,9 +232,13 @@ export default function SlideDeck({ session, onClose }) {
         )}
       </div>
 
-      {/* Persistent brand watermark — so YouTube viewers always see the source */}
-      <div aria-hidden="true" style={{ position: 'absolute', right: '1.6rem', bottom: '4.5rem', zIndex: 2 }}>
-        <BrandLockup size={18} faded />
+      {/* Persistent brand watermark — kept inside the content column and lifted
+          above the nav bar so a recording crop that hides the on-screen buttons
+          still captures the logo. */}
+      <div aria-hidden="true" style={{ position: 'absolute', left: 0, right: 0, bottom: '6rem', zIndex: 2, pointerEvents: 'none', display: 'flex', justifyContent: 'center' }}>
+        <div style={{ width: '100%', maxWidth: '1100px', padding: '0 clamp(1.5rem, 6vw, 5rem)', boxSizing: 'border-box', display: 'flex', justifyContent: 'flex-end' }}>
+          <BrandLockup size={18} faded />
+        </div>
       </div>
 
       {/* Bottom nav */}
