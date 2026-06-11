@@ -120,6 +120,7 @@ const aifC01Course = {
         },
         {
           heading: 'Three ways a machine can learn',
+          interactive: 'learning-types',
           body: 'The exam will describe a scenario and ask you to pick the learning method. One question unlocks most of them: do we have labelled examples, or not?',
           bullets: [
             'Supervised learning — you provide labelled data: every input has a known correct answer. The model learns to map inputs to outputs. Used for classification (e.g., spam vs. not spam) and regression (e.g., predict tomorrow\'s sales figure).',
@@ -590,6 +591,7 @@ const aifC01Course = {
         },
         {
           heading: 'From text to numbers: the vocabulary you need',
+          interactive: 'tokenizer',
           body: 'Four terms describe that text-to-numbers pipeline, and all four appear on the exam.',
           bullets: [
             'Token — a chunk of text (roughly a word or word-piece) the model processes. Pricing and context limits are measured in tokens.',
@@ -1565,6 +1567,7 @@ const aifC01Course = {
         },
         {
           heading: 'Eight approaches, one table',
+          interactive: 'rag-vs-finetune',
           body: 'The exam describes a goal and asks you to name the approach. This table is the answer key.',
           table: {
             headers: ['Approach', 'When to use'],
@@ -1724,6 +1727,7 @@ const aifC01Course = {
         },
         {
           heading: 'The automated metrics: ROUGE, BLEU, BERTScore',
+          interactive: 'ngram-overlap',
           body: 'Three named metrics, three jobs. The exam tests the mapping, not the math.',
           table: {
             headers: ['Metric', 'Measures', 'Typical use'],
@@ -2056,6 +2060,7 @@ const aifC01Course = {
         },
         {
           heading: 'The tradeoff you can\'t avoid',
+          interactive: 'interpretability-tradeoff',
           body: 'Interpretability and raw performance pull in opposite directions, and the right balance depends on the stakes.',
           bullets: [
             'Higher interpretability often means lower raw performance — and vice versa.',

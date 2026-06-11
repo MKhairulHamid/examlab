@@ -490,9 +490,356 @@ function InferenceParametersWidget() {
   )
 }
 
+// Shared chrome for the simpler widgets (card + "Try it" header + intro).
+function WidgetShell({ title, intro, children }) {
+  return (
+    <div style={{
+      background: '#fafbfd', border: '2px solid rgba(0,212,170,0.3)',
+      borderRadius: '1rem', padding: '1.25rem', margin: '1.25rem 0',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.6rem' }}>
+        <span style={{
+          fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase',
+          letterSpacing: '0.06em', color: 'white', background: TEAL_DARK,
+          padding: '0.2rem 0.6rem', borderRadius: '0.35rem',
+        }}>Try it</span>
+        <span style={{ fontSize: '0.875rem', fontWeight: 700, color: NAVY }}>{title}</span>
+      </div>
+      {intro && <p style={{ fontSize: '0.8125rem', color: '#475569', lineHeight: 1.6, margin: '0 0 0.875rem' }}>{intro}</p>}
+      {children}
+    </div>
+  )
+}
+
+// ── Session 1: supervised / unsupervised / reinforcement sorter ───────────────
+function LearningTypesWidget() {
+  const CATS = [
+    { id: 'sup', label: 'Supervised',    color: '#2563eb', desc: 'Learns from labeled examples (input → known answer)' },
+    { id: 'uns', label: 'Unsupervised',  color: '#7c3aed', desc: 'Finds hidden structure in unlabeled data' },
+    { id: 'rl',  label: 'Reinforcement', color: '#16a34a', desc: 'Learns by trial, guided by rewards and penalties' },
+  ]
+  const ITEMS = [
+    { t: "Predict a house's price from thousands of past labeled sales", a: 'sup', why: 'Each example carries a known price label to learn from.' },
+    { t: 'Group shoppers into segments with no predefined categories', a: 'uns', why: 'No labels — the model discovers the clusters itself.' },
+    { t: 'Teach a warehouse robot to walk by rewarding forward progress', a: 'rl', why: 'Learning is driven by reward signals from its own actions.' },
+    { t: 'Flag an email as spam or not-spam from labeled inboxes', a: 'sup', why: 'Trained on examples already labeled spam / not-spam.' },
+    { t: 'Spot unusual credit-card activity with no examples of fraud', a: 'uns', why: 'Anomaly detection finds outliers without labels.' },
+    { t: 'Train a game agent that improves the more games it wins', a: 'rl', why: 'It optimizes a reward (winning) through repeated play.' },
+  ]
+  const [picks, setPicks] = useState({})
+  const score = ITEMS.reduce((s, it, i) => s + (picks[i] === it.a ? 1 : 0), 0)
+  const answered = Object.keys(picks).length
+
+  return (
+    <WidgetShell
+      title="Three Ways a Machine Learns — Sort It"
+      intro="The paradigm is decided by the training signal. Tag each scenario and the card tells you instantly whether you matched the signal to the right method."
+    >
+      <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '0.875rem' }}>
+        {CATS.map(c => (
+          <div key={c.id} style={{ flex: '1 1 150px', fontSize: '0.7rem', color: '#475569', borderLeft: `3px solid ${c.color}`, paddingLeft: '0.5rem' }}>
+            <strong style={{ color: c.color }}>{c.label}</strong><br />{c.desc}
+          </div>
+        ))}
+      </div>
+      {ITEMS.map((it, i) => {
+        const chosen = picks[i]
+        const correct = chosen === it.a
+        return (
+          <div key={i} style={{ background: 'white', border: '1.5px solid #e2e8f0', borderRadius: '0.6rem', padding: '0.6rem 0.7rem', marginBottom: '0.6rem' }}>
+            <div style={{ fontSize: '0.82rem', color: NAVY, marginBottom: '0.5rem', lineHeight: 1.45 }}>{it.t}</div>
+            <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+              {CATS.map(c => {
+                const sel = chosen === c.id
+                return (
+                  <button key={c.id} onClick={() => setPicks(p => ({ ...p, [i]: c.id }))}
+                    style={{
+                      fontSize: '0.72rem', fontWeight: 700, padding: '0.34rem 0.65rem', borderRadius: '0.4rem', cursor: 'pointer',
+                      border: `1.5px solid ${sel ? c.color : '#cbd5e1'}`,
+                      background: sel ? c.color : 'white', color: sel ? 'white' : '#475569',
+                    }}>{c.label}</button>
+                )
+              })}
+            </div>
+            {chosen && (
+              <div style={{ marginTop: '0.5rem', fontSize: '0.72rem', fontWeight: 600, lineHeight: 1.45, color: correct ? '#15803d' : '#b91c1c' }}>
+                {correct ? '✓ Correct — ' : '✗ Not quite — '}{it.why}
+              </div>
+            )}
+          </div>
+        )
+      })}
+      <div style={{ fontSize: '0.8rem', fontWeight: 700, color: NAVY, marginTop: '0.4rem' }}>
+        Score: {score} / {ITEMS.length}{answered === ITEMS.length && score === ITEMS.length ? ' — perfect!' : ''}
+      </div>
+    </WidgetShell>
+  )
+}
+
+// ── Session 4: tokenizer (text → subword tokens → IDs → cost) ─────────────────
+function TokenizerWidget() {
+  const [text, setText] = useState('Tokenization turns language into numbers!')
+  const tokens = useMemo(() => {
+    const out = []
+    let wi = 0
+    for (const seg of text.split(/\s+/)) {
+      if (!seg) continue
+      const parts = seg.match(/[A-Za-z]+|[0-9]+|[^\sA-Za-z0-9]/g) || []
+      for (const p of parts) {
+        if (/^[A-Za-z]+$/.test(p) && p.length > 5) {
+          for (let i = 0; i < p.length; i += 4) out.push({ t: p.slice(i, i + 4), wi })
+        } else out.push({ t: p, wi })
+      }
+      wi++
+    }
+    return out
+  }, [text])
+  const id = t => { let h = 0; for (const ch of t) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return h % 50000 }
+  const chars = text.length
+  const ratio = tokens.length ? chars / tokens.length : 0
+  const costPer10k = tokens.length * 10000 / 1e6 * 0.30
+  const TINTS = ['#e0f2fe', '#ede9fe'], TEXTS = ['#0369a1', '#6d28d9']
+
+  return (
+    <WidgetShell
+      title="Tokenizer — How the Model Reads Text"
+      intro="Models can't read words — they break text into subword tokens, each mapped to an integer ID. Token count drives both cost and context limits. Type below and watch it split."
+    >
+      <textarea value={text} onChange={e => setText(e.target.value)} rows={2}
+        style={{ width: '100%', boxSizing: 'border-box', fontSize: '0.9rem', padding: '0.6rem 0.7rem', border: '1.5px solid #cbd5e1', borderRadius: '0.6rem', resize: 'vertical', fontFamily: 'inherit', marginBottom: '0.75rem' }} />
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem', marginBottom: '0.75rem' }}>
+        {tokens.length === 0 && <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>Type something…</span>}
+        {tokens.map((tk, i) => (
+          <span key={i} style={{
+            fontFamily: 'ui-monospace, monospace', fontSize: '0.78rem',
+            background: TINTS[tk.wi % 2], color: TEXTS[tk.wi % 2],
+            borderRadius: '0.3rem', padding: '0.12rem 0.4rem', whiteSpace: 'pre',
+          }}>{tk.t}<sub style={{ fontSize: '0.62em', opacity: 0.65 }}> {id(tk.t)}</sub></span>
+        ))}
+      </div>
+      <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+        {[
+          { k: 'Tokens', v: tokens.length, c: TEAL_DARK },
+          { k: 'Characters', v: chars, c: NAVY },
+          { k: 'Chars / token', v: ratio.toFixed(1), c: NAVY },
+          { k: 'Cost / 10K calls', v: `$${costPer10k.toFixed(2)}`, c: '#b45309' },
+        ].map(s => (
+          <div key={s.k} style={{ flex: '1 1 90px', textAlign: 'center', background: 'white', border: '1.5px solid #e2e8f0', borderRadius: '0.6rem', padding: '0.5rem 0.25rem' }}>
+            <div style={{ fontSize: '1.2rem', fontWeight: 800, color: s.c }}>{s.v}</div>
+            <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{s.k}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ fontSize: '0.6875rem', color: '#94a3b8', marginTop: '0.6rem', lineHeight: 1.5 }}>
+        Simplified split (real BPE tokenizers differ), but the lesson holds: long words become several tokens, punctuation counts, and more tokens = more cost. Rule of thumb: ~4 characters ≈ 1 token. Cost shown at $0.30 / 1M tokens.
+      </div>
+    </WidgetShell>
+  )
+}
+
+// ── Session 10: RAG vs fine-tuning decision guide ─────────────────────────────
+function RagVsFineTuneWidget() {
+  const QS = [
+    { id: 'facts', q: 'Does the answer depend on private or frequently-changing facts (your docs, policies, catalog, live data)?' },
+    { id: 'skill', q: "Do you need the model to learn a new skill, format, or consistent tone it can't currently produce?" },
+    { id: 'data',  q: 'Do you already have a large, high-quality labeled dataset to train on?' },
+  ]
+  const [a, setA] = useState({})
+  const { facts, skill, data } = a
+  const allAnswered = QS.every(q => a[q.id] !== undefined)
+
+  let rec = null
+  if (allAnswered) {
+    if (!facts && !skill) rec = { pick: 'Prompt Engineering', color: TEAL_DARK,
+      why: 'No new facts and no new behavior needed — start with the cheapest lever. Craft sharper prompts and few-shot examples before spending on anything heavier.', aws: 'Just the base model on Amazon Bedrock.' }
+    else if (facts && !skill) rec = { pick: 'RAG', color: '#2563eb',
+      why: 'You need fresh or proprietary facts but not new behavior. Retrieve the right documents and inject them into the prompt — no training, always current.', aws: 'Amazon Bedrock Knowledge Bases + a vector store (OpenSearch / Aurora / pgvector).' }
+    else if (skill && data && !facts) rec = { pick: 'Fine-Tuning', color: '#7c3aed',
+      why: 'You need new behavior and you have the data to teach it. Fine-tune to bake in the skill, format, or tone.', aws: 'Custom models on Amazon Bedrock or Amazon SageMaker.' }
+    else if (skill && data && facts) rec = { pick: 'RAG + Fine-Tuning', color: '#be185d',
+      why: 'You need both fresh facts (RAG) and new behavior (fine-tuning). Combine them — fine-tune for the skill, retrieve for the facts.', aws: 'Bedrock Knowledge Bases + a custom fine-tuned model.' }
+    else rec = { pick: 'Gather Data First — RAG / Prompt for now', color: '#b45309',
+      why: "Fine-tuning is the right end-goal for new behavior, but it needs a quality dataset you don't have yet. Ship with RAG or prompt engineering while you collect labeled examples.", aws: 'Bedrock Knowledge Bases now; fine-tune later.' }
+  }
+
+  return (
+    <WidgetShell
+      title="RAG vs Fine-Tuning — Decide It"
+      intro="The exam rewards decision rules, not trivia. Answer these three and the guide names the right adaptation approach — and why."
+    >
+      {QS.map(q => (
+        <div key={q.id} style={{ background: 'white', border: '1.5px solid #e2e8f0', borderRadius: '0.6rem', padding: '0.6rem 0.7rem', marginBottom: '0.6rem' }}>
+          <div style={{ fontSize: '0.82rem', color: NAVY, marginBottom: '0.5rem', lineHeight: 1.45 }}>{q.q}</div>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            {[['Yes', true], ['No', false]].map(([lab, val]) => {
+              const sel = a[q.id] === val
+              return (
+                <button key={lab} onClick={() => setA(p => ({ ...p, [q.id]: val }))}
+                  style={{
+                    flex: 1, fontSize: '0.78rem', fontWeight: 700, padding: '0.42rem', borderRadius: '0.4rem', cursor: 'pointer',
+                    border: `1.5px solid ${sel ? (val ? '#16a34a' : '#dc2626') : '#cbd5e1'}`,
+                    background: sel ? (val ? '#16a34a' : '#dc2626') : 'white', color: sel ? 'white' : '#475569',
+                  }}>{lab}</button>
+              )
+            })}
+          </div>
+        </div>
+      ))}
+      {rec ? (
+        <div style={{ background: 'white', border: `2px solid ${rec.color}`, borderRadius: '0.7rem', padding: '0.85rem', marginTop: '0.4rem' }}>
+          <div style={{ fontSize: '0.66rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Recommended approach</div>
+          <div style={{ fontSize: '1.15rem', fontWeight: 800, color: rec.color, margin: '0.15rem 0 0.4rem' }}>{rec.pick}</div>
+          <div style={{ fontSize: '0.8rem', color: '#475569', lineHeight: 1.55 }}>{rec.why}</div>
+          <div style={{ fontSize: '0.72rem', color: NAVY, marginTop: '0.5rem', fontWeight: 700 }}>On AWS: <span style={{ fontWeight: 400, color: '#475569' }}>{rec.aws}</span></div>
+        </div>
+      ) : (
+        <div style={{ fontSize: '0.75rem', color: '#94a3b8', textAlign: 'center', padding: '0.5rem' }}>Answer all three to see the recommendation.</div>
+      )}
+    </WidgetShell>
+  )
+}
+
+// ── Session 11: ROUGE / BLEU word-overlap scoring ─────────────────────────────
+function NgramOverlapWidget() {
+  const REFERENCE = 'the cat sat on the warm mat'
+  const PRESETS = [
+    { label: 'Exact match', text: 'the cat sat on the warm mat' },
+    { label: 'Missing words', text: 'the cat sat on the mat' },
+    { label: 'Same meaning, new words', text: 'a feline rested upon a cozy rug' },
+    { label: 'Unrelated', text: 'markets fell sharply last tuesday' },
+  ]
+  const [cand, setCand] = useState(PRESETS[1].text)
+  const norm = s => (s.toLowerCase().match(/[a-z0-9']+/g) || [])
+  const m = useMemo(() => {
+    const ref = norm(REFERENCE), c = norm(cand)
+    const cnt = arr => { const x = new Map(); arr.forEach(w => x.set(w, (x.get(w) || 0) + 1)); return x }
+    const rc = cnt(ref), cc = cnt(c)
+    let uni = 0; for (const [w, n] of cc) uni += Math.min(n, rc.get(w) || 0)
+    const grams = arr => { const r = []; for (let i = 0; i < arr.length - 1; i++) r.push(arr[i] + ' ' + arr[i + 1]); return r }
+    const rb = cnt(grams(ref)), cb = cnt(grams(c))
+    let bi = 0; for (const [w, n] of cb) bi += Math.min(n, rb.get(w) || 0)
+    const M = ref.length, Nn = c.length
+    const dp = Array.from({ length: M + 1 }, () => new Array(Nn + 1).fill(0))
+    for (let i = 1; i <= M; i++) for (let j = 1; j <= Nn; j++)
+      dp[i][j] = ref[i - 1] === c[j - 1] ? dp[i - 1][j - 1] + 1 : Math.max(dp[i - 1][j], dp[i][j - 1])
+    const lcs = dp[M][Nn]
+    const r1r = ref.length ? uni / ref.length : 0
+    const r1p = c.length ? uni / c.length : 0
+    const r1 = r1r + r1p ? 2 * r1r * r1p / (r1r + r1p) : 0
+    const rL = ref.length ? lcs / ref.length : 0
+    const up = c.length ? uni / c.length : 0
+    const bp = c.length > 1 ? bi / (c.length - 1) : 0
+    const bleu = up && bp ? Math.sqrt(up * bp) : 0
+    const avail = new Map(rc)
+    const hl = c.map(w => { if ((avail.get(w) || 0) > 0) { avail.set(w, avail.get(w) - 1); return true } return false })
+    return { c, r1, rL, bleu, hl }
+  }, [cand])
+
+  const bar = (label, v, color) => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
+      <span style={{ width: 70, flexShrink: 0, fontSize: '0.74rem', fontWeight: 700, color }}>{label}</span>
+      <div style={{ flex: 1, height: 10, background: '#e2e8f0', borderRadius: 5, position: 'relative' }}>
+        <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${v * 100}%`, background: color, borderRadius: 5, transition: 'width 0.18s ease' }} />
+      </div>
+      <span style={{ width: 38, textAlign: 'right', fontSize: '0.78rem', fontWeight: 800, color: NAVY }}>{Math.round(v * 100)}%</span>
+    </div>
+  )
+
+  return (
+    <WidgetShell
+      title="ROUGE & BLEU — Word-Overlap Scoring"
+      intro="Automated text metrics score a generated answer by how much its words and n-grams overlap a human reference. Edit the candidate — or try a preset — and watch the scores. Notice a perfect paraphrase still scores near zero."
+    >
+      <div style={{ background: 'white', border: '1.5px solid #e2e8f0', borderRadius: '0.6rem', padding: '0.55rem 0.7rem', marginBottom: '0.6rem' }}>
+        <span style={{ fontSize: '0.62rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Human reference</span>
+        <div style={{ fontFamily: 'ui-monospace, monospace', fontSize: '0.85rem', color: NAVY }}>{REFERENCE}</div>
+      </div>
+      <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
+        {PRESETS.map(p => (
+          <button key={p.label} onClick={() => setCand(p.text)}
+            style={{ fontSize: '0.68rem', fontWeight: 600, padding: '0.26rem 0.55rem', borderRadius: '0.35rem', cursor: 'pointer',
+              border: `1.5px solid ${cand === p.text ? TEAL_DARK : '#cbd5e1'}`, background: cand === p.text ? '#f0fdfa' : 'white', color: cand === p.text ? TEAL_DARK : '#475569' }}>{p.label}</button>
+        ))}
+      </div>
+      <input value={cand} onChange={e => setCand(e.target.value)}
+        style={{ width: '100%', boxSizing: 'border-box', fontSize: '0.85rem', padding: '0.5rem 0.6rem', border: '1.5px solid #cbd5e1', borderRadius: '0.5rem', marginBottom: '0.6rem', fontFamily: 'ui-monospace, monospace' }} />
+      <div style={{ marginBottom: '0.7rem', fontSize: '0.85rem', lineHeight: 1.8 }}>
+        {m.c.length ? m.c.map((w, i) => (
+          <span key={i} style={{ background: m.hl[i] ? 'rgba(0,168,132,0.18)' : 'transparent', color: m.hl[i] ? TEAL_DARK : '#94a3b8', fontWeight: m.hl[i] ? 700 : 400, borderRadius: '0.25rem', padding: '0.05rem 0.2rem', fontFamily: 'ui-monospace, monospace' }}>{w} </span>
+        )) : <span style={{ color: '#94a3b8' }}>Type a candidate…</span>}
+        <div style={{ fontSize: '0.66rem', color: '#94a3b8', marginTop: '0.25rem' }}>Green = word also in the reference (the only thing these metrics can see).</div>
+      </div>
+      {bar('ROUGE-1', m.r1, '#2563eb')}
+      {bar('ROUGE-L', m.rL, '#7c3aed')}
+      {bar('BLEU', m.bleu, '#16a34a')}
+      <div style={{ fontSize: '0.6875rem', color: '#94a3b8', marginTop: '0.5rem', lineHeight: 1.5 }}>
+        ROUGE rewards overlap (recall-leaning, used for summaries); BLEU rewards matching n-grams (precision-leaning, used for translation). Both are blind to meaning — that's why a paraphrase scores low, and why BERTScore and human evaluation exist.
+      </div>
+    </WidgetShell>
+  )
+}
+
+// ── Session 13: interpretability vs accuracy trade-off ────────────────────────
+function InterpretabilityTradeoffWidget() {
+  const MODELS = [
+    { name: 'Linear / Logistic Regression', acc: 0.62, interp: 0.97, box: 'Glass box', use: 'Credit scoring and regulated decisions where every factor must be explained.' },
+    { name: 'Decision Tree', acc: 0.71, interp: 0.88, box: 'Glass box', use: 'Approval rules a human can read top to bottom.' },
+    { name: 'Random Forest', acc: 0.83, interp: 0.52, box: 'Explained box', use: 'Tabular predictions where feature-importance is explanation enough.' },
+    { name: 'Gradient Boosting', acc: 0.89, interp: 0.38, box: 'Explained box', use: 'High-accuracy tabular models; explain post-hoc with SHAP / SageMaker Clarify.' },
+    { name: 'Deep Neural Network', acc: 0.95, interp: 0.12, box: 'Black box', use: 'Images, audio, and language — top accuracy, hardest to interpret.' },
+  ]
+  const [i, setI] = useState(2)
+  const mdl = MODELS[i]
+  const boxColor = mdl.interp >= 0.7 ? '#16a34a' : mdl.interp >= 0.4 ? '#d97706' : '#dc2626'
+  const banner = mdl.interp >= 0.7
+    ? 'Transparent and audit-friendly — you can justify every prediction — but you leave accuracy on the table.'
+    : mdl.interp >= 0.4
+    ? 'A middle ground: strong accuracy with explanations available after the fact (feature importance, SHAP).'
+    : "Top accuracy, but a black box — you'll need SHAP / Amazon SageMaker Clarify to explain it, and it's risky for regulated decisions."
+
+  return (
+    <WidgetShell
+      title="Interpretability vs Accuracy — The Trade-off"
+      intro="As models get more powerful they get harder to explain. Slide across the model ladder and watch accuracy climb while interpretability falls — the tension the exam loves."
+    >
+      <input type="range" min={0} max={MODELS.length - 1} step={1} value={i} onChange={e => setI(Number(e.target.value))}
+        style={{ width: '100%', accentColor: TEAL, cursor: 'pointer', height: 24, marginBottom: '0.3rem' }} />
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.62rem', color: '#94a3b8', marginBottom: '0.75rem' }}>
+        <span>← Simple / explainable</span><span>Complex / accurate →</span>
+      </div>
+      <div style={{ textAlign: 'center', marginBottom: '0.75rem' }}>
+        <div style={{ fontSize: '1.05rem', fontWeight: 800, color: NAVY }}>{mdl.name}</div>
+        <span style={{ display: 'inline-block', marginTop: '0.25rem', fontSize: '0.64rem', fontWeight: 700, color: 'white', background: boxColor, padding: '0.15rem 0.55rem', borderRadius: '0.35rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{mdl.box}</span>
+      </div>
+      {[
+        { label: 'Accuracy', v: mdl.acc, c: '#2563eb' },
+        { label: 'Interpretability', v: mdl.interp, c: '#16a34a' },
+      ].map(b => (
+        <div key={b.label} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.45rem' }}>
+          <span style={{ width: 110, flexShrink: 0, fontSize: '0.75rem', fontWeight: 700, color: b.c }}>{b.label}</span>
+          <div style={{ flex: 1, height: 12, background: '#e2e8f0', borderRadius: 6, position: 'relative' }}>
+            <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${b.v * 100}%`, background: b.c, borderRadius: 6, transition: 'width 0.2s ease' }} />
+          </div>
+          <span style={{ width: 38, textAlign: 'right', fontSize: '0.8rem', fontWeight: 800, color: NAVY }}>{Math.round(b.v * 100)}%</span>
+        </div>
+      ))}
+      <div style={{ background: '#f8fafc', border: `1.5px solid ${boxColor}`, borderRadius: '0.6rem', padding: '0.55rem 0.75rem', margin: '0.6rem 0', fontSize: '0.75rem', lineHeight: 1.5, color: '#334155', fontWeight: 600 }}>
+        {banner}
+      </div>
+      <div style={{ fontSize: '0.74rem', color: '#475569', lineHeight: 1.5 }}><strong style={{ color: NAVY }}>Best when:</strong> {mdl.use}</div>
+      <div style={{ fontSize: '0.6875rem', color: '#94a3b8', marginTop: '0.5rem' }}>Figures are illustrative — the real numbers depend on the dataset, but the direction always holds.</div>
+    </WidgetShell>
+  )
+}
+
 const INTERACTIVE_WIDGETS = {
   'precision-recall': PrecisionRecallWidget,
   'inference-parameters': InferenceParametersWidget,
+  'learning-types': LearningTypesWidget,
+  'tokenizer': TokenizerWidget,
+  'rag-vs-finetune': RagVsFineTuneWidget,
+  'ngram-overlap': NgramOverlapWidget,
+  'interpretability-tradeoff': InterpretabilityTradeoffWidget,
 }
 
 // ─── Small renderers ──────────────────────────────────────────────────────────
