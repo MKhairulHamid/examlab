@@ -108,7 +108,7 @@ export const useExamStore = create((set, get) => ({
       // Fetch question set metadata
       const { data: questionSet, error: setError } = await supabase
         .from('question_sets')
-        .select('*, exam_types(name, provider, duration_minutes, passing_score, max_score)')
+        .select('*, exam_types(name, provider, total_questions, duration_minutes, passing_score, max_score)')
         .eq('id', questionSetId)
         .eq('is_active', true)
         .single()

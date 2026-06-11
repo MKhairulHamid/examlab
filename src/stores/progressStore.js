@@ -78,12 +78,14 @@ export const useProgressStore = create((set, get) => ({
         completedAt: existingProgress.completedAt || existingProgress.completed_at || null,
         updatedAt: existingProgress.updatedAt || existingProgress.updated_at || existingProgress.last_synced_at || new Date().toISOString()
       })
-      
-      return existingProgress.id || existingProgress.attemptId || existingProgress.exam_attempt_id
+
+      const attemptId = existingProgress.id || existingProgress.attemptId || existingProgress.exam_attempt_id
+      return { attemptId, existingProgress }
     }
-    
+
     // No existing exam found, start new one
-    return get().startExam(questionSetId, userId, questionCount)
+    const attemptId = await get().startExam(questionSetId, userId, questionCount)
+    return { attemptId, existingProgress: null }
   },
 
   /**

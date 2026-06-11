@@ -41,6 +41,17 @@ function ExamResults() {
             return
           }
           
+          // Load question set first so we can report the true total question
+          // count (not just how many the user answered).
+          const questionSet = await loadQuestionSet(examAttempt.question_set_id)
+
+          let questionsList = []
+          if (questionSet) {
+            const questionsData = questionSet.questions_json
+            questionsList = questionsData?.questions || questionsData || []
+            setQuestions(questionsList)
+          }
+
           // Transform to expected format
           const examResult = {
             id: examAttempt.id,
@@ -54,20 +65,11 @@ function ExamResults() {
             percentageScore: examAttempt.percentage_score,
             scaledScore: examAttempt.scaled_score,
             passed: examAttempt.passed,
-            totalQuestions: examAttempt.answers_json ? Object.keys(examAttempt.answers_json).length : 0
+            totalQuestions: questionsList.length || (examAttempt.answers_json ? Object.keys(examAttempt.answers_json).length : 0)
           }
-          
+
           setResult(examResult)
-          
-          // Load question set to display questions and correct answers
-          const questionSet = await loadQuestionSet(examResult.questionSetId)
-          
-          if (questionSet) {
-            const questionsData = questionSet.questions_json
-            const questionsList = questionsData?.questions || questionsData || []
-            setQuestions(questionsList)
-          }
-          
+
           setLoading(false)
         } catch (error) {
           console.error('Error loading result:', error)

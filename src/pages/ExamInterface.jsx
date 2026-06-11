@@ -5,6 +5,7 @@ import useProgressStore from '../stores/progressStore'
 import useAuthStore from '../stores/authStore'
 import usePurchaseStore from '../stores/purchaseStore'
 import streakService from '../services/streakService'
+import progressService from '../services/progressService'
 import AIExplanationPanel from '../components/AIExplanationPanel'
 import OrderingQuestion from '../components/OrderingQuestion'
 import MatchingQuestion from '../components/MatchingQuestion'
@@ -49,6 +50,8 @@ function ExamInterface() {
   const [navMinimized, setNavMinimized] = useState(true)
   const [showResumeNotification, setShowResumeNotification] = useState(false)
   const [answeredQuestions, setAnsweredQuestions] = useState(new Set())
+  const [finishError, setFinishError] = useState('')
+  const finishingRef = useRef(false)
 
   useEffect(() => {
     const initialize = async () => {
@@ -96,14 +99,11 @@ function ExamInterface() {
           }
           
           setDuration(examDuration * 60)
-          
-          // Check if there's an existing in-progress exam
-          const progressService = await import('../services/progressService')
-          const existingProgress = await progressService.default.findInProgressExam(user.id, setId)
-          
-          // Start or resume exam (checks for existing in-progress exam first)
-          await startOrResumeExam(setId, user.id, questionSet.question_count || 0)
-          
+
+          // Start or resume exam (checks for existing in-progress exam first).
+          // Returns the resumed attempt's progress so we don't query for it twice.
+          const { existingProgress } = await startOrResumeExam(setId, user.id, questionSet.question_count || 0)
+
           // Show resume notification if exam was resumed
           if (existingProgress) {
             setShowResumeNotification(true)
@@ -170,7 +170,8 @@ function ExamInterface() {
     }
   }, [timeElapsed, duration, status])
 
-  // Save current progress helper function
+  // Save current progress helper function — persists the live state (including
+  // accumulated time) to Supabase, since the timer itself is state-only.
   const saveCurrentProgress = async () => {
     const state = useProgressStore.getState()
     if (state.attemptId && state.status === 'in_progress') {
@@ -186,8 +187,12 @@ function ExamInterface() {
         startedAt: state.startedAt,
         updatedAt: new Date().toISOString()
       }
-      
-      await useProgressStore.getState().updateTimer(state.timeElapsed)
+
+      try {
+        await progressService.saveProgress(progress)
+      } catch (error) {
+        console.error('Failed to save progress:', error)
+      }
     }
   }
 
@@ -209,8 +214,6 @@ function ExamInterface() {
     const handleBeforeUnload = async (e) => {
       const state = useProgressStore.getState()
       if (state.status === 'in_progress') {
-        // Force immediate sync to Supabase
-        const progressService = await import('../services/progressService')
         const progress = {
           attemptId: state.attemptId,
           questionSetId: state.questionSetId,
@@ -223,14 +226,13 @@ function ExamInterface() {
           startedAt: state.startedAt,
           updatedAt: new Date().toISOString()
         }
-        
-        // Use navigator.sendBeacon for reliable sync on page unload
+
         try {
-          await progressService.default.forceSync(progress)
+          await progressService.forceSync(progress)
         } catch (error) {
           console.error('Failed to sync progress on unload:', error)
         }
-        
+
         // Show warning message (optional - commented out to avoid annoyance)
         // e.preventDefault()
         // e.returnValue = 'Your exam progress will be saved. Are you sure you want to leave?'
@@ -246,8 +248,6 @@ function ExamInterface() {
     const handlePageHide = async () => {
       const state = useProgressStore.getState()
       if (state.status === 'in_progress') {
-        // Force immediate sync to Supabase
-        const progressService = await import('../services/progressService')
         const progress = {
           attemptId: state.attemptId,
           questionSetId: state.questionSetId,
@@ -260,9 +260,9 @@ function ExamInterface() {
           startedAt: state.startedAt,
           updatedAt: new Date().toISOString()
         }
-        
+
         try {
-          await progressService.default.forceSync(progress)
+          await progressService.forceSync(progress)
         } catch (error) {
           console.error('Failed to sync progress on page hide:', error)
         }
@@ -468,26 +468,13 @@ function ExamInterface() {
     
     // Get max score from exam type (default to 1000)
     const maxScore = currentQuestionSet.exam_types?.max_score || 1000
-    
-    // Check if this is a free sample
-    const isFree = currentQuestionSet.is_free_sample || currentQuestionSet.price_cents === 0
-    
-    let scaledScore
-    if (isFree && currentQuestionSet.question_count) {
-      // For free samples, scale the score proportionally
-      // Example: 10/65 questions means the score should be scaled accordingly
-      const totalQuestions = currentQuestionSet.exam_types?.total_questions || 65
-      const sampleQuestions = currentQuestionSet.question_count
-      
-      // Calculate score as if taking the full exam
-      // (correct / sample_questions) * (sample_questions / total_questions) * max_score
-      scaledScore = Math.round((correctCount / questions.length) * (sampleQuestions / totalQuestions) * maxScore)
-      
-    } else {
-      // Regular scoring: scale to max_score (default 1000)
-      scaledScore = Math.round((correctCount / questions.length) * maxScore)
-    }
-    
+
+    // Scaled score is a performance measure (percent correct mapped onto the
+    // exam's scoring scale), so it is independent of how many questions the set
+    // has. Free samples and full exams use the same formula — scoring a perfect
+    // sample yields a perfect scaled score.
+    const scaledScore = Math.round((correctCount / questions.length) * maxScore)
+
     // Determine if passed (typically 70% or higher)
     // Note: Pass/fail is based on percentage of questions answered correctly,
     // not the scaled score. This ensures fair evaluation for both free samples and full exams.
@@ -505,21 +492,31 @@ function ExamInterface() {
   }
 
   const handleFinishExam = async () => {
-    // Calculate results
-    const results = calculateResults()
-    
-    // Add exam metadata
-    const resultsWithMetadata = {
-      ...results,
-      examName: currentQuestionSet.name,
-      examSlug: slug
+    // Guard against double-submission (e.g. clicking Finish exactly as the timer
+    // expires, which would also trigger the auto-submit effect).
+    if (finishingRef.current) return
+    finishingRef.current = true
+
+    try {
+      const results = calculateResults()
+
+      const resultsWithMetadata = {
+        ...results,
+        examName: currentQuestionSet.name,
+        examSlug: slug
+      }
+
+      // Complete the exam and save results
+      const result = await useProgressStore.getState().completeExam(resultsWithMetadata)
+
+      // Navigate to results page
+      navigate(`/exam/${slug}/results?resultId=${result.id}&set=${setId}`)
+    } catch (error) {
+      console.error('Error finishing exam:', error)
+      // Allow the user to retry rather than being stranded on the exam screen.
+      finishingRef.current = false
+      setFinishError('We couldn\'t submit your exam. Please check your connection and try again.')
     }
-    
-    // Complete the exam and save results
-    const result = await useProgressStore.getState().completeExam(resultsWithMetadata)
-    
-    // Navigate to results page
-    navigate(`/exam/${slug}/results?resultId=${result.id}&set=${setId}`)
   }
 
   const handlePauseExam = async () => {
@@ -752,6 +749,23 @@ function ExamInterface() {
             <div className="text-[0.8125rem] opacity-90">
               Your progress has been restored.
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Finish error notification */}
+      {finishError && (
+        <div className="fixed top-3 left-3 right-3 max-w-[400px] mx-auto z-[10000] flex items-start gap-2.5 px-4 py-3.5 bg-[#ef4444] text-white rounded-xl shadow-[0_10px_25px_rgba(239,68,68,0.3)]">
+          <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
+          <div className="min-w-0 flex-1">
+            <div className="font-semibold text-sm">Submission failed</div>
+            <div className="text-[0.8125rem] opacity-90 mb-2">{finishError}</div>
+            <button
+              onClick={() => { setFinishError(''); handleFinishExam() }}
+              className="px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg font-semibold text-sm transition-colors"
+            >
+              Retry
+            </button>
           </div>
         </div>
       )}
