@@ -10,28 +10,29 @@ const NAVY = '#0A2540'
 
 function PrecisionRecallWidget() {
   // Threshold = rightmost column included in the prediction box (0–9)
-  const [threshold, setThreshold] = useState(4)
+  const [threshold, setThreshold] = useState(1)
 
-  // 10×10 grid: 90 red (actual fraud) + 10 green (innocent)
-  // Innocent dots placed in cols 5-9 so the left zone stays pure — mirrors
-  // a model that's confident on the left, less certain on the right.
-  // INNOCENT indices (row*10+col): col5→35 col6→76 col7→17,67 col8→8,48,98 col9→29,59,89
-  const INNOCENT_SET = new Set([8, 17, 29, 35, 48, 59, 67, 76, 89, 98])
-  const TOTAL = 100, GREEN_TOTAL = 90, COLS = 10
+  // 10×10 grid: 10 red (actual fraud, minority) + 90 green (innocent, majority)
+  // Fraud dots clustered in LEFT columns — the model's high-confidence zone.
+  // Extending the box right catches more fraud (↑ recall) but sweeps in more
+  // innocent customers (↓ precision).
+  //   col0 → rows 1,3,6,9  col1 → rows 2,5,8  col2 → rows 0,7  col3 → row 4
+  const FRAUD_SET = new Set([2, 10, 21, 30, 43, 51, 60, 72, 81, 90])
+  const TOTAL = 100, FRAUD_TOTAL = 10, COLS = 10
   const CELL = 40, DOT_R = 13
   const SVG_W = COLS * CELL, SVG_H = COLS * CELL
 
   let tp = 0, fp = 0, fn = 0
   for (let i = 0; i < TOTAL; i++) {
-    const inBox     = (i % COLS) <= threshold
-    const isFraud   = !INNOCENT_SET.has(i)
+    const inBox   = (i % COLS) <= threshold
+    const isFraud = FRAUD_SET.has(i)
     if (isFraud  &&  inBox) tp++
     else if (!isFraud &&  inBox) fp++
     else if (isFraud  && !inBox) fn++
   }
 
   const precision = tp + fp > 0 ? tp / (tp + fp) : 1
-  const recall    = tp / GREEN_TOTAL
+  const recall    = tp / FRAUD_TOTAL
   const f1        = precision + recall > 0
     ? 2 * precision * recall / (precision + recall) : 0
 
@@ -57,8 +58,8 @@ function PrecisionRecallWidget() {
       </div>
 
       <p style={{ fontSize: '0.8125rem', color: '#475569', lineHeight: 1.6, margin: '0 0 0.875rem' }}>
-        100 transactions: <strong style={{ color: '#dc2626' }}>90 actual fraud</strong> and{' '}
-        <strong style={{ color: '#16a34a' }}>10 innocent</strong>. The dashed box is what
+        100 transactions: <strong style={{ color: '#16a34a' }}>90 innocent</strong> and{' '}
+        <strong style={{ color: '#dc2626' }}>10 actual fraud</strong>. The dashed box is what
         the model <em>predicts</em> as fraud. Drag the slider to widen or narrow the prediction
         boundary and watch Precision and Recall trade off.
       </p>
@@ -66,8 +67,8 @@ function PrecisionRecallWidget() {
       {/* Legend */}
       <div style={{ display: 'flex', gap: '1.25rem', marginBottom: '0.875rem', flexWrap: 'wrap' }}>
         {[
-          { bright: '#dc2626', dim: '#fecaca', label: 'Actual fraud' },
-          { bright: '#16a34a', dim: '#bbf7d0', label: 'Innocent' },
+          { bright: '#16a34a', dim: '#bbf7d0', label: 'Innocent (90)' },
+          { bright: '#dc2626', dim: '#fecaca', label: 'Actual fraud (10)' },
         ].map(({ bright, dim, label }) => (
           <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem', color: '#475569' }}>
             <svg width="30" height="16" style={{ flexShrink: 0 }}>
@@ -99,7 +100,7 @@ function PrecisionRecallWidget() {
             const col   = i % COLS
             const row   = Math.floor(i / COLS)
             const inBox = col <= threshold
-            const isFraud = !INNOCENT_SET.has(i)
+            const isFraud = FRAUD_SET.has(i)
             const fill    = isFraud
               ? (inBox ? '#dc2626' : '#fecaca')
               : (inBox ? '#16a34a' : '#bbf7d0')
@@ -129,8 +130,8 @@ function PrecisionRecallWidget() {
       {/* Count strip */}
       <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '0.875rem' }}>
         {[
-          { label: 'True Positives',  count: tp, color: '#dc2626', note: 'fraud caught' },
-          { label: 'False Positives', count: fp, color: '#16a34a', note: 'innocent flagged' },
+          { label: 'True Positives',  count: tp, color: '#dc2626', note: `fraud caught (of ${FRAUD_TOTAL})` },
+          { label: 'False Positives', count: fp, color: '#475569', note: 'innocent flagged' },
           { label: 'False Negatives', count: fn, color: '#d97706', note: 'fraud missed' },
         ].map(({ label, count, color, note }) => (
           <div key={label} style={{
