@@ -12,12 +12,18 @@ function PrecisionRecallWidget() {
   const COLS = 10, CELL = 40, DOT_R = 13
   const SVG_W = COLS * CELL, SVG_H = COLS * CELL
   const FRAUD_TOTAL = 10, TOTAL = 100
-  // 10×10 grid: 10 red (fraud, minority) clustered in left cols, 90 green (innocent, majority)
-  // col0→rows1,3,6,9  col1→rows2,5,8  col2→rows0,7  col3→row4
-  const FRAUD_SET = new Set([2, 10, 21, 30, 43, 51, 60, 72, 81, 90])
+  // 10×10 grid: 10 red (fraud). 8 sit in a tight block (cols 1–2, rows 3–6);
+  // 2 are "outliers" hiding among the greens (16 = top, 87 = bottom-right).
+  // This makes the precision/recall TRADE-OFF visible — no rectangle can grab
+  // all 10 reds without also sweeping in greens:
+  //   • tight box on the 8-block      → 100% precision, recall 80%
+  //   • box stretched over all 10 reds → 100% recall, precision drops
+  //   • you can hit 100% on ONE, never both at once
+  const FRAUD_SET = new Set([31, 32, 41, 42, 51, 52, 61, 62, 16, 87])
 
-  // Box position/size in SVG coordinates (starts covering cols 0-2, full height)
-  const [box, setBox] = useState({ x: 0, y: 0, width: CELL * 3, height: SVG_H })
+  // Box starts on an intermediate state (mostly on the cluster) so the user
+  // immediately sees mid-range numbers and is invited to push either way.
+  const [box, setBox] = useState({ x: CELL, y: CELL * 2, width: CELL * 3, height: CELL * 5 })
   const svgRef = useRef(null)
 
   const getSvgCoords = (clientX, clientY) => {
@@ -95,8 +101,21 @@ function PrecisionRecallWidget() {
   const f1        = precision + recall > 0 ? 2 * precision * recall / (precision + recall) : 0
   const pct       = v => `${Math.round(v * 100)}%`
 
-  // 8 resize handle positions
-  const H = 9
+  const perfectP = tp > 0 && precision === 1
+  const perfectR = recall === 1
+  // Live coaching banner reacting to the current box
+  const hint = perfectR
+    ? { bg: '#eff6ff', bd: '#2563eb', fg: '#1d4ed8', badge: true,
+        text: '100% Recall — you caught all 10 fraud cases, but the box also flags innocent people, so precision drops. Shrink it onto the cluster to trade recall for precision.' }
+    : perfectP
+    ? { bg: '#fef2f2', bd: '#dc2626', fg: '#b91c1c', badge: true,
+        text: '100% Precision — everything flagged really is fraud, but a couple of fraud cases slipped out. Stretch the box to reach them for higher recall — and watch precision fall.' }
+    : { bg: '#f8fafc', bd: '#cbd5e1', fg: '#475569', badge: false,
+        text: 'Precision vs. recall is a trade-off: wrap only red dots to push precision up, or cover all red dots to push recall up. Maxing one costs the other.' }
+
+  // 8 resize handle positions. H = visible handle size, HIT = invisible
+  // touch target (fat-finger friendly on mobile).
+  const H = 13, HIT = 40
   const handles = [
     { id: 'n',  x: box.x + box.width / 2, y: box.y,                  cur: 'n-resize'  },
     { id: 's',  x: box.x + box.width / 2, y: box.y + box.height,     cur: 's-resize'  },
@@ -127,8 +146,12 @@ function PrecisionRecallWidget() {
 
       <p style={{ fontSize: '0.8125rem', color: '#475569', lineHeight: 1.6, margin: '0 0 0.875rem' }}>
         100 transactions: <strong style={{ color: '#16a34a' }}>90 innocent</strong> and{' '}
-        <strong style={{ color: '#dc2626' }}>10 actual fraud</strong>. The red dashed box = what
-        the model predicts as fraud. <strong>Drag to move · drag handles to resize.</strong>
+        <strong style={{ color: '#dc2626' }}>10 actual fraud</strong> — a tight red cluster plus a
+        couple hiding among the greens. The red dashed box = what the model predicts as fraud.{' '}
+        <strong>Drag to move · drag the handles to resize.</strong> Wrap it tightly on the cluster
+        for <strong style={{ color: '#dc2626' }}>100% precision</strong>; stretch it over every red
+        dot for <strong style={{ color: '#2563eb' }}>100% recall</strong> — but notice you can't max
+        both at once. Everything in between is one move away.
       </p>
 
       {/* Legend */}
@@ -186,18 +209,41 @@ function PrecisionRecallWidget() {
             onTouchStart={e => startDrag('move', e)}
           />
 
-          {/* Resize handles */}
+          {/* Resize handles: large invisible touch target + visible knob */}
           {handles.map(h => (
-            <rect
-              key={h.id}
-              x={h.x - H / 2} y={h.y - H / 2} width={H} height={H}
-              fill="white" stroke="#dc2626" strokeWidth={1.5} rx={2}
-              style={{ cursor: h.cur }}
-              onMouseDown={e => startDrag(h.id, e)}
-              onTouchStart={e => startDrag(h.id, e)}
-            />
+            <g key={h.id} style={{ cursor: h.cur }}
+               onMouseDown={e => startDrag(h.id, e)}
+               onTouchStart={e => startDrag(h.id, e)}>
+              <rect
+                x={h.x - HIT / 2} y={h.y - HIT / 2} width={HIT} height={HIT}
+                fill="transparent" stroke="none"
+              />
+              <rect
+                x={h.x - H / 2} y={h.y - H / 2} width={H} height={H}
+                fill="white" stroke="#dc2626" strokeWidth={2} rx={3}
+                style={{ pointerEvents: 'none', filter: 'drop-shadow(0 1px 1.5px rgba(0,0,0,0.25))' }}
+              />
+            </g>
           ))}
         </svg>
+      </div>
+
+      {/* Live coaching banner */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: '0.5rem',
+        background: hint.bg, border: `1.5px solid ${hint.bd}`, borderRadius: '0.6rem',
+        padding: '0.55rem 0.75rem', marginBottom: '0.875rem',
+      }}>
+        {hint.badge && (
+          <span style={{
+            flexShrink: 0, width: 18, height: 18, borderRadius: '50%',
+            background: hint.fg, color: 'white', fontSize: '0.7rem', fontWeight: 800,
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+          }}>✓</span>
+        )}
+        <span style={{ fontSize: '0.75rem', lineHeight: 1.5, color: hint.fg, fontWeight: 600 }}>
+          {hint.text}
+        </span>
       </div>
 
       {/* Count strip */}
