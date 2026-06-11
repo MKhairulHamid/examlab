@@ -5,6 +5,7 @@ import aifC01Course from '../data/aifC01Course'
 import useAuthStore from '../stores/authStore'
 import usePurchaseStore from '../stores/purchaseStore'
 import EnrollmentModal from '../components/enrollment/EnrollmentModal'
+import DashboardHeader from '../components/layout/DashboardHeader'
 
 // Registry of session-based prep courses keyed by exam slug fragment.
 // A slug containing any of these fragments renders the matching SessionCourse.
@@ -679,6 +680,7 @@ function StudyMaterial() {
 
     return (
         <>
+            <DashboardHeader />
             {sessionCourse ? (
                 <SessionCourse
                     course={sessionCourse.course}

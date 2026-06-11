@@ -386,12 +386,27 @@ function ExamResults() {
           {/* Action Buttons */}
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '2rem', flexWrap: 'wrap' }}>
             <button
-              onClick={() => navigate(`/exam/${slug}`)}
+              onClick={() => navigate(`/exam/${slug}/study`)}
               style={{
                 padding: '0.75rem 1.5rem',
                 background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
                 color: 'white',
                 border: 'none',
+                borderRadius: '0.5rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                fontSize: '1rem'
+              }}
+            >
+              Study Weak Areas
+            </button>
+            <button
+              onClick={() => navigate(`/exam/${slug}`)}
+              style={{
+                padding: '0.75rem 1.5rem',
+                background: 'rgba(255,255,255,0.1)',
+                color: 'white',
+                border: '1px solid rgba(255,255,255,0.3)',
                 borderRadius: '0.5rem',
                 fontWeight: '600',
                 cursor: 'pointer',

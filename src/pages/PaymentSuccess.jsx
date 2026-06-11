@@ -147,7 +147,7 @@ function PaymentSuccess() {
                   e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,212,170,0.3)'
                 }}
               >
-                Go to Dashboard →
+                Start Studying →
               </button>
 
               <div style={{

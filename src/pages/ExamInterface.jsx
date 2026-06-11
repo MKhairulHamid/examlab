@@ -774,7 +774,7 @@ function ExamInterface() {
               <div className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> Time Elapsed: {formatTime(timeElapsed)}</div>
               <div className="flex items-center gap-1.5 mt-1"><FileText className="w-3.5 h-3.5" /> Questions Answered: {answeredCount} of {questions?.length || 0}</div>
             </div>
-            <button 
+            <button
               onClick={async () => {
                 resetInactivity()
                 await setTimerPaused(false)
@@ -782,6 +782,15 @@ function ExamInterface() {
               className="resume-button inline-flex items-center justify-center gap-2"
             >
               <Play className="w-4 h-4" /> Resume Exam
+            </button>
+            <button
+              onClick={async () => {
+                await saveCurrentProgress()
+                navigate(`/exam/${slug}`)
+              }}
+              className="w-full mt-3 py-2.5 px-4 bg-white/10 text-[rgba(10,37,64,0.6)] hover:bg-white/20 border border-white/30 rounded-lg font-semibold cursor-pointer text-sm transition-all"
+            >
+              Exit &amp; Save Progress
             </button>
           </div>
         </div>
