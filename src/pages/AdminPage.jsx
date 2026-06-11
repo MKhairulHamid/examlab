@@ -1,29 +1,26 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Ticket, GraduationCap } from 'lucide-react'
 import useAuthStore from '../stores/authStore'
 import { getExamTypes } from '../services/adminService'
+import DashboardHeader from '../components/layout/DashboardHeader'
 import ExamTypeForm from '../components/admin/ExamTypeForm'
-import QuestionSetForm from '../components/admin/QuestionSetForm'
-import QuestionSetManager from '../components/admin/QuestionSetManager'
 import PromoCodeManager from '../components/admin/PromoCodeManager'
 import './AdminPage.css'
 
 const TABS = [
-  { id: 'exam-types', label: 'Exam Types' },
-  { id: 'question-sets', label: 'Question Sets' },
-  { id: 'manage-questions', label: 'Manage Questions' },
-  { id: 'promo-codes', label: 'Promo Codes' },
+  { id: 'promo-codes', label: 'Promo Codes', Icon: Ticket },
+  { id: 'exam-types', label: 'Exam Types', Icon: GraduationCap },
 ]
 
 export default function AdminPage() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
 
-  const [activeTab, setActiveTab] = useState('exam-types')
+  const [activeTab, setActiveTab] = useState('promo-codes')
   const [examTypes, setExamTypes] = useState([])
   const [loadingExamTypes, setLoadingExamTypes] = useState(true)
   const [accessError, setAccessError] = useState(null)
-  const [authorized, setAuthorized] = useState(false)
 
   useEffect(() => {
     checkAccessAndLoad()
@@ -37,7 +34,6 @@ export default function AdminPage() {
     try {
       const result = await getExamTypes()
       setExamTypes(result.data || [])
-      setAuthorized(true)
     } catch (err) {
       if (err.message.includes('forbidden') || err.message.includes('Access denied')) {
         setAccessError('Access denied. This page is only available to administrators.')
@@ -53,13 +49,10 @@ export default function AdminPage() {
     setExamTypes(prev => [...prev, newType].sort((a, b) => a.display_order - b.display_order))
   }
 
-  function handleSetSelect(questionSet, examType) {
-    setActiveTab('manage-questions')
-  }
-
   if (loadingExamTypes) {
     return (
       <div className="admin-page">
+        <DashboardHeader />
         <div className="admin-loading-screen">
           <div className="spinner"></div>
           <p>Verifying access...</p>
@@ -71,6 +64,7 @@ export default function AdminPage() {
   if (accessError) {
     return (
       <div className="admin-page">
+        <DashboardHeader />
         <div className="admin-access-denied">
           <h1>Access Denied</h1>
           <p>{accessError}</p>
@@ -84,58 +78,42 @@ export default function AdminPage() {
 
   return (
     <div className="admin-page">
-      <header className="admin-header">
-        <div className="admin-header-inner">
-          <div>
-            <h1 className="admin-title">Admin Panel</h1>
-            <p className="admin-subtitle">Manage exam content</p>
-          </div>
-          <button className="admin-btn admin-btn--ghost" onClick={() => navigate('/dashboard')}>
-            ← Dashboard
-          </button>
-        </div>
+      <DashboardHeader />
 
-        <nav className="admin-tabs">
+      <div className="admin-shell">
+        <header className="admin-pagehead">
+          <h1 className="admin-title">Admin</h1>
+          <p className="admin-subtitle">Manage promo codes and exam types</p>
+        </header>
+
+        <nav className="admin-tabs" role="tablist">
           {TABS.map(tab => (
             <button
               key={tab.id}
+              role="tab"
+              aria-selected={activeTab === tab.id}
               className={`admin-tab ${activeTab === tab.id ? 'admin-tab--active' : ''}`}
               onClick={() => setActiveTab(tab.id)}
             >
+              <tab.Icon size={16} strokeWidth={2.2} />
               {tab.label}
             </button>
           ))}
         </nav>
-      </header>
 
-      <main className="admin-main">
-        {activeTab === 'exam-types' && (
-          <ExamTypeForm
-            examTypes={examTypes}
-            onCreated={handleExamTypeCreated}
-          />
-        )}
+        <main className="admin-main">
+          {activeTab === 'promo-codes' && (
+            <PromoCodeManager examTypes={examTypes} />
+          )}
 
-        {activeTab === 'question-sets' && (
-          <QuestionSetForm
-            examTypes={examTypes}
-            onSetCreated={() => {}}
-            onSetSelect={handleSetSelect}
-          />
-        )}
-
-        {activeTab === 'manage-questions' && (
-          <QuestionSetManager
-            examTypes={examTypes}
-          />
-        )}
-
-        {activeTab === 'promo-codes' && (
-          <PromoCodeManager
-            examTypes={examTypes}
-          />
-        )}
-      </main>
+          {activeTab === 'exam-types' && (
+            <ExamTypeForm
+              examTypes={examTypes}
+              onCreated={handleExamTypeCreated}
+            />
+          )}
+        </main>
+      </div>
     </div>
   )
 }

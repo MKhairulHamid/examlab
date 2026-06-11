@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { Copy, Check, MessageCircle, X } from 'lucide-react'
 import { getPromoCodes, createPromoCode, updatePromoCode } from '../../services/adminService'
 
 const EMPTY_FORM = {
@@ -20,18 +21,85 @@ function durationLabel(days) {
   return DURATION_OPTIONS.find(o => Number(o.value) === Number(days))?.label || `${days} days`
 }
 
-// Builds the WhatsApp-share message a friend receives along with the code.
-function buildShareMessage(promo) {
-  const examName = promo.exam_types?.name || 'the exam'
-  const redeemUrl = `${window.location.origin}/redeem`
-  return (
-    `Hi! Here's a free ${durationLabel(promo.duration_days)} pass to practice the ${examName} exam on CloudExamLab.\n\n` +
-    `How to use it:\n` +
-    `1. Open ${redeemUrl}\n` +
-    `2. Sign in (or create a free account)\n` +
-    `3. Enter this code: ${promo.code}\n\n` +
-    `That unlocks full practice access for ${durationLabel(promo.duration_days)}. Good luck with your prep!`
-  )
+// ── WhatsApp message templates ─────────────────────────────────────────────────
+// Five ready-to-send messages the admin can pick from. Each one leads with a
+// concrete benefit of getting certified, then gives the redemption steps. *text*
+// renders as bold inside WhatsApp.
+const MESSAGE_TEMPLATES = [
+  {
+    id: 'friendly',
+    label: 'Friendly',
+    hint: 'Warm, casual — for close friends',
+    build: ({ examName, length, code, redeemUrl }) =>
+      `Hey! 👋 Got something for you.\n\n` +
+      `I grabbed you a *free ${length} pass* to prep for the *${examName}* certification on CloudExamLab — no payment needed.\n\n` +
+      `Why it's worth it: a cert is solid proof you know your stuff. It looks great on your CV and LinkedIn and helps you stand out when you're job hunting or going for a raise.\n\n` +
+      `How to claim it:\n` +
+      `1. Open ${redeemUrl}\n` +
+      `2. Sign in (or make a free account)\n` +
+      `3. Enter this code: *${code}*\n\n` +
+      `That unlocks full practice access for ${length}. Give it a go — you've got this! 💪`,
+  },
+  {
+    id: 'career',
+    label: 'Career boost',
+    hint: 'Resume, jobs, higher pay',
+    build: ({ examName, length, code, redeemUrl }) =>
+      `Quick one — this could be great for your career. 📈\n\n` +
+      `I'm sharing a *free ${length} pass* to study for the *${examName}* certification on CloudExamLab.\n\n` +
+      `Certified people get noticed: it's a recognised credential that proves your skills to employers, opens doors to better roles, and often means higher pay. Recruiters literally filter for it.\n\n` +
+      `Claim your pass:\n` +
+      `1. Go to ${redeemUrl}\n` +
+      `2. Sign in / create a free account\n` +
+      `3. Redeem code: *${code}*\n\n` +
+      `Full practice access for ${length}. Worth an hour of your week — your future self will thank you.`,
+  },
+  {
+    id: 'ai-era',
+    label: 'Future-proof',
+    hint: 'AI/cloud skills, stay ahead',
+    build: ({ examName, length, code, redeemUrl }) =>
+      `The job market's changing fast — don't get left behind. 🚀\n\n` +
+      `Here's a *free ${length} pass* to study for the *${examName}* on CloudExamLab.\n\n` +
+      `AI and cloud skills are now expected in almost every role. Getting certified is the clearest way to prove you actually understand them — a real edge whether you're staying put or making your next move.\n\n` +
+      `To start:\n` +
+      `1. Open ${redeemUrl}\n` +
+      `2. Sign in (a free account works)\n` +
+      `3. Enter code: *${code}*\n\n` +
+      `You'll have full practice access for ${length}. Perfect time to get ahead.`,
+  },
+  {
+    id: 'beginner',
+    label: 'Beginner-friendly',
+    hint: 'No experience needed',
+    build: ({ examName, length, code, redeemUrl }) =>
+      `Think you're "not technical enough" for a certification? You don't need to be. 🙂\n\n` +
+      `I've got a *free ${length} pass* for the *${examName}* on CloudExamLab to share with you.\n\n` +
+      `This one's built for beginners — no coding or deep tech background required. It teaches you the fundamentals and gives you a real, recognised credential to show for it. A great first step into cloud and AI.\n\n` +
+      `How to redeem:\n` +
+      `1. Visit ${redeemUrl}\n` +
+      `2. Sign in or create a free account\n` +
+      `3. Use this code: *${code}*\n\n` +
+      `That's ${length} of full practice access, free. Give it a try!`,
+  },
+  {
+    id: 'short',
+    label: 'Short & punchy',
+    hint: 'Quick, scannable share',
+    build: ({ examName, length, code, redeemUrl }) =>
+      `🎁 Free ${length} pass for you — *${examName}* practice on CloudExamLab.\n\n` +
+      `A cert = proof of your skills and a real boost to your CV and job prospects.\n\n` +
+      `Redeem: open ${redeemUrl}, sign in, enter *${code}*. Full access for ${length}. Enjoy!`,
+  },
+]
+
+function promoContext(promo) {
+  return {
+    examName: promo.exam_types?.name || 'the exam',
+    length: durationLabel(promo.duration_days),
+    code: promo.code,
+    redeemUrl: `${window.location.origin}/redeem`,
+  }
 }
 
 export default function PromoCodeManager({ examTypes }) {
@@ -42,6 +110,11 @@ export default function PromoCodeManager({ examTypes }) {
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(null)
   const [copiedId, setCopiedId] = useState(null)
+
+  // WhatsApp share modal state
+  const [sharePromo, setSharePromo] = useState(null)
+  const [templateId, setTemplateId] = useState(MESSAGE_TEMPLATES[0].id)
+  const [messageCopied, setMessageCopied] = useState(false)
 
   useEffect(() => {
     loadPromos()
@@ -106,7 +179,7 @@ export default function PromoCodeManager({ examTypes }) {
     }
   }
 
-  async function handleCopy(promo) {
+  async function handleCopyCode(promo) {
     try {
       await navigator.clipboard.writeText(promo.code)
       setCopiedId(promo.id)
@@ -116,9 +189,35 @@ export default function PromoCodeManager({ examTypes }) {
     }
   }
 
-  function handleShareWhatsApp(promo) {
-    const text = encodeURIComponent(buildShareMessage(promo))
-    window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener,noreferrer')
+  // ── Share modal ───────────────────────────────────────────────────────────────
+  function openShare(promo) {
+    setSharePromo(promo)
+    setTemplateId(MESSAGE_TEMPLATES[0].id)
+    setMessageCopied(false)
+  }
+
+  function closeShare() {
+    setSharePromo(null)
+  }
+
+  const activeTemplate = MESSAGE_TEMPLATES.find(t => t.id === templateId)
+  const previewMessage = sharePromo && activeTemplate
+    ? activeTemplate.build(promoContext(sharePromo))
+    : ''
+
+  function sendWhatsApp() {
+    window.open(`https://wa.me/?text=${encodeURIComponent(previewMessage)}`, '_blank', 'noopener,noreferrer')
+    closeShare()
+  }
+
+  async function copyMessage() {
+    try {
+      await navigator.clipboard.writeText(previewMessage)
+      setMessageCopied(true)
+      setTimeout(() => setMessageCopied(false), 1500)
+    } catch {
+      // ignore
+    }
   }
 
   return (
@@ -129,7 +228,8 @@ export default function PromoCodeManager({ examTypes }) {
         Share it to a WhatsApp group and friends redeem it after signing in.
       </p>
 
-      <form onSubmit={handleSubmit} className="admin-form" style={{ marginBottom: '2.5rem' }}>
+      {/* ── Create form ── */}
+      <form onSubmit={handleSubmit} className="admin-form admin-card" style={{ marginBottom: '2rem' }}>
         <div className="admin-form-grid">
           <div className="admin-field">
             <label>Exam to unlock *</label>
@@ -186,65 +286,126 @@ export default function PromoCodeManager({ examTypes }) {
         </button>
       </form>
 
+      {/* ── Existing codes ── */}
       <h3 className="admin-list-title">Existing Codes</h3>
       {loading ? (
         <p className="admin-loading">Loading promo codes...</p>
       ) : promos.length === 0 ? (
         <p className="admin-note">No promo codes yet. Create one above.</p>
       ) : (
-        <div className="admin-list">
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>Code</th>
-                <th>Exam</th>
-                <th>Target Group</th>
-                <th>Length</th>
-                <th>Uses</th>
-                <th>Active</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {promos.map(promo => {
-                const full = promo.used_count >= promo.max_uses
-                return (
-                  <tr key={promo.id}>
-                    <td><strong>{promo.code}</strong></td>
-                    <td>{promo.exam_types?.name || '—'}</td>
-                    <td>{promo.target_group}</td>
-                    <td>{durationLabel(promo.duration_days)}</td>
-                    <td style={{ color: full ? '#c0392b' : undefined }}>
-                      {promo.used_count} / {promo.max_uses}
-                    </td>
-                    <td>{promo.is_active ? '✓' : '✗'}</td>
-                    <td style={{ whiteSpace: 'nowrap' }}>
-                      <button
-                        className="admin-btn admin-btn--ghost admin-btn--sm"
-                        onClick={() => handleCopy(promo)}
-                      >
-                        {copiedId === promo.id ? 'Copied!' : 'Copy'}
-                      </button>
-                      <button
-                        className="admin-btn admin-btn--secondary admin-btn--sm"
-                        onClick={() => handleShareWhatsApp(promo)}
-                        style={{ marginLeft: '0.5rem' }}
-                      >
-                        Share on WhatsApp
-                      </button>
-                      <button
-                        className="admin-btn admin-btn--ghost admin-btn--sm"
-                        onClick={() => handleToggleActive(promo)}
-                        style={{ marginLeft: '0.5rem' }}
-                      >
-                        {promo.is_active ? 'Deactivate' : 'Activate'}
-                      </button>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
+        <div className="admin-promo-grid">
+          {promos.map(promo => {
+            const used = promo.used_count || 0
+            const max = promo.max_uses || 0
+            const full = used >= max
+            const pct = max ? Math.min(100, Math.round((used / max) * 100)) : 0
+            return (
+              <div key={promo.id} className={`admin-promo-card ${!promo.is_active ? 'is-inactive' : ''}`}>
+                <div className="admin-promo-top">
+                  <div className="admin-promo-codewrap">
+                    <button
+                      className="admin-promo-code"
+                      onClick={() => handleCopyCode(promo)}
+                      title="Tap to copy code"
+                    >
+                      <span>{promo.code}</span>
+                      {copiedId === promo.id
+                        ? <Check size={15} className="admin-promo-copyicon is-copied" />
+                        : <Copy size={15} className="admin-promo-copyicon" />}
+                    </button>
+                    <div className="admin-promo-exam">{promo.exam_types?.name || '—'}</div>
+                  </div>
+                  <span className={`admin-pill ${promo.is_active ? 'admin-pill--on' : 'admin-pill--off'}`}>
+                    {promo.is_active ? 'Active' : 'Inactive'}
+                  </span>
+                </div>
+
+                <div className="admin-promo-meta">
+                  <span className="admin-chip">{promo.target_group}</span>
+                  <span className="admin-chip">{durationLabel(promo.duration_days)}</span>
+                </div>
+
+                {/* Usage */}
+                <div className="admin-promo-usage">
+                  <div className="admin-promo-usage-row">
+                    <span>Redemptions</span>
+                    <span className={full ? 'admin-usage-full' : undefined}>
+                      {used} / {max}{full ? ' · full' : ''}
+                    </span>
+                  </div>
+                  <div className="admin-progress">
+                    <div
+                      className="admin-progress-fill"
+                      style={{ width: `${pct}%`, background: full ? '#ef4444' : '#00D4AA' }}
+                    />
+                  </div>
+                </div>
+
+                <div className="admin-promo-actions">
+                  <button
+                    className="admin-btn admin-btn--whatsapp"
+                    onClick={() => openShare(promo)}
+                  >
+                    <MessageCircle size={15} /> Share on WhatsApp
+                  </button>
+                  <button
+                    className="admin-btn admin-btn--ghost admin-btn--sm"
+                    onClick={() => handleToggleActive(promo)}
+                  >
+                    {promo.is_active ? 'Deactivate' : 'Activate'}
+                  </button>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* ── WhatsApp message picker ── */}
+      {sharePromo && (
+        <div className="admin-modal-overlay" onClick={closeShare}>
+          <div className="admin-modal" onClick={e => e.stopPropagation()}>
+            <div className="admin-modal-head">
+              <div>
+                <h3 className="admin-modal-title">Share on WhatsApp</h3>
+                <p className="admin-modal-sub">Pick a message for <strong>{sharePromo.code}</strong></p>
+              </div>
+              <button className="admin-modal-close" onClick={closeShare} aria-label="Close">
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="admin-modal-body">
+              {/* Template chooser */}
+              <div className="admin-template-list">
+                {MESSAGE_TEMPLATES.map(t => (
+                  <button
+                    key={t.id}
+                    className={`admin-template-option ${templateId === t.id ? 'is-selected' : ''}`}
+                    onClick={() => setTemplateId(t.id)}
+                  >
+                    <span className="admin-template-label">{t.label}</span>
+                    <span className="admin-template-hint">{t.hint}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Live preview */}
+              <div className="admin-template-preview">
+                <div className="admin-template-preview-label">Preview</div>
+                <div className="admin-template-preview-bubble">{previewMessage}</div>
+              </div>
+            </div>
+
+            <div className="admin-modal-foot">
+              <button className="admin-btn admin-btn--ghost" onClick={copyMessage}>
+                {messageCopied ? <><Check size={15} /> Copied</> : <><Copy size={15} /> Copy message</>}
+              </button>
+              <button className="admin-btn admin-btn--whatsapp" onClick={sendWhatsApp}>
+                <MessageCircle size={15} /> Open WhatsApp
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

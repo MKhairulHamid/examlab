@@ -41,34 +41,6 @@ export async function updateExamType(id, fields) {
   return callAdminApi({ action: 'updateExamType', id, ...fields })
 }
 
-// ── Question Sets ─────────────────────────────────────────────────────────────
-
-export async function getQuestionSets(examTypeId) {
-  return callAdminApi({ action: 'getQuestionSets', exam_type_id: examTypeId })
-}
-
-export async function createQuestionSet(fields) {
-  return callAdminApi({ action: 'createQuestionSet', ...fields })
-}
-
-export async function updateQuestionSet(id, fields) {
-  return callAdminApi({ action: 'updateQuestionSet', id, ...fields })
-}
-
-// ── Question Items ────────────────────────────────────────────────────────────
-
-export async function getQuestionItems(questionSetId) {
-  return callAdminApi({ action: 'getQuestionItems', question_set_id: questionSetId })
-}
-
-export async function upsertQuestionItems(questionSetId, items) {
-  return callAdminApi({ action: 'upsertQuestionItems', question_set_id: questionSetId, items })
-}
-
-export async function deleteQuestionItems(ids) {
-  return callAdminApi({ action: 'deleteQuestionItems', ids })
-}
-
 // ── Promo Codes ───────────────────────────────────────────────────────────────
 
 export async function getPromoCodes() {
