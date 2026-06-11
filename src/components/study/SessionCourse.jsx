@@ -149,7 +149,7 @@ function PrecisionRecallWidget() {
       {/* Metric progress bars */}
       {[
         { label: 'Precision', value: precision, color: '#dc2626', formula: `${tp} ÷ (${tp}+${fp})` },
-        { label: 'Recall',    value: recall,    color: '#2563eb', formula: `${tp} ÷ ${GREEN_TOTAL}` },
+        { label: 'Recall',    value: recall,    color: '#2563eb', formula: `${tp} ÷ ${FRAUD_TOTAL}` },
         { label: 'F1 Score',  value: f1,        color: TEAL_DARK, formula: 'harmonic mean' },
       ].map(({ label, value, color, formula }) => (
         <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
