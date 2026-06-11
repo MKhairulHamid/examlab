@@ -58,3 +58,28 @@ export async function updatePromoCode(id, isActive) {
 export async function getPromoRedemptions(promoCodeId) {
   return callAdminApi({ action: 'getPromoRedemptions', promo_code_id: promoCodeId })
 }
+
+// ── Community Videos ────────────────────────────────────────────────────────────
+
+export async function getCommunityVideos(status = 'pending') {
+  return callAdminApi({ action: 'getCommunityVideos', status })
+}
+
+export async function reviewCommunityVideo(id, status, rejectionReason) {
+  return callAdminApi({ action: 'reviewCommunityVideo', id, status, rejection_reason: rejectionReason })
+}
+
+export async function getCommunityVideoReports(status = 'open') {
+  return callAdminApi({ action: 'getCommunityVideoReports', status })
+}
+
+export async function resolveReport(id, status, { videoId, videoAction, rejectionReason } = {}) {
+  return callAdminApi({
+    action: 'resolveReport',
+    id,
+    status,
+    video_id: videoId,
+    video_action: videoAction,
+    rejection_reason: rejectionReason,
+  })
+}

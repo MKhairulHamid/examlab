@@ -366,6 +366,99 @@ Deno.serve(async (req) => {
         return jsonResponse({ data })
       }
 
+      // ── Community Videos (learner "Teach It" submissions) ────────────────────
+      case 'getCommunityVideos': {
+        // Default to the pending review queue; allow filtering by any status.
+        const status = body.status || 'pending'
+
+        let query = supabase
+          .from('community_videos')
+          .select('id, user_id, course_slug, session_id, provider, video_url, video_ref, start_seconds, title, note, submitter_name, status, report_count, rejection_reason, reviewed_at, created_at, updated_at')
+          .order('created_at', { ascending: false })
+
+        if (status !== 'all') query = query.eq('status', status)
+
+        const { data, error } = await query
+        if (error) return jsonResponse({ error: error.message }, 500)
+        return jsonResponse({ data })
+      }
+
+      case 'reviewCommunityVideo': {
+        const { id, status, rejection_reason } = body
+        if (!id || !status) return jsonResponse({ error: 'id and status are required.' }, 400)
+        if (!['approved', 'rejected', 'hidden', 'pending'].includes(status)) {
+          return jsonResponse({ error: 'Invalid status.' }, 400)
+        }
+
+        const { data, error } = await supabase
+          .from('community_videos')
+          .update({
+            status,
+            rejection_reason: status === 'rejected' ? (rejection_reason || null) : null,
+            reviewed_at: new Date().toISOString(),
+            reviewed_by: user.id,
+          })
+          .eq('id', id)
+          .select()
+          .single()
+
+        if (error) return jsonResponse({ error: error.message }, 500)
+        return jsonResponse({ data })
+      }
+
+      case 'getCommunityVideoReports': {
+        // Default to open reports; join the reported video's key fields.
+        const status = body.status || 'open'
+
+        let query = supabase
+          .from('community_video_reports')
+          .select('id, video_id, reporter_id, reason, detail, status, created_at, video:community_videos(id, course_slug, session_id, provider, video_ref, title, submitter_name, status, report_count)')
+          .order('created_at', { ascending: false })
+
+        if (status !== 'all') query = query.eq('status', status)
+
+        const { data, error } = await query
+        if (error) return jsonResponse({ error: error.message }, 500)
+        return jsonResponse({ data })
+      }
+
+      case 'resolveReport': {
+        const { id, status, video_action, rejection_reason } = body
+        if (!id || !status) return jsonResponse({ error: 'id and status are required.' }, 400)
+        if (!['resolved', 'dismissed', 'open'].includes(status)) {
+          return jsonResponse({ error: 'Invalid status.' }, 400)
+        }
+
+        // Optionally act on the underlying video (hide / reject / re-approve).
+        if (video_action) {
+          const { video_id } = body
+          if (!video_id) return jsonResponse({ error: 'video_id is required for a video_action.' }, 400)
+          if (!['approved', 'rejected', 'hidden'].includes(video_action)) {
+            return jsonResponse({ error: 'Invalid video_action.' }, 400)
+          }
+          const { error: vErr } = await supabase
+            .from('community_videos')
+            .update({
+              status: video_action,
+              rejection_reason: video_action === 'rejected' ? (rejection_reason || null) : null,
+              reviewed_at: new Date().toISOString(),
+              reviewed_by: user.id,
+            })
+            .eq('id', video_id)
+          if (vErr) return jsonResponse({ error: vErr.message }, 500)
+        }
+
+        const { data, error } = await supabase
+          .from('community_video_reports')
+          .update({ status })
+          .eq('id', id)
+          .select()
+          .single()
+
+        if (error) return jsonResponse({ error: error.message }, 500)
+        return jsonResponse({ data })
+      }
+
       default:
         return jsonResponse({ error: `Unknown action: ${action}` }, 400)
     }

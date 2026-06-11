@@ -1,16 +1,20 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Ticket, GraduationCap } from 'lucide-react'
+import { Ticket, GraduationCap, Video, Flag } from 'lucide-react'
 import useAuthStore from '../stores/authStore'
 import { getExamTypes } from '../services/adminService'
 import DashboardHeader from '../components/layout/DashboardHeader'
 import ExamTypeForm from '../components/admin/ExamTypeForm'
 import PromoCodeManager from '../components/admin/PromoCodeManager'
+import CommunityVideoReview from '../components/admin/CommunityVideoReview'
+import VideoReportsManager from '../components/admin/VideoReportsManager'
 import './AdminPage.css'
 
 const TABS = [
   { id: 'promo-codes', label: 'Promo Codes', Icon: Ticket },
   { id: 'exam-types', label: 'Exam Types', Icon: GraduationCap },
+  { id: 'community-videos', label: 'Community Videos', Icon: Video },
+  { id: 'video-reports', label: 'Video Reports', Icon: Flag },
 ]
 
 export default function AdminPage() {
@@ -111,6 +115,14 @@ export default function AdminPage() {
               examTypes={examTypes}
               onCreated={handleExamTypeCreated}
             />
+          )}
+
+          {activeTab === 'community-videos' && (
+            <CommunityVideoReview />
+          )}
+
+          {activeTab === 'video-reports' && (
+            <VideoReportsManager />
           )}
         </main>
       </div>
