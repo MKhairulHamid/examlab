@@ -140,18 +140,10 @@ function ExamDetail() {
     }
   }
 
-  if (!exam) {
-    return (
-      <div className="loading-container">
-        <div className="loading-content">Loading...</div>
-      </div>
-    )
-  }
-
   const hasAccess = isSubscribed
   const freeSet = questionSets.find(set => set.is_free_sample || set.price_cents === 0)
   const paidSets = questionSets.filter(set => !set.is_free_sample && set.price_cents > 0)
-  const officialUrl = getOfficialResourceUrl(exam)
+  const officialUrl = exam ? getOfficialResourceUrl(exam) : null
 
   // The set a "take a practice exam" CTA should open: a free sample if there is
   // one, otherwise the first set (only reachable when subscribed).
@@ -192,7 +184,7 @@ function ExamDetail() {
     }
   }, [examResults])
 
-  const passThreshold = exam.passing_score && exam.max_score
+  const passThreshold = exam?.passing_score && exam?.max_score
     ? Math.round((exam.passing_score / exam.max_score) * 100)
     : 70
 
@@ -232,6 +224,14 @@ function ExamDetail() {
       return { title: `Best score ${best}% — you're close`, sub: 'One more focused pass, then retake the exam', label: 'Retake practice exam', onClick: startPractice }
     return { title: 'You\'re ready to sit the real exam', sub: `Best practice score: ${best}%`, label: 'Take another practice exam', onClick: startPractice }
   }, [course, studyStats, practiceStats, passThreshold])
+
+  if (!exam) {
+    return (
+      <div className="loading-container">
+        <div className="loading-content">Loading...</div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gradient-primary">
