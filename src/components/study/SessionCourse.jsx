@@ -12,23 +12,22 @@ function PrecisionRecallWidget() {
   // Threshold = rightmost column included in the prediction box (0–9)
   const [threshold, setThreshold] = useState(4)
 
-  // 10×10 grid: 90 green (actual fraud) + 10 red (innocent)
-  // Red dots placed in cols 5-9 so the left zone stays pure — mirrors
+  // 10×10 grid: 90 red (actual fraud) + 10 green (innocent)
+  // Innocent dots placed in cols 5-9 so the left zone stays pure — mirrors
   // a model that's confident on the left, less certain on the right.
-  // Red indices (row*10+col): cols where each sits verified below.
-  //   col5→35  col6→76  col7→17,67  col8→8,48,98  col9→29,59,89
-  const RED_SET = new Set([8, 17, 29, 35, 48, 59, 67, 76, 89, 98])
+  // INNOCENT indices (row*10+col): col5→35 col6→76 col7→17,67 col8→8,48,98 col9→29,59,89
+  const INNOCENT_SET = new Set([8, 17, 29, 35, 48, 59, 67, 76, 89, 98])
   const TOTAL = 100, GREEN_TOTAL = 90, COLS = 10
   const CELL = 40, DOT_R = 13
   const SVG_W = COLS * CELL, SVG_H = COLS * CELL
 
   let tp = 0, fp = 0, fn = 0
   for (let i = 0; i < TOTAL; i++) {
-    const inBox = (i % COLS) <= threshold
-    const isRed = RED_SET.has(i)
-    if (!isRed &&  inBox) tp++
-    else if (isRed &&  inBox) fp++
-    else if (!isRed && !inBox) fn++
+    const inBox     = (i % COLS) <= threshold
+    const isFraud   = !INNOCENT_SET.has(i)
+    if (isFraud  &&  inBox) tp++
+    else if (!isFraud &&  inBox) fp++
+    else if (isFraud  && !inBox) fn++
   }
 
   const precision = tp + fp > 0 ? tp / (tp + fp) : 1
@@ -58,8 +57,8 @@ function PrecisionRecallWidget() {
       </div>
 
       <p style={{ fontSize: '0.8125rem', color: '#475569', lineHeight: 1.6, margin: '0 0 0.875rem' }}>
-        100 transactions: <strong style={{ color: '#16a34a' }}>90 actual fraud</strong> and{' '}
-        <strong style={{ color: '#dc2626' }}>10 innocent</strong>. The dashed green box is what
+        100 transactions: <strong style={{ color: '#dc2626' }}>90 actual fraud</strong> and{' '}
+        <strong style={{ color: '#16a34a' }}>10 innocent</strong>. The dashed box is what
         the model <em>predicts</em> as fraud. Drag the slider to widen or narrow the prediction
         boundary and watch Precision and Recall trade off.
       </p>
@@ -67,8 +66,8 @@ function PrecisionRecallWidget() {
       {/* Legend */}
       <div style={{ display: 'flex', gap: '1.25rem', marginBottom: '0.875rem', flexWrap: 'wrap' }}>
         {[
-          { bright: '#16a34a', dim: '#bbf7d0', label: 'Actual fraud' },
-          { bright: '#dc2626', dim: '#fecaca', label: 'Innocent' },
+          { bright: '#dc2626', dim: '#fecaca', label: 'Actual fraud' },
+          { bright: '#16a34a', dim: '#bbf7d0', label: 'Innocent' },
         ].map(({ bright, dim, label }) => (
           <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem', color: '#475569' }}>
             <svg width="30" height="16" style={{ flexShrink: 0 }}>
@@ -100,8 +99,8 @@ function PrecisionRecallWidget() {
             const col   = i % COLS
             const row   = Math.floor(i / COLS)
             const inBox = col <= threshold
-            const isRed = RED_SET.has(i)
-            const fill  = isRed
+            const isFraud = !INNOCENT_SET.has(i)
+            const fill    = isFraud
               ? (inBox ? '#dc2626' : '#fecaca')
               : (inBox ? '#16a34a' : '#bbf7d0')
             return (
@@ -130,8 +129,8 @@ function PrecisionRecallWidget() {
       {/* Count strip */}
       <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '0.875rem' }}>
         {[
-          { label: 'True Positives',  count: tp, color: '#16a34a', note: 'fraud caught' },
-          { label: 'False Positives', count: fp, color: '#dc2626', note: 'innocent flagged' },
+          { label: 'True Positives',  count: tp, color: '#dc2626', note: 'fraud caught' },
+          { label: 'False Positives', count: fp, color: '#16a34a', note: 'innocent flagged' },
           { label: 'False Negatives', count: fn, color: '#d97706', note: 'fraud missed' },
         ].map(({ label, count, color, note }) => (
           <div key={label} style={{
