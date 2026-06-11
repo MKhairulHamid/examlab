@@ -3,7 +3,7 @@ import useAuthStore from '../../stores/authStore'
 
 function DashboardHeader() {
   const navigate = useNavigate()
-  const { user, logout } = useAuthStore()
+  const { user, profile, logout } = useAuthStore()
 
   if (!user) return null
 
@@ -25,8 +25,7 @@ function DashboardHeader() {
             <svg className="w-6 h-6 text-[#00D4AA] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
             </svg>
-            <span className="hidden sm:inline">Cloud Exam Lab</span>
-            <span className="sm:hidden">CEL</span>
+            <span>Cloud Exam Lab</span>
           </Link>
 
           {/* Navigation */}
@@ -38,6 +37,15 @@ function DashboardHeader() {
               <span className="dashboard-header-nav-text">Dashboard</span>
               <span className="dashboard-header-nav-icon hidden">🏠</span>
             </Link>
+
+            {profile?.is_admin && (
+              <Link
+                to="/admin"
+                className="text-white/70 hover:text-white hover:bg-white/[0.08] px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
+              >
+                <span className="dashboard-header-nav-text">Admin</span>
+              </Link>
+            )}
 
             <div className="w-px h-5 bg-white/15 mx-1" />
 
