@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import VideoPanel from './VideoPanel'
 import CommunityVideoPanel from './CommunityVideoPanel'
 import SlideDeck from './SlideDeck'
@@ -24,7 +24,7 @@ function SectionHeader({ children }) {
 //   1. Explain it first  — self-explanation prompt
 //   2. Watch             — peer videos (if any approved) else curated "Related video"
 //   3. Teach it          — present auto-generated slides, record, and submit a link
-export default function TeachToLearn({ session, courseSlug, officialVideos, userId, submitterName }) {
+export default function TeachToLearn({ session, courseSlug, examCode, officialVideos, userId, submitterName }) {
   const sessionId = session.id
   const hasOfficial = officialVideos && officialVideos.length > 0
 
@@ -141,6 +141,7 @@ export default function TeachToLearn({ session, courseSlug, officialVideos, user
             key={mySubmission?.id || 'new'}
             session={session}
             courseSlug={courseSlug}
+            examCode={examCode}
             userId={userId}
             submitterName={submitterName}
             existing={mySubmission}
@@ -154,7 +155,7 @@ export default function TeachToLearn({ session, courseSlug, officialVideos, user
   )
 }
 
-function SubmissionArea({ session, courseSlug, userId, submitterName, existing, onSubmitted }) {
+function SubmissionArea({ session, courseSlug, examCode, userId, submitterName, existing, onSubmitted }) {
   const [editing, setEditing] = useState(!existing)
   const [url, setUrl] = useState('')
   const [title, setTitle] = useState('')
@@ -203,6 +204,9 @@ function SubmissionArea({ session, courseSlug, userId, submitterName, existing, 
 
   return (
     <div style={{ marginTop: '1rem', background: 'white', border: '1.5px solid #e2e8f0', borderRadius: '0.75rem', padding: '1rem 1.1rem' }}>
+      {/* Ready-made title / description / tags for the learner's YouTube upload */}
+      <YouTubePostHelper session={session} examCode={examCode} onUseTitle={setTitle} />
+
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
         <input
           value={url}
@@ -245,6 +249,100 @@ function SubmissionArea({ session, courseSlug, userId, submitterName, existing, 
   )
 }
 
+// Build ready-to-paste YouTube post copy from the session data.
+function buildYouTubeSuggestion(session, examCode) {
+  const code = examCode || 'AWS'
+  const title = `${session.title} — ${code} Exam Prep Explained`
+
+  const description = [
+    `In this video I explain "${session.title}" as part of my ${code} certification prep.`,
+    session.summary ? `\n${session.summary}` : '',
+    `\nI'm learning by teaching with Cloud Exam Lab — explaining each topic out loud to make it stick.`,
+    `\n👉 Study the full ${code} course at Cloud Exam Lab.`,
+  ].filter(Boolean).join('\n')
+
+  const rawTags = [
+    code, 'AWS', 'Cloud Certification', 'Exam Prep',
+    session.domain, session.module,
+    ...(session.keyTerms || []).slice(0, 4).map(t => t.term),
+  ].filter(Boolean)
+  // De-dupe, keep order.
+  const tags = [...new Set(rawTags)].join(', ')
+
+  const hashtags = [...new Set([code.replace(/[^A-Za-z0-9]/g, ''), 'AWS', 'CloudExamLab', 'CloudCertification']
+    .filter(Boolean))].map(h => `#${h}`).join(' ')
+
+  return { title, description: `${description}\n\n${hashtags}`, tags }
+}
+
+function CopyField({ label, value, multiline, onUse }) {
+  const [copied, setCopied] = useState(false)
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(value)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1600)
+    } catch {
+      // Clipboard blocked — select-on-focus fallback handles it.
+    }
+  }
+  return (
+    <div style={{ marginBottom: '0.7rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+        <span style={{ fontSize: '0.6875rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', color: '#64748b' }}>{label}</span>
+        <span style={{ display: 'flex', gap: '0.6rem' }}>
+          {onUse && (
+            <button type="button" onClick={onUse} style={miniLink}>Use as title</button>
+          )}
+          <button type="button" onClick={copy} style={miniLink}>{copied ? '✓ Copied' : 'Copy'}</button>
+        </span>
+      </div>
+      {multiline ? (
+        <textarea readOnly value={value} onFocus={e => e.target.select()} rows={5}
+          style={{ ...inputStyle, resize: 'vertical', fontFamily: 'inherit', background: '#f8fafc', fontSize: '0.8125rem', lineHeight: 1.5 }} />
+      ) : (
+        <input readOnly value={value} onFocus={e => e.target.select()}
+          style={{ ...inputStyle, background: '#f8fafc' }} />
+      )}
+    </div>
+  )
+}
+
+function YouTubePostHelper({ session, examCode, onUseTitle }) {
+  const [open, setOpen] = useState(false)
+  const sug = useMemo(() => buildYouTubeSuggestion(session, examCode), [session, examCode])
+
+  return (
+    <div style={{ marginBottom: '0.85rem', border: '1.5px dashed #cbd5e1', borderRadius: '0.7rem', padding: open ? '0.85rem 1rem' : '0.6rem 1rem', background: '#fbfdff' }}>
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left' }}
+      >
+        <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: NAVY }}>
+          📝 Need a title &amp; description for YouTube? <span style={{ color: '#64748b', fontWeight: 500 }}>We wrote one for you</span>
+        </span>
+        <span style={{ fontSize: '0.8125rem', color: TEAL_DARK, fontWeight: 700 }}>{open ? 'Hide' : 'Show'}</span>
+      </button>
+
+      {open && (
+        <div style={{ marginTop: '0.85rem' }}>
+          <p style={{ fontSize: '0.75rem', color: '#64748b', lineHeight: 1.5, margin: '0 0 0.75rem' }}>
+            Copy these into YouTube when you upload (set the video to <strong>Unlisted</strong> if you prefer). Tweak them to sound like you.
+          </p>
+          <CopyField label="Video title" value={sug.title} onUse={() => onUseTitle(sug.title)} />
+          <CopyField label="Description" value={sug.description} multiline />
+          <CopyField label="Tags" value={sug.tags} />
+        </div>
+      )}
+    </div>
+  )
+}
+
+const miniLink = {
+  fontSize: '0.6875rem', fontWeight: 700, color: TEAL_DARK,
+  background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline',
+}
 const inputStyle = {
   width: '100%', boxSizing: 'border-box', borderRadius: '0.6rem', border: '1.5px solid #e2e8f0',
   padding: '0.6rem 0.75rem', fontSize: '0.875rem', fontFamily: 'inherit',

@@ -1998,6 +1998,7 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
               <TeachToLearn
                 session={activeSession}
                 courseSlug={course.slug}
+                examCode={course.code}
                 officialVideos={activeSession.videos}
                 userId={userId}
                 submitterName={submitterName}
