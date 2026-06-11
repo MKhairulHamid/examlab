@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import useExamStore from '../stores/examStore'
 import useAuthStore from '../stores/authStore'
@@ -7,8 +7,14 @@ import EnrollmentModal from '../components/enrollment/EnrollmentModal'
 import ExamLandingSection from '../components/exam/ExamLandingSection'
 import { Button } from '../design-system'
 import supabase from '../services/supabase'
+import studyProgressService from '../services/studyProgressService'
+import progressService from '../services/progressService'
+import { getSessionCourse } from '../utils/sessionCourses'
 import { getOfficialResourceUrl } from '../utils/officialResources'
-import { FileText, Clock, Target, BookOpen, ExternalLink, Lock, BarChart2, GraduationCap } from 'lucide-react'
+import {
+  FileText, Clock, Target, BookOpen, ExternalLink, Lock, BarChart2,
+  GraduationCap, TrendingUp, TrendingDown, CheckCircle2, PlayCircle, Sparkles, ArrowRight,
+} from 'lucide-react'
 
 function ExamDetail() {
   const { slug } = useParams()
@@ -20,11 +26,17 @@ function ExamDetail() {
   const [showPurchaseModal, setShowPurchaseModal] = useState(false)
   const [examResults, setExamResults] = useState([])
   const [loadingQuestionSets, setLoadingQuestionSets] = useState(true)
+  const [completedSessions, setCompletedSessions] = useState([])
+  const [inProgressExam, setInProgressExam] = useState(null)
+
+  // Session-based study course for this exam (null for exams without one).
+  const course = useMemo(() => getSessionCourse(slug), [slug])
 
   useEffect(() => {
     // Reset loading state SYNCHRONOUSLY so the component never renders
     // stale "no sets" data from a previous exam page visit.
     setLoadingQuestionSets(true)
+    setInProgressExam(null)
 
     const loadExam = async () => {
       const examData = await getExamBySlug(slug)
@@ -43,6 +55,47 @@ function ExamDetail() {
 
     loadExam()
   }, [slug, user])
+
+  // Study progress — hydrate instantly from localStorage, then let the DB
+  // (cross-device source of truth) override. Mirrors SessionCourse's storage keys.
+  useEffect(() => {
+    if (!course) { setCompletedSessions([]); return }
+    try {
+      const cached = localStorage.getItem(`course-progress-${course.slug}`)
+      if (cached) setCompletedSessions(JSON.parse(cached))
+    } catch { /* ignore */ }
+
+    if (!user) return
+    let cancelled = false
+    studyProgressService.load(user.id, course.slug).then(data => {
+      if (cancelled || !data) return
+      setCompletedSessions(Array.isArray(data.completedSessions) ? data.completedSessions : [])
+    })
+    return () => { cancelled = true }
+  }, [course, user])
+
+  // Detect an unfinished practice exam across this exam's question sets.
+  useEffect(() => {
+    if (!user || !questionSets.length) return
+    let cancelled = false
+    const findOngoing = async () => {
+      for (const set of questionSets) {
+        const ip = await progressService.findInProgressExam(user.id, set.id)
+        if (cancelled) return
+        if (ip) {
+          setInProgressExam({
+            ...ip,
+            setName: set.name,
+            questionCount: set.question_count || 0,
+            answeredCount: ip.answers ? Object.keys(ip.answers).filter(k => (ip.answers[k] || []).length > 0).length : 0,
+          })
+          return
+        }
+      }
+    }
+    findOngoing()
+    return () => { cancelled = true }
+  }, [user, questionSets])
 
   const loadExamResults = async (examTypeId) => {
     if (!user) return
@@ -100,6 +153,86 @@ function ExamDetail() {
   const paidSets = questionSets.filter(set => !set.is_free_sample && set.price_cents > 0)
   const officialUrl = getOfficialResourceUrl(exam)
 
+  // The set a "take a practice exam" CTA should open: a free sample if there is
+  // one, otherwise the first set (only reachable when subscribed).
+  const practiceTarget = freeSet || (hasAccess ? questionSets[0] : null)
+  const startPractice = () => {
+    if (practiceTarget) navigate(`/exam/${slug}/take?set=${practiceTarget.id}`)
+    else setShowPurchaseModal(true)
+  }
+  const startStudy = () => navigate(`/exam/${slug}/study`)
+
+  // Per-domain study completion (only for exams that have a session course).
+  const studyStats = useMemo(() => {
+    if (!course) return null
+    const done = new Set(completedSessions)
+    const byDomain = course.modules
+      .filter(m => m.id !== 'exam')
+      .map(m => {
+        const sessions = course.sessions.filter(s => s.domain === m.id)
+        return { ...m, total: sessions.length, done: sessions.filter(s => done.has(s.id)).length }
+      })
+    const totalSessions = course.sessions.length
+    const totalDone = course.sessions.filter(s => done.has(s.id)).length
+    const nextDomain = byDomain.find(d => d.done < d.total) || null
+    return { byDomain, totalSessions, totalDone, nextDomain, allDone: totalDone >= totalSessions }
+  }, [course, completedSessions])
+
+  // Practice-exam performance summary.
+  const practiceStats = useMemo(() => {
+    const scores = examResults.map(r => r.percentageScore).filter(n => typeof n === 'number')
+    if (!scores.length) return { attempts: 0, best: null, latest: null, first: null, trend: null, passed: false }
+    return {
+      attempts: examResults.length,
+      best: Math.max(...scores),
+      latest: examResults[0].percentageScore,                    // results are newest-first
+      first: examResults[examResults.length - 1].percentageScore,
+      trend: scores.length > 1 ? examResults[0].percentageScore - examResults[examResults.length - 1].percentageScore : null,
+      passed: examResults.some(r => r.passed),
+    }
+  }, [examResults])
+
+  const passThreshold = exam.passing_score && exam.max_score
+    ? Math.round((exam.passing_score / exam.max_score) * 100)
+    : 70
+
+  // Overall readiness level — drives the badge and the recommended next action.
+  const readiness = useMemo(() => {
+    const studied = studyStats?.totalDone || 0
+    const { attempts, best, passed } = practiceStats
+    if (studied === 0 && attempts === 0)
+      return { level: 'Not started', color: '#94a3b8', hint: 'Begin with the study material' }
+    if (passed || (best != null && best >= passThreshold))
+      return { level: 'Exam ready', color: '#10b981', hint: 'You\'ve cleared the passing bar in practice' }
+    if (attempts > 0 && best != null && best >= passThreshold - 10)
+      return { level: 'Almost ready', color: '#00D4AA', hint: 'A little more practice and you\'re there' }
+    return { level: 'In progress', color: '#f59e0b', hint: 'Keep working through the material' }
+  }, [studyStats, practiceStats, passThreshold])
+
+  // The single most useful next step, given where the learner is.
+  const nextAction = useMemo(() => {
+    if (!course) return null
+    const studied = studyStats?.totalDone || 0
+    const { attempts, best } = practiceStats
+
+    if (studied === 0 && attempts === 0) {
+      const first = studyStats?.byDomain[0]
+      return { title: `Start with ${first?.label || 'Domain 1'}`, sub: `${first?.total || 0} sessions · build your foundation`, label: 'Begin studying', onClick: startStudy }
+    }
+    if (!studyStats?.allDone) {
+      const nd = studyStats.nextDomain
+      const remaining = nd ? nd.total - nd.done : 0
+      return { title: `Continue ${nd?.label || 'studying'}`, sub: `${remaining} session${remaining === 1 ? '' : 's'} left in this domain`, label: 'Continue studying', onClick: startStudy }
+    }
+    if (attempts === 0)
+      return { title: 'You\'ve finished every study session', sub: 'Test your readiness with a full practice exam', label: 'Take a practice exam', onClick: startPractice }
+    if (best != null && best < passThreshold - 10)
+      return { title: `Best score ${best}% — revisit your weak domains`, sub: 'Review the material, then try again', label: 'Review study material', onClick: startStudy }
+    if (best != null && best < passThreshold)
+      return { title: `Best score ${best}% — you're close`, sub: 'One more focused pass, then retake the exam', label: 'Retake practice exam', onClick: startPractice }
+    return { title: 'You\'re ready to sit the real exam', sub: `Best practice score: ${best}%`, label: 'Take another practice exam', onClick: startPractice }
+  }, [course, studyStats, practiceStats, passThreshold])
+
   return (
     <div className="min-h-screen bg-gradient-primary">
       <div className="max-w-6xl mx-auto px-4 py-4 sm:p-6">
@@ -108,6 +241,26 @@ function ExamDetail() {
         <button onClick={() => navigate('/dashboard')} className="back-button mb-4 sm:mb-6">
           ← Back to Dashboard
         </button>
+
+        {/* Resume an unfinished practice exam */}
+        {inProgressExam && (
+          <button
+            onClick={() => navigate(`/exam/${slug}/take?set=${inProgressExam.questionSetId}`)}
+            className="w-full mb-4 sm:mb-6 flex items-center gap-3 sm:gap-4 text-left bg-[#00D4AA]/15 hover:bg-[#00D4AA]/25 border border-[#00D4AA]/40 rounded-2xl p-4 sm:p-5 transition-all duration-200 cursor-pointer"
+          >
+            <div className="w-11 h-11 rounded-xl bg-[#00D4AA]/25 flex items-center justify-center shrink-0">
+              <PlayCircle className="w-6 h-6 text-[#00D4AA]" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-white font-bold text-[0.9375rem]">Resume your practice exam</div>
+              <div className="text-white/70 text-[0.8125rem] truncate">
+                {inProgressExam.setName}
+                {inProgressExam.questionCount > 0 && ` · ${inProgressExam.answeredCount}/${inProgressExam.questionCount} answered`}
+              </div>
+            </div>
+            <ArrowRight className="w-5 h-5 text-[#00D4AA] shrink-0" />
+          </button>
+        )}
 
         {/* Exam Header Card */}
         <div className="exam-header-card">
@@ -134,37 +287,142 @@ function ExamDetail() {
           )}
         </div>
 
+        {/* Prep Readiness — only for exams with a guided session course */}
+        {course && user && (
+          <div className="mt-6 bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 overflow-hidden">
+            <div className="p-5 sm:p-6">
+              <div className="flex items-center justify-between gap-3 mb-5 flex-wrap">
+                <h2 className="text-white font-bold text-lg inline-flex items-center gap-2">
+                  <Target className="w-5 h-5 text-[#00D4AA]" /> Your Exam Prep
+                </h2>
+                <span
+                  className="px-3 py-1 rounded-full text-[0.8125rem] font-bold border"
+                  style={{ color: readiness.color, borderColor: `${readiness.color}66`, background: `${readiness.color}1a` }}
+                >
+                  {readiness.level}
+                </span>
+              </div>
+
+              {/* Three stats */}
+              <div className="grid gap-3 sm:gap-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 160px), 1fr))' }}>
+                {/* Study */}
+                <div className="bg-white/[0.06] rounded-xl p-4 border border-white/10">
+                  <div className="text-[0.6875rem] font-semibold uppercase tracking-[0.05em] text-[#00D4AA] mb-1.5 inline-flex items-center gap-1.5">
+                    <BookOpen className="w-3.5 h-3.5" /> Study Sessions
+                  </div>
+                  <div className="text-white font-extrabold text-2xl tabular-nums">
+                    {studyStats.totalDone}<span className="text-white/40 text-base font-bold"> / {studyStats.totalSessions}</span>
+                  </div>
+                  <div className="mt-2 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                    <div className="h-full bg-[#00D4AA] rounded-full transition-all duration-500" style={{ width: `${studyStats.totalSessions ? (studyStats.totalDone / studyStats.totalSessions) * 100 : 0}%` }} />
+                  </div>
+                </div>
+
+                {/* Practice attempts */}
+                <div className="bg-white/[0.06] rounded-xl p-4 border border-white/10">
+                  <div className="text-[0.6875rem] font-semibold uppercase tracking-[0.05em] text-[#00D4AA] mb-1.5 inline-flex items-center gap-1.5">
+                    <BarChart2 className="w-3.5 h-3.5" /> Practice Attempts
+                  </div>
+                  <div className="text-white font-extrabold text-2xl tabular-nums">{practiceStats.attempts}</div>
+                  <div className="text-white/55 text-[0.75rem] mt-2">
+                    {practiceStats.best != null ? `Best score ${practiceStats.best}%` : 'No attempts yet'}
+                  </div>
+                </div>
+
+                {/* Best score vs pass line */}
+                <div className="bg-white/[0.06] rounded-xl p-4 border border-white/10">
+                  <div className="text-[0.6875rem] font-semibold uppercase tracking-[0.05em] text-[#00D4AA] mb-1.5 inline-flex items-center gap-1.5">
+                    <Target className="w-3.5 h-3.5" /> Best vs Pass
+                  </div>
+                  <div className="text-white font-extrabold text-2xl tabular-nums">
+                    {practiceStats.best != null ? `${practiceStats.best}%` : '—'}
+                    <span className="text-white/40 text-base font-bold"> / {passThreshold}%</span>
+                  </div>
+                  <div className="mt-2 h-1.5 bg-white/10 rounded-full overflow-hidden relative">
+                    {practiceStats.best != null && (
+                      <div
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{ width: `${Math.min(100, practiceStats.best)}%`, background: practiceStats.best >= passThreshold ? '#10b981' : '#f59e0b' }}
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Recommended next action */}
+            {nextAction && (
+              <div className="border-t border-white/10 bg-[#00D4AA]/[0.07] p-5 sm:p-6 flex items-center gap-4 flex-wrap">
+                <Sparkles className="w-5 h-5 text-[#00D4AA] shrink-0" />
+                <div className="flex-1 min-w-[180px]">
+                  <div className="text-white font-bold text-[0.9375rem]">{nextAction.title}</div>
+                  <div className="text-white/65 text-[0.8125rem]">{nextAction.sub}</div>
+                </div>
+                <Button variant="primary" onClick={nextAction.onClick} className="shadow-teal gap-1.5 shrink-0">
+                  {nextAction.label} <ArrowRight className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Certification Landing Info */}
         <ExamLandingSection landing={exam.landing_content} />
 
         {/* Study Material — a first-class offering, co-equal with the practice exams */}
         <h2 className="section-title mt-8">Study Material</h2>
-        <div className="question-sets-grid">
-          <div className="question-set-card">
-            <div className="question-set-header">
-              <h3 className="question-set-title">Full Study Course</h3>
+        {course && studyStats ? (
+          <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 p-5 sm:p-6">
+            <div className="flex items-start justify-between gap-3 mb-5 flex-wrap">
+              <div className="min-w-0">
+                <h3 className="text-white font-bold text-base">{course.title}</h3>
+                <p className="text-white/60 text-[0.8125rem] mt-0.5">{course.subtitle}</p>
+              </div>
               {hasAccess ? (
-                <span className="px-3 py-1 bg-[#00D4AA]/20 text-[#00D4AA] rounded-lg text-sm font-semibold">
+                <span className="px-3 py-1 bg-[#00D4AA]/20 text-[#00D4AA] rounded-lg text-sm font-semibold shrink-0">
                   ✓ Subscribed
                 </span>
               ) : (
-                <span className="badge-free">✓ Free preview</span>
+                <span className="badge-free shrink-0">✓ Free preview</span>
               )}
             </div>
-            <p className="question-set-description">
-              Comprehensive, exam-aligned lessons across every domain — key concepts, AWS service
-              breakdowns, exam tips, and a practice question in each session. Learn the material in
-              depth, then prove it with the practice exams.
-            </p>
-            <div className="question-set-meta">
-              <span className="inline-flex items-center gap-1.5"><BookOpen className="w-3.5 h-3.5 opacity-60" />Guided sessions</span>
-              <span>Every exam domain</span>
+
+            {/* Per-domain progress — the clearest "what to study next" signal */}
+            <div className="flex flex-col gap-3 mb-5">
+              {studyStats.byDomain.map(d => {
+                const pct = d.total ? Math.round((d.done / d.total) * 100) : 0
+                const complete = d.total > 0 && d.done >= d.total
+                return (
+                  <div key={d.id} className="flex items-center gap-3">
+                    <div
+                      className="w-5 h-5 rounded-full shrink-0 flex items-center justify-center border"
+                      style={{
+                        background: complete ? '#10b981' : 'rgba(255,255,255,0.06)',
+                        borderColor: complete ? '#10b981' : 'rgba(255,255,255,0.2)',
+                      }}
+                    >
+                      {complete && <CheckCircle2 className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-baseline gap-2 mb-1">
+                        <span className="text-white/85 text-[0.8125rem] truncate">
+                          {d.label}{d.weight && d.weight !== '—' ? ` · ${d.weight}` : ''}
+                        </span>
+                        <span className="text-white/50 text-[0.75rem] tabular-nums shrink-0">{d.done}/{d.total}</span>
+                      </div>
+                      <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                        <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: complete ? '#10b981' : '#00D4AA' }} />
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
-            <button
-              onClick={() => navigate(`/exam/${slug}/study`)}
-              className="start-exam-button"
-            >
-              {hasAccess ? 'Continue Studying →' : 'Start Free Preview →'}
+
+            <button onClick={startStudy} className="start-exam-button">
+              {studyStats.totalDone === 0
+                ? (hasAccess ? 'Start Studying →' : 'Start Free Preview →')
+                : studyStats.allDone ? 'Review Study Material →' : 'Continue Studying →'}
             </button>
             {!hasAccess && (
               <p className="text-white/55 text-[0.75rem] text-center mt-2.5">
@@ -172,7 +430,42 @@ function ExamDetail() {
               </p>
             )}
           </div>
-        </div>
+        ) : (
+          <div className="question-sets-grid">
+            <div className="question-set-card">
+              <div className="question-set-header">
+                <h3 className="question-set-title">Full Study Course</h3>
+                {hasAccess ? (
+                  <span className="px-3 py-1 bg-[#00D4AA]/20 text-[#00D4AA] rounded-lg text-sm font-semibold">
+                    ✓ Subscribed
+                  </span>
+                ) : (
+                  <span className="badge-free">✓ Free preview</span>
+                )}
+              </div>
+              <p className="question-set-description">
+                Comprehensive, exam-aligned lessons across every domain — key concepts, AWS service
+                breakdowns, exam tips, and a practice question in each session. Learn the material in
+                depth, then prove it with the practice exams.
+              </p>
+              <div className="question-set-meta">
+                <span className="inline-flex items-center gap-1.5"><BookOpen className="w-3.5 h-3.5 opacity-60" />Guided sessions</span>
+                <span>Every exam domain</span>
+              </div>
+              <button
+                onClick={() => navigate(`/exam/${slug}/study`)}
+                className="start-exam-button"
+              >
+                {hasAccess ? 'Continue Studying →' : 'Start Free Preview →'}
+              </button>
+              {!hasAccess && (
+                <p className="text-white/55 text-[0.75rem] text-center mt-2.5">
+                  First domain free · Subscribe to unlock the full course
+                </p>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Question Sets */}
         <h2 className="section-title mt-8">Question Sets</h2>
@@ -270,8 +563,22 @@ function ExamDetail() {
         {/* Exam Attempts History */}
         {examResults.length > 0 && (
           <div className="mt-12">
-            <h2 className="section-title">Your Exam Attempts</h2>
-            <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <h2 className="section-title !mb-0">Your Exam Attempts</h2>
+              {practiceStats.trend != null && (
+                <span
+                  className="inline-flex items-center gap-1.5 text-[0.8125rem] font-semibold"
+                  style={{ color: practiceStats.trend >= 0 ? '#10b981' : '#ef4444' }}
+                >
+                  {practiceStats.trend >= 0
+                    ? <TrendingUp className="w-4 h-4" />
+                    : <TrendingDown className="w-4 h-4" />}
+                  {practiceStats.first}% → {practiceStats.latest}%
+                  {' '}({practiceStats.trend >= 0 ? '+' : ''}{practiceStats.trend} pts over {practiceStats.attempts} attempts)
+                </span>
+              )}
+            </div>
+            <div className="flex flex-col gap-4 mt-4">
               {examResults.map((result) => {
                 const passColor = result.passed ? '#10b981' : '#ef4444'
                 const passIcon = result.passed ? '✓' : '✗'

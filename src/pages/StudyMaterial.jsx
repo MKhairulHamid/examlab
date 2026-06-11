@@ -1,17 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import SessionCourse from '../components/study/SessionCourse'
-import aifC01Course from '../data/aifC01Course'
 import useAuthStore from '../stores/authStore'
 import usePurchaseStore from '../stores/purchaseStore'
 import EnrollmentModal from '../components/enrollment/EnrollmentModal'
 import DashboardHeader from '../components/layout/DashboardHeader'
-
-// Registry of session-based prep courses keyed by exam slug fragment.
-// A slug containing any of these fragments renders the matching SessionCourse.
-const SESSION_COURSES = [
-  { match: ['aif', 'ai-practitioner'], course: aifC01Course },
-]
+import { getSessionCourse } from '../utils/sessionCourses'
 
 // Data Structure for Content Domain 1
 const studyData = {
@@ -673,17 +667,14 @@ function StudyMaterial() {
     const hasAccess = isSubscribed
     const onSubscribe = () => setShowPurchaseModal(true)
 
-    const lowerSlug = (slug || '').toLowerCase()
-    const sessionCourse = SESSION_COURSES.find(entry =>
-        entry.match.some(fragment => lowerSlug.includes(fragment))
-    )
+    const sessionCourse = getSessionCourse(slug)
 
     return (
         <>
             <DashboardHeader />
             {sessionCourse ? (
                 <SessionCourse
-                    course={sessionCourse.course}
+                    course={sessionCourse}
                     hasAccess={hasAccess}
                     onSubscribe={onSubscribe}
                     onBack={() => navigate(`/exam/${slug}`)}
