@@ -312,8 +312,18 @@
       <li>Pull the <strong>set size, duration, passing line, and domain distribution</strong> from the blueprint's Simulation Design section (Layer 1).</li>
       <li>Every question is scenario-based, single-best-answer (or select-N), with a per-option explanation and a concept link back to a domain/task.</li>
       <li>Launch with multiple-choice + multiple-response (~90% of the exam); add ordering/matching after launch.</li>
-      <li>Ship at least one <strong>free sample set</strong> so unsubscribed users can experience the format.</li>
+      <li>The standard set structure for every program is <strong>4 question sets</strong> inserted into the <code>question_sets</code> table:</li>
     </ul>
+    <div class="tw"><table>
+      <thead><tr><th>Set #</th><th>Name</th><th>Questions</th><th>Price</th><th>is_free_sample</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Free Practice Set — 10 Questions</td><td>10–12</td><td>$0</td><td>true</td></tr>
+        <tr><td>2</td><td>Full Exam Simulation 1</td><td>65</td><td>$19.99</td><td>false</td></tr>
+        <tr><td>3</td><td>Full Exam Simulation 2</td><td>65</td><td>$19.99</td><td>false</td></tr>
+        <tr><td>4</td><td>Full Exam Simulation 3</td><td>65</td><td>$19.99</td><td>false</td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout callout-warning">Insert these rows via the Supabase MCP or admin panel <em>before</em> pushing the program live. The dashboard shows the exam card only after the <code>exam_types</code> row exists; question sets appear under it once inserted.</div>
   </div>
 
   <div class="section" id="phase5">
@@ -361,7 +371,7 @@
     <h2>Simulation</h2>
     <ul>
       <li>☐ Question count and domain distribution match the blueprint</li>
-      <li>☐ At least one free sample set published</li>
+      <li>☐ All 4 question sets inserted: 1 free sample (10–12 Qs) + 3 full simulations (65 Qs each, $19.99)</li>
       <li>☐ Every question has a per-option explanation and a concept link</li>
     </ul>
     <h2>Platform</h2>
