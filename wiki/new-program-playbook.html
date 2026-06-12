@@ -307,13 +307,18 @@
   <div class="section" id="phase4">
     <span class="chip chip-standard">Layer 4</span>
     <h1>Exam Simulation</h1>
-    <p class="section-meta">Author the practice question sets that mimic the real exam. Fully standardized — follow the <a href="exam-authoring-standard.html">Exam &amp; Question Authoring Standard</a>.</p>
+    <p class="section-meta">Author the practice question sets that mimic the real exam. Questions must be derived directly from the official exam guide and follow the <a href="exam-authoring-standard.html">Exam &amp; Question Authoring Standard</a> in full — including per-option explanations, concept guides, and official links in every question's <code>ai_cache</code>.</p>
+
+    <h2>Step 1 — Read the official exam guide before writing a single question</h2>
+    <p>Every question must be grounded in a specific task statement or knowledge/skill from the official AWS exam guide for that certification. Deriving questions from memory or general AWS knowledge produces off-target questions that mislead learners.</p>
     <ul>
-      <li>Pull the <strong>set size, duration, passing line, and domain distribution</strong> from the blueprint's Simulation Design section (Layer 1).</li>
-      <li>Every question is scenario-based, single-best-answer (or select-N), with a per-option explanation and a concept link back to a domain/task.</li>
-      <li>Launch with multiple-choice + multiple-response (~90% of the exam); add ordering/matching after launch.</li>
-      <li>The standard set structure for every program is <strong>4 question sets</strong> inserted into the <code>question_sets</code> table:</li>
+      <li>Read every domain's task statements and knowledge/skills list in the official guide (the same guide used to write the blueprint in Layer 1).</li>
+      <li>Map each question to a specific <strong>domain → task → knowledge/skill</strong>. If you cannot cite the mapping, the question is not exam-accurate.</li>
+      <li>Use the blueprint's Simulation Design section (domain distribution table) to set the exact question count per domain for each set.</li>
     </ul>
+
+    <h2>Step 2 — Set up the 4 question sets in Supabase first</h2>
+    <p>Insert the <code>exam_types</code> row and all 4 <code>question_sets</code> rows before writing any questions. Questions reference <code>question_set_id</code> — the sets must exist first.</p>
     <div class="tw"><table>
       <thead><tr><th>Set #</th><th>Name</th><th>Questions</th><th>Price</th><th>is_free_sample</th></tr></thead>
       <tbody>
@@ -323,7 +328,62 @@
         <tr><td>4</td><td>Full Exam Simulation 3</td><td>65</td><td>$19.99</td><td>false</td></tr>
       </tbody>
     </table></div>
-    <div class="callout callout-warning">Insert these rows via the Supabase MCP or admin panel <em>before</em> pushing the program live. The dashboard shows the exam card only after the <code>exam_types</code> row exists; question sets appear under it once inserted.</div>
+    <div class="callout callout-warning">Insert <code>exam_types</code> first — the dashboard card appears only after this row exists. Then insert <code>question_sets</code> rows. Use the Supabase MCP (<code>execute_sql</code>) or admin panel.</div>
+
+    <h2>Step 3 — Plan topic coverage before writing</h2>
+    <p>Before writing any question text, build a topic list that covers every task statement in the exam guide with no gaps and no duplicates within a set. Each question covers a distinct subtopic.</p>
+    <ul>
+      <li>For the <strong>free practice set</strong>: distribute proportionally across all domains (e.g. 10 questions at 24/30/34/12% weights ≈ 2/3/4/1).</li>
+      <li>For <strong>each full simulation</strong>: cover every task statement at least once. With 65 questions across typically 10–14 task statements, plan 4–6 questions per task statement.</li>
+      <li>Each of the 3 full simulations must test the same topic coverage but from a <strong>different angle</strong> — write a topic coverage plan for each sim before generating questions:</li>
+    </ul>
+    <div class="tw"><table>
+      <thead><tr><th>Simulation</th><th>Angle</th><th>Question style</th></tr></thead>
+      <tbody>
+        <tr><td>Simulation 1</td><td>Foundational — know the services and concepts</td><td>"Which AWS service does X?" · "Which benefit describes Y?"</td></tr>
+        <tr><td>Simulation 2</td><td>Architectural — apply knowledge to solve a business problem</td><td>"A company needs X — which solution achieves this?" · "Which architecture best achieves both X and Y?"</td></tr>
+        <tr><td>Simulation 3</td><td>Comparative — distinguish similar services and trade-offs</td><td>"What is the difference between X and Y?" · "Which option is NOT appropriate for Z?"</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Step 4 — Write questions following the authoring standard</h2>
+    <p>Every question must comply with all rules in the <a href="exam-authoring-standard.html">Exam &amp; Question Authoring Standard</a>. The non-negotiable rules:</p>
+    <ul>
+      <li><strong>Scenario-based stem</strong> — "A company wants to…" not "What is Amazon S3?" Applied judgment over abstract recall.</li>
+      <li><strong>Single best answer</strong> — exactly one option is clearly correct; the other three are plausible but wrong for a specific, teachable reason.</li>
+      <li><strong>No implementation questions</strong> — test service selection and judgment, not step-by-step configuration or CLI syntax.</li>
+      <li><strong>Full <code>ai_cache</code> on every question</strong> — this is what the learner sees after answering. Empty <code>ai_cache</code> means no feedback, which breaks the learning loop.</li>
+    </ul>
+
+    <h2>Step 5 — Populate <code>ai_cache</code> for every question</h2>
+    <p>The <code>ai_cache</code> column in <code>question_items</code> stores the full explanation shown to the learner after they answer. It must follow this exact JSON structure (mirror of AIF-C01):</p>
+    <pre style="background:var(--surface-alt);padding:1rem;border-radius:6px;font-size:0.82rem;overflow-x:auto;line-height:1.5">{
+  "explanations": {
+    "overview": "One paragraph: why the correct answer is right — the conceptual reason, not just 'this is correct'.",
+    "per_option": [
+      { "option": "Exact text of option A", "correct": false, "explanation": "One sentence: specific teachable reason this is wrong." },
+      { "option": "Exact text of option B", "correct": true,  "explanation": "One sentence: specific reason this is the best answer." },
+      { "option": "Exact text of option C", "correct": false, "explanation": "One sentence: specific teachable reason this is wrong." },
+      { "option": "Exact text of option D", "correct": false, "explanation": "One sentence: specific teachable reason this is wrong." }
+    ]
+  },
+  "concept_guide": {
+    "title": "Short concept name (e.g. 'S3 Storage Classes')",
+    "summary": "2–3 sentence explanation of the underlying concept.",
+    "key_facts": ["Bullet fact 1", "Bullet fact 2", "Bullet fact 3"],
+    "related_concepts": [
+      { "name": "Related concept", "description": "One sentence." }
+    ]
+  },
+  "official_links": [
+    { "url": "https://docs.aws.amazon.com/...", "title": "Official AWS documentation title" }
+  ]
+}</pre>
+    <div class="callout callout-warning">Do not insert questions with <code>ai_cache: {}</code>. Questions without explanations give learners no feedback and violate the authoring standard. Generate the full <code>ai_cache</code> for every question in the same pass as writing the question — it is harder to retrofit later.</div>
+
+    <h2>Step 6 — Insert into Supabase</h2>
+    <p>Insert questions into the <code>question_items</code> table. Required columns: <code>question_set_id</code>, <code>question_number</code> (sequential from 1), <code>question_text</code>, <code>question_type</code> ('Multiple Choice'), <code>domain</code>, <code>options</code> (jsonb array of 4 strings), <code>correct_answers</code> (jsonb array with the exact text of the correct option), <code>tags</code> (jsonb), <code>ai_cache</code> (jsonb — the full structure above).</p>
+    <p>Insert in batches of 10–15 per SQL call via the Supabase MCP. Escape single quotes in text by doubling them (<code>it''s</code>, <code>AWS''s</code>).</p>
   </div>
 
   <div class="section" id="phase5">
@@ -370,9 +430,13 @@
     </ul>
     <h2>Simulation</h2>
     <ul>
-      <li>☐ Question count and domain distribution match the blueprint</li>
+      <li>☐ <code>exam_types</code> row inserted and <code>is_active = true</code></li>
       <li>☐ All 4 question sets inserted: 1 free sample (10–12 Qs) + 3 full simulations (65 Qs each, $19.99)</li>
-      <li>☐ Every question has a per-option explanation and a concept link</li>
+      <li>☐ Question count and domain distribution match the blueprint for each set</li>
+      <li>☐ Every question stem is scenario-based (no "What is X?" recall stems)</li>
+      <li>☐ Every question derived from a specific task statement in the official exam guide</li>
+      <li>☐ Each simulation covers a distinct angle (foundational / architectural / comparative)</li>
+      <li>☐ Every question has full <code>ai_cache</code>: overview + per-option explanations + concept guide + official links</li>
     </ul>
     <h2>Platform</h2>
     <ul>
