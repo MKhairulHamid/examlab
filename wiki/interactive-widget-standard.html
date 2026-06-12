@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Widget Standard — CloudExamLab Wiki</title>
+  <style>
+    :root {
+      --sidebar-w: 255px;
+      --sidebar-bg: #0f172a;
+      --sidebar-text: #94a3b8;
+      --sidebar-active-text: #38bdf8;
+      --sidebar-active-bg: rgba(56,189,248,0.08);
+      --sidebar-hover: #1e293b;
+      --accent: #2563eb;
+      --accent-light: #eff6ff;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --heading: #0f172a;
+      --code-bg: #1e293b;
+      --code-text: #e2e8f0;
+      --stripe: #f8fafc;
+      --warn-bg: #fef2f2;
+      --warn-border: #ef4444;
+      --tip-bg: #f0fdf4;
+      --tip-border: #22c55e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--text);
+      line-height: 1.65;
+      background: #fff;
+    }
+
+    /* ── Sidebar ── */
+    #sidebar {
+      position: fixed; top: 0; left: 0;
+      width: var(--sidebar-w); height: 100vh;
+      background: var(--sidebar-bg);
+      overflow-y: auto; z-index: 100;
+      display: flex; flex-direction: column;
+    }
+    #sidebar::-webkit-scrollbar { width: 4px; }
+    #sidebar::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+    .sb-header {
+      padding: 20px 16px 14px;
+      border-bottom: 1px solid #1e293b;
+    }
+    .sb-logo { font-size: 13px; font-weight: 700; color: #f1f5f9; letter-spacing: .06em; text-transform: uppercase; }
+    .sb-sub  { font-size: 11px; color: var(--sidebar-text); margin-top: 2px; }
+    .sb-group { padding: 10px 0 2px; }
+    .sb-group-label {
+      font-size: 10px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: #475569;
+      padding: 0 16px; margin-bottom: 3px;
+    }
+    .sb-item {
+      display: block; padding: 6px 16px;
+      font-size: 12.5px; color: var(--sidebar-text);
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: background .12s, color .12s;
+    }
+    .sb-item:hover { background: var(--sidebar-hover); color: #f1f5f9; }
+    .sb-item.active { color: var(--sidebar-active-text); border-left-color: var(--sidebar-active-text); background: var(--sidebar-active-bg); }
+    .sb-item.ext { color: #60a5fa; }
+    .sb-item.ext::after { content: ' ↗'; font-size: 10px; }
+
+    /* ── Main ── */
+    #main {
+      margin-left: var(--sidebar-w);
+      padding: 48px 64px 96px;
+      max-width: calc(var(--sidebar-w) + 880px);
+    }
+
+    /* ── Section ── */
+    .section { padding-top: 52px; border-top: 1px solid var(--border); margin-top: 28px; }
+    .section:first-of-type { border-top: none; margin-top: 0; padding-top: 0; }
+
+    /* ── Typography ── */
+    h1 { font-size: 27px; font-weight: 700; color: var(--heading); margin-bottom: 10px; }
+    h2 { font-size: 19px; font-weight: 700; color: var(--heading); margin-top: 38px; margin-bottom: 14px; }
+    h3 { font-size: 15px; font-weight: 600; color: var(--heading); margin-top: 24px; margin-bottom: 8px; }
+    p  { margin-bottom: 12px; }
+    a  { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ul, ol { padding-left: 22px; margin-bottom: 12px; }
+    li { margin-bottom: 4px; }
+    hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+    .section-meta { font-size: 14px; color: var(--text-muted); margin-bottom: 26px; margin-top: -4px; }
+
+    /* ── Chip label ── */
+    .chip {
+      display: inline-block; padding: 2px 9px; border-radius: 4px;
+      font-size: 10px; font-weight: 700; letter-spacing: .05em;
+      text-transform: uppercase; margin-bottom: 6px;
+    }
+    .chip-standard { background: #dbeafe; color: #0c4a6e; }
+
+    /* ── Tables ── */
+    .tw { overflow-x: auto; margin: 16px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    th {
+      background: #f1f5f9; padding: 7px 12px;
+      text-align: left; font-size: 11px; font-weight: 700;
+      color: var(--text-muted); border-bottom: 2px solid var(--border);
+      white-space: nowrap;
+    }
+    td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:nth-child(even) td { background: var(--stripe); }
+
+    /* ── Code ── */
+    code {
+      font-family: 'SF Mono','Fira Code','Cascadia Code',Consolas,monospace;
+      font-size: 12px; background: #f1f5f9; color: #be185d;
+      padding: 2px 5px; border-radius: 3px;
+    }
+    pre {
+      background: var(--code-bg); color: var(--code-text);
+      padding: 18px 20px; border-radius: 8px;
+      overflow-x: auto; margin: 14px 0;
+      font-size: 12.5px; line-height: 1.65;
+    }
+    pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+
+    /* ── Callouts ── */
+    .callout {
+      padding: 12px 16px; border-radius: 6px;
+      margin: 14px 0; font-size: 13.5px;
+    }
+    .callout-note    { background: var(--accent-light); border-left: 4px solid var(--accent); }
+    .callout-warning { background: var(--warn-bg);      border-left: 4px solid var(--warn-border); }
+    .callout-tip     { background: var(--tip-bg);       border-left: 4px solid var(--tip-border); }
+
+    /* ── Badge ── */
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 10px;
+      font-size: 11px; font-weight: 600;
+    }
+    .badge-research { background: #f0fdf4; color: #15803d; }
+    .badge-impl     { background: #fef3c7; color: #b45309; }
+
+    /* ── Page title ── */
+    .page-title { margin-bottom: 36px; }
+    .page-title h1 { font-size: 30px; margin-bottom: 8px; }
+    .page-title p  { font-size: 15px; color: var(--text-muted); margin: 0; }
+
+    /* ── Numbered steps ── */
+    .steps { counter-reset: step; list-style: none; padding: 0; margin-bottom: 14px; }
+    .steps li {
+      counter-increment: step;
+      padding: 7px 0 7px 36px; position: relative;
+      border-left: 2px solid var(--border); margin-left: 11px;
+    }
+    .steps li::before {
+      content: counter(step);
+      position: absolute; left: -11px; top: 7px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--accent); color: #fff;
+      font-size: 10px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── Jump-to-top ── */
+    #top-btn {
+      position: fixed; bottom: 28px; right: 28px;
+      background: var(--accent); color: #fff;
+      border: none; border-radius: 50%; width: 38px; height: 38px;
+      font-size: 18px; cursor: pointer; display: none;
+      align-items: center; justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+      transition: opacity .2s;
+    }
+    #top-btn:hover { background: #1d4ed8; }
+  </style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<nav id="sidebar">
+  <div class="sb-header">
+    <div class="sb-logo">CloudExamLab</div>
+    <div class="sb-sub">Developer Wiki</div>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Start here</div>
+    <a class="sb-item" href="index.html#intro">Overview</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Platform</div>
+    <a class="sb-item" href="index.html#platform-overview">What is CloudExamLab</a>
+    <a class="sb-item" href="index.html#user-flow">User Flow</a>
+    <a class="sb-item" href="index.html#authentication">Authentication</a>
+    <a class="sb-item" href="index.html#access-control">Access Control</a>
+    <a class="sb-item" href="index.html#exam-flow">Exam Flow</a>
+    <a class="sb-item" href="index.html#subscription">Subscription &amp; Payment</a>
+    <a class="sb-item" href="index.html#admin">Admin</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Technical</div>
+    <a class="sb-item" href="index.html#architecture">Architecture</a>
+    <a class="sb-item" href="index.html#database">Database Schema</a>
+    <a class="sb-item" href="index.html#edge-functions">Edge Functions</a>
+    <a class="sb-item" href="index.html#state-management">State Management</a>
+    <a class="sb-item" href="index.html#offline-sync">Offline &amp; Sync</a>
+    <a class="sb-item" href="index.html#environment">Environment Setup</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Building a Program</div>
+    <a class="sb-item" href="new-program-playbook.html">New Program Playbook</a>
+    <a class="sb-item" href="study-materials-standard.html">Study Materials Standard</a>
+    <a class="sb-item" href="exam-authoring-standard.html">Exam &amp; Question Authoring</a>
+    <a class="sb-item active" href="interactive-widget-standard.html">Interactive Widget Standard</a>
+    <a class="sb-item" href="design-system.html">Design System</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Reference</div>
+    <a class="sb-item ext" href="aws-certification-roadmap.html">AWS Cert Roadmap</a>
+  </div>
+</nav>
+
+<!-- ══ MAIN ══ -->
+<main id="main">
+
+  <div class="page-title" id="intro">
+    <h1>Interactive Widget Standard</h1>
+    <p>How to build inline interactive learning widgets for study sessions. Derived from the Precision/Recall widget through many revisions — each revision fixed a violation of one of the four pillars below.</p>
+  </div>
+
+  <div class="callout callout-note">
+    <strong>When to build one:</strong> only when a session has <em>one core insight</em> that direct manipulation makes unavoidable — a trade-off, a threshold, a transformation. If prose teaches it just as well, don't build a widget. Widgets reinforce a lesson; they never carry it.
+  </div>
+
+  <div class="section" id="architecture">
+    <span class="chip chip-standard">Architecture</span>
+    <h1>Architecture</h1>
+    <p class="section-meta">Registry pattern. One key, one component, triggered from the course data.</p>
+    <pre><code>// src/components/study/SessionCourse.jsx
+const INTERACTIVE_WIDGETS = {
+  'precision-recall': PrecisionRecallWidget,
+  'inference-parameters': InferenceParamsWidget,
+  // 'key': Component
+};
+
+// src/data/&lt;exam&gt;Course.js — trigger by tagging a section:
+{ heading: 'Precision vs. recall', body: '...', interactive: 'precision-recall' }</code></pre>
+    <p><code>EnhancedSection</code> renders the widget inline wherever a section carries an <code>interactive</code> key.</p>
+    <h2>Component rules</h2>
+    <ul>
+      <li>Self-contained, pure client-side React. <strong>One state object → derived stats → SVG.</strong> No external deps, no duplicated state.</li>
+      <li>Simpler widgets share the <code>WidgetShell</code> helper for the card + header chrome. Draggable-SVG widgets inline their own chrome.</li>
+      <li>Drag/resize: SVG coords via <code>getBoundingClientRect()</code>; a <code>startDrag(type, e)</code> closure attaches <code>window</code> mouse + touch move/up listeners; <code>clamp()</code> to bounds; layer pointer-events (dots <code>pointerEvents:none</code>, handles receive events).</li>
+    </ul>
+  </div>
+
+  <div class="section" id="pillars">
+    <span class="chip chip-standard">Pillars</span>
+    <h1>The Four Pillars</h1>
+    <p class="section-meta">Every shipped widget satisfies all four. Most bugs were a violation of one of these.</p>
+
+    <h2>Pillar 1 — Make the core insight unavoidable <span class="badge badge-research">most important</span></h2>
+    <ul>
+      <li>Pick the <strong>ONE</strong> idea to teach. Engineer the data so both extremes <em>and</em> the intermediate range are reachable, but the "cheat" state that hides the lesson is impossible.</li>
+      <li>Precision/recall: an 8-dot cluster + 2 outliers among the greens — you can hit 100% precision OR 100% recall, never both.</li>
+      <li><strong>Verify numerically</strong> with a throwaway <code>node -e</code> script at the key box positions before shipping.</li>
+    </ul>
+
+    <h2>Pillar 2 — Intuitive encoding</h2>
+    <ul>
+      <li>Colors match real-world meaning (fraud = red, innocent = green).</li>
+      <li>Concrete, relatable scenario (100 transactions, not "samples").</li>
+      <li>Realistic proportions (90/10 imbalance, not 50/50).</li>
+    </ul>
+
+    <h2>Pillar 3 — Direct manipulation + live feedback</h2>
+    <ul>
+      <li>Manipulate the thing itself (drag/resize a box &gt; an abstract slider).</li>
+      <li>Everything recomputes instantly from the single state object.</li>
+      <li>A live coaching banner interprets the current state in plain language — the widget <em>teaches</em>, it doesn't just display.</li>
+    </ul>
+
+    <h2>Pillar 4 — Mobile-first</h2>
+    <ul>
+      <li>Invisible touch targets much larger than the visible knobs (~40px hit vs ~13px handle).</li>
+      <li><code>touchAction:'none'</code> + <code>passive:false</code> listeners so dragging doesn't scroll the page.</li>
+      <li>Wire both <code>onMouseDown</code> and <code>onTouchStart</code>.</li>
+    </ul>
+  </div>
+
+  <div class="section" id="inventory">
+    <span class="chip chip-standard">Reference</span>
+    <h1>Current Inventory (AIF-C01)</h1>
+    <p class="section-meta">7 widgets in <code>INTERACTIVE_WIDGETS</code> as of 2026-06-11. Use these as templates.</p>
+    <div class="tw"><table>
+      <thead><tr><th>Key</th><th>Session</th><th>Teaches</th></tr></thead>
+      <tbody>
+        <tr><td><code>learning-types</code></td><td>s1</td><td>Supervised / unsupervised / reinforcement</td></tr>
+        <tr><td><code>precision-recall</code></td><td>s3</td><td>The precision/recall trade-off (draggable SVG)</td></tr>
+        <tr><td><code>tokenizer</code></td><td>s4</td><td>How text splits into tokens</td></tr>
+        <tr><td><code>inference-parameters</code></td><td>s8</td><td>Temperature / top-p effect (draggable bars)</td></tr>
+        <tr><td><code>rag-vs-finetune</code></td><td>s10</td><td>When to retrieve vs. fine-tune</td></tr>
+        <tr><td><code>ngram-overlap</code></td><td>s11</td><td>ROUGE/BLEU n-gram overlap</td></tr>
+        <tr><td><code>interpretability-tradeoff</code></td><td>s13</td><td>Accuracy vs. interpretability</td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout callout-note">A confusion-matrix widget was intentionally skipped — it would have been redundant with <code>precision-recall</code> in s3. Don't build two widgets for the same insight.</div>
+  </div>
+
+  <div class="section" id="ship">
+    <span class="chip chip-standard">Build &amp; Ship</span>
+    <h1>Build &amp; Ship</h1>
+    <ul>
+      <li>Worktree Node is v12 and can't run Vite. Copy the file to the main repo at <code>/Users/hamid/CloudExamLab</code>, then <code>source ~/.nvm/nvm.sh &amp;&amp; nvm use 20 &amp;&amp; npm run build</code>.</li>
+      <li>Commit in <strong>both</strong> the worktree and the main repo, then push to <code>master</code>.</li>
+    </ul>
+    <h2>Pre-ship checklist</h2>
+    <ul>
+      <li>☐ One insight, and the cheat state is provably unreachable (verified with a <code>node -e</code> check)</li>
+      <li>☐ Encoding maps to real-world meaning; realistic proportions</li>
+      <li>☐ Direct manipulation with a live plain-language coaching banner</li>
+      <li>☐ Touch targets ≥ ~40px; both mouse and touch wired; page doesn't scroll while dragging</li>
+      <li>☐ Single state object → derived stats → SVG; no duplicated state</li>
+    </ul>
+  </div>
+
+</main>
+
+<button id="top-btn" title="Back to top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<script>
+  const topBtn = document.getElementById('top-btn');
+  window.addEventListener('scroll', () => {
+    topBtn.style.display = window.scrollY > 400 ? 'flex' : 'none';
+  });
+</script>
+</body>
+</html>

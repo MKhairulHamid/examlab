@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Program Playbook — CloudExamLab Wiki</title>
+  <style>
+    :root {
+      --sidebar-w: 255px;
+      --sidebar-bg: #0f172a;
+      --sidebar-text: #94a3b8;
+      --sidebar-active-text: #38bdf8;
+      --sidebar-active-bg: rgba(56,189,248,0.08);
+      --sidebar-hover: #1e293b;
+      --accent: #2563eb;
+      --accent-light: #eff6ff;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --heading: #0f172a;
+      --code-bg: #1e293b;
+      --code-text: #e2e8f0;
+      --stripe: #f8fafc;
+      --warn-bg: #fef2f2;
+      --warn-border: #ef4444;
+      --tip-bg: #f0fdf4;
+      --tip-border: #22c55e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--text);
+      line-height: 1.65;
+      background: #fff;
+    }
+
+    /* ── Sidebar ── */
+    #sidebar {
+      position: fixed; top: 0; left: 0;
+      width: var(--sidebar-w); height: 100vh;
+      background: var(--sidebar-bg);
+      overflow-y: auto; z-index: 100;
+      display: flex; flex-direction: column;
+    }
+    #sidebar::-webkit-scrollbar { width: 4px; }
+    #sidebar::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+    .sb-header {
+      padding: 20px 16px 14px;
+      border-bottom: 1px solid #1e293b;
+    }
+    .sb-logo { font-size: 13px; font-weight: 700; color: #f1f5f9; letter-spacing: .06em; text-transform: uppercase; }
+    .sb-sub  { font-size: 11px; color: var(--sidebar-text); margin-top: 2px; }
+    .sb-group { padding: 10px 0 2px; }
+    .sb-group-label {
+      font-size: 10px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: #475569;
+      padding: 0 16px; margin-bottom: 3px;
+    }
+    .sb-item {
+      display: block; padding: 6px 16px;
+      font-size: 12.5px; color: var(--sidebar-text);
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: background .12s, color .12s;
+    }
+    .sb-item:hover { background: var(--sidebar-hover); color: #f1f5f9; }
+    .sb-item.active { color: var(--sidebar-active-text); border-left-color: var(--sidebar-active-text); background: var(--sidebar-active-bg); }
+    .sb-item.ext { color: #60a5fa; }
+    .sb-item.ext::after { content: ' ↗'; font-size: 10px; }
+
+    /* ── Main ── */
+    #main {
+      margin-left: var(--sidebar-w);
+      padding: 48px 64px 96px;
+      max-width: calc(var(--sidebar-w) + 880px);
+    }
+
+    /* ── Section ── */
+    .section { padding-top: 52px; border-top: 1px solid var(--border); margin-top: 28px; }
+    .section:first-of-type { border-top: none; margin-top: 0; padding-top: 0; }
+
+    /* ── Typography ── */
+    h1 { font-size: 27px; font-weight: 700; color: var(--heading); margin-bottom: 10px; }
+    h2 { font-size: 19px; font-weight: 700; color: var(--heading); margin-top: 38px; margin-bottom: 14px; }
+    h3 { font-size: 15px; font-weight: 600; color: var(--heading); margin-top: 24px; margin-bottom: 8px; }
+    p  { margin-bottom: 12px; }
+    a  { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ul, ol { padding-left: 22px; margin-bottom: 12px; }
+    li { margin-bottom: 4px; }
+    hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+    .section-meta { font-size: 14px; color: var(--text-muted); margin-bottom: 26px; margin-top: -4px; }
+
+    /* ── Chip label ── */
+    .chip {
+      display: inline-block; padding: 2px 9px; border-radius: 4px;
+      font-size: 10px; font-weight: 700; letter-spacing: .05em;
+      text-transform: uppercase; margin-bottom: 6px;
+    }
+    .chip-standard { background: #dbeafe; color: #0c4a6e; }
+
+    /* ── Tables ── */
+    .tw { overflow-x: auto; margin: 16px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    th {
+      background: #f1f5f9; padding: 7px 12px;
+      text-align: left; font-size: 11px; font-weight: 700;
+      color: var(--text-muted); border-bottom: 2px solid var(--border);
+      white-space: nowrap;
+    }
+    td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:nth-child(even) td { background: var(--stripe); }
+
+    /* ── Code ── */
+    code {
+      font-family: 'SF Mono','Fira Code','Cascadia Code',Consolas,monospace;
+      font-size: 12px; background: #f1f5f9; color: #be185d;
+      padding: 2px 5px; border-radius: 3px;
+    }
+    pre {
+      background: var(--code-bg); color: var(--code-text);
+      padding: 18px 20px; border-radius: 8px;
+      overflow-x: auto; margin: 14px 0;
+      font-size: 12.5px; line-height: 1.65;
+    }
+    pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+
+    /* ── Callouts ── */
+    .callout {
+      padding: 12px 16px; border-radius: 6px;
+      margin: 14px 0; font-size: 13.5px;
+    }
+    .callout-note    { background: var(--accent-light); border-left: 4px solid var(--accent); }
+    .callout-warning { background: var(--warn-bg);      border-left: 4px solid var(--warn-border); }
+    .callout-tip     { background: var(--tip-bg);       border-left: 4px solid var(--tip-border); }
+
+    /* ── Badge ── */
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 10px;
+      font-size: 11px; font-weight: 600;
+    }
+    .badge-research { background: #f0fdf4; color: #15803d; }
+    .badge-impl     { background: #fef3c7; color: #b45309; }
+
+    /* ── Page title ── */
+    .page-title { margin-bottom: 36px; }
+    .page-title h1 { font-size: 30px; margin-bottom: 8px; }
+    .page-title p  { font-size: 15px; color: var(--text-muted); margin: 0; }
+
+    /* ── Numbered steps ── */
+    .steps { counter-reset: step; list-style: none; padding: 0; margin-bottom: 14px; }
+    .steps li {
+      counter-increment: step;
+      padding: 7px 0 7px 36px; position: relative;
+      border-left: 2px solid var(--border); margin-left: 11px;
+    }
+    .steps li::before {
+      content: counter(step);
+      position: absolute; left: -11px; top: 7px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--accent); color: #fff;
+      font-size: 10px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── Jump-to-top ── */
+    #top-btn {
+      position: fixed; bottom: 28px; right: 28px;
+      background: var(--accent); color: #fff;
+      border: none; border-radius: 50%; width: 38px; height: 38px;
+      font-size: 18px; cursor: pointer; display: none;
+      align-items: center; justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+      transition: opacity .2s;
+    }
+    #top-btn:hover { background: #1d4ed8; }
+  </style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<nav id="sidebar">
+  <div class="sb-header">
+    <div class="sb-logo">CloudExamLab</div>
+    <div class="sb-sub">Developer Wiki</div>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Start here</div>
+    <a class="sb-item" href="index.html#intro">Overview</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Platform</div>
+    <a class="sb-item" href="index.html#platform-overview">What is CloudExamLab</a>
+    <a class="sb-item" href="index.html#user-flow">User Flow</a>
+    <a class="sb-item" href="index.html#authentication">Authentication</a>
+    <a class="sb-item" href="index.html#access-control">Access Control</a>
+    <a class="sb-item" href="index.html#exam-flow">Exam Flow</a>
+    <a class="sb-item" href="index.html#subscription">Subscription &amp; Payment</a>
+    <a class="sb-item" href="index.html#admin">Admin</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Technical</div>
+    <a class="sb-item" href="index.html#architecture">Architecture</a>
+    <a class="sb-item" href="index.html#database">Database Schema</a>
+    <a class="sb-item" href="index.html#edge-functions">Edge Functions</a>
+    <a class="sb-item" href="index.html#state-management">State Management</a>
+    <a class="sb-item" href="index.html#offline-sync">Offline &amp; Sync</a>
+    <a class="sb-item" href="index.html#environment">Environment Setup</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Building a Program</div>
+    <a class="sb-item active" href="new-program-playbook.html">New Program Playbook</a>
+    <a class="sb-item" href="study-materials-standard.html">Study Materials Standard</a>
+    <a class="sb-item" href="exam-authoring-standard.html">Exam &amp; Question Authoring</a>
+    <a class="sb-item" href="interactive-widget-standard.html">Interactive Widget Standard</a>
+    <a class="sb-item" href="design-system.html">Design System</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Reference</div>
+    <a class="sb-item ext" href="aws-certification-roadmap.html">AWS Cert Roadmap</a>
+  </div>
+</nav>
+
+<!-- ══ MAIN ══ -->
+<main id="main">
+
+  <div class="page-title" id="intro">
+    <h1>New Program Playbook</h1>
+    <p>The end-to-end checklist for launching a new certification program on CloudExamLab — from exam blueprint to shipped course. This is the spine that ties together every other standard in this section.</p>
+  </div>
+
+  <div class="callout callout-note">
+    <strong>What "a program" means here:</strong> one certification (e.g. AWS Certified AI Practitioner, Solutions Architect Associate). A complete program has five shippable layers: an <strong>exam blueprint</strong>, a <strong>study course</strong>, <strong>interactive widgets</strong>, an <strong>exam simulation</strong>, and the <strong>platform wiring</strong> that exposes it to learners. AIF-C01 is the reference implementation — every step below points at how it was done.</p>
+  </div>
+
+  <div class="section" id="layers">
+    <span class="chip chip-standard">Overview</span>
+    <h1>The Five Layers</h1>
+    <p class="section-meta">Build in this order. Each layer depends on the one above it — don't author sessions before the blueprint is locked, and don't write questions before the sessions exist.</p>
+    <div class="tw"><table>
+      <thead><tr><th>#</th><th>Layer</th><th>Output</th><th>Standard it follows</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Exam blueprint</td><td>A reference page like <code>wiki/aif-c01.html</code> — domains, tasks, scoring, scope</td><td>This page → <a href="#phase1">Phase 1</a></td></tr>
+        <tr><td>2</td><td>Study course</td><td><code>src/data/&lt;exam&gt;Course.js</code> — N research-backed sessions</td><td><a href="study-materials-standard.html">Study Materials Standard</a></td></tr>
+        <tr><td>3</td><td>Interactive widgets</td><td>Components in the <code>INTERACTIVE_WIDGETS</code> registry</td><td><a href="interactive-widget-standard.html">Interactive Widget Standard</a></td></tr>
+        <tr><td>4</td><td>Exam simulation</td><td>Question sets matching the real exam distribution</td><td><a href="exam-authoring-standard.html">Exam &amp; Question Authoring</a></td></tr>
+        <tr><td>5</td><td>Platform wiring</td><td>Enrollment, pricing, roadmap entry, access gating</td><td>This page → <a href="#phase5">Phase 5</a></td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout callout-tip"><strong>Rule of thumb:</strong> ship layer by layer, not all at once. A blueprint + 3 polished sessions in front of learners beats 16 half-written sessions in a branch.</div>
+  </div>
+
+  <div class="section" id="phase1">
+    <span class="chip chip-standard">Layer 1</span>
+    <h1>Exam Blueprint</h1>
+    <p class="section-meta">Before writing a single session, produce the exam reference page. It is the single source of truth every later layer reads from.</p>
+    <h2>Source of truth</h2>
+    <ul>
+      <li>Start from the <strong>official exam guide PDF</strong> — never secondary blogs. Link it in the page footer (see the "Official" group in <code>aif-c01.html</code>).</li>
+      <li>Transcribe the <strong>domain list, task statements, and domain weights verbatim</strong>. These percentages drive the question distribution in Layer 4.</li>
+      <li>Record the <strong>scoring model</strong> (scaled score, passing line, compensatory vs. per-domain) and the <strong>out-of-scope skills</strong> — what the exam explicitly does NOT test bounds your question difficulty.</li>
+    </ul>
+    <h2>Required sections (mirror aif-c01.html)</h2>
+    <ol class="steps">
+      <li><strong>What this exam is</strong> — audience, prerequisites, why someone takes it.</li>
+      <li><strong>Question format &amp; scoring</strong> — question types, count, duration, passing threshold, out-of-scope list.</li>
+      <li><strong>Domain breakdown</strong> — one subsection per domain, each task statement with its testable concepts.</li>
+      <li><strong>Helping candidates</strong> — who struggles, common gaps, recommended study path.</li>
+      <li><strong>Simulation design</strong> — the per-exam parameters consumed by the <a href="exam-authoring-standard.html">authoring standard</a> (set size, distribution table, type mix).</li>
+    </ol>
+    <div class="callout callout-warning"><strong>Do not skip the domain weights table.</strong> Layer 4 derives the exact number of questions per domain from it. Getting the weights wrong here propagates into an unrepresentative simulation.</div>
+  </div>
+
+  <div class="section" id="phase2">
+    <span class="chip chip-standard">Layer 2</span>
+    <h1>Study Course</h1>
+    <p class="section-meta">Author the sessions. This layer is fully standardized — follow the <a href="study-materials-standard.html">Study Materials Standard</a> and its companion skill.</p>
+    <h2>Quick reference</h2>
+    <ul>
+      <li>One data file per exam: <code>src/data/&lt;exam&gt;Course.js</code>. AIF-C01 → <code>aifC01Course.js</code>, 16 sessions.</li>
+      <li>Each session is the full schema: <code>preLearningCheck</code> → teaching <code>sections</code> → <code>microQuizzes</code> (with <code>elaborativePrompt</code>) → <code>selfExplanationPrompt</code> → <code>sample</code> → <code>videos</code>/<code>keyTerms</code>/<code>awsServices</code>/<code>examTips</code>.</li>
+      <li>Authoring skill: <code>~/.claude/skills/create-study-session.md</code> — invoke it per session; it encodes the schema and writing rules.</li>
+      <li>Renderer: <code>src/components/study/SessionCourse.jsx</code> — no per-exam code needed; it renders any course that follows the schema.</li>
+    </ul>
+    <h2>How many sessions?</h2>
+    <p>One session per task statement is the default. Group trivially small tasks; split a task into two sessions when it carries a heavy domain weight. Target 25–35 min per session.</p>
+  </div>
+
+  <div class="section" id="phase3">
+    <span class="chip chip-standard">Layer 3</span>
+    <h1>Interactive Widgets</h1>
+    <p class="section-meta">Add inline interactive widgets for the concepts that are hard to grasp from prose alone. Optional per session, but high-leverage. Follow the <a href="interactive-widget-standard.html">Interactive Widget Standard</a>.</p>
+    <ul>
+      <li>Build a widget only when there is <strong>one core insight</strong> that direct manipulation makes unavoidable (precision/recall trade-off, tokenization, RAG vs. fine-tune).</li>
+      <li>Register it: <code>INTERACTIVE_WIDGETS = { 'key': Component }</code> in <code>SessionCourse.jsx</code>, then add <code>interactive: 'key'</code> to the section in the course data.</li>
+      <li>Do not gate the course on widgets — sessions must teach fully without them. Widgets reinforce; they don't carry the lesson.</li>
+    </ul>
+    <div class="callout callout-tip">AIF-C01 shipped 7 widgets across 16 sessions — roughly one per two sessions, only where a concept genuinely benefits. That ratio is a sane default, not a quota.</div>
+  </div>
+
+  <div class="section" id="phase4">
+    <span class="chip chip-standard">Layer 4</span>
+    <h1>Exam Simulation</h1>
+    <p class="section-meta">Author the practice question sets that mimic the real exam. Fully standardized — follow the <a href="exam-authoring-standard.html">Exam &amp; Question Authoring Standard</a>.</p>
+    <ul>
+      <li>Pull the <strong>set size, duration, passing line, and domain distribution</strong> from the blueprint's Simulation Design section (Layer 1).</li>
+      <li>Every question is scenario-based, single-best-answer (or select-N), with a per-option explanation and a concept link back to a domain/task.</li>
+      <li>Launch with multiple-choice + multiple-response (~90% of the exam); add ordering/matching after launch.</li>
+      <li>Ship at least one <strong>free sample set</strong> so unsubscribed users can experience the format.</li>
+    </ul>
+  </div>
+
+  <div class="section" id="phase5">
+    <span class="chip chip-standard">Layer 5</span>
+    <h1>Platform Wiring</h1>
+    <p class="section-meta">Expose the program to learners. This is the glue that turns content files into a purchasable, navigable course.</p>
+    <div class="tw"><table>
+      <thead><tr><th>Task</th><th>Where</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Register the course data</td><td><code>src/data/</code> + the course registry in <code>SessionCourse.jsx</code></td><td>New <code>&lt;exam&gt;Course.js</code> wired into the study material page</td></tr>
+        <tr><td>Question sets &amp; exam types</td><td>Admin panel (Exam Types → Question Sets → Manage Questions)</td><td>See the Admin section of the main wiki</td></tr>
+        <tr><td>Access gating</td><td>Supabase RLS + paid/enrollment checks</td><td>Mirror the existing paid-content and study-course checks</td></tr>
+        <tr><td>Pricing / enrollment</td><td>Subscription plans + PayPal plan IDs</td><td>See Subscription &amp; Payment in the main wiki before changing prices</td></tr>
+        <tr><td>Roadmap placement</td><td><code>wiki/aws-certification-roadmap.html</code></td><td>Add the cert to its level &amp; learning path so it's discoverable</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="section" id="ship">
+    <span class="chip chip-standard">Build &amp; Ship</span>
+    <h1>Build &amp; Ship Notes</h1>
+    <p class="section-meta">Environment gotchas learned the hard way.</p>
+    <ul>
+      <li>Worktree Node may be v12 and <strong>cannot run Vite</strong>. Build on Node 20: <code>source ~/.nvm/nvm.sh &amp;&amp; nvm use 20 &amp;&amp; npm run build</code>.</li>
+      <li>When working in a worktree, copy changed files to the main repo at <code>/Users/hamid/CloudExamLab</code>, build there, then commit in <strong>both</strong> worktree and main repo and push to <code>master</code>.</li>
+      <li>No emoji in landing-page content/markup. Study widgets may use check marks etc.</li>
+    </ul>
+  </div>
+
+  <div class="section" id="dod">
+    <span class="chip chip-standard">QA</span>
+    <h1>Definition of Done</h1>
+    <p class="section-meta">A program is launch-ready when every box is checked.</p>
+    <h2>Blueprint</h2>
+    <ul>
+      <li>☐ Exam reference page exists with all five required sections</li>
+      <li>☐ Domain weights transcribed verbatim from the official guide</li>
+      <li>☐ Scoring model and out-of-scope list documented</li>
+    </ul>
+    <h2>Course</h2>
+    <ul>
+      <li>☐ One session per task statement, each passing the Study Materials Standard checklist</li>
+      <li>☐ Widgets added for the concepts that warrant them (and the course teaches fully without them)</li>
+    </ul>
+    <h2>Simulation</h2>
+    <ul>
+      <li>☐ Question count and domain distribution match the blueprint</li>
+      <li>☐ At least one free sample set published</li>
+      <li>☐ Every question has a per-option explanation and a concept link</li>
+    </ul>
+    <h2>Platform</h2>
+    <ul>
+      <li>☐ Course registered and renders end-to-end for an enrolled user</li>
+      <li>☐ Access gating verified for free / paid / non-enrolled states</li>
+      <li>☐ Pricing/enrollment configured; cert added to the roadmap</li>
+      <li>☐ Production build passes on Node 20 and is committed + pushed</li>
+    </ul>
+  </div>
+
+</main>
+
+<button id="top-btn" title="Back to top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<script>
+  const topBtn = document.getElementById('top-btn');
+  window.addEventListener('scroll', () => {
+    topBtn.style.display = window.scrollY > 400 ? 'flex' : 'none';
+  });
+</script>
+</body>
+</html>

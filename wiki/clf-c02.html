@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CLF-C02 Exam Guide — CloudExamLab Wiki</title>
+  <style>
+    :root {
+      --sidebar-w: 255px;
+      --sidebar-bg: #0f172a;
+      --sidebar-text: #94a3b8;
+      --sidebar-active-text: #38bdf8;
+      --sidebar-active-bg: rgba(56,189,248,0.08);
+      --sidebar-hover: #1e293b;
+      --accent: #2563eb;
+      --accent-light: #eff6ff;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --heading: #0f172a;
+      --code-bg: #1e293b;
+      --code-text: #e2e8f0;
+      --stripe: #f8fafc;
+      --warn-bg: #fef2f2;
+      --warn-border: #ef4444;
+      --tip-bg: #f0fdf4;
+      --tip-border: #22c55e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--text);
+      line-height: 1.65;
+      background: #fff;
+    }
+
+    /* ── Sidebar ── */
+    #sidebar {
+      position: fixed; top: 0; left: 0;
+      width: var(--sidebar-w); height: 100vh;
+      background: var(--sidebar-bg);
+      overflow-y: auto; z-index: 100;
+      display: flex; flex-direction: column;
+    }
+    #sidebar::-webkit-scrollbar { width: 4px; }
+    #sidebar::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+    .sb-header {
+      padding: 20px 16px 14px;
+      border-bottom: 1px solid #1e293b;
+    }
+    .sb-logo { font-size: 13px; font-weight: 700; color: #f1f5f9; letter-spacing: .06em; text-transform: uppercase; }
+    .sb-sub  { font-size: 11px; color: var(--sidebar-text); margin-top: 2px; }
+    .sb-group { padding: 10px 0 2px; }
+    .sb-group-label {
+      font-size: 10px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: #475569;
+      padding: 0 16px; margin-bottom: 3px;
+    }
+    .sb-item {
+      display: block; padding: 6px 16px;
+      font-size: 12.5px; color: var(--sidebar-text);
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: background .12s, color .12s;
+    }
+    .sb-item:hover { background: var(--sidebar-hover); color: #f1f5f9; }
+    .sb-item.active { color: var(--sidebar-active-text); border-left-color: var(--sidebar-active-text); background: var(--sidebar-active-bg); }
+    .sb-item.ext { color: #60a5fa; }
+    .sb-item.ext::after { content: ' ↗'; font-size: 10px; }
+
+    /* ── Main ── */
+    #main {
+      margin-left: var(--sidebar-w);
+      padding: 48px 64px 96px;
+      max-width: calc(var(--sidebar-w) + 880px);
+    }
+
+    /* ── Section ── */
+    .section { padding-top: 52px; border-top: 1px solid var(--border); margin-top: 28px; }
+    .section:first-of-type { border-top: none; margin-top: 0; padding-top: 0; }
+
+    /* ── Typography ── */
+    h1 { font-size: 27px; font-weight: 700; color: var(--heading); margin-bottom: 10px; }
+    h2 { font-size: 19px; font-weight: 700; color: var(--heading); margin-top: 38px; margin-bottom: 14px; }
+    h3 { font-size: 15px; font-weight: 600; color: var(--heading); margin-top: 24px; margin-bottom: 8px; }
+    p  { margin-bottom: 12px; }
+    a  { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ul, ol { padding-left: 22px; margin-bottom: 12px; }
+    li { margin-bottom: 4px; }
+    hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+    .section-meta { font-size: 14px; color: var(--text-muted); margin-bottom: 26px; margin-top: -4px; }
+
+    /* ── Chip label ── */
+    .chip {
+      display: inline-block; padding: 2px 9px; border-radius: 4px;
+      font-size: 10px; font-weight: 700; letter-spacing: .05em;
+      text-transform: uppercase; margin-bottom: 6px;
+    }
+    .chip-platform  { background: #eff6ff; color: #1d4ed8; }
+    .chip-technical { background: #f0fdf4; color: #15803d; }
+    .chip-reference { background: #fdf4ff; color: #7e22ce; }
+    .chip-exam      { background: #fff7ed; color: #c2410c; }
+
+    /* ── Tables ── */
+    .tw { overflow-x: auto; margin: 16px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    th {
+      background: #f1f5f9; padding: 7px 12px;
+      text-align: left; font-size: 11px; font-weight: 700;
+      color: var(--text-muted); border-bottom: 2px solid var(--border);
+      white-space: nowrap;
+    }
+    td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:nth-child(even) td { background: var(--stripe); }
+
+    /* ── Code ── */
+    code {
+      font-family: 'SF Mono','Fira Code','Cascadia Code',Consolas,monospace;
+      font-size: 12px; background: #f1f5f9; color: #be185d;
+      padding: 2px 5px; border-radius: 3px;
+    }
+
+    /* ── Callouts ── */
+    .callout {
+      padding: 12px 16px; border-radius: 6px;
+      margin: 14px 0; font-size: 13.5px;
+    }
+    .callout-note    { background: var(--accent-light); border-left: 4px solid var(--accent); }
+    .callout-warning { background: var(--warn-bg);      border-left: 4px solid var(--warn-border); }
+    .callout-tip     { background: var(--tip-bg);       border-left: 4px solid var(--tip-border); }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 10px;
+      font-size: 11px; font-weight: 600;
+    }
+    .badge-green  { background: #dcfce7; color: #15803d; }
+    .badge-yellow { background: #fef3c7; color: #b45309; }
+    .badge-gray   { background: #f1f5f9; color: #475569; }
+    .badge-blue   { background: #dbeafe; color: #1d4ed8; }
+    .badge-orange { background: #ffedd5; color: #c2410c; }
+
+    /* ── Numbered steps ── */
+    .steps { counter-reset: step; list-style: none; padding: 0; margin-bottom: 14px; }
+    .steps li {
+      counter-increment: step;
+      padding: 7px 0 7px 36px; position: relative;
+      border-left: 2px solid var(--border); margin-left: 11px;
+    }
+    .steps li::before {
+      content: counter(step);
+      position: absolute; left: -11px; top: 7px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--accent); color: #fff;
+      font-size: 10px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── Page title ── */
+    .page-title { margin-bottom: 36px; }
+    .page-title h1 { font-size: 30px; margin-bottom: 8px; }
+    .page-title p  { font-size: 15px; color: var(--text-muted); margin: 0; }
+
+    /* ── Domain bar ── */
+    .domain-bar { display: flex; gap: 6px; flex-wrap: wrap; margin: 18px 0 8px; }
+    .domain-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 12px; border-radius: 20px;
+      font-size: 12px; font-weight: 600;
+      border: 1px solid var(--border); background: #f8fafc;
+    }
+    .domain-pill .pct {
+      background: var(--accent); color: #fff;
+      border-radius: 10px; padding: 1px 6px;
+      font-size: 10px; font-weight: 700;
+    }
+
+    /* ── Highlight row ── */
+    .hl td { background: #eff6ff !important; font-weight: 600; }
+
+    /* ── Jump-to-top ── */
+    #top-btn {
+      position: fixed; bottom: 28px; right: 28px;
+      background: var(--accent); color: #fff;
+      border: none; border-radius: 50%; width: 38px; height: 38px;
+      font-size: 18px; cursor: pointer; display: none;
+      align-items: center; justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+      transition: opacity .2s;
+    }
+    #top-btn:hover { background: #1d4ed8; }
+  </style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<nav id="sidebar">
+  <div class="sb-header">
+    <div class="sb-logo">CloudExamLab</div>
+    <div class="sb-sub">Exam Guide Series</div>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">On this page</div>
+    <a class="sb-item active" href="#overview">Overview</a>
+    <a class="sb-item" href="#structure">Exam Structure</a>
+    <a class="sb-item" href="#domains">Content Domains</a>
+    <a class="sb-item" href="#domain1">D1 — Cloud Concepts</a>
+    <a class="sb-item" href="#domain2">D2 — Security &amp; Compliance</a>
+    <a class="sb-item" href="#domain3">D3 — Technology &amp; Services</a>
+    <a class="sb-item" href="#domain4">D4 — Billing &amp; Support</a>
+    <a class="sb-item" href="#candidate-prep">Helping Candidates</a>
+    <a class="sb-item" href="#simulation">Simulation Design</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Wiki</div>
+    <a class="sb-item ext" href="index.html">Developer Wiki</a>
+    <a class="sb-item ext" href="new-program-playbook.html">New Program Playbook</a>
+    <a class="sb-item ext" href="exam-authoring-standard.html">Exam &amp; Question Authoring</a>
+    <a class="sb-item ext" href="aws-certification-roadmap.html">AWS Cert Roadmap</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Official</div>
+    <a class="sb-item ext" href="https://docs.aws.amazon.com/aws-certification/latest/cloud-practitioner-02/cloud-practitioner-02.html">AWS Exam Guide ↗</a>
+  </div>
+</nav>
+
+<!-- ══ MAIN ══ -->
+<main id="main">
+
+  <!-- OVERVIEW -->
+  <div class="page-title" id="overview">
+    <h1>AWS Certified Cloud Practitioner (CLF-C02)</h1>
+    <p>Everything we need to know about this exam — structure, domains, candidate prep strategy, and simulation design.</p>
+  </div>
+
+  <h2>What This Exam Is</h2>
+  <p>The AWS Certified Cloud Practitioner (CLF-C02) validates broad, foundational knowledge of the AWS Cloud — not role-specific depth. It is the entry point to the AWS certification path and the recommended first cert for anyone beginning their cloud journey regardless of technical background.</p>
+  <ul>
+    <li><strong>Target audience:</strong> Early-career cloud learners, non-technical roles (sales, finance, ops) working alongside AWS teams, and anyone wanting to validate foundational cloud literacy.</li>
+    <li><strong>Prerequisite experience:</strong> Up to 6 months of AWS exposure — design, implementation, or operations. No prior certification required.</li>
+    <li><strong>Why candidates take it:</strong> Career pivots into cloud, employer-required certification, or as a stepping stone before associate-level exams (SAA, DVA, etc.).</li>
+  </ul>
+
+  <!-- STRUCTURE -->
+  <div class="section" id="structure">
+    <span class="chip chip-exam">Exam Format</span>
+    <h1>Question Format &amp; Scoring</h1>
+    <p class="section-meta">Exact parameters from the official exam guide — use these verbatim in the simulation design.</p>
+
+    <h2>Question Types</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>Multiple choice</td><td>One correct answer from four options (three distractors)</td></tr>
+        <tr><td>Multiple response</td><td>Two or more correct answers from five or more options</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Scoring Model</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Setting</th><th>Value</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Total questions on exam</td><td>65</td><td>50 scored + 15 unscored pretest (unidentified)</td></tr>
+        <tr><td>Duration</td><td>90 minutes</td><td>Exact match to real exam</td></tr>
+        <tr><td>Passing score</td><td>700 / 1,000</td><td>Display as % equivalent: 70%</td></tr>
+        <tr><td>Scoring</td><td>Compensatory</td><td>No per-domain minimums — total score only</td></tr>
+        <tr><td>Result</td><td>Pass / Fail</td><td>Scaled scoring equalizes difficulty across exam forms</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Out-of-Scope Skills (Do NOT Test)</h2>
+    <p>The official exam guide explicitly excludes these. Any question that touches them is out of scope — cut it.</p>
+    <ul>
+      <li>Writing or reviewing code</li>
+      <li>Designing cloud architecture</li>
+      <li>Troubleshooting technical configurations</li>
+      <li>Step-by-step implementation instructions</li>
+      <li>Load testing or performance testing</li>
+    </ul>
+    <div class="callout callout-tip"><strong>Exam tip:</strong> CLF-C02 tests <em>awareness and recognition</em>, not implementation depth. If a question requires knowing HOW to configure a service, it is out of scope. Questions test WHICH service fits, not HOW to use it.</div>
+  </div>
+
+  <!-- DOMAIN OVERVIEW -->
+  <div class="section" id="domains">
+    <span class="chip chip-platform">Domains</span>
+    <h1>Domain Breakdown</h1>
+    <p class="section-meta">Four domains. D3 (Technology &amp; Services) carries the most weight — it covers the broadest range of AWS services.</p>
+
+    <div class="domain-bar">
+      <span class="domain-pill">D1 — Cloud Concepts <span class="pct">24%</span></span>
+      <span class="domain-pill">D2 — Security &amp; Compliance <span class="pct">30%</span></span>
+      <span class="domain-pill">D3 — Technology &amp; Services <span class="pct">34%</span></span>
+      <span class="domain-pill">D4 — Billing &amp; Support <span class="pct">12%</span></span>
+    </div>
+
+    <div class="tw"><table>
+      <thead><tr><th>Domain</th><th>Weight</th><th>Task statements</th></tr></thead>
+      <tbody>
+        <tr><td>D1 — Cloud Concepts</td><td>24%</td><td>1.1 Benefits · 1.2 Design principles · 1.3 Migration strategies · 1.4 Cloud economics</td></tr>
+        <tr><td>D2 — Security &amp; Compliance</td><td>30%</td><td>2.1 Shared responsibility · 2.2 Governance &amp; compliance · 2.3 Access management · 2.4 Security resources</td></tr>
+        <tr><td>D3 — Technology &amp; Cloud Services</td><td>34%</td><td>3.1 Deployment methods · 3.2 Global infrastructure · 3.3 Compute · 3.4 Database · 3.5 Network · 3.6 Storage · 3.7 AI/ML &amp; analytics · 3.8 Other services</td></tr>
+        <tr><td>D4 — Billing, Pricing &amp; Support</td><td>12%</td><td>4.1 Pricing models · 4.2 Cost management · 4.3 Technical resources &amp; support</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <!-- DOMAIN 1 -->
+  <div class="section" id="domain1">
+    <span class="chip chip-platform">Domain 1 · 24%</span>
+    <h1>Cloud Concepts</h1>
+    <p class="section-meta">The "why cloud?" domain. Covers the value proposition of AWS, design principles, migration strategies, and cost economics.</p>
+
+    <h2>Task 1.1 — Define the benefits of the AWS Cloud</h2>
+    <p><strong>Knowledge of:</strong> Value proposition of the AWS Cloud.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Understanding the benefits of global infrastructure (e.g. deployment speed, global reach)</li>
+      <li>Understanding the advantages of high availability, elasticity, and agility</li>
+    </ul>
+
+    <h2>Task 1.2 — Identify design principles of the AWS Cloud</h2>
+    <p><strong>Knowledge of:</strong> AWS Well-Architected Framework.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Understanding the pillars of the Well-Architected Framework (operational excellence, security, reliability, performance efficiency, cost optimization, sustainability)</li>
+      <li>Identifying differences among the six pillars</li>
+    </ul>
+
+    <h2>Task 1.3 — Understand the benefits of and strategies for migration to the AWS Cloud</h2>
+    <p><strong>Knowledge of:</strong> Cloud adoption strategies; resources that support the cloud migration journey.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Understanding the components of the AWS Cloud Adoption Framework (AWS CAF) — e.g. reducing business risk; improving ESG performance; increasing revenue; increasing operational efficiency</li>
+      <li>Identifying appropriate migration strategies (e.g. database replication, AWS Snowball)</li>
+    </ul>
+
+    <h2>Task 1.4 — Understand concepts of cloud economics</h2>
+    <p><strong>Knowledge of:</strong> Aspects of cloud economics; cost savings from migrating to the cloud.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Understanding the role of fixed costs versus variable costs</li>
+      <li>Understanding costs associated with on-premises environments</li>
+      <li>Understanding the difference between licensing strategies (e.g. BYOL vs. included licensing)</li>
+      <li>Understanding the concept of rightsizing</li>
+      <li>Identifying the benefits of automation</li>
+      <li>Understanding economies of scale (e.g. cost savings)</li>
+    </ul>
+  </div>
+
+  <!-- DOMAIN 2 -->
+  <div class="section" id="domain2">
+    <span class="chip chip-technical">Domain 2 · 30%</span>
+    <h1>Security and Compliance</h1>
+    <p class="section-meta">The highest-value domain after D3. Covers the shared responsibility model, IAM, compliance, and the AWS security service landscape.</p>
+
+    <h2>Task 2.1 — Understand the AWS shared responsibility model</h2>
+    <p><strong>Knowledge of:</strong> AWS shared responsibility model.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Recognizing the components of the shared responsibility model</li>
+      <li>Describing customer responsibilities on AWS</li>
+      <li>Describing AWS responsibilities</li>
+      <li>Describing shared responsibilities between customers and AWS</li>
+      <li>Describing how responsibilities can shift depending on the service used (e.g. Amazon RDS vs. AWS Lambda vs. Amazon EC2)</li>
+    </ul>
+
+    <h2>Task 2.2 — Understand AWS Cloud security, governance, and compliance concepts</h2>
+    <p><strong>Knowledge of:</strong> AWS compliance and governance concepts; benefits of cloud security (e.g. encryption); where to find security-related logs.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Identifying where to find AWS compliance information (e.g. AWS Artifact)</li>
+      <li>Understanding compliance requirements across geographic locations or industries</li>
+      <li>Describing how customers secure resources on AWS (e.g. Amazon Inspector, AWS Security Hub, Amazon GuardDuty, AWS Shield)</li>
+      <li>Identifying encryption options (encryption at rest, encryption in transit)</li>
+      <li>Recognizing services that assist with governance and compliance (e.g. Amazon CloudWatch monitoring; AWS CloudTrail, AWS Audit Manager, AWS Config for auditing)</li>
+      <li>Recognizing compliance requirements that vary across AWS services</li>
+    </ul>
+
+    <h2>Task 2.3 — Identify AWS access management capabilities</h2>
+    <p><strong>Knowledge of:</strong> Identity and access management (AWS IAM); importance of protecting the AWS root user account; principle of least privilege; AWS IAM Identity Center (AWS Single Sign-On).</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Understanding access keys, password policies, and credential storage (e.g. AWS Secrets Manager, AWS Systems Manager)</li>
+      <li>Identifying authentication methods in AWS (e.g. MFA, IAM Identity Center, cross-account IAM roles)</li>
+      <li>Defining groups, users, custom policies, and managed policies to comply with least privilege</li>
+      <li>Identifying tasks only the root account user can perform</li>
+      <li>Understanding methods that can achieve root user protection</li>
+      <li>Understanding types of identity management (e.g. federated)</li>
+    </ul>
+
+    <h2>Task 2.4 — Identify components and resources for security</h2>
+    <p><strong>Knowledge of:</strong> Security capabilities provided by AWS; security-related documentation provided by AWS.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Describing AWS security features and services (e.g. AWS WAF, AWS Firewall Manager, AWS Shield, Amazon GuardDuty)</li>
+      <li>Understanding that third-party security products are available in AWS Marketplace</li>
+      <li>Identifying where AWS security information is available (e.g. AWS Knowledge Center, AWS Security Center, AWS Security Blog)</li>
+      <li>Understanding how to use AWS services to identify security issues (e.g. AWS Trusted Advisor)</li>
+    </ul>
+  </div>
+
+  <!-- DOMAIN 3 -->
+  <div class="section" id="domain3">
+    <span class="chip chip-reference">Domain 3 · 34%</span>
+    <h1>Cloud Technology and Services</h1>
+    <p class="section-meta">The broadest domain. Covers the core service categories — compute, database, network, storage, AI/ML, analytics, and a long tail of other services. More than a third of the exam.</p>
+
+    <h2>Task 3.1 — Define methods of deploying and operating in the AWS Cloud</h2>
+    <p><strong>Knowledge of:</strong> Different ways to provision and operate in AWS; different ways to access AWS services; cloud deployment model types.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Deciding between programmatic access (API, SDK, CLI), AWS Management Console, and Infrastructure as Code (IaC)</li>
+      <li>Evaluating requirements to determine whether to use one-time operations or repeatable processes</li>
+      <li>Identifying deployment models (cloud, hybrid, on-premises)</li>
+    </ul>
+
+    <h2>Task 3.2 — Define the AWS global infrastructure</h2>
+    <p><strong>Knowledge of:</strong> AWS Regions, Availability Zones, and edge locations; high availability; use of multiple Regions; benefits of edge locations.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Describing the relationship between Regions, Availability Zones, and edge locations</li>
+      <li>Explaining how to achieve high availability using multiple Availability Zones</li>
+      <li>Recognizing that Availability Zones do not share single points of failure</li>
+      <li>Describing when to use multiple Regions (e.g. disaster recovery, business continuity, low latency for end users, data sovereignty)</li>
+    </ul>
+
+    <h2>Task 3.3 — Identify AWS compute services</h2>
+    <p><strong>Knowledge of:</strong> AWS compute services.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Recognizing appropriate use cases for different Amazon EC2 instance types (e.g. compute optimized, storage optimized)</li>
+      <li>Recognizing appropriate use cases for different container options (e.g. Amazon ECS, Amazon EKS)</li>
+      <li>Recognizing appropriate use cases for serverless compute options (e.g. AWS Fargate, AWS Lambda)</li>
+      <li>Recognizing that auto scaling provides elasticity</li>
+      <li>Identifying the purpose of load balancers</li>
+    </ul>
+
+    <h2>Task 3.4 — Identify AWS database services</h2>
+    <p><strong>Knowledge of:</strong> AWS database services; database migration.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Deciding when to use EC2-hosted databases versus AWS managed databases</li>
+      <li>Identifying relational databases (e.g. Amazon RDS, Amazon Aurora)</li>
+      <li>Identifying NoSQL databases (e.g. Amazon DynamoDB)</li>
+      <li>Identifying in-memory databases (e.g. Amazon ElastiCache)</li>
+      <li>Identifying database migration tools (e.g. AWS DMS, AWS Schema Conversion Tool)</li>
+    </ul>
+
+    <h2>Task 3.5 — Identify AWS network services</h2>
+    <p><strong>Knowledge of:</strong> AWS networking services.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Identifying VPC components (e.g. subnets, gateways)</li>
+      <li>Understanding security within a VPC (e.g. network ACLs, security groups, Amazon Inspector)</li>
+      <li>Understanding the purpose of Amazon Route 53</li>
+      <li>Identifying network connectivity options to AWS (e.g. AWS VPN, AWS Direct Connect)</li>
+    </ul>
+
+    <h2>Task 3.6 — Identify AWS storage services</h2>
+    <p><strong>Knowledge of:</strong> AWS storage services.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Identifying use cases for object storage</li>
+      <li>Recognizing differences in Amazon S3 storage classes</li>
+      <li>Identifying block storage solutions (e.g. Amazon EBS, instance store)</li>
+      <li>Identifying file storage services (e.g. Amazon EFS, Amazon FSx)</li>
+      <li>Identifying caching file systems (e.g. AWS Storage Gateway)</li>
+      <li>Understanding use cases for lifecycle policies</li>
+      <li>Understanding use cases for AWS Backup</li>
+    </ul>
+
+    <h2>Task 3.7 — Identify AWS AI/ML services and analytics services</h2>
+    <p><strong>Knowledge of:</strong> AWS AI/ML services; AWS analytics services.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Understanding AI/ML services and the tasks they solve (e.g. Amazon SageMaker AI, Amazon Lex, Amazon Kendra)</li>
+      <li>Identifying data analytics services (e.g. Amazon Athena, Amazon Kinesis, AWS Glue, Amazon QuickSight)</li>
+    </ul>
+
+    <h2>Task 3.8 — Identify services from other in-scope AWS service categories</h2>
+    <p><strong>Knowledge of:</strong> Application integration (Amazon EventBridge, Amazon SNS, Amazon SQS); business applications (Amazon Connect, Amazon SES); developer tools (AWS CodeBuild, AWS CodePipeline, AWS X-Ray); end-user computing (Amazon AppStream 2.0, Amazon WorkSpaces); frontend/mobile (AWS Amplify, AWS AppSync); IoT (AWS IoT Core).</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Selecting the appropriate service for messaging and sending alerts and notifications</li>
+      <li>Selecting the right service for business application needs</li>
+      <li>Selecting the appropriate option for business support</li>
+      <li>Identifying tools for developing, deploying, and troubleshooting applications</li>
+      <li>Identifying services that can present VM output on end-user machines</li>
+      <li>Identifying services that can create and deploy frontend and mobile services</li>
+      <li>Identifying services that manage IoT devices</li>
+    </ul>
+  </div>
+
+  <!-- DOMAIN 4 -->
+  <div class="section" id="domain4">
+    <span class="chip chip-exam">Domain 4 · 12%</span>
+    <h1>Billing, Pricing, and Support</h1>
+    <p class="section-meta">The smallest domain by weight but a reliable source of easy marks for prepared candidates. Covers pricing models, cost management tools, and AWS Support tiers.</p>
+
+    <h2>Task 4.1 — Compare AWS pricing models</h2>
+    <p><strong>Knowledge of:</strong> Compute purchasing options (On-Demand, Reserved Instances, Spot Instances, AWS Savings Plans, Dedicated Hosts, Dedicated Instances, Capacity Reservations); storage options and tiers.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Identifying when to use different compute purchasing options</li>
+      <li>Describing the flexibility of Reserved Instances</li>
+      <li>Describing Reserved Instance behavior in AWS Organizations</li>
+      <li>Understanding data transfer pricing (inbound vs. outbound; same-Region vs. cross-Region)</li>
+      <li>Understanding pricing options for storage options and tiers</li>
+    </ul>
+
+    <h2>Task 4.2 — Understand resources for billing, budget, and cost management</h2>
+    <p><strong>Knowledge of:</strong> Billing support and information; AWS service pricing information; AWS Organizations; AWS cost allocation tags.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Understanding the appropriate use and capabilities of AWS Budgets and AWS Cost Explorer</li>
+      <li>Understanding the appropriate use and capabilities of the AWS Pricing Calculator</li>
+      <li>Understanding consolidated billing and cost allocation in AWS Organizations</li>
+      <li>Understanding the different types of cost allocation tags and their relationship to billing reports (e.g. AWS Cost and Usage Report)</li>
+    </ul>
+
+    <h2>Task 4.3 — Identify AWS technical resources and AWS Support options</h2>
+    <p><strong>Knowledge of:</strong> AWS documentation and resources; AWS Support plans; AWS Partner Network (APN) roles; AWS Support Center.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Finding AWS whitepapers, blogs, and documentation</li>
+      <li>Identifying and locating technical AWS resources (e.g. AWS Prescriptive Guidance, AWS Knowledge Center, AWS re:Post)</li>
+      <li>Identifying AWS Support options for customers (Basic, Developer, Business, Enterprise On-Ramp, Enterprise)</li>
+      <li>Identifying the role of AWS Trusted Advisor, AWS Health Dashboard, and AWS Health API for cost optimization and monitoring</li>
+      <li>Identifying the role of the AWS Trust &amp; Safety team for reporting abuse</li>
+      <li>Understanding the role of AWS Partners (e.g. AWS Marketplace, ISVs, systems integrators)</li>
+      <li>Identifying the benefits of being an AWS Partner (e.g. partner training and certification, partner events, volume discounts)</li>
+      <li>Identifying key services offered in AWS Marketplace (e.g. cost management, governance, entitlement)</li>
+      <li>Identifying technical support options available at AWS (e.g. AWS Professional Services, AWS Solutions Architects)</li>
+    </ul>
+  </div>
+
+  <!-- CANDIDATE PREP -->
+  <div class="section" id="candidate-prep">
+    <span class="chip chip-platform">Candidate Prep</span>
+    <h1>How We Help CLF-C02 Candidates</h1>
+    <p class="section-meta">Who takes this exam, where they struggle, and how to build a study path that gets them to 700+.</p>
+
+    <h2>Who Takes This Exam</h2>
+    <ul>
+      <li><strong>Career switchers</strong> — non-technical professionals moving into cloud roles (project managers, business analysts, sales engineers).</li>
+      <li><strong>Technical beginners</strong> — developers or sysadmins new to AWS who want to validate foundational knowledge before taking SAA or DVA.</li>
+      <li><strong>Organization-wide certification programs</strong> — companies requiring all staff to hold a foundational cert.</li>
+    </ul>
+
+    <h2>What Candidates Struggle With</h2>
+    <ul>
+      <li><strong>The shared responsibility model</strong> — which layer AWS manages vs. the customer, and how it shifts between EC2, RDS, and Lambda.</li>
+      <li><strong>Service disambiguation</strong> — EC2 vs. Fargate vs. Lambda; RDS vs. Aurora vs. DynamoDB; S3 vs. EBS vs. EFS. The exam forces exact choices.</li>
+      <li><strong>Compute purchasing models</strong> — On-Demand vs. Reserved vs. Spot vs. Savings Plans. Candidates conflate flexibility with cost.</li>
+      <li><strong>Support plan tiers</strong> — confusing Basic/Developer/Business/Enterprise On-Ramp/Enterprise. Who gets a TAM? Who gets a 15-minute response time?</li>
+      <li><strong>Well-Architected Framework pillars</strong> — candidates can list them but struggle to match a scenario to the correct pillar.</li>
+      <li><strong>Global infrastructure nuances</strong> — when to use multiple AZs (HA) vs. multiple Regions (DR, data sovereignty, latency).</li>
+    </ul>
+
+    <h2>Recommended Study Path</h2>
+    <ol class="steps">
+      <li><strong>Domain 2 — Security first.</strong> Highest weight (30%) and heavily interconnected with every other domain. Build the shared responsibility model mental model before anything else.</li>
+      <li><strong>Domain 3 — Services breadth.</strong> Most questions come from here. Study by category (compute → database → network → storage → AI/ML) in a single sweep, not all at once.</li>
+      <li><strong>Domain 1 — Cloud concepts.</strong> The WHY behind AWS. Well-Architected pillars and CAF are small, well-bounded topics — efficient marks.</li>
+      <li><strong>Domain 4 — Billing last.</strong> Smallest domain (12%). Pricing models and support tiers are pure memorization — the best place to pick up fast marks close to exam day.</li>
+    </ol>
+
+    <h2>AI Explanation Quality for This Exam</h2>
+    <p>CLF-C02 questions use concrete business scenarios. Every wrong answer needs an explanation that says WHY the distractor is wrong — not just "this is not correct." Common patterns to cover:</p>
+    <ul>
+      <li>For shared responsibility questions: explain which <em>layer</em> the wrong option gets wrong (e.g. "Security of the cloud is AWS's job; this answer confuses it with security in the cloud, which is the customer's job").</li>
+      <li>For service selection questions: explain the key differentiator that makes the wrong service wrong (e.g. "EBS is block storage and cannot be shared across multiple EC2 instances — that is EFS").</li>
+      <li>For pricing questions: explain what scenario each model is optimized for (e.g. "Spot Instances are for fault-tolerant, flexible workloads — not steady-state production").</li>
+    </ul>
+  </div>
+
+  <!-- SIMULATION DESIGN -->
+  <div class="section" id="simulation">
+    <span class="chip chip-exam">Simulation Design</span>
+    <h1>How to Formulate the Exam Simulation</h1>
+    <p class="section-meta">Parameters for building practice sets that match the real CLF-C02 exam. See the <a href="exam-authoring-standard.html">Exam &amp; Question Authoring Standard</a> for question-writing rules.</p>
+
+    <h2>Question Set Structure</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Setting</th><th>Value</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Total questions per simulation</td><td>65</td><td>Match real exam — 50 scored + 15 unscored (unannounced)</td></tr>
+        <tr><td>Duration</td><td>90 minutes</td><td>Exact match to real exam</td></tr>
+        <tr><td>Passing threshold</td><td>700 / 1,000</td><td>Display as % equivalent: 70%</td></tr>
+        <tr><td>Scoring</td><td>Compensatory</td><td>No domain minimums — total score only</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Domain Distribution per Set</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Domain</th><th>Weight</th><th>Qs in 65-Q set</th><th>Qs in 50-Q scored set</th></tr></thead>
+      <tbody>
+        <tr><td>D1 — Cloud Concepts</td><td>24%</td><td>16</td><td>12</td></tr>
+        <tr><td>D2 — Security &amp; Compliance</td><td>30%</td><td>19</td><td>15</td></tr>
+        <tr><td>D3 — Technology &amp; Cloud Services</td><td>34%</td><td>22</td><td>17</td></tr>
+        <tr><td>D4 — Billing, Pricing &amp; Support</td><td>12%</td><td>8</td><td>6</td></tr>
+        <tr class="hl"><td><strong>Total</strong></td><td><strong>100%</strong></td><td><strong>65</strong></td><td><strong>50</strong></td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Question Type Mix</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Type</th><th>Suggested % of set</th><th>Implementation priority</th></tr></thead>
+      <tbody>
+        <tr><td>Multiple choice (1-of-4)</td><td>~75%</td><td><span class="badge badge-green">High — launch with this</span></td></tr>
+        <tr><td>Multiple response (select N)</td><td>~25%</td><td><span class="badge badge-green">High — common on exam</span></td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout callout-note">CLF-C02 uses only two question types (unlike AIF-C01 which adds ordering/matching). Launch with both from day one.</div>
+
+    <h2>Question Writing Rules (CLF-C02 specific)</h2>
+    <ul>
+      <li><strong>Scenario-based stems</strong> — "A company needs to…" or "A developer wants to…" Never "What is the definition of…?"</li>
+      <li><strong>No coding, no configuration</strong> — questions test service awareness and cloud concepts, not implementation steps.</li>
+      <li><strong>Service selection over service operation</strong> — ask which service fits, not how to set it up.</li>
+      <li><strong>Shared responsibility framing</strong> — many D2 questions reduce to: is this AWS's job or the customer's job? Engineer the scenarios to make that choice the crux.</li>
+      <li><strong>Pricing model scenarios</strong> — for D4, anchor questions in real usage patterns (spiky demand → On-Demand, predictable steady-state → Reserved, fault-tolerant batch → Spot).</li>
+    </ul>
+
+    <h2>Distractor Quality Guidelines</h2>
+    <ul>
+      <li>Use real AWS service confusions as distractors: EC2 vs. Lambda vs. Fargate; EBS vs. S3 vs. EFS; GuardDuty vs. Inspector vs. Shield.</li>
+      <li>For shared responsibility questions: make one distractor assume AWS handles more than it does, and one assume the customer handles more than they do.</li>
+      <li>For pricing questions: make each distractor represent a real but wrong use case for the option named (e.g. "On-Demand for 3-year steady-state workload" is wrong but plausible).</li>
+    </ul>
+
+    <h2>AI Explanation Template</h2>
+    <p>Each question requires an explanation covering:</p>
+    <ul>
+      <li>Why the correct answer is right — with a brief conceptual reason</li>
+      <li>Why each distractor is wrong — one sentence per option, naming the specific reason</li>
+      <li>Concept link — which domain/task statement this tests (e.g. "D2 · Task 2.1 — Shared responsibility model")</li>
+      <li>Service context — if a service appears, one line on what it does and what distinguishes it from similar services</li>
+    </ul>
+  </div>
+
+</main>
+
+<button id="top-btn" title="Back to top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<script>
+  const topBtn = document.getElementById('top-btn');
+  window.addEventListener('scroll', () => {
+    topBtn.style.display = window.scrollY > 400 ? 'flex' : 'none';
+  });
+</script>
+</body>
+</html>

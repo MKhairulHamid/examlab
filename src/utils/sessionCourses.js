@@ -4,9 +4,11 @@
 // per-domain study progress), so the mapping stays in one place.
 
 import aifC01Course from '../data/aifC01Course'
+import clfC02Course from '../data/clfC02Course'
 
 const SESSION_COURSES = [
   { match: ['aif', 'ai-practitioner'], course: aifC01Course },
+  { match: ['clf', 'cloud-practitioner'], course: clfC02Course },
 ]
 
 export function getSessionCourse(slug) {

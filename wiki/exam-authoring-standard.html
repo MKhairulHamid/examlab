@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exam & Question Authoring Standard — CloudExamLab Wiki</title>
+  <style>
+    :root {
+      --sidebar-w: 255px;
+      --sidebar-bg: #0f172a;
+      --sidebar-text: #94a3b8;
+      --sidebar-active-text: #38bdf8;
+      --sidebar-active-bg: rgba(56,189,248,0.08);
+      --sidebar-hover: #1e293b;
+      --accent: #2563eb;
+      --accent-light: #eff6ff;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --heading: #0f172a;
+      --code-bg: #1e293b;
+      --code-text: #e2e8f0;
+      --stripe: #f8fafc;
+      --warn-bg: #fef2f2;
+      --warn-border: #ef4444;
+      --tip-bg: #f0fdf4;
+      --tip-border: #22c55e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--text);
+      line-height: 1.65;
+      background: #fff;
+    }
+
+    /* ── Sidebar ── */
+    #sidebar {
+      position: fixed; top: 0; left: 0;
+      width: var(--sidebar-w); height: 100vh;
+      background: var(--sidebar-bg);
+      overflow-y: auto; z-index: 100;
+      display: flex; flex-direction: column;
+    }
+    #sidebar::-webkit-scrollbar { width: 4px; }
+    #sidebar::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+    .sb-header {
+      padding: 20px 16px 14px;
+      border-bottom: 1px solid #1e293b;
+    }
+    .sb-logo { font-size: 13px; font-weight: 700; color: #f1f5f9; letter-spacing: .06em; text-transform: uppercase; }
+    .sb-sub  { font-size: 11px; color: var(--sidebar-text); margin-top: 2px; }
+    .sb-group { padding: 10px 0 2px; }
+    .sb-group-label {
+      font-size: 10px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: #475569;
+      padding: 0 16px; margin-bottom: 3px;
+    }
+    .sb-item {
+      display: block; padding: 6px 16px;
+      font-size: 12.5px; color: var(--sidebar-text);
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: background .12s, color .12s;
+    }
+    .sb-item:hover { background: var(--sidebar-hover); color: #f1f5f9; }
+    .sb-item.active { color: var(--sidebar-active-text); border-left-color: var(--sidebar-active-text); background: var(--sidebar-active-bg); }
+    .sb-item.ext { color: #60a5fa; }
+    .sb-item.ext::after { content: ' ↗'; font-size: 10px; }
+
+    /* ── Main ── */
+    #main {
+      margin-left: var(--sidebar-w);
+      padding: 48px 64px 96px;
+      max-width: calc(var(--sidebar-w) + 880px);
+    }
+
+    /* ── Section ── */
+    .section { padding-top: 52px; border-top: 1px solid var(--border); margin-top: 28px; }
+    .section:first-of-type { border-top: none; margin-top: 0; padding-top: 0; }
+
+    /* ── Typography ── */
+    h1 { font-size: 27px; font-weight: 700; color: var(--heading); margin-bottom: 10px; }
+    h2 { font-size: 19px; font-weight: 700; color: var(--heading); margin-top: 38px; margin-bottom: 14px; }
+    h3 { font-size: 15px; font-weight: 600; color: var(--heading); margin-top: 24px; margin-bottom: 8px; }
+    p  { margin-bottom: 12px; }
+    a  { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ul, ol { padding-left: 22px; margin-bottom: 12px; }
+    li { margin-bottom: 4px; }
+    hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+    .section-meta { font-size: 14px; color: var(--text-muted); margin-bottom: 26px; margin-top: -4px; }
+
+    /* ── Chip label ── */
+    .chip {
+      display: inline-block; padding: 2px 9px; border-radius: 4px;
+      font-size: 10px; font-weight: 700; letter-spacing: .05em;
+      text-transform: uppercase; margin-bottom: 6px;
+    }
+    .chip-standard { background: #dbeafe; color: #0c4a6e; }
+
+    /* ── Tables ── */
+    .tw { overflow-x: auto; margin: 16px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    th {
+      background: #f1f5f9; padding: 7px 12px;
+      text-align: left; font-size: 11px; font-weight: 700;
+      color: var(--text-muted); border-bottom: 2px solid var(--border);
+      white-space: nowrap;
+    }
+    td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:nth-child(even) td { background: var(--stripe); }
+
+    /* ── Code ── */
+    code {
+      font-family: 'SF Mono','Fira Code','Cascadia Code',Consolas,monospace;
+      font-size: 12px; background: #f1f5f9; color: #be185d;
+      padding: 2px 5px; border-radius: 3px;
+    }
+    pre {
+      background: var(--code-bg); color: var(--code-text);
+      padding: 18px 20px; border-radius: 8px;
+      overflow-x: auto; margin: 14px 0;
+      font-size: 12.5px; line-height: 1.65;
+    }
+    pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+
+    /* ── Callouts ── */
+    .callout {
+      padding: 12px 16px; border-radius: 6px;
+      margin: 14px 0; font-size: 13.5px;
+    }
+    .callout-note    { background: var(--accent-light); border-left: 4px solid var(--accent); }
+    .callout-warning { background: var(--warn-bg);      border-left: 4px solid var(--warn-border); }
+    .callout-tip     { background: var(--tip-bg);       border-left: 4px solid var(--tip-border); }
+
+    /* ── Badge ── */
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 10px;
+      font-size: 11px; font-weight: 600;
+    }
+    .badge-research { background: #f0fdf4; color: #15803d; }
+    .badge-impl     { background: #fef3c7; color: #b45309; }
+
+    /* ── Page title ── */
+    .page-title { margin-bottom: 36px; }
+    .page-title h1 { font-size: 30px; margin-bottom: 8px; }
+    .page-title p  { font-size: 15px; color: var(--text-muted); margin: 0; }
+
+    /* ── Numbered steps ── */
+    .steps { counter-reset: step; list-style: none; padding: 0; margin-bottom: 14px; }
+    .steps li {
+      counter-increment: step;
+      padding: 7px 0 7px 36px; position: relative;
+      border-left: 2px solid var(--border); margin-left: 11px;
+    }
+    .steps li::before {
+      content: counter(step);
+      position: absolute; left: -11px; top: 7px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--accent); color: #fff;
+      font-size: 10px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── Jump-to-top ── */
+    #top-btn {
+      position: fixed; bottom: 28px; right: 28px;
+      background: var(--accent); color: #fff;
+      border: none; border-radius: 50%; width: 38px; height: 38px;
+      font-size: 18px; cursor: pointer; display: none;
+      align-items: center; justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+      transition: opacity .2s;
+    }
+    #top-btn:hover { background: #1d4ed8; }
+  </style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<nav id="sidebar">
+  <div class="sb-header">
+    <div class="sb-logo">CloudExamLab</div>
+    <div class="sb-sub">Developer Wiki</div>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Start here</div>
+    <a class="sb-item" href="index.html#intro">Overview</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Platform</div>
+    <a class="sb-item" href="index.html#platform-overview">What is CloudExamLab</a>
+    <a class="sb-item" href="index.html#user-flow">User Flow</a>
+    <a class="sb-item" href="index.html#authentication">Authentication</a>
+    <a class="sb-item" href="index.html#access-control">Access Control</a>
+    <a class="sb-item" href="index.html#exam-flow">Exam Flow</a>
+    <a class="sb-item" href="index.html#subscription">Subscription &amp; Payment</a>
+    <a class="sb-item" href="index.html#admin">Admin</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Technical</div>
+    <a class="sb-item" href="index.html#architecture">Architecture</a>
+    <a class="sb-item" href="index.html#database">Database Schema</a>
+    <a class="sb-item" href="index.html#edge-functions">Edge Functions</a>
+    <a class="sb-item" href="index.html#state-management">State Management</a>
+    <a class="sb-item" href="index.html#offline-sync">Offline &amp; Sync</a>
+    <a class="sb-item" href="index.html#environment">Environment Setup</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Building a Program</div>
+    <a class="sb-item" href="new-program-playbook.html">New Program Playbook</a>
+    <a class="sb-item" href="study-materials-standard.html">Study Materials Standard</a>
+    <a class="sb-item active" href="exam-authoring-standard.html">Exam &amp; Question Authoring</a>
+    <a class="sb-item" href="interactive-widget-standard.html">Interactive Widget Standard</a>
+    <a class="sb-item" href="design-system.html">Design System</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Reference</div>
+    <a class="sb-item ext" href="aws-certification-roadmap.html">AWS Cert Roadmap</a>
+  </div>
+</nav>
+
+<!-- ══ MAIN ══ -->
+<main id="main">
+
+  <div class="page-title" id="intro">
+    <h1>Exam &amp; Question Authoring Standard</h1>
+    <p>Exam-agnostic rules for building high-quality, exam-accurate practice simulations. Generalized from the AIF-C01 simulation design so every new program authors questions the same way.</p>
+  </div>
+
+  <div class="callout callout-note">
+    <strong>How to use this page:</strong> the <em>shape</em> of a simulation (set size, distribution, type mix) is per-exam and comes from that exam's blueprint (e.g. the Simulation Design section of <code>wiki/aif-c01.html</code>). The <em>rules</em> for writing individual questions on this page are the same for every exam.
+  </div>
+
+  <div class="section" id="structure">
+    <span class="chip chip-standard">Structure</span>
+    <h1>Question Set Structure</h1>
+    <p class="section-meta">Pull the exact numbers from the target exam's official guide. The columns below show how AIF-C01 instantiates the template.</p>
+    <div class="tw"><table>
+      <thead><tr><th>Setting</th><th>Source</th><th>AIF-C01 example</th></tr></thead>
+      <tbody>
+        <tr><td>Total questions per simulation</td><td>Match the real exam total</td><td>65 (50 scored + 15 unscored)</td></tr>
+        <tr><td>Duration</td><td>Exact match to real exam</td><td>90 minutes</td></tr>
+        <tr><td>Passing threshold</td><td>Real exam scaled score; show % equivalent</td><td>700 / 1,000 (≈ 70%)</td></tr>
+        <tr><td>Scoring</td><td>Compensatory unless the exam sets domain minimums</td><td>Compensatory — total score only</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="section" id="distribution">
+    <span class="chip chip-standard">Distribution</span>
+    <h1>Domain Distribution</h1>
+    <p class="section-meta">Allocate questions in proportion to the official domain weights. This is the rule that makes a set "representative."</p>
+    <p><strong>Formula:</strong> <code>questions_in_domain = round(total_questions × domain_weight)</code>. Compute against both the full set and the scored subset.</p>
+    <div class="tw"><table>
+      <thead><tr><th>Domain</th><th>Weight</th><th>Qs in 65-Q set</th><th>Qs in 50-Q scored set</th></tr></thead>
+      <tbody>
+        <tr><td>D1 — AI &amp; ML Fundamentals</td><td>20%</td><td>13</td><td>10</td></tr>
+        <tr><td>D2 — GenAI Fundamentals</td><td>24%</td><td>16</td><td>12</td></tr>
+        <tr><td>D3 — Foundation Models</td><td>28%</td><td>18</td><td>14</td></tr>
+        <tr><td>D4 — Responsible AI</td><td>14%</td><td>9</td><td>7</td></tr>
+        <tr><td>D5 — Security &amp; Governance</td><td>14%</td><td>9</td><td>7</td></tr>
+        <tr><td><strong>Total</strong></td><td><strong>100%</strong></td><td><strong>65</strong></td><td><strong>50</strong></td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout callout-tip">AIF-C01 shown as the worked example. For a new exam, swap in its own domains and weights — the formula is identical.</div>
+  </div>
+
+  <div class="section" id="types">
+    <span class="chip chip-standard">Types</span>
+    <h1>Question Type Mix</h1>
+    <p class="section-meta">Most AWS exams use four question types. Launch with the two highest-frequency types, then add the rest.</p>
+    <div class="tw"><table>
+      <thead><tr><th>Type</th><th>Suggested % of set</th><th>Priority</th></tr></thead>
+      <tbody>
+        <tr><td>Multiple choice (1-of-4)</td><td>~70%</td><td><span class="badge badge-impl">High — launch with this</span></td></tr>
+        <tr><td>Multiple response (select N)</td><td>~20%</td><td><span class="badge badge-impl">High — common on exam</span></td></tr>
+        <tr><td>Ordering</td><td>~5%</td><td>Medium — add after launch</td></tr>
+        <tr><td>Matching</td><td>~5%</td><td>Medium — add after launch</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="section" id="rules">
+    <span class="chip chip-standard">Rules</span>
+    <h1>Question Writing Rules</h1>
+    <p class="section-meta">These apply to every exam, every question.</p>
+    <ul>
+      <li><strong>Scenario-based stems.</strong> "A company wants to…" — not "What is X?" Applied judgment is tested; abstract recall rarely is.</li>
+      <li><strong>Single best answer.</strong> For multiple choice there must be exactly one clearly best option. The others are plausible but wrong for a <em>specific, teachable</em> reason.</li>
+      <li><strong>No implementation questions.</strong> Never ask candidates to write code, configure step-by-step, or do model math. Test selection and judgment, not configuration.</li>
+      <li><strong>Service knowledge, not service configuration.</strong> Questions may name specific services, but test whether the candidate picks the right one — not how to set it up.</li>
+      <li><strong>Ground scenarios in real business impact</strong> where the domain calls for it (e.g. responsible-AI questions: hiring bias, loan approval, medical advice, content moderation).</li>
+      <li><strong>Test recognition, not memorization of syntax</strong> — e.g. for technique-heavy domains, ask <em>when</em> to apply a technique, not its exact syntax.</li>
+    </ul>
+  </div>
+
+  <div class="section" id="distractors">
+    <span class="chip chip-standard">Distractors</span>
+    <h1>Distractor Quality</h1>
+    <p class="section-meta">A practice set is only as good as its wrong answers.</p>
+    <ul>
+      <li>Each distractor is wrong for a <strong>specific, teachable reason</strong> — not merely random plausibility.</li>
+      <li>Avoid distractors that are obviously out of scope (e.g. a code snippet in a service-selection question).</li>
+      <li>Lean on real confusions candidates have: similar services mixed up, competing solution approaches confused with each other, similarly-named metrics swapped.</li>
+    </ul>
+  </div>
+
+  <div class="section" id="explanation">
+    <span class="chip chip-standard">Explanation</span>
+    <h1>Explanation Template</h1>
+    <p class="section-meta">Every question carries an explanation with four parts. This is where the deepest learning happens.</p>
+    <ol class="steps">
+      <li><strong>Why the correct answer is right</strong> — a brief conceptual reason, not just "this is correct."</li>
+      <li><strong>Why each distractor is wrong</strong> — one sentence per option.</li>
+      <li><strong>Concept link</strong> — which domain / task statement this question tests.</li>
+      <li><strong>Service context</strong> — if a service appears, one line on what it does.</li>
+    </ol>
+  </div>
+
+  <div class="section" id="difficulty">
+    <span class="chip chip-standard">Calibration</span>
+    <h1>Difficulty Calibration</h1>
+    <div class="callout callout-tip">
+      A good question is answerable by a thoughtful candidate who <strong>studied the official exam guide</strong>, but stumps one who only skimmed. If a question requires deep model-building or implementation knowledge, it is out of scope — cut it.
+    </div>
+    <h2>Authoring checklist</h2>
+    <ul>
+      <li>☐ Set size, duration, passing line, and domain distribution match the blueprint</li>
+      <li>☐ Every stem is a scenario, not a definition</li>
+      <li>☐ Exactly one best answer (or a precise select-N count)</li>
+      <li>☐ Every distractor is wrong for a teachable reason</li>
+      <li>☐ Explanation covers all four parts (correct / distractors / concept link / service context)</li>
+      <li>☐ No question tests code, configuration, or math</li>
+      <li>☐ At least one free sample set published</li>
+    </ul>
+  </div>
+
+</main>
+
+<button id="top-btn" title="Back to top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<script>
+  const topBtn = document.getElementById('top-btn');
+  window.addEventListener('scroll', () => {
+    topBtn.style.display = window.scrollY > 400 ? 'flex' : 'none';
+  });
+</script>
+</body>
+</html>
