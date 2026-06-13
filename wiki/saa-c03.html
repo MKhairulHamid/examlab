@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SAA-C03 Exam Guide — CloudExamLab Wiki</title>
+  <style>
+    :root {
+      --sidebar-w: 255px;
+      --sidebar-bg: #0f172a;
+      --sidebar-text: #94a3b8;
+      --sidebar-active-text: #38bdf8;
+      --sidebar-active-bg: rgba(56,189,248,0.08);
+      --sidebar-hover: #1e293b;
+      --accent: #2563eb;
+      --accent-light: #eff6ff;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --heading: #0f172a;
+      --code-bg: #1e293b;
+      --code-text: #e2e8f0;
+      --stripe: #f8fafc;
+      --warn-bg: #fef2f2;
+      --warn-border: #ef4444;
+      --tip-bg: #f0fdf4;
+      --tip-border: #22c55e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--text);
+      line-height: 1.65;
+      background: #fff;
+    }
+
+    /* ── Sidebar ── */
+    #sidebar {
+      position: fixed; top: 0; left: 0;
+      width: var(--sidebar-w); height: 100vh;
+      background: var(--sidebar-bg);
+      overflow-y: auto; z-index: 100;
+      display: flex; flex-direction: column;
+    }
+    #sidebar::-webkit-scrollbar { width: 4px; }
+    #sidebar::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+    .sb-header {
+      padding: 20px 16px 14px;
+      border-bottom: 1px solid #1e293b;
+    }
+    .sb-logo { font-size: 13px; font-weight: 700; color: #f1f5f9; letter-spacing: .06em; text-transform: uppercase; }
+    .sb-sub  { font-size: 11px; color: var(--sidebar-text); margin-top: 2px; }
+    .sb-group { padding: 10px 0 2px; }
+    .sb-group-label {
+      font-size: 10px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: #475569;
+      padding: 0 16px; margin-bottom: 3px;
+    }
+    .sb-item {
+      display: block; padding: 6px 16px;
+      font-size: 12.5px; color: var(--sidebar-text);
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: background .12s, color .12s;
+    }
+    .sb-item:hover { background: var(--sidebar-hover); color: #f1f5f9; }
+    .sb-item.active { color: var(--sidebar-active-text); border-left-color: var(--sidebar-active-text); background: var(--sidebar-active-bg); }
+    .sb-item.ext { color: #60a5fa; }
+    .sb-item.ext::after { content: ' ↗'; font-size: 10px; }
+
+    /* ── Main ── */
+    #main {
+      margin-left: var(--sidebar-w);
+      padding: 48px 64px 96px;
+      max-width: calc(var(--sidebar-w) + 880px);
+    }
+
+    /* ── Section ── */
+    .section { padding-top: 52px; border-top: 1px solid var(--border); margin-top: 28px; }
+    .section:first-of-type { border-top: none; margin-top: 0; padding-top: 0; }
+
+    /* ── Typography ── */
+    h1 { font-size: 27px; font-weight: 700; color: var(--heading); margin-bottom: 10px; }
+    h2 { font-size: 19px; font-weight: 700; color: var(--heading); margin-top: 38px; margin-bottom: 14px; }
+    h3 { font-size: 15px; font-weight: 600; color: var(--heading); margin-top: 24px; margin-bottom: 8px; }
+    p  { margin-bottom: 12px; }
+    a  { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ul, ol { padding-left: 22px; margin-bottom: 12px; }
+    li { margin-bottom: 4px; }
+    hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+    .section-meta { font-size: 14px; color: var(--text-muted); margin-bottom: 26px; margin-top: -4px; }
+
+    /* ── Chip label ── */
+    .chip {
+      display: inline-block; padding: 2px 9px; border-radius: 4px;
+      font-size: 10px; font-weight: 700; letter-spacing: .05em;
+      text-transform: uppercase; margin-bottom: 6px;
+    }
+    .chip-platform  { background: #eff6ff; color: #1d4ed8; }
+    .chip-technical { background: #f0fdf4; color: #15803d; }
+    .chip-reference { background: #fdf4ff; color: #7e22ce; }
+    .chip-exam      { background: #fff7ed; color: #c2410c; }
+
+    /* ── Tables ── */
+    .tw { overflow-x: auto; margin: 16px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    th {
+      background: #f1f5f9; padding: 7px 12px;
+      text-align: left; font-size: 11px; font-weight: 700;
+      color: var(--text-muted); border-bottom: 2px solid var(--border);
+      white-space: nowrap;
+    }
+    td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:nth-child(even) td { background: var(--stripe); }
+
+    /* ── Code ── */
+    code {
+      font-family: 'SF Mono','Fira Code','Cascadia Code',Consolas,monospace;
+      font-size: 12px; background: #f1f5f9; color: #be185d;
+      padding: 2px 5px; border-radius: 3px;
+    }
+
+    /* ── Callouts ── */
+    .callout {
+      padding: 12px 16px; border-radius: 6px;
+      margin: 14px 0; font-size: 13.5px;
+    }
+    .callout-note    { background: var(--accent-light); border-left: 4px solid var(--accent); }
+    .callout-warning { background: var(--warn-bg);      border-left: 4px solid var(--warn-border); }
+    .callout-tip     { background: var(--tip-bg);       border-left: 4px solid var(--tip-border); }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 10px;
+      font-size: 11px; font-weight: 600;
+    }
+    .badge-green  { background: #dcfce7; color: #15803d; }
+    .badge-yellow { background: #fef3c7; color: #b45309; }
+    .badge-gray   { background: #f1f5f9; color: #475569; }
+    .badge-blue   { background: #dbeafe; color: #1d4ed8; }
+    .badge-orange { background: #ffedd5; color: #c2410c; }
+
+    /* ── Numbered steps ── */
+    .steps { counter-reset: step; list-style: none; padding: 0; margin-bottom: 14px; }
+    .steps li {
+      counter-increment: step;
+      padding: 7px 0 7px 36px; position: relative;
+      border-left: 2px solid var(--border); margin-left: 11px;
+    }
+    .steps li::before {
+      content: counter(step);
+      position: absolute; left: -11px; top: 7px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--accent); color: #fff;
+      font-size: 10px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── Page title ── */
+    .page-title { margin-bottom: 36px; }
+    .page-title h1 { font-size: 30px; margin-bottom: 8px; }
+    .page-title p  { font-size: 15px; color: var(--text-muted); margin: 0; }
+
+    /* ── Domain bar ── */
+    .domain-bar { display: flex; gap: 6px; flex-wrap: wrap; margin: 18px 0 8px; }
+    .domain-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 12px; border-radius: 20px;
+      font-size: 12px; font-weight: 600;
+      border: 1px solid var(--border); background: #f8fafc;
+    }
+    .domain-pill .pct {
+      background: var(--accent); color: #fff;
+      border-radius: 10px; padding: 1px 6px;
+      font-size: 10px; font-weight: 700;
+    }
+
+    /* ── Highlight row ── */
+    .hl td { background: #eff6ff !important; font-weight: 600; }
+
+    /* ── Jump-to-top ── */
+    #top-btn {
+      position: fixed; bottom: 28px; right: 28px;
+      background: var(--accent); color: #fff;
+      border: none; border-radius: 50%; width: 38px; height: 38px;
+      font-size: 18px; cursor: pointer; display: none;
+      align-items: center; justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+      transition: opacity .2s;
+    }
+    #top-btn:hover { background: #1d4ed8; }
+  </style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<nav id="sidebar">
+  <div class="sb-header">
+    <div class="sb-logo">CloudExamLab</div>
+    <div class="sb-sub">Exam Guide Series</div>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">On this page</div>
+    <a class="sb-item active" href="#overview">Overview</a>
+    <a class="sb-item" href="#structure">Exam Structure</a>
+    <a class="sb-item" href="#domains">Content Domains</a>
+    <a class="sb-item" href="#domain1">D1 — Secure Architectures</a>
+    <a class="sb-item" href="#domain2">D2 — Resilient Architectures</a>
+    <a class="sb-item" href="#domain3">D3 — High-Performing</a>
+    <a class="sb-item" href="#domain4">D4 — Cost-Optimized</a>
+    <a class="sb-item" href="#candidate-prep">Helping Candidates</a>
+    <a class="sb-item" href="#simulation">Simulation Design</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Wiki</div>
+    <a class="sb-item ext" href="index.html">Developer Wiki</a>
+    <a class="sb-item ext" href="new-program-playbook.html">New Program Playbook</a>
+    <a class="sb-item ext" href="exam-authoring-standard.html">Exam &amp; Question Authoring</a>
+    <a class="sb-item ext" href="aws-certification-roadmap.html">AWS Cert Roadmap</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Official</div>
+    <a class="sb-item ext" href="https://docs.aws.amazon.com/aws-certification/latest/solutions-architect-associate-03/solutions-architect-associate-03.html">AWS Exam Guide ↗</a>
+  </div>
+</nav>
+
+<!-- ══ MAIN ══ -->
+<main id="main">
+
+  <!-- OVERVIEW -->
+  <div class="page-title" id="overview">
+    <h1>AWS Certified Solutions Architect – Associate (SAA-C03)</h1>
+    <p>Everything we need to know about this exam — structure, domains, candidate prep strategy, and simulation design.</p>
+  </div>
+
+  <h2>What This Exam Is</h2>
+  <p>The AWS Certified Solutions Architect – Associate (SAA-C03) validates the ability to design solutions that incorporate AWS services to meet current and future business requirements. Unlike the foundational Cloud Practitioner, this is a <strong>design</strong> exam: it tests judgment under constraints — choosing the right service, the right architecture, and the right trade-off between security, resilience, performance, and cost.</p>
+  <ul>
+    <li><strong>Target audience:</strong> Individuals performing a solutions architect role who design architectures that are secure, resilient, high-performing, and cost-optimized — and who review existing solutions to recommend improvements.</li>
+    <li><strong>Recommended experience:</strong> At least 1 year of hands-on experience designing cloud solutions using AWS services. CLF-C02 is a recommended (not required) precursor.</li>
+    <li><strong>Why candidates take it:</strong> The most popular associate-level AWS certification and the standard credential for cloud / solutions architect roles. Often the gateway to the Professional (SAP-C02) and specialty tracks.</li>
+  </ul>
+
+  <!-- STRUCTURE -->
+  <div class="section" id="structure">
+    <span class="chip chip-exam">Exam Format</span>
+    <h1>Question Format &amp; Scoring</h1>
+    <p class="section-meta">Exact parameters from the official exam guide — use these verbatim in the simulation design.</p>
+
+    <h2>Question Types</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>Multiple choice</td><td>One correct answer from four options (three distractors)</td></tr>
+        <tr><td>Multiple response</td><td>Two or more correct answers from five or more options</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Scoring Model</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Setting</th><th>Value</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Total questions on exam</td><td>65</td><td>50 scored + 15 unscored pretest (unidentified)</td></tr>
+        <tr><td>Duration</td><td>130 minutes</td><td>Longer than CLF-C02 — scenario stems take more reading time</td></tr>
+        <tr><td>Passing score</td><td>720 / 1,000</td><td>Display as % equivalent: 72%</td></tr>
+        <tr><td>Scoring</td><td>Compensatory</td><td>No per-domain minimums — total score only</td></tr>
+        <tr><td>Result</td><td>Pass / Fail</td><td>Scaled scoring equalizes difficulty across exam forms</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Out-of-Scope Services (Do NOT Test)</h2>
+    <p>The official exam guide explicitly lists 44 services that are out of scope for SAA-C03. Any question that hinges on one of these is out of scope — cut it. The notable exclusions:</p>
+    <ul>
+      <li><strong>All IoT services</strong>, Amazon GameLift, Amazon Lightsail, Amazon Sumerian, Amazon Location Service, AWS Cloud Map, Amazon Braket, AWS Ground Station.</li>
+      <li><strong>Developer tooling:</strong> AWS CDK, AWS CloudShell, AWS CodeArtifact, CodeBuild, CodeCommit, CodeDeploy, Amazon Corretto, AWS Fault Injection Simulator, AWS Tools and SDKs, AWS Distro for OpenTelemetry.</li>
+      <li><strong>ML/AI specialty:</strong> Amazon Augmented AI (A2I), DeepComposer, Deep Learning AMIs/Containers, Amazon DevOps Guru, Elastic Inference, AWS Inferentia, Amazon Personalize, SageMaker Canvas, SageMaker Ground Truth, Apache MXNet / PyTorch / TensorFlow on AWS, Amazon HealthLake.</li>
+      <li><strong>Media / elemental:</strong> all AWS Elemental Appliances and Software, MediaConnect, MediaConvert, MediaLive, MediaPackage, MediaTailor, Amazon Interactive Video Service (IVS).</li>
+      <li><strong>Other:</strong> Amazon MWAA, Amazon Managed Blockchain, Amazon RDS on VMware, Migration Evaluator, AWS Console Mobile Application.</li>
+    </ul>
+    <div class="callout callout-tip"><strong>Exam tip:</strong> SAA-C03 tests <em>architectural design judgment</em>, not implementation steps or code. The crux of nearly every question is a trade-off — "MOST cost-effective", "LEAST operational overhead", "MOST resilient". Engineer questions so the right answer wins on the qualifier in the stem.</div>
+  </div>
+
+  <!-- DOMAIN OVERVIEW -->
+  <div class="section" id="domains">
+    <span class="chip chip-platform">Domains</span>
+    <h1>Domain Breakdown</h1>
+    <p class="section-meta">Four domains. D1 (Secure Architectures) carries the most weight, and security threads through every other domain.</p>
+
+    <div class="domain-bar">
+      <span class="domain-pill">D1 — Secure Architectures <span class="pct">30%</span></span>
+      <span class="domain-pill">D2 — Resilient Architectures <span class="pct">26%</span></span>
+      <span class="domain-pill">D3 — High-Performing <span class="pct">24%</span></span>
+      <span class="domain-pill">D4 — Cost-Optimized <span class="pct">20%</span></span>
+    </div>
+
+    <div class="tw"><table>
+      <thead><tr><th>Domain</th><th>Weight</th><th>Task statements</th></tr></thead>
+      <tbody>
+        <tr><td>D1 — Design Secure Architectures</td><td>30%</td><td>1.1 Secure access to AWS resources · 1.2 Secure workloads &amp; applications · 1.3 Data security controls</td></tr>
+        <tr><td>D2 — Design Resilient Architectures</td><td>26%</td><td>2.1 Scalable &amp; loosely coupled architectures · 2.2 Highly available / fault-tolerant architectures</td></tr>
+        <tr><td>D3 — Design High-Performing Architectures</td><td>24%</td><td>3.1 Storage · 3.2 Compute · 3.3 Database · 3.4 Network · 3.5 Data ingestion &amp; transformation</td></tr>
+        <tr><td>D4 — Design Cost-Optimized Architectures</td><td>20%</td><td>4.1 Storage · 4.2 Compute · 4.3 Database · 4.4 Network</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <!-- DOMAIN 1 -->
+  <div class="section" id="domain1">
+    <span class="chip chip-platform">Domain 1 · 30%</span>
+    <h1>Design Secure Architectures</h1>
+    <p class="section-meta">The highest-weight domain. Covers identity and access, network and application security, and data protection — the security spine that every other domain depends on.</p>
+
+    <h2>Task 1.1 — Design secure access to AWS resources</h2>
+    <p><strong>Knowledge of:</strong></p>
+    <ul>
+      <li>Access controls and management across multiple accounts</li>
+      <li>AWS federated access and identity services (e.g. IAM, AWS IAM Identity Center)</li>
+      <li>AWS global infrastructure (e.g. Availability Zones, AWS Regions)</li>
+      <li>AWS security best practices (e.g. the principle of least privilege)</li>
+      <li>The AWS shared responsibility model</li>
+    </ul>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Applying AWS security best practices to IAM users and root users (e.g. MFA)</li>
+      <li>Designing a flexible authorization model that includes IAM users, groups, roles, and policies</li>
+      <li>Designing a role-based access control strategy (e.g. AWS STS, role switching, cross-account access)</li>
+      <li>Designing a security strategy for multiple AWS accounts (e.g. AWS Control Tower, service control policies [SCPs])</li>
+      <li>Determining the appropriate use of resource policies for AWS services</li>
+      <li>Determining when to federate a directory service with IAM roles</li>
+    </ul>
+
+    <h2>Task 1.2 — Design secure workloads and applications</h2>
+    <p><strong>Knowledge of:</strong></p>
+    <ul>
+      <li>Application configuration and credentials security</li>
+      <li>AWS service endpoints</li>
+      <li>Control ports, protocols, and network traffic on AWS</li>
+      <li>Secure application access</li>
+      <li>Security services with appropriate use cases (e.g. Amazon Cognito, Amazon GuardDuty, Amazon Macie)</li>
+      <li>Threat vectors external to AWS (e.g. DDoS, SQL injection)</li>
+    </ul>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Designing VPC architectures with security components (e.g. security groups, route tables, network ACLs, NAT gateways)</li>
+      <li>Determining network segmentation strategies (e.g. using public and private subnets)</li>
+      <li>Integrating AWS services to secure applications (e.g. AWS Shield, AWS WAF, IAM Identity Center, AWS Secrets Manager)</li>
+      <li>Securing external network connections to and from the AWS Cloud (e.g. VPN, AWS Direct Connect)</li>
+    </ul>
+
+    <h2>Task 1.3 — Determine appropriate data security controls</h2>
+    <p><strong>Knowledge of:</strong></p>
+    <ul>
+      <li>Data access and governance</li>
+      <li>Data recovery</li>
+      <li>Data retention and classification</li>
+      <li>Encryption and appropriate key management</li>
+    </ul>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Aligning AWS technologies to meet compliance requirements</li>
+      <li>Encrypting data at rest (e.g. AWS KMS)</li>
+      <li>Encrypting data in transit (e.g. AWS Certificate Manager [ACM] using TLS)</li>
+      <li>Implementing access policies for encryption keys</li>
+      <li>Implementing data backups and replications</li>
+      <li>Implementing policies for data access, lifecycle, and protection</li>
+      <li>Rotating encryption keys and renewing certificates</li>
+    </ul>
+  </div>
+
+  <!-- DOMAIN 2 -->
+  <div class="section" id="domain2">
+    <span class="chip chip-technical">Domain 2 · 26%</span>
+    <h1>Design Resilient Architectures</h1>
+    <p class="section-meta">Covers scalable, loosely coupled designs and high-availability / fault-tolerant architectures — decoupling, multi-AZ/multi-Region, and disaster recovery strategies.</p>
+
+    <h2>Task 2.1 — Design scalable and loosely coupled architectures</h2>
+    <p><strong>Knowledge of:</strong></p>
+    <ul>
+      <li>API creation and management (e.g. Amazon API Gateway, REST API)</li>
+      <li>AWS managed services with appropriate use cases (e.g. AWS Transfer Family, Amazon SQS, AWS Secrets Manager)</li>
+      <li>Caching strategies</li>
+      <li>Design principles for microservices (e.g. stateless vs. stateful workloads)</li>
+      <li>Event-driven architectures</li>
+      <li>Horizontal scaling and vertical scaling</li>
+      <li>How to appropriately use edge accelerators (e.g. content delivery network [CDN])</li>
+      <li>How to migrate applications into containers</li>
+      <li>Load balancing concepts (e.g. Application Load Balancer [ALB])</li>
+      <li>Multi-tier architectures</li>
+      <li>Queuing and messaging concepts (e.g. publish/subscribe)</li>
+      <li>Serverless technologies and patterns (e.g. AWS Fargate, AWS Lambda)</li>
+      <li>Storage types with associated characteristics (e.g. object, file, block)</li>
+      <li>The orchestration of containers (e.g. Amazon ECS, Amazon EKS)</li>
+      <li>When to use read replicas</li>
+      <li>Workflow orchestration (e.g. AWS Step Functions)</li>
+    </ul>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Designing event-driven, microservice, and/or multi-tier architectures based on requirements</li>
+      <li>Determining scaling strategies for components used in an architecture design</li>
+      <li>Determining the AWS services required to achieve loose coupling based on requirements</li>
+      <li>Determining when to use containers</li>
+      <li>Determining when to use serverless technologies and patterns</li>
+      <li>Recommending appropriate compute, storage, networking, and database technologies based on requirements</li>
+      <li>Using purpose-built AWS services for workloads</li>
+    </ul>
+
+    <h2>Task 2.2 — Design highly available and/or fault-tolerant architectures</h2>
+    <p><strong>Knowledge of:</strong></p>
+    <ul>
+      <li>AWS global infrastructure (e.g. Availability Zones, AWS Regions, Amazon Route 53)</li>
+      <li>AWS managed services with appropriate use cases (e.g. Amazon Comprehend, Amazon Polly)</li>
+      <li>Basic networking concepts (e.g. route tables)</li>
+      <li>Disaster recovery (DR) strategies (e.g. backup and restore, pilot light, warm standby, active-active failover, RPO, RTO)</li>
+      <li>Distributed design patterns</li>
+      <li>Failover strategies</li>
+      <li>Immutable infrastructure</li>
+      <li>Load balancing concepts (e.g. ALB)</li>
+      <li>Proxy concepts (e.g. Amazon RDS Proxy)</li>
+      <li>Service quotas and throttling (e.g. configuring service quotas for a standby workload)</li>
+      <li>Storage options and characteristics (e.g. durability, replication)</li>
+      <li>Workload visibility (e.g. AWS X-Ray)</li>
+    </ul>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Determining automation strategies to ensure infrastructure integrity</li>
+      <li>Determining the AWS services required to provide a highly available and/or fault-tolerant architecture across AWS Regions or Availability Zones</li>
+      <li>Identifying metrics based on business requirements to deliver a highly available solution</li>
+      <li>Implementing designs to mitigate single points of failure</li>
+      <li>Implementing strategies to ensure the durability and availability of data (e.g. backups)</li>
+      <li>Selecting an appropriate DR strategy to meet business requirements</li>
+      <li>Using AWS services that improve the reliability of legacy applications not built for the cloud (when application changes are not possible)</li>
+      <li>Using purpose-built AWS services for workloads</li>
+    </ul>
+  </div>
+
+  <!-- DOMAIN 3 -->
+  <div class="section" id="domain3">
+    <span class="chip chip-reference">Domain 3 · 24%</span>
+    <h1>Design High-Performing Architectures</h1>
+    <p class="section-meta">The broadest domain by task statements (five). Covers performance and scalability across storage, compute, database, network, and data ingestion / transformation.</p>
+
+    <h2>Task 3.1 — Determine high-performing and/or scalable storage solutions</h2>
+    <p><strong>Knowledge of:</strong></p>
+    <ul>
+      <li>Hybrid storage solutions to meet business requirements</li>
+      <li>Storage services with appropriate use cases (e.g. Amazon S3, Amazon EFS, Amazon EBS)</li>
+      <li>Storage types with associated characteristics (e.g. object, file, block)</li>
+    </ul>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Determining storage services and configurations that meet performance demands</li>
+      <li>Determining storage services that can scale to accommodate future needs</li>
+    </ul>
+
+    <h2>Task 3.2 — Design high-performing and elastic compute solutions</h2>
+    <p><strong>Knowledge of:</strong></p>
+    <ul>
+      <li>AWS compute services with appropriate use cases (e.g. AWS Batch, Amazon EMR, AWS Fargate)</li>
+      <li>Distributed computing concepts supported by AWS global infrastructure and edge services</li>
+      <li>Queuing and messaging concepts (e.g. publish/subscribe)</li>
+      <li>Scalability capabilities with appropriate use cases (e.g. Amazon EC2 Auto Scaling, AWS Auto Scaling)</li>
+      <li>Serverless technologies and patterns (e.g. AWS Lambda, Fargate)</li>
+      <li>The orchestration of containers (e.g. Amazon ECS, Amazon EKS)</li>
+    </ul>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Decoupling workloads so that components can scale independently</li>
+      <li>Identifying metrics and conditions to perform scaling actions</li>
+      <li>Selecting the appropriate compute options and features (e.g. EC2 instance types) to meet business requirements</li>
+      <li>Selecting the appropriate resource type and size (e.g. the amount of Lambda memory) to meet business requirements</li>
+    </ul>
+
+    <h2>Task 3.3 — Determine high-performing database solutions</h2>
+    <p><strong>Knowledge of:</strong></p>
+    <ul>
+      <li>AWS global infrastructure (e.g. Availability Zones, AWS Regions)</li>
+      <li>Caching strategies and services (e.g. Amazon ElastiCache)</li>
+      <li>Data access patterns (e.g. read-intensive vs. write-intensive)</li>
+      <li>Database capacity planning (e.g. capacity units, instance types, Provisioned IOPS)</li>
+      <li>Database connections and proxies</li>
+      <li>Database engines with appropriate use cases (e.g. heterogeneous vs. homogeneous migrations)</li>
+      <li>Database replication (e.g. read replicas)</li>
+      <li>Database types and services (e.g. serverless, relational vs. non-relational, in-memory)</li>
+    </ul>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Configuring read replicas to meet business requirements</li>
+      <li>Designing database architectures</li>
+      <li>Determining an appropriate database engine (e.g. MySQL vs. PostgreSQL)</li>
+      <li>Determining an appropriate database type (e.g. Amazon Aurora, Amazon DynamoDB)</li>
+      <li>Integrating caching to meet business requirements</li>
+    </ul>
+
+    <h2>Task 3.4 — Determine high-performing and/or scalable network architectures</h2>
+    <p><strong>Knowledge of:</strong></p>
+    <ul>
+      <li>Edge networking services with appropriate use cases (e.g. Amazon CloudFront, AWS Global Accelerator)</li>
+      <li>How to design network architecture (e.g. subnet tiers, routing, IP addressing)</li>
+      <li>Load balancing concepts (e.g. Application Load Balancer)</li>
+      <li>Network connection options (e.g. AWS VPN, AWS Direct Connect, AWS PrivateLink)</li>
+    </ul>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Creating a network topology for various architectures (e.g. global, hybrid, multi-tier)</li>
+      <li>Determining network configurations that can scale to accommodate future needs</li>
+      <li>Determining the appropriate placement of resources to meet business requirements</li>
+      <li>Selecting the appropriate load balancing strategy</li>
+    </ul>
+
+    <h2>Task 3.5 — Determine high-performing data ingestion and transformation solutions</h2>
+    <p><strong>Knowledge of:</strong></p>
+    <ul>
+      <li>Data analytics and visualization services with appropriate use cases (e.g. Amazon Athena, AWS Lake Formation, Amazon QuickSight)</li>
+      <li>Data ingestion patterns (e.g. frequency)</li>
+      <li>Data transfer services with appropriate use cases (e.g. AWS DataSync, AWS Storage Gateway)</li>
+      <li>Data transformation services with appropriate use cases (e.g. AWS Glue)</li>
+      <li>Secure access to ingestion access points</li>
+      <li>Sizes and speeds needed to meet business requirements</li>
+      <li>Streaming data services with appropriate use cases (e.g. Amazon Kinesis)</li>
+    </ul>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Building and securing data lakes</li>
+      <li>Designing data streaming architectures</li>
+      <li>Designing data transfer solutions</li>
+      <li>Implementing visualization strategies</li>
+      <li>Selecting appropriate compute options for data processing (e.g. Amazon EMR)</li>
+      <li>Selecting appropriate configurations for ingestion</li>
+      <li>Transforming data between formats (e.g. .csv to .parquet)</li>
+    </ul>
+  </div>
+
+  <!-- DOMAIN 4 -->
+  <div class="section" id="domain4">
+    <span class="chip chip-exam">Domain 4 · 20%</span>
+    <h1>Design Cost-Optimized Architectures</h1>
+    <p class="section-meta">Covers cost-optimization across storage, compute, database, and network — purchasing options, lifecycle and tiering, right-sizing, and data-transfer cost control.</p>
+
+    <h2>Task 4.1 — Design cost-optimized storage solutions</h2>
+    <p><strong>Knowledge of:</strong></p>
+    <ul>
+      <li>Access options (e.g. an S3 bucket with Requester Pays object storage)</li>
+      <li>AWS cost management service features (e.g. cost allocation tags, multi-account billing)</li>
+      <li>AWS cost management tools with appropriate use cases (e.g. AWS Cost Explorer, AWS Budgets, AWS Cost and Usage Report)</li>
+      <li>AWS storage services with appropriate use cases (e.g. Amazon FSx, Amazon EFS, Amazon S3, Amazon EBS)</li>
+      <li>Backup strategies</li>
+      <li>Block storage options (e.g. HDD vs. SSD volume types)</li>
+      <li>Data lifecycles</li>
+      <li>Hybrid storage options (e.g. AWS DataSync, AWS Transfer Family, AWS Storage Gateway)</li>
+      <li>Storage access patterns</li>
+      <li>Storage tiering (e.g. cold tiering for object storage)</li>
+      <li>Storage types with associated characteristics (e.g. object, file, block)</li>
+    </ul>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Designing appropriate storage strategies (e.g. batch uploads to Amazon S3 vs. individual uploads)</li>
+      <li>Determining the correct storage size for a workload</li>
+      <li>Determining the lowest-cost method of transferring data for a workload to AWS storage</li>
+      <li>Determining when storage auto scaling is required</li>
+      <li>Managing S3 object lifecycles</li>
+      <li>Selecting the appropriate backup and/or archival solution</li>
+      <li>Selecting the appropriate service for data migration to storage services</li>
+      <li>Selecting the appropriate storage tier</li>
+      <li>Selecting the correct data lifecycle for storage</li>
+      <li>Selecting the most cost-effective storage service for a workload</li>
+    </ul>
+
+    <h2>Task 4.2 — Design cost-optimized compute solutions</h2>
+    <p><strong>Knowledge of:</strong></p>
+    <ul>
+      <li>AWS cost management service features (e.g. cost allocation tags, multi-account billing)</li>
+      <li>AWS cost management tools with appropriate use cases (e.g. AWS Cost Explorer, AWS Budgets, AWS Cost and Usage Report)</li>
+      <li>AWS global infrastructure (e.g. Availability Zones, AWS Regions)</li>
+      <li>AWS purchasing options (e.g. Spot Instances, Reserved Instances, Savings Plans)</li>
+      <li>Distributed compute strategies (e.g. edge processing)</li>
+      <li>Hybrid compute options (e.g. AWS Outposts)</li>
+      <li>Instance types, families, and sizes (e.g. memory optimized, compute optimized, virtualization)</li>
+      <li>Optimization of compute utilization (e.g. containers, serverless computing, microservices)</li>
+      <li>Scaling strategies (e.g. auto scaling, hibernation)</li>
+    </ul>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Determining an appropriate load balancing strategy (e.g. ALB [Layer 7] vs. NLB [Layer 4] vs. Gateway Load Balancer)</li>
+      <li>Determining appropriate scaling methods and strategies for elastic workloads (e.g. horizontal vs. vertical, EC2 hibernation)</li>
+      <li>Determining cost-effective AWS compute services with appropriate use cases (e.g. AWS Lambda, Amazon EC2, AWS Fargate)</li>
+      <li>Determining the required availability for different classes of workloads (e.g. production vs. non-production)</li>
+      <li>Selecting the appropriate instance family for a workload</li>
+      <li>Selecting the appropriate instance size for a workload</li>
+    </ul>
+
+    <h2>Task 4.3 — Design cost-optimized database solutions</h2>
+    <p><strong>Knowledge of:</strong></p>
+    <ul>
+      <li>AWS cost management service features (e.g. cost allocation tags, multi-account billing)</li>
+      <li>AWS cost management tools with appropriate use cases (e.g. AWS Cost Explorer, AWS Budgets, AWS Cost and Usage Report)</li>
+      <li>Caching strategies</li>
+      <li>Data retention policies</li>
+      <li>Database capacity planning (e.g. capacity units)</li>
+      <li>Database connections and proxies</li>
+      <li>Database engines with appropriate use cases (e.g. heterogeneous vs. homogeneous migrations)</li>
+      <li>Database replication (e.g. read replicas)</li>
+      <li>Database types and services (e.g. relational vs. non-relational, Amazon Aurora, Amazon DynamoDB)</li>
+    </ul>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Designing appropriate backup and retention policies (e.g. snapshot frequency)</li>
+      <li>Determining an appropriate database engine (e.g. MySQL vs. PostgreSQL)</li>
+      <li>Determining cost-effective AWS database services with appropriate use cases (e.g. DynamoDB vs. Amazon RDS, serverless)</li>
+      <li>Determining cost-effective AWS database types (e.g. time series format, columnar format)</li>
+      <li>Migrating database schemas and data to different locations and/or different database engines</li>
+    </ul>
+
+    <h2>Task 4.4 — Design cost-optimized network architectures</h2>
+    <p><strong>Knowledge of:</strong></p>
+    <ul>
+      <li>AWS cost management service features (e.g. cost allocation tags, multi-account billing)</li>
+      <li>AWS cost management tools with appropriate use cases (e.g. AWS Cost Explorer, AWS Budgets, AWS Cost and Usage Report)</li>
+      <li>Load balancing concepts (e.g. Application Load Balancer)</li>
+      <li>NAT gateways (e.g. NAT instance costs vs. NAT gateway costs)</li>
+      <li>Network connectivity (e.g. private lines, dedicated lines, VPNs)</li>
+      <li>Network routing, topology, and peering (e.g. AWS Transit Gateway, VPC peering)</li>
+      <li>Network services with appropriate use cases (e.g. DNS)</li>
+    </ul>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Configuring appropriate NAT gateway types (e.g. a single shared NAT gateway vs. NAT gateways per Availability Zone)</li>
+      <li>Configuring appropriate network connections (e.g. AWS Direct Connect vs. VPN vs. internet)</li>
+      <li>Configuring appropriate network routes to minimize transfer costs (e.g. Region to Region, AZ to AZ, private to public, AWS Global Accelerator, VPC endpoints)</li>
+      <li>Determining strategic needs for content delivery networks (CDNs) and edge caching</li>
+      <li>Reviewing existing workloads for network optimizations</li>
+      <li>Selecting an appropriate throttling strategy</li>
+      <li>Selecting the appropriate bandwidth allocation for a network device (e.g. a single VPN vs. multiple VPNs, Direct Connect speed)</li>
+    </ul>
+  </div>
+
+  <!-- CANDIDATE PREP -->
+  <div class="section" id="candidate-prep">
+    <span class="chip chip-platform">Candidate Prep</span>
+    <h1>How We Help SAA-C03 Candidates</h1>
+    <p class="section-meta">Who takes this exam, where they struggle, and how to build a study path that gets them to 720+.</p>
+
+    <h2>Who Takes This Exam</h2>
+    <ul>
+      <li><strong>Cloud engineers and developers</strong> moving toward architecture roles who need to validate end-to-end design skill, not just service awareness.</li>
+      <li><strong>CLF-C02 holders</strong> stepping up to the first associate-level credential — the most common next stop on the AWS path.</li>
+      <li><strong>Career switchers with infrastructure backgrounds</strong> (sysadmins, network/storage engineers) mapping on-premises experience onto AWS services.</li>
+    </ul>
+
+    <h2>What Candidates Struggle With</h2>
+    <ul>
+      <li><strong>Reading the qualifier</strong> — "MOST cost-effective", "LEAST operational overhead", "MOST resilient". Two options are often both technically valid; only one wins on the qualifier. This is the single biggest source of lost marks.</li>
+      <li><strong>Service disambiguation under constraints</strong> — SQS vs. SNS vs. EventBridge vs. Kinesis; ALB vs. NLB vs. Gateway Load Balancer; EBS vs. EFS vs. FSx vs. S3; RDS vs. Aurora vs. DynamoDB vs. ElastiCache.</li>
+      <li><strong>DR strategy selection</strong> — matching backup &amp; restore / pilot light / warm standby / active-active to a stated RPO/RTO and budget.</li>
+      <li><strong>VPC security model</strong> — security groups (stateful) vs. network ACLs (stateless); public vs. private subnets; NAT gateway vs. internet gateway; VPC endpoints vs. NAT.</li>
+      <li><strong>Encryption &amp; key management</strong> — at rest vs. in transit; KMS key policies vs. IAM policies; when to use customer-managed keys; ACM for TLS.</li>
+      <li><strong>Decoupling for resilience and scale</strong> — recognizing when a queue, a load balancer, or an event bus is the fix for a single point of failure or a scaling bottleneck.</li>
+      <li><strong>Data-transfer and NAT cost traps</strong> — cross-AZ vs. cross-Region charges, NAT gateway data processing cost, VPC endpoints to avoid NAT, CloudFront to cut origin egress.</li>
+    </ul>
+
+    <h2>Recommended Study Path</h2>
+    <ol class="steps">
+      <li><strong>Domain 1 — Secure first.</strong> Highest weight (30%) and foundational. IAM, VPC security, and encryption underpin every scenario in the other three domains — build this mental model before anything else.</li>
+      <li><strong>Domain 2 — Resilience.</strong> Decoupling, multi-AZ/multi-Region, and DR strategies. Master the four DR patterns and the RPO/RTO trade-offs that select between them.</li>
+      <li><strong>Domain 3 — Performance.</strong> Work category by category (storage → compute → database → network → ingestion). Focus on choosing the right purpose-built service for a stated performance demand.</li>
+      <li><strong>Domain 4 — Cost.</strong> Smallest domain (20%) and the most pattern-based. Purchasing options, S3 tiering/lifecycle, right-sizing, and data-transfer cost control — efficient marks once the patterns click.</li>
+    </ol>
+
+    <h2>AI Explanation Quality for This Exam</h2>
+    <p>SAA-C03 questions are design trade-offs, so explanations must do more than label answers right/wrong — they must explain the <em>trade-off</em> the question turns on. Patterns to cover:</p>
+    <ul>
+      <li>For "MOST cost-effective / LEAST overhead" questions: explain why the chosen option wins on that specific axis even though a distractor also "works" functionally.</li>
+      <li>For service-selection questions: name the key differentiator that disqualifies each distractor (e.g. "EFS is shared file storage; EBS attaches to a single AZ instance, so it cannot back a fleet across AZs").</li>
+      <li>For DR questions: tie the answer back to the stated RPO/RTO and cost — explain why the next-cheaper strategy misses the recovery objective and the next-richer one over-spends.</li>
+      <li>For security questions: explain which control belongs at which layer (identity vs. network vs. data) and why the distractor secures the wrong layer.</li>
+    </ul>
+  </div>
+
+  <!-- SIMULATION DESIGN -->
+  <div class="section" id="simulation">
+    <span class="chip chip-exam">Simulation Design</span>
+    <h1>How to Formulate the Exam Simulation</h1>
+    <p class="section-meta">Parameters for building practice sets that match the real SAA-C03 exam. See the <a href="exam-authoring-standard.html">Exam &amp; Question Authoring Standard</a> for question-writing rules.</p>
+
+    <h2>Question Set Structure</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Setting</th><th>Value</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Total questions per simulation</td><td>65</td><td>Match real exam — 50 scored + 15 unscored (unannounced)</td></tr>
+        <tr><td>Duration</td><td>130 minutes</td><td>Exact match to real exam</td></tr>
+        <tr><td>Passing threshold</td><td>720 / 1,000</td><td>Display as % equivalent: 72%</td></tr>
+        <tr><td>Scoring</td><td>Compensatory</td><td>No domain minimums — total score only</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Domain Distribution per Set</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Domain</th><th>Weight</th><th>Qs in 65-Q set</th><th>Qs in 50-Q scored set</th></tr></thead>
+      <tbody>
+        <tr><td>D1 — Design Secure Architectures</td><td>30%</td><td>19</td><td>15</td></tr>
+        <tr><td>D2 — Design Resilient Architectures</td><td>26%</td><td>17</td><td>13</td></tr>
+        <tr><td>D3 — Design High-Performing Architectures</td><td>24%</td><td>16</td><td>12</td></tr>
+        <tr><td>D4 — Design Cost-Optimized Architectures</td><td>20%</td><td>13</td><td>10</td></tr>
+        <tr class="hl"><td><strong>Total</strong></td><td><strong>100%</strong></td><td><strong>65</strong></td><td><strong>50</strong></td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Question Type Mix</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Type</th><th>Suggested % of set</th><th>Implementation priority</th></tr></thead>
+      <tbody>
+        <tr><td>Multiple choice (1-of-4)</td><td>~75%</td><td><span class="badge badge-green">High — launch with this</span></td></tr>
+        <tr><td>Multiple response (select N of 5+)</td><td>~25%</td><td><span class="badge badge-green">High — common on exam</span></td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout callout-note">SAA-C03 uses the same two question types as CLF-C02, but stems are longer and scenario-rich. Budget reading time — this is why the real exam runs 130 minutes for the same 65 questions.</div>
+
+    <h2>Three Simulation Angles</h2>
+    <p>Each of the three paid simulations covers all four domains at the weights above, but pitches the questions at a distinct angle:</p>
+    <div class="tw"><table>
+      <thead><tr><th>Sim</th><th>Angle</th><th>Emphasis</th></tr></thead>
+      <tbody>
+        <tr><td>Sim 1</td><td>Foundational</td><td>Single-service and single-concept design decisions — establishes the core patterns cleanly.</td></tr>
+        <tr><td>Sim 2</td><td>Architectural</td><td>Multi-service, end-to-end architectures — combining compute, storage, network, and security in one scenario.</td></tr>
+        <tr><td>Sim 3</td><td>Comparative</td><td>Close-call trade-offs where two options both work and the qualifier ("MOST", "LEAST") decides — the hardest tier.</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Question Writing Rules (SAA-C03 specific)</h2>
+    <ul>
+      <li><strong>Scenario-based stems</strong> — "A company runs…", "A solutions architect must…". Never "What is X?"</li>
+      <li><strong>Make the qualifier the crux</strong> — most stems end in "MOST cost-effective", "LEAST operational overhead", "MOST resilient", or "with the LEAST disruption". Write distractors that are functionally valid but lose on that axis.</li>
+      <li><strong>Design, not implementation</strong> — ask which architecture/service fits the requirement, not the CLI steps to build it.</li>
+      <li><strong>Constrain with real requirements</strong> — RPO/RTO, latency targets, compliance, budget, "without managing servers", "without code changes". The constraint should pick the answer.</li>
+      <li><strong>Stay in scope</strong> — only use services from the in-scope list; never hinge a question on an out-of-scope service.</li>
+    </ul>
+
+    <h2>Distractor Quality Guidelines</h2>
+    <ul>
+      <li>Use real architectural confusions as distractors: SQS vs. SNS vs. EventBridge; ALB vs. NLB vs. GWLB; EBS vs. EFS vs. FSx vs. S3; RDS vs. Aurora vs. DynamoDB; security group vs. NACL.</li>
+      <li>For trade-off questions: make one distractor the cheaper-but-misses-the-requirement option and one the over-engineered-and-over-priced option.</li>
+      <li>For DR questions: distractors should be adjacent DR strategies (e.g. pilot light when warm standby is required) so the candidate must reason from RPO/RTO.</li>
+      <li>For security questions: make one distractor secure the wrong layer (network control for a data problem, or vice versa).</li>
+    </ul>
+
+    <h2>AI Explanation Template</h2>
+    <p>Each question requires an explanation covering:</p>
+    <ul>
+      <li>Why the correct answer is right — naming the trade-off axis it wins on (cost, overhead, resilience, latency)</li>
+      <li>Why each distractor is wrong — one sentence per option, naming the specific reason it loses</li>
+      <li>Concept link — which domain/task statement this tests (e.g. "D2 · Task 2.2 — Highly available / fault-tolerant architectures")</li>
+      <li>Service context — if a service appears, one line on what it does and what distinguishes it from the services in the distractors</li>
+    </ul>
+  </div>
+
+</main>
+
+<button id="top-btn" title="Back to top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<script>
+  const topBtn = document.getElementById('top-btn');
+  window.addEventListener('scroll', () => {
+    topBtn.style.display = window.scrollY > 400 ? 'flex' : 'none';
+  });
+</script>
+</body>
+</html>
