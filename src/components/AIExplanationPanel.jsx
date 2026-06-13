@@ -169,26 +169,25 @@ function inlineFormat(text) {
   return parts.length > 0 ? parts : text
 }
 
-const PREDEFINED = [
+const EXAM_PROMPTS = [
   {
     key: 'concept_guide',
-    label: 'Concept Guide',
-    icon: '📖',
-    description: 'Learn the concepts behind this question'
-  },
-  {
-    key: 'explanations',
-    label: 'Explain Answers',
-    icon: '💡',
-    description: 'Why each option is correct or incorrect'
+    text: 'Explain the concept I need to answer this question',
   },
   {
     key: 'official_links',
-    label: 'Official Links',
-    icon: '🔗',
-    description: 'Relevant official documentation'
+    text: 'Show me the official AWS documentation for this topic',
   }
 ]
+
+function getMaxRevealSteps(resp) {
+  if (!resp) return 0
+  if (typeof resp === 'object' && !Array.isArray(resp) && resp.title) {
+    return 2 + (resp.key_facts?.length || 0) + (resp.related_concepts?.length || 0)
+  }
+  if (Array.isArray(resp)) return resp.length
+  return 1
+}
 
 export default function AIExplanationPanel({ question, onClose }) {
   const isSubscribed = usePurchaseStore((s) => s.isSubscribed)
@@ -199,28 +198,64 @@ export default function AIExplanationPanel({ question, onClose }) {
   const [cached, setCached] = useState(false)
   const [error, setError] = useState(null)
   const [errorCode, setErrorCode] = useState(null)
-  const [customInput, setCustomInput] = useState('')
+  const [revealStep, setRevealStep] = useState(0)
+  const [sentPrompt, setSentPrompt] = useState(null)
+  const [previewExpanded, setPreviewExpanded] = useState(true)
   const responseRef = useRef(null)
 
-  // Scroll to response when it arrives
+  // Reset when question changes
+  useEffect(() => {
+    setResponse(null)
+    setActiveType(null)
+    setLoading(false)
+    setCached(false)
+    setError(null)
+    setErrorCode(null)
+    setRevealStep(0)
+    setSentPrompt(null)
+    setPreviewExpanded(true)
+  }, [question?.question_item_id])
+
+  // Auto-collapse question preview when response arrives
+  useEffect(() => {
+    if (response) setPreviewExpanded(false)
+  }, [response])
+
+  // Start typewriter reveal after response arrives
+  useEffect(() => {
+    if (response === null) {
+      setRevealStep(0)
+      return
+    }
+    const t = setTimeout(() => setRevealStep(1), 60)
+    return () => clearTimeout(t)
+  }, [response])
+
+  // Increment reveal step with stagger
+  useEffect(() => {
+    if (!response || revealStep === 0) return
+    const maxSteps = getMaxRevealSteps(response)
+    if (revealStep >= maxSteps) return
+    const t = setTimeout(() => setRevealStep((s) => s + 1), 160)
+    return () => clearTimeout(t)
+  }, [response, revealStep])
+
+  // Scroll response into view when it arrives
   useEffect(() => {
     if (response && responseRef.current) {
       responseRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
     }
   }, [response])
 
-  const callAI = async (promptType, customQuery = '') => {
+  const callAI = async (promptType) => {
     if (!question?.question_item_id) {
       setError('Question ID not available. Please reload the exam.')
       setErrorCode(null)
       return
     }
 
-    const isPredefined = ['concept_guide', 'explanations', 'official_links'].includes(promptType)
-
-    // DB-level cache — populated by any previous user's request, already
-    // stored on the question_item row and fetched with the question set.
-    if (isPredefined && question.ai_cache?.[promptType]) {
+    // DB-level cache check
+    if (question.ai_cache?.[promptType]) {
       setResponse(question.ai_cache[promptType])
       setActiveType(promptType)
       setCached(true)
@@ -241,7 +276,6 @@ export default function AIExplanationPanel({ question, onClose }) {
         body: {
           question_id: question.question_item_id,
           prompt_type: promptType,
-          custom_query: customQuery || undefined
         }
       })
 
@@ -254,9 +288,7 @@ export default function AIExplanationPanel({ question, onClose }) {
         const text = data?.response || ''
         setResponse(text)
         setCached(data?.cached || false)
-        // Mirror into question.ai_cache so re-opening this panel for the
-        // same question immediately hits the DB cache check.
-        if (isPredefined && text && question.ai_cache) {
+        if (text && question.ai_cache) {
           question.ai_cache[promptType] = text
         }
       }
@@ -269,37 +301,95 @@ export default function AIExplanationPanel({ question, onClose }) {
     }
   }
 
-  const handlePredefined = (key) => {
-    callAI(key)
+  const handleSendPrompt = (prompt) => {
+    setSentPrompt(prompt)
+    callAI(prompt.key)
   }
-
-  const handleCustomSend = () => {
-    const query = customInput.trim()
-    if (!query) return
-    callAI('custom', query)
-    setCustomInput('')
-  }
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      handleCustomSend()
-    }
-  }
-
-  const [previewExpanded, setPreviewExpanded] = useState(true)
-
-  // Auto-collapse the question preview once a response arrives so the
-  // response area gets as much vertical space as possible.
-  useEffect(() => {
-    if (response) setPreviewExpanded(false)
-  }, [response])
 
   const questionPreview = question?.question
-    ? question.question.length > 160
-      ? question.question.slice(0, 160) + '…'
+    ? question.question.length > 200
+      ? question.question.slice(0, 200) + '…'
       : question.question
     : ''
+
+  const renderResponse = () => {
+    if (!response) return null
+
+    // concept_guide — object with title + summary
+    if (typeof response === 'object' && !Array.isArray(response) && response.title && response.summary) {
+      const keyFactsCount = response.key_facts?.length || 0
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          {revealStep >= 1 && (
+            <div style={{ padding: '0.75rem 1rem', background: 'rgba(0,212,170,0.1)', border: '1px solid rgba(0,212,170,0.25)', borderRadius: '0.75rem', animation: 'lgFadeIn 0.3s ease' }}>
+              <span style={{ color: '#00D4AA', fontWeight: '700', fontSize: '0.9375rem' }}>{response.title}</span>
+            </div>
+          )}
+          {revealStep >= 2 && (
+            <div style={{ padding: '1rem 1.125rem', background: 'rgba(255,255,255,0.04)', borderRadius: '0.75rem', border: '1px solid rgba(255,255,255,0.08)', animation: 'lgFadeIn 0.3s ease' }}>
+              <p style={{ color: 'rgba(255,255,255,0.88)', lineHeight: '1.7', fontSize: '0.875rem', margin: 0 }}>{response.summary}</p>
+            </div>
+          )}
+          {Array.isArray(response.key_facts) && response.key_facts.length > 0 && (
+            <div style={{ padding: '0.875rem 1rem', background: 'rgba(255,255,255,0.04)', borderRadius: '0.75rem', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.6875rem', fontWeight: '600', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '0.625rem' }}>Key Facts</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {response.key_facts.map((fact, idx) => revealStep >= 3 + idx ? (
+                  <div key={idx} style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start', animation: 'lgFadeIn 0.3s ease' }}>
+                    <span style={{ color: '#00D4AA', flexShrink: 0, marginTop: '0.2rem', fontSize: '0.75rem' }}>▸</span>
+                    <span style={{ color: 'rgba(255,255,255,0.82)', fontSize: '0.8125rem', lineHeight: '1.6' }}>{fact}</span>
+                  </div>
+                ) : null)}
+              </div>
+            </div>
+          )}
+          {Array.isArray(response.related_concepts) && response.related_concepts.length > 0 && (
+            <div style={{ padding: '0.875rem 1rem', background: 'rgba(255,255,255,0.04)', borderRadius: '0.75rem', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.6875rem', fontWeight: '600', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '0.625rem' }}>Related Concepts</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {response.related_concepts.map((concept, idx) => revealStep >= 3 + keyFactsCount + idx ? (
+                  <div key={idx} style={{ display: 'flex', gap: '0.625rem', padding: '0.5rem 0.75rem', background: 'rgba(255,255,255,0.04)', borderRadius: '0.5rem', border: '1px solid rgba(255,255,255,0.07)', animation: 'lgFadeIn 0.3s ease' }}>
+                    <span style={{ color: '#60a5fa', fontWeight: '600', fontSize: '0.8125rem', flexShrink: 0, minWidth: '8rem' }}>{concept.name}</span>
+                    <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.8125rem', lineHeight: '1.5' }}>{concept.description}</span>
+                  </div>
+                ) : null)}
+              </div>
+            </div>
+          )}
+        </div>
+      )
+    }
+
+    // official_links — array
+    if (Array.isArray(response)) {
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
+          {response.map((link, idx) => revealStep >= idx + 1 ? (
+            <a
+              key={idx}
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', padding: '0.75rem 1rem', background: 'rgba(96,165,250,0.08)', border: '1px solid rgba(96,165,250,0.2)', borderRadius: '0.625rem', color: '#93c5fd', textDecoration: 'none', fontSize: '0.875rem', fontWeight: '500', transition: 'all 0.2s', animation: 'lgFadeIn 0.3s ease' }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(96,165,250,0.15)'; e.currentTarget.style.borderColor = 'rgba(96,165,250,0.4)' }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(96,165,250,0.08)'; e.currentTarget.style.borderColor = 'rgba(96,165,250,0.2)' }}
+            >
+              <span style={{ fontSize: '1rem', flexShrink: 0 }}>🔗</span>
+              <span style={{ flex: 1 }}>{link.title}</span>
+              <span style={{ fontSize: '0.75rem', opacity: 0.6, flexShrink: 0 }}>↗</span>
+            </a>
+          ) : null)}
+        </div>
+      )
+    }
+
+    // Plain string fallback
+    return (
+      <div style={{ padding: '1rem 1.125rem', background: 'rgba(255,255,255,0.04)', borderRadius: '0.75rem', border: '1px solid rgba(255,255,255,0.08)' }}>
+        {renderMarkdown(typeof response === 'string' ? response : JSON.stringify(response, null, 2))}
+      </div>
+    )
+  }
 
   return (
     <div
@@ -312,16 +402,15 @@ export default function AIExplanationPanel({ question, onClose }) {
         justifyContent: 'center',
         background: 'rgba(0,0,0,0.6)',
         backdropFilter: 'blur(4px)',
-        padding: '0'
       }}
       onClick={onClose}
     >
       <div
+        className="lg-sheet"
         onClick={(e) => e.stopPropagation()}
         style={{
           width: '100%',
           maxWidth: '680px',
-          height: '96vh',
           background: 'linear-gradient(180deg, #0f2a45 0%, #0a1e32 100%)',
           border: '1px solid rgba(255,255,255,0.15)',
           borderRadius: '1.25rem 1.25rem 0 0',
@@ -331,7 +420,7 @@ export default function AIExplanationPanel({ question, onClose }) {
           boxShadow: '0 -8px 40px rgba(0,0,0,0.5)'
         }}
       >
-        {/* Header */}
+        {/* Header — always visible, never scrolled */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
@@ -340,10 +429,7 @@ export default function AIExplanationPanel({ question, onClose }) {
           borderBottom: '1px solid rgba(255,255,255,0.08)',
           flexShrink: 0
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ fontSize: '1.25rem' }}>🤖</span>
-            <span style={{ color: 'white', fontWeight: '700', fontSize: '1rem' }}>AI Learning Guide</span>
-          </div>
+          <span style={{ color: 'white', fontWeight: '700', fontSize: '1rem' }}>Learning Guide</span>
           <button
             onClick={onClose}
             style={{
@@ -358,6 +444,7 @@ export default function AIExplanationPanel({ question, onClose }) {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              flexShrink: 0,
               transition: 'background 0.2s'
             }}
             onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
@@ -368,11 +455,7 @@ export default function AIExplanationPanel({ question, onClose }) {
         </div>
 
         {/* Question preview — collapsible */}
-        <div style={{
-          borderBottom: '1px solid rgba(255,255,255,0.08)',
-          flexShrink: 0
-        }}>
-          {/* Toggle row */}
+        <div style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
           <button
             onClick={() => setPreviewExpanded((v) => !v)}
             style={{
@@ -400,91 +483,80 @@ export default function AIExplanationPanel({ question, onClose }) {
               display: 'inline-block'
             }}>▼</span>
           </button>
-
           {previewExpanded && (
             <div style={{ padding: '0 1.25rem 0.625rem' }}>
-              <p style={{
-                color: 'rgba(255,255,255,0.55)',
-                fontSize: '0.8rem',
-                fontStyle: 'italic',
-                lineHeight: '1.5',
-                margin: 0
-              }}>
+              <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.8rem', fontStyle: 'italic', lineHeight: '1.5', margin: 0 }}>
                 {questionPreview}
               </p>
             </div>
           )}
         </div>
 
-        {/* Predefined quick buttons */}
-        <div style={{
-          display: 'flex',
-          gap: '0.5rem',
-          padding: '0.75rem 1.25rem',
-          borderBottom: '1px solid rgba(255,255,255,0.08)',
-          flexShrink: 0,
-          flexWrap: 'wrap'
-        }}>
-          {PREDEFINED.map(({ key, label, icon }) => {
-            const isActive = activeType === key && (loading || response !== null)
-            return (
-              <button
-                key={key}
-                onClick={() => handlePredefined(key)}
-                disabled={loading}
-                style={{
-                  padding: '0.4rem 0.875rem',
-                  borderRadius: '2rem',
-                  border: `1px solid ${isActive ? '#00D4AA' : 'rgba(255,255,255,0.2)'}`,
-                  background: isActive ? 'rgba(0,212,170,0.15)' : 'rgba(255,255,255,0.06)',
-                  color: isActive ? '#00D4AA' : 'rgba(255,255,255,0.8)',
-                  fontSize: '0.8125rem',
-                  fontWeight: '600',
-                  cursor: loading ? 'not-allowed' : 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.375rem',
-                  transition: 'all 0.2s',
-                  opacity: loading && activeType !== key ? 0.5 : 1
-                }}
-              >
-                <span>{icon}</span>
-                <span>{label}</span>
-              </button>
-            )
-          })}
-        </div>
-
-        {/* Scrollable response area */}
+        {/* Chat messages area */}
         <div style={{
           flex: 1,
           overflowY: 'auto',
-          padding: '0.75rem 1.25rem',
-          minHeight: 0
+          padding: '1rem 1.25rem',
+          minHeight: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.75rem'
         }}>
-          {/* Loading state */}
+          {/* No question sent yet */}
+          {!sentPrompt && !loading && !error && (
+            <div style={{
+              flex: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '1.5rem 0',
+              color: 'rgba(255,255,255,0.25)',
+              fontSize: '0.8125rem',
+              textAlign: 'center'
+            }}>
+              Tap a question below to get started
+            </div>
+          )}
+
+          {/* Sent user message bubble */}
+          {sentPrompt && (
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <div style={{
+                maxWidth: '85%',
+                padding: '0.75rem 1rem',
+                background: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)',
+                borderRadius: '1rem 1rem 0.25rem 1rem',
+                color: 'white',
+                fontSize: '0.875rem',
+                fontWeight: '500',
+                lineHeight: '1.5'
+              }}>
+                {sentPrompt.text}
+              </div>
+            </div>
+          )}
+
+          {/* Typing indicator */}
           {loading && (
             <div style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '0.75rem',
-              padding: '1.25rem',
+              gap: '0.625rem',
+              padding: '0.75rem 1rem',
               background: 'rgba(255,255,255,0.04)',
-              borderRadius: '0.75rem',
-              border: '1px solid rgba(255,255,255,0.08)'
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: '0.25rem 1rem 1rem 1rem',
+              maxWidth: '6rem'
             }}>
-              <div style={{
-                width: '1.25rem',
-                height: '1.25rem',
-                border: '2px solid rgba(0,212,170,0.3)',
-                borderTop: '2px solid #00D4AA',
-                borderRadius: '50%',
-                animation: 'spin 0.8s linear infinite',
-                flexShrink: 0
-              }} />
-              <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.875rem' }}>
-                Generating response…
-              </span>
+              {[0, 1, 2].map((i) => (
+                <div key={i} style={{
+                  width: '7px',
+                  height: '7px',
+                  borderRadius: '50%',
+                  background: '#00D4AA',
+                  animation: `lgDot 1.2s ${i * 0.2}s infinite ease-in-out`
+                }} />
+              ))}
             </div>
           )}
 
@@ -553,300 +625,87 @@ export default function AIExplanationPanel({ question, onClose }) {
             </div>
           )}
 
-          {/* Response */}
+          {/* AI response with typewriter reveal */}
           {!loading && response && (
             <div ref={responseRef}>
-              {/* Status badge */}
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                marginBottom: '0.75rem'
-              }}>
-                {PREDEFINED.find(p => p.key === activeType) && (
-                  <span style={{
-                    fontSize: '0.75rem',
-                    color: 'rgba(255,255,255,0.5)',
-                    fontWeight: '500'
-                  }}>
-                    {PREDEFINED.find(p => p.key === activeType)?.icon}{' '}
-                    {PREDEFINED.find(p => p.key === activeType)?.label}
-                  </span>
-                )}
-                {cached && (
-                  <span style={{
-                    fontSize: '0.6875rem',
-                    color: '#00D4AA',
-                    background: 'rgba(0,212,170,0.12)',
-                    border: '1px solid rgba(0,212,170,0.25)',
-                    borderRadius: '2rem',
-                    padding: '0.1rem 0.5rem',
-                    fontWeight: '600'
-                  }}>
-                    ✓ Cached
-                  </span>
-                )}
-              </div>
-
-              {/* Rendered response — keyed on data shape, not activeType */}
-              {response && typeof response === 'object' && !Array.isArray(response) && response.title && response.summary ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
-                  {/* Title */}
-                  {response.title && (
-                    <div style={{
-                      padding: '0.75rem 1rem',
-                      background: 'rgba(0,212,170,0.1)',
-                      border: '1px solid rgba(0,212,170,0.25)',
-                      borderRadius: '0.75rem'
-                    }}>
-                      <span style={{ color: '#00D4AA', fontWeight: '700', fontSize: '0.9375rem' }}>
-                        {response.title}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Summary */}
-                  {response.summary && (
-                    <div style={{
-                      padding: '1rem 1.125rem',
-                      background: 'rgba(255,255,255,0.04)',
-                      borderRadius: '0.75rem',
-                      border: '1px solid rgba(255,255,255,0.08)'
-                    }}>
-                      <p style={{ color: 'rgba(255,255,255,0.88)', lineHeight: '1.7', fontSize: '0.875rem', margin: 0 }}>
-                        {response.summary}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Key Facts */}
-                  {Array.isArray(response.key_facts) && response.key_facts.length > 0 && (
-                    <div style={{
-                      padding: '0.875rem 1rem',
-                      background: 'rgba(255,255,255,0.04)',
-                      borderRadius: '0.75rem',
-                      border: '1px solid rgba(255,255,255,0.08)'
-                    }}>
-                      <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.6875rem', fontWeight: '600', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '0.625rem' }}>
-                        Key Facts
-                      </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                        {response.key_facts.map((fact, idx) => (
-                          <div key={idx} style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
-                            <span style={{ color: '#00D4AA', flexShrink: 0, marginTop: '0.2rem', fontSize: '0.75rem' }}>▸</span>
-                            <span style={{ color: 'rgba(255,255,255,0.82)', fontSize: '0.8125rem', lineHeight: '1.6' }}>{fact}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Related Concepts */}
-                  {Array.isArray(response.related_concepts) && response.related_concepts.length > 0 && (
-                    <div style={{
-                      padding: '0.875rem 1rem',
-                      background: 'rgba(255,255,255,0.04)',
-                      borderRadius: '0.75rem',
-                      border: '1px solid rgba(255,255,255,0.08)'
-                    }}>
-                      <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.6875rem', fontWeight: '600', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '0.625rem' }}>
-                        Related Concepts
-                      </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                        {response.related_concepts.map((concept, idx) => (
-                          <div key={idx} style={{
-                            display: 'flex',
-                            gap: '0.625rem',
-                            padding: '0.5rem 0.75rem',
-                            background: 'rgba(255,255,255,0.04)',
-                            borderRadius: '0.5rem',
-                            border: '1px solid rgba(255,255,255,0.07)'
-                          }}>
-                            <span style={{ color: '#60a5fa', fontWeight: '600', fontSize: '0.8125rem', flexShrink: 0, minWidth: '8rem' }}>
-                              {concept.name}
-                            </span>
-                            <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.8125rem', lineHeight: '1.5' }}>
-                              {concept.description}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ) : Array.isArray(response) ? (
-                <div style={{
-                  padding: '1rem 1.125rem',
-                  background: 'rgba(255,255,255,0.04)',
-                  borderRadius: '0.75rem',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '0.625rem'
-                }}>
-                  {response.map((link, idx) => (
-                    <a
-                      key={idx}
-                      href={link.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.625rem',
-                        padding: '0.75rem 1rem',
-                        background: 'rgba(96,165,250,0.08)',
-                        border: '1px solid rgba(96,165,250,0.2)',
-                        borderRadius: '0.625rem',
-                        color: '#93c5fd',
-                        textDecoration: 'none',
-                        fontSize: '0.875rem',
-                        fontWeight: '500',
-                        transition: 'background 0.2s, border-color 0.2s'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = 'rgba(96,165,250,0.15)'
-                        e.currentTarget.style.borderColor = 'rgba(96,165,250,0.4)'
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = 'rgba(96,165,250,0.08)'
-                        e.currentTarget.style.borderColor = 'rgba(96,165,250,0.2)'
-                      }}
-                    >
-                      <span style={{ fontSize: '1rem', flexShrink: 0 }}>🔗</span>
-                      <span style={{ flex: 1 }}>{link.title}</span>
-                      <span style={{ fontSize: '0.75rem', opacity: 0.6, flexShrink: 0 }}>↗</span>
-                    </a>
-                  ))}
-                </div>
-              ) : response && typeof response === 'object' && !Array.isArray(response) && response.per_option ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                  {/* Overview */}
-                  {response.overview && (
-                    <div style={{
-                      padding: '1rem 1.125rem',
-                      background: 'rgba(255,255,255,0.04)',
-                      borderRadius: '0.75rem',
-                      border: '1px solid rgba(255,255,255,0.08)'
-                    }}>
-                      <p style={{ color: 'rgba(255,255,255,0.85)', lineHeight: '1.7', fontSize: '0.875rem', margin: 0 }}>
-                        {response.overview}
-                      </p>
-                    </div>
-                  )}
-                  {/* Per-option breakdown */}
-                  {Array.isArray(response.per_option) && response.per_option.map((item, idx) => (
-                    <div
-                      key={idx}
-                      style={{
-                        padding: '0.875rem 1rem',
-                        background: item.correct
-                          ? 'rgba(16,185,129,0.08)'
-                          : 'rgba(239,68,68,0.06)',
-                        border: `1px solid ${item.correct ? 'rgba(16,185,129,0.25)' : 'rgba(239,68,68,0.2)'}`,
-                        borderRadius: '0.75rem'
-                      }}
-                    >
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'flex-start',
-                        gap: '0.5rem',
-                        marginBottom: '0.375rem'
-                      }}>
-                        <span style={{
-                          flexShrink: 0,
-                          width: '1.25rem',
-                          height: '1.25rem',
-                          borderRadius: '50%',
-                          background: item.correct ? '#10b981' : '#ef4444',
-                          color: 'white',
-                          fontSize: '0.75rem',
-                          fontWeight: '700',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          marginTop: '0.1rem'
-                        }}>
-                          {item.correct ? '✓' : '✗'}
-                        </span>
-                        <span style={{
-                          color: item.correct ? '#6ee7b7' : '#fca5a5',
-                          fontSize: '0.8125rem',
-                          fontWeight: '600',
-                          lineHeight: '1.4'
-                        }}>
-                          {item.option}
-                        </span>
-                      </div>
-                      <p style={{
-                        color: 'rgba(255,255,255,0.72)',
-                        fontSize: '0.8125rem',
-                        lineHeight: '1.6',
-                        margin: '0 0 0 1.75rem'
-                      }}>
-                        {item.explanation}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div style={{
-                  padding: '1rem 1.125rem',
-                  background: 'rgba(255,255,255,0.04)',
-                  borderRadius: '0.75rem',
-                  border: '1px solid rgba(255,255,255,0.08)'
-                }}>
-                  {renderMarkdown(typeof response === 'string' ? response : JSON.stringify(response, null, 2))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Empty state */}
-          {!loading && !error && !response && (
-            <div style={{
-              textAlign: 'center',
-              padding: '2rem 1rem',
-              color: 'rgba(255,255,255,0.3)',
-              fontSize: '0.875rem'
-            }}>
-              <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🤖</div>
-              <p style={{ margin: 0 }}>Select a quick option above or type your own question below.</p>
+              {renderResponse()}
             </div>
           )}
         </div>
 
-        {/* Free-text input */}
+        {/* Pre-typed question suggestions */}
         <div style={{
           padding: '0.75rem 1.25rem 1rem',
           borderTop: '1px solid rgba(255,255,255,0.08)',
-          flexShrink: 0
+          flexShrink: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.5rem'
         }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.75rem',
-            padding: '0.75rem 1rem',
-            background: 'rgba(103,232,249,0.06)',
-            border: '1px solid rgba(103,232,249,0.15)',
-            borderRadius: '0.75rem'
-          }}>
-            <span style={{ fontSize: '1.125rem', flexShrink: 0 }}>🕐</span>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ color: '#67e8f9', fontWeight: '600', fontSize: '0.8125rem' }}>
-                Custom Q&amp;A — Coming Soon
-              </div>
-              <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.75rem', marginTop: '0.125rem' }}>
-                Use the quick options above to explore explanations and concepts.
-              </div>
-            </div>
-          </div>
+          {EXAM_PROMPTS.map((prompt) => {
+            const isSent = sentPrompt?.key === prompt.key
+            return (
+              <button
+                key={prompt.key}
+                onClick={() => !isSent && !loading && handleSendPrompt(prompt)}
+                disabled={loading || isSent}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem 1rem',
+                  background: isSent ? 'rgba(14,165,233,0.06)' : 'rgba(255,255,255,0.05)',
+                  border: `1px solid ${isSent ? 'rgba(14,165,233,0.2)' : 'rgba(255,255,255,0.12)'}`,
+                  borderRadius: '0.75rem',
+                  color: isSent ? 'rgba(147,197,253,0.4)' : 'rgba(255,255,255,0.78)',
+                  cursor: loading || isSent ? 'default' : 'pointer',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                  textAlign: 'left',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '0.75rem',
+                  transition: 'all 0.2s',
+                  opacity: isSent ? 0.5 : 1
+                }}
+                onMouseEnter={(e) => {
+                  if (!loading && !isSent) {
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.09)'
+                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isSent) {
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.05)'
+                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'
+                  }
+                }}
+              >
+                <span>{prompt.text}</span>
+                {isSent
+                  ? <span style={{ color: 'rgba(147,197,253,0.35)', fontSize: '0.6875rem', flexShrink: 0 }}>sent</span>
+                  : <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: '1rem', flexShrink: 0 }}>↑</span>
+                }
+              </button>
+            )
+          })}
         </div>
       </div>
 
-      {/* Keyframe for spinner — injected once */}
       <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
+        .lg-sheet {
+          height: calc(100vh - 1rem);
+          height: calc(100dvh - 1rem);
+          max-height: calc(100vh - 1rem);
+          max-height: calc(100dvh - 1rem);
+        }
+        @keyframes lgFadeIn {
+          from { opacity: 0; transform: translateY(6px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes lgDot {
+          0%, 80%, 100% { transform: scale(0.5); opacity: 0.3; }
+          40%            { transform: scale(1);   opacity: 1;   }
+        }
       `}</style>
     </div>
   )

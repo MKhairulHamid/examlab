@@ -5,7 +5,6 @@ import useProgressStore from '../stores/progressStore'
 import useAuthStore from '../stores/authStore'
 import supabase from '../services/supabase'
 import DashboardHeader from '../components/layout/DashboardHeader'
-import AIExplanationPanel from '../components/AIExplanationPanel'
 import AnswerReview from '../components/AnswerReview'
 import { isOrderingQuestion, getTypeLabel } from '../utils/questionTypes'
 
@@ -21,7 +20,6 @@ function ExamResults() {
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(true)
   const [questions, setQuestions] = useState([])
-  const [aiPanelQuestion, setAiPanelQuestion] = useState(null)
 
   useEffect(() => {
     const loadResultData = async () => {
@@ -494,28 +492,48 @@ function ExamResults() {
                   {/* Answer review — rendered per question type */}
                   <AnswerReview question={question} userAnswer={userAnswer} correctAnswers={correctAnswers} />
 
-                  {/* Ask AI button */}
-                  <button
-                    onClick={() => setAiPanelQuestion(question)}
-                    style={{
-                      padding: '0.5rem 1rem',
-                      background: 'rgba(0,212,170,0.15)',
-                      color: '#00D4AA',
-                      border: '1px solid rgba(0,212,170,0.3)',
-                      borderRadius: '0.5rem',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      fontSize: '0.875rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.375rem',
-                      transition: 'background 0.2s'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(0,212,170,0.25)'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(0,212,170,0.15)'}
-                  >
-                    🤖 AI Learning Guide
-                  </button>
+                  {/* Inline explanations */}
+                  {question.ai_cache?.explanations && (
+                    <div style={{ marginTop: '0.75rem' }}>
+                      <div style={{ fontSize: '0.6875rem', color: 'rgba(255,255,255,0.35)', fontWeight: '600', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+                        Explanations
+                      </div>
+                      {question.ai_cache.explanations.overview && (
+                        <div style={{ padding: '0.75rem 1rem', background: 'rgba(255,255,255,0.04)', borderRadius: '0.625rem', border: '1px solid rgba(255,255,255,0.08)', marginBottom: '0.5rem' }}>
+                          <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.8125rem', lineHeight: '1.6', margin: 0 }}>
+                            {question.ai_cache.explanations.overview}
+                          </p>
+                        </div>
+                      )}
+                      {Array.isArray(question.ai_cache.explanations.per_option) && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
+                          {question.ai_cache.explanations.per_option.map((item, idx) => (
+                            <div
+                              key={idx}
+                              style={{
+                                padding: '0.625rem 0.875rem',
+                                background: item.correct ? 'rgba(16,185,129,0.07)' : 'rgba(239,68,68,0.05)',
+                                border: `1px solid ${item.correct ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.15)'}`,
+                                borderRadius: '0.625rem'
+                              }}
+                            >
+                              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start', marginBottom: '0.25rem' }}>
+                                <span style={{ flexShrink: 0, width: '1.125rem', height: '1.125rem', borderRadius: '50%', background: item.correct ? '#10b981' : '#ef4444', color: 'white', fontSize: '0.6rem', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '0.15rem' }}>
+                                  {item.correct ? '✓' : '✗'}
+                                </span>
+                                <span style={{ color: item.correct ? '#6ee7b7' : '#fca5a5', fontSize: '0.8rem', fontWeight: '600', lineHeight: '1.4' }}>
+                                  {item.option}
+                                </span>
+                              </div>
+                              <p style={{ color: 'rgba(255,255,255,0.62)', fontSize: '0.7875rem', lineHeight: '1.6', margin: '0 0 0 1.625rem' }}>
+                                {item.explanation}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )
             })}
@@ -524,13 +542,6 @@ function ExamResults() {
         </div>
       </div>
 
-      {/* AI Explanation Panel */}
-      {aiPanelQuestion && (
-        <AIExplanationPanel
-          question={aiPanelQuestion}
-          onClose={() => setAiPanelQuestion(null)}
-        />
-      )}
     </>
   )
 }
