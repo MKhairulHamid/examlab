@@ -639,7 +639,7 @@ function ExamInterface() {
             onClick={() => setShowAIPanel(true)}
             className="materials-button flex items-center gap-1.5 bg-[rgba(0,212,170,0.15)] text-[#00D4AA] border-[#00D4AA]"
           >
-            <Sparkles className="w-3.5 h-3.5" /> AI Learning Guide
+            <Sparkles className="w-3.5 h-3.5" /> Learning Guide
           </button>
           <button
             onClick={handlePauseExam}
