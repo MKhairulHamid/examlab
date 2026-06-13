@@ -335,6 +335,7 @@ const saaC03Course = {
         },
         {
           heading: 'Security groups vs network ACLs — the must-know table',
+          interactive: 'sg-vs-nacl',
           body: 'These two are constantly confused, and the exam exploits that. Memorize the differences.',
           table: {
             headers: ['', 'Security group', 'Network ACL'],
@@ -1070,6 +1071,7 @@ const saaC03Course = {
         },
         {
           heading: 'The four DR strategies',
+          interactive: 'dr-strategy',
           body: 'AWS defines four DR strategies along a spectrum of cost vs recovery speed.',
           table: {
             headers: ['Strategy', 'How it works', 'RPO / RTO', 'Cost'],
@@ -1174,6 +1176,1184 @@ const saaC03Course = {
         'Order of cost/speed: backup & restore < pilot light < warm standby < active-active.',
         '"Near-zero downtime, both Regions live" → active-active. "Cheapest, hours acceptable" → backup & restore.',
         'Multi-AZ ≠ DR across Regions. Multi-AZ survives an AZ; DR strategies survive a Region.',
+      ],
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    //  DOMAIN 3 — DESIGN HIGH-PERFORMING ARCHITECTURES (24%)
+    // ═══════════════════════════════════════════════════════════════
+
+    {
+      id: 'd3-s9',
+      number: 9,
+      module: 'Domain 3 · Design High-Performing Architectures',
+      domain: 'd3',
+      weight: '24%',
+      task: 'Task 3.1',
+      title: 'High-Performing Storage — Object, File, and Block',
+      duration: 30,
+      summary: 'Domain 3 begins with storage. You will learn the three storage types the exam separates — object, file, block — and how to pick the right service (S3, EFS, FSx, EBS) and configuration to meet a stated performance and scaling demand.',
+      objectives: [
+        'Distinguish object, file, and block storage and map each to the right AWS service',
+        'Select Amazon EBS volume types for throughput vs IOPS requirements',
+        'Choose between Amazon EFS and Amazon FSx for shared file storage',
+        'Determine storage configurations that scale to meet future performance needs',
+      ],
+      preLearningCheck: {
+        question: 'A fleet of EC2 instances spread across three Availability Zones must all read and write the same set of files concurrently. Which storage service fits?',
+        options: [
+          'A single Amazon EBS volume attached to all instances',
+          'Amazon EFS, mounted by all instances across the AZs',
+          'Instance store volumes on each instance',
+          'A separate Amazon S3 bucket per instance',
+        ],
+        correct: 1,
+        note: 'Shared, concurrent file access across many instances and AZs is the EFS signal. A standard EBS volume attaches to one instance in one AZ.',
+      },
+      sections: [
+        {
+          heading: 'Three storage types, three shapes of problem',
+          body: 'The exam expects you to classify a workload by storage type before choosing a service. Object storage is for unstructured data accessed via API (S3). File storage is a shared, mountable file system (EFS, FSx). Block storage is a raw volume attached to one instance like a disk (EBS, instance store).',
+          table: {
+            headers: ['Type', 'Service', 'Access pattern'],
+            rows: [
+              ['Object', 'Amazon S3', 'HTTP API, massively scalable, web/data lakes/backups'],
+              ['File', 'Amazon EFS / Amazon FSx', 'Shared file system mounted by many clients'],
+              ['Block', 'Amazon EBS / instance store', 'A volume attached to a single instance (EBS) or ephemeral local disk (instance store)'],
+            ],
+          },
+          callout: { type: 'tip', text: 'Signal words: "shared across instances" → EFS/FSx. "Attached to one instance / boot volume / database disk" → EBS. "Objects / unlimited / web-accessible" → S3. "Temporary scratch / lost on stop" → instance store.' },
+        },
+        {
+          heading: 'Amazon EBS volume types',
+          body: 'EBS volumes back EC2 instances. Choosing the type is a performance-vs-cost decision the exam tests directly.',
+          table: {
+            headers: ['Volume', 'Category', 'Best for'],
+            rows: [
+              ['gp3 / gp2', 'General-purpose SSD', 'Most workloads; gp3 lets you provision IOPS/throughput independently of size'],
+              ['io2 / io1', 'Provisioned IOPS SSD', 'I/O-intensive databases needing sustained high IOPS and low latency'],
+              ['st1', 'Throughput-optimized HDD', 'Large, sequential throughput workloads (big data, log processing)'],
+              ['sc1', 'Cold HDD', 'Infrequently accessed, lowest-cost block storage'],
+            ],
+          },
+        },
+        {
+          heading: 'Shared file storage — EFS vs FSx',
+          body: 'When many clients need a shared file system, the choice is about protocol and platform.',
+          bullets: [
+            'Amazon EFS — fully managed, elastic NFS for Linux. Scales automatically, mounts across AZs, pay for what you use.',
+            'Amazon FSx for Windows File Server — fully managed Windows-native SMB file shares with Active Directory integration.',
+            'Amazon FSx for Lustre — high-performance file system for HPC, machine learning, and compute-intensive workloads, often paired with S3.',
+            'EFS has storage classes (Standard, Infrequent Access) and lifecycle management to reduce cost for cold files.',
+          ],
+        },
+        {
+          heading: 'Performance and scale considerations',
+          body: 'High-performing storage is about matching the service to the demand and letting it scale.',
+          bullets: [
+            'S3 scales to virtually unlimited objects and very high request rates; prefix design spreads load automatically.',
+            'gp3 decouples IOPS and throughput from volume size — you no longer over-provision capacity just to get performance.',
+            'EFS throughput scales with usage (Elastic/Bursting/Provisioned modes) without re-architecting.',
+            'For temporary, ultra-low-latency scratch data tied to one instance, instance store outperforms EBS — but the data is lost on stop or termination.',
+          ],
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 1,
+          question: 'A relational database on EC2 needs sustained high IOPS with consistent low latency. Which EBS volume type is most appropriate?',
+          options: [
+            'sc1 Cold HDD',
+            'io2 Provisioned IOPS SSD',
+            'st1 Throughput-optimized HDD',
+            'A second instance store volume',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — Provisioned IOPS SSD (io2/io1) is designed for I/O-intensive databases that need sustained high IOPS and low latency.',
+          elaborativePrompt: 'gp3 is now very capable and cheaper than io2. In your own words, at what point would you still choose io2 over a well-tuned gp3 volume?',
+        },
+        {
+          afterSection: 2,
+          question: 'A Windows-based application requires a shared file system using SMB with Active Directory integration. Which service should the architect choose?',
+          options: [
+            'Amazon EFS',
+            'Amazon FSx for Windows File Server',
+            'Amazon S3',
+            'Amazon EBS Multi-Attach',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — FSx for Windows File Server provides native SMB shares with Active Directory integration; EFS is NFS for Linux.',
+          elaborativePrompt: 'EFS and FSx are both shared file systems. Explain the deciding factor between them, and why S3 (object storage) does not satisfy a "shared file system" requirement.',
+        },
+      ],
+      selfExplanationPrompt: 'Explain to yourself how you would pick storage for three workloads: a web app serving millions of images, a Linux fleet sharing a content directory across AZs, and a high-IOPS transactional database. Name the service and configuration for each and justify it by storage type and performance need.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A company runs a content management application on a group of Amazon EC2 instances in an Auto Scaling group across multiple Availability Zones. All instances must read from and write to the same set of files at the same time, and the storage must scale automatically as content grows. Which storage solution meets these requirements?',
+        options: [
+          'Attach a single Amazon EBS volume and share it among all instances',
+          'Use Amazon EFS and mount the file system on all instances',
+          'Store the files on instance store volumes on each instance',
+          'Provision a separate gp3 EBS volume for each instance',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'Amazon EFS is an elastic, shared NFS file system that many instances across AZs can mount and write to concurrently, and it scales automatically — matching every requirement.',
+          perOption: [
+            'A standard EBS volume attaches to one instance in one AZ and cannot be shared concurrently across a multi-AZ fleet.',
+            'Correct — EFS supports concurrent shared access across instances and AZs and grows automatically with the data.',
+            'Instance store is ephemeral and local to each instance; it is neither shared nor durable.',
+            'Per-instance EBS volumes are isolated copies, so instances would not share the same files.',
+          ],
+          link: 'Domain 3 · Task 3.1 — Determine high-performing and/or scalable storage solutions',
+        },
+      },
+      videos: [],
+      keyTerms: [
+        { term: 'Object storage', def: 'Data stored as objects accessed via API (Amazon S3); massively scalable, ideal for unstructured data.' },
+        { term: 'Block storage', def: 'Raw volumes attached to a single instance like a disk (Amazon EBS, instance store).' },
+        { term: 'Amazon EFS', def: 'Elastic, shared NFS file system for Linux that many instances can mount across AZs.' },
+        { term: 'Provisioned IOPS SSD (io2/io1)', def: 'EBS volume type for I/O-intensive databases needing sustained high IOPS and low latency.' },
+        { term: 'Instance store', def: 'Ephemeral local disk physically attached to the host; very fast but lost on stop/terminate.' },
+      ],
+      awsServices: [
+        { name: 'Amazon S3', purpose: 'Highly scalable object storage with 11 nines of durability for unstructured data, data lakes, and backups.' },
+        { name: 'Amazon EBS', purpose: 'Block storage volumes for EC2; types from gp3 (general) to io2 (high IOPS) to st1/sc1 (HDD).' },
+        { name: 'Amazon EFS', purpose: 'Elastic, shared NFS file storage for Linux, mountable across instances and AZs.' },
+        { name: 'Amazon FSx', purpose: 'Managed file systems: FSx for Windows (SMB/AD) and FSx for Lustre (high-performance computing).' },
+      ],
+      examTips: [
+        'Shared file system across instances/AZs → EFS (Linux/NFS) or FSx for Windows (SMB/AD).',
+        'High-IOPS database volume → io2/io1. General workloads → gp3 (decouples IOPS/throughput from size).',
+        'Sequential big-data throughput → st1; lowest-cost cold block → sc1.',
+        'Temporary scratch lost on stop → instance store; durable single-instance volume → EBS.',
+      ],
+    },
+
+    // ─────────────────────────────────────────────────────────────
+    {
+      id: 'd3-s10',
+      number: 10,
+      module: 'Domain 3 · Design High-Performing Architectures',
+      domain: 'd3',
+      weight: '24%',
+      task: 'Task 3.2',
+      title: 'High-Performing and Elastic Compute',
+      duration: 30,
+      summary: 'This session picks the right compute for a performance requirement. You will learn EC2 instance families, how Auto Scaling delivers elasticity, when serverless and containers outperform instances, and how to size resources to the workload.',
+      objectives: [
+        'Select the appropriate EC2 instance family for a workload profile',
+        'Use Auto Scaling and scaling metrics to deliver elastic compute',
+        'Choose between EC2, containers, Lambda, Fargate, Batch, and EMR',
+        'Right-size compute resources (e.g. instance size, Lambda memory) to meet performance goals',
+      ],
+      preLearningCheck: {
+        question: 'A workload processes thousands of independent, short image-resize jobs triggered by uploads. Traffic is spiky and unpredictable, and the team does not want to manage servers. Which compute option fits best?',
+        options: [
+          'A fixed fleet of large EC2 instances running continuously',
+          'AWS Lambda triggered by each upload event',
+          'A single very large EC2 instance scaled vertically',
+          'An Amazon EMR cluster running 24/7',
+        ],
+        correct: 1,
+        note: 'Event-driven, short, independent tasks with spiky load and no server management is the Lambda signal — it scales automatically and you pay per invocation.',
+      },
+      sections: [
+        {
+          heading: 'EC2 instance families — match the bottleneck',
+          body: 'EC2 instances come in families optimized for different resource bottlenecks. The exam describes a workload profile; you pick the family.',
+          table: {
+            headers: ['Family', 'Optimized for', 'Example workload'],
+            rows: [
+              ['General purpose (M, T)', 'Balanced CPU/memory', 'Web servers, small databases, dev/test'],
+              ['Compute optimized (C)', 'High CPU', 'Batch processing, gaming servers, scientific modeling'],
+              ['Memory optimized (R, X)', 'Large RAM', 'In-memory databases, real-time analytics'],
+              ['Storage optimized (I, D)', 'High local disk I/O', 'NoSQL databases, data warehousing'],
+              ['Accelerated (P, G)', 'GPUs / accelerators', 'Machine learning, graphics rendering'],
+            ],
+          },
+        },
+        {
+          heading: 'Elasticity through Auto Scaling',
+          body: 'Elastic compute matches capacity to demand automatically. Auto Scaling adds and removes instances based on a metric or schedule, and replaces unhealthy ones.',
+          bullets: [
+            'Target tracking keeps a metric on target (e.g. average CPU 60%) — the simplest, recommended policy.',
+            'Step and simple scaling react to CloudWatch alarm thresholds.',
+            'Scheduled scaling handles known patterns (business-hours scale-up).',
+            'Predictive scaling uses ML to provision ahead of forecast demand.',
+          ],
+          callout: { type: 'note', text: 'Identify the right scaling metric. CPU is common, but a queue-backed worker tier often scales better on SQS queue depth (a custom CloudWatch metric) than on CPU.' },
+        },
+        {
+          heading: 'EC2 vs serverless vs containers vs purpose-built',
+          body: 'Pick the compute model that meets the performance need with the least overhead.',
+          bullets: [
+            'AWS Lambda — event-driven, short tasks, automatic scaling to zero; size by configuring memory (which also scales CPU).',
+            'AWS Fargate — serverless containers; run ECS/EKS tasks without managing instances.',
+            'Amazon ECS / EKS on EC2 — when you need cluster-level control or specific instance capabilities.',
+            'AWS Batch — managed batch computing that provisions optimal compute for large job queues.',
+            'Amazon EMR — managed big-data processing (Spark, Hadoop) for large-scale data transformation and analytics.',
+          ],
+        },
+        {
+          heading: 'Right-sizing for performance',
+          body: 'Performance is not just "bigger". Match the resource to the workload.',
+          bullets: [
+            'For Lambda, more memory means more CPU — increasing memory can make a function both faster and cheaper per invocation.',
+            'Decouple components so each scales independently rather than over-provisioning a monolith.',
+            'Use Compute Optimizer recommendations to find the right instance type and size from real utilization.',
+            'Place latency-sensitive instances in a cluster placement group for high network throughput between them.',
+          ],
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 0,
+          question: 'A scientific simulation is CPU-bound and runs for hours at near-100% processor utilization with modest memory needs. Which EC2 instance family is the best fit?',
+          options: [
+            'Memory optimized (R)',
+            'Compute optimized (C)',
+            'Storage optimized (I)',
+            'General purpose (T burstable)',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — compute optimized (C family) targets CPU-bound workloads like batch processing and scientific modeling.',
+          elaborativePrompt: 'Why would a T-family burstable instance be a poor choice for a sustained near-100% CPU workload? Think about how burstable CPU credits behave under constant load.',
+        },
+        {
+          afterSection: 2,
+          question: 'A team wants to run containerized microservices without managing or patching any EC2 instances or clusters. Which option fits?',
+          options: [
+            'Amazon ECS on the EC2 launch type',
+            'AWS Fargate (with ECS or EKS)',
+            'A self-managed Kubernetes cluster on EC2',
+            'AWS Batch on managed EC2',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — Fargate runs containers serverlessly, removing instance and cluster management entirely.',
+          elaborativePrompt: 'Fargate removes server management but costs more per unit of raw compute than EC2. Explain when a team would still choose the EC2 launch type despite the extra operational work.',
+        },
+      ],
+      selfExplanationPrompt: 'Explain to yourself how you would choose compute for three cases: a steady web tier, a spiky event-driven image processor, and a nightly large-scale data transformation. Name the service, the scaling approach, and how you would size each.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A company processes uploaded documents with a function that runs for a few seconds per document. Upload volume is highly variable, ranging from zero to thousands per minute. The company wants the processing tier to scale automatically with no idle cost and no servers to manage. Which solution meets these requirements MOST cost-effectively?',
+        options: [
+          'A fixed Auto Scaling group of EC2 instances sized for peak load',
+          'AWS Lambda invoked per document, scaling automatically with demand',
+          'A single large memory-optimized EC2 instance running continuously',
+          'An always-on Amazon EMR cluster',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'Lambda scales automatically from zero to thousands of concurrent executions, charges only per invocation and duration, and removes server management — ideal for short, spiky, event-driven processing.',
+          perOption: [
+            'An Auto Scaling group sized for peak pays for idle capacity at low volume and still requires instance management.',
+            'Correct — Lambda matches the spiky, short-task profile with automatic scaling and no idle cost or servers.',
+            'A continuously running large instance incurs cost even at zero volume and does not scale elastically.',
+            'An always-on EMR cluster is for large-scale data processing and would be expensive and idle for this event-driven workload.',
+          ],
+          link: 'Domain 3 · Task 3.2 — Design high-performing and elastic compute solutions',
+        },
+      },
+      videos: [],
+      keyTerms: [
+        { term: 'Instance family', def: 'A group of EC2 instance types optimized for a resource profile (compute, memory, storage, accelerated).' },
+        { term: 'Target tracking scaling', def: 'An Auto Scaling policy that adjusts capacity to keep a chosen metric at a target value.' },
+        { term: 'AWS Fargate', def: 'Serverless compute for containers — run ECS/EKS tasks without managing instances.' },
+        { term: 'Right-sizing', def: 'Matching the instance type/size or function memory to the workload\'s real needs for best performance and cost.' },
+        { term: 'Placement group (cluster)', def: 'A grouping that packs instances close together for high, low-latency network throughput.' },
+      ],
+      awsServices: [
+        { name: 'Amazon EC2', purpose: 'Resizable virtual servers in instance families optimized for compute, memory, storage, or accelerated workloads.' },
+        { name: 'Amazon EC2 Auto Scaling', purpose: 'Adds/removes instances on metrics or schedule for elasticity and self-healing.' },
+        { name: 'AWS Lambda', purpose: 'Serverless functions for event-driven, short-lived work; scale to zero, sized by memory.' },
+        { name: 'AWS Batch', purpose: 'Fully managed batch computing that provisions optimal compute for large job queues.' },
+        { name: 'Amazon EMR', purpose: 'Managed big-data framework (Spark, Hadoop) for large-scale processing and transformation.' },
+      ],
+      examTips: [
+        'CPU-bound → C family. Large RAM/in-memory → R/X. GPU/ML → P/G. Balanced → M/T.',
+        'Spiky, short, event-driven, no servers → Lambda. Containers without servers → Fargate.',
+        'Scale a queue-worker tier on SQS queue depth, not CPU.',
+        'More Lambda memory = more CPU; right-sizing memory can be faster AND cheaper.',
+      ],
+    },
+
+    // ─────────────────────────────────────────────────────────────
+    {
+      id: 'd3-s11',
+      number: 11,
+      module: 'Domain 3 · Design High-Performing Architectures',
+      domain: 'd3',
+      weight: '24%',
+      task: 'Task 3.3',
+      title: 'High-Performing Databases — Engines, Replicas, and Caching',
+      duration: 30,
+      summary: 'This session matches a data workload to the right database and makes it fast. You will learn relational vs non-relational vs in-memory, when to add read replicas, and how caching with ElastiCache and DAX removes database bottlenecks.',
+      objectives: [
+        'Choose between relational, non-relational, and in-memory database types',
+        'Use read replicas to scale read-heavy relational workloads',
+        'Integrate caching (ElastiCache, DAX) to meet latency and throughput goals',
+        'Apply capacity planning and connection management for performance',
+      ],
+      preLearningCheck: {
+        question: 'An application needs single-digit millisecond reads at massive scale with a flexible, key-based access pattern and no fixed schema. Which database fits best?',
+        options: [
+          'Amazon RDS for PostgreSQL',
+          'Amazon DynamoDB',
+          'Amazon Redshift',
+          'A self-managed relational database on EC2',
+        ],
+        correct: 1,
+        note: 'Key-based access, no fixed schema, single-digit millisecond latency at scale is the DynamoDB signal. Relational engines fit structured, relational queries.',
+      },
+      sections: [
+        {
+          heading: 'Pick the database type first',
+          body: 'Before picking a service, classify the data model. The exam rewards matching the workload to the right type rather than forcing everything into a relational engine.',
+          table: {
+            headers: ['Type', 'Service', 'Use when'],
+            rows: [
+              ['Relational (OLTP)', 'Amazon RDS / Amazon Aurora', 'Structured data, joins, transactions, fixed schema'],
+              ['Non-relational (NoSQL)', 'Amazon DynamoDB', 'Key-value/document, massive scale, single-digit ms latency, flexible schema'],
+              ['In-memory', 'Amazon ElastiCache', 'Microsecond latency caching, session stores, leaderboards'],
+              ['Data warehouse (OLAP)', 'Amazon Redshift', 'Analytics over large structured datasets, columnar queries'],
+            ],
+          },
+          callout: { type: 'tip', text: 'Aurora is a high-performance relational engine (MySQL/PostgreSQL-compatible) — up to 15 low-latency read replicas and storage that auto-scales. Reach for Aurora when a scenario stresses relational performance and availability.' },
+        },
+        {
+          heading: 'Scaling reads with replicas',
+          body: 'Read-heavy relational workloads are scaled by offloading reads from the primary.',
+          bullets: [
+            'RDS read replicas (asynchronous) serve read traffic; RDS supports several, Aurora up to 15.',
+            'Point reporting and analytics queries at replicas to keep the primary free for writes.',
+            'Replicas are eventually consistent — there is small replication lag, which matters for read-after-write scenarios.',
+            'Read replicas are for scaling reads; they are not the same as Multi-AZ, which is for failover/HA (covered in D2).',
+          ],
+        },
+        {
+          heading: 'Caching — ElastiCache and DAX',
+          body: 'Caching the hottest reads is often the single biggest performance win.',
+          table: {
+            headers: ['Need', 'Service', 'Notes'],
+            rows: [
+              ['Cache relational/query results, sessions', 'Amazon ElastiCache (Redis/Memcached)', 'Microsecond reads; Redis adds persistence, replication, pub/sub'],
+              ['Cache DynamoDB reads', 'DynamoDB Accelerator (DAX)', 'In-memory cache that drops DynamoDB read latency from ms to microseconds'],
+            ],
+          },
+        },
+        {
+          heading: 'Capacity, connections, and proxies',
+          body: 'Performance also depends on capacity planning and connection handling.',
+          bullets: [
+            'DynamoDB capacity: on-demand for unpredictable traffic; provisioned (with auto scaling) for steady, predictable load.',
+            'Provisioned IOPS storage for RDS sustains high, consistent database I/O.',
+            'RDS Proxy pools connections so a swarm of clients (e.g. many Lambda functions) does not exhaust database connections.',
+            'Choose the engine to match the workload: e.g. PostgreSQL vs MySQL features, or Aurora for higher throughput and faster replicas.',
+          ],
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 1,
+          question: 'A reporting dashboard runs heavy read-only queries that are slowing down a transactional Amazon RDS database. Which change scales reads with minimal application change?',
+          options: [
+            'Enable Multi-AZ on the RDS instance',
+            'Add a read replica and point the dashboard queries at it',
+            'Increase the storage size of the primary',
+            'Switch the database to DynamoDB',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — a read replica offloads the reporting reads from the primary, scaling read capacity without re-architecting.',
+          elaborativePrompt: 'Multi-AZ also creates a second instance but does not help here. Explain the difference in purpose between a read replica and a Multi-AZ standby.',
+        },
+        {
+          afterSection: 2,
+          question: 'A DynamoDB-backed application needs to reduce read latency from single-digit milliseconds to microseconds for repeated reads of the same items. Which service should be added?',
+          options: [
+            'Amazon ElastiCache for Memcached',
+            'DynamoDB Accelerator (DAX)',
+            'An RDS read replica',
+            'Amazon Redshift',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — DAX is a purpose-built in-memory cache for DynamoDB that delivers microsecond read latency with no application rewrite.',
+          elaborativePrompt: 'You could also place ElastiCache in front of DynamoDB manually. Why is DAX often the cleaner answer specifically for DynamoDB read caching?',
+        },
+      ],
+      selfExplanationPrompt: 'Explain to yourself how you would design the data tier for a high-traffic application: which database type suits the access pattern, whether you would add read replicas or caching (and which cache), and how you would handle a flood of connections from many compute instances.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A gaming company stores player profiles and game state that must be retrieved with consistent single-digit millisecond latency at very large scale, with an access pattern based on player ID and no need for complex joins. Which database service is the BEST fit?',
+        options: [
+          'Amazon RDS for MySQL with read replicas',
+          'Amazon DynamoDB',
+          'Amazon Redshift',
+          'A self-managed PostgreSQL cluster on EC2',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'DynamoDB delivers consistent single-digit millisecond performance at massive scale for key-based access patterns without joins, and it scales seamlessly — exactly this workload.',
+          perOption: [
+            'RDS for MySQL can scale reads with replicas but is not designed for the massive-scale, key-based, schema-flexible pattern as efficiently as DynamoDB.',
+            'Correct — key-based access, huge scale, and single-digit ms latency with no joins is the DynamoDB sweet spot.',
+            'Redshift is an analytics data warehouse for large OLAP queries, not low-latency operational key lookups.',
+            'A self-managed PostgreSQL cluster adds operational burden and is not optimized for this key-value access pattern at scale.',
+          ],
+          link: 'Domain 3 · Task 3.3 — Determine high-performing database solutions',
+        },
+      },
+      videos: [],
+      keyTerms: [
+        { term: 'Amazon Aurora', def: 'A high-performance, MySQL/PostgreSQL-compatible relational engine with up to 15 fast read replicas and auto-scaling storage.' },
+        { term: 'Read replica', def: 'An asynchronous read-only database copy that offloads reads from the primary to scale read throughput.' },
+        { term: 'Amazon ElastiCache', def: 'Managed in-memory cache (Redis/Memcached) for microsecond reads and session/leaderboard data.' },
+        { term: 'DynamoDB Accelerator (DAX)', def: 'An in-memory cache purpose-built for DynamoDB, cutting read latency to microseconds.' },
+        { term: 'On-demand capacity', def: 'A DynamoDB billing mode that scales automatically to traffic with no capacity planning, ideal for unpredictable load.' },
+      ],
+      awsServices: [
+        { name: 'Amazon RDS', purpose: 'Managed relational databases (MySQL, PostgreSQL, etc.) with read replicas and Multi-AZ.' },
+        { name: 'Amazon Aurora', purpose: 'Cloud-native relational engine with high throughput, fast replicas, and auto-scaling storage.' },
+        { name: 'Amazon DynamoDB', purpose: 'Serverless NoSQL key-value/document database with single-digit ms latency at any scale.' },
+        { name: 'Amazon ElastiCache', purpose: 'In-memory caching (Redis/Memcached) to offload databases and serve microsecond reads.' },
+        { name: 'Amazon RDS Proxy', purpose: 'Connection pooling that prevents connection exhaustion from many clients (e.g. Lambda).' },
+      ],
+      examTips: [
+        'Key-based, massive scale, single-digit ms, flexible schema → DynamoDB. Structured + joins/transactions → RDS/Aurora.',
+        'Scale relational reads → read replicas (not Multi-AZ). Cache DynamoDB reads → DAX. Cache anything in-memory → ElastiCache.',
+        'Unpredictable DynamoDB traffic → on-demand; steady → provisioned with auto scaling.',
+        'Many Lambda functions exhausting DB connections → RDS Proxy.',
+      ],
+    },
+
+    // ─────────────────────────────────────────────────────────────
+    {
+      id: 'd3-s12',
+      number: 12,
+      module: 'Domain 3 · Design High-Performing Architectures',
+      domain: 'd3',
+      weight: '24%',
+      task: 'Task 3.4',
+      title: 'High-Performing Networking — Edge, Load Balancing, and Connectivity',
+      duration: 30,
+      summary: 'This session makes the network fast and scalable. You will learn when to use CloudFront vs Global Accelerator at the edge, how to design scalable topologies, and which connectivity option (Direct Connect, VPN, PrivateLink) meets a performance need.',
+      objectives: [
+        'Choose between Amazon CloudFront and AWS Global Accelerator for edge performance',
+        'Design scalable network topologies with appropriate subnet tiers and routing',
+        'Select the appropriate load balancing strategy for a workload',
+        'Pick connectivity options (Direct Connect, VPN, PrivateLink) to meet performance requirements',
+      ],
+      preLearningCheck: {
+        question: 'A media company serves large static video and image files to a global audience and wants to reduce latency and origin load by caching content near users. Which service fits best?',
+        options: [
+          'AWS Global Accelerator',
+          'Amazon CloudFront',
+          'An internal Application Load Balancer',
+          'AWS Direct Connect',
+        ],
+        correct: 1,
+        note: 'Caching static/dynamic web content at edge locations close to users is CloudFront. Global Accelerator improves networking for non-cacheable or non-HTTP traffic, but it does not cache.',
+      },
+      sections: [
+        {
+          heading: 'Edge acceleration — CloudFront vs Global Accelerator',
+          body: 'Both use the AWS global edge network, but they solve different problems and the exam tests the distinction.',
+          table: {
+            headers: ['', 'Amazon CloudFront', 'AWS Global Accelerator'],
+            rows: [
+              ['What it does', 'Caches content (HTTP/S) at edge locations', 'Routes traffic over the AWS backbone to the optimal endpoint'],
+              ['Best for', 'Static and dynamic web content, media delivery', 'Non-HTTP (TCP/UDP), gaming, IoT, static anycast IPs, fast failover'],
+              ['Caching?', 'Yes — reduces origin load and latency', 'No — it optimizes the network path'],
+            ],
+          },
+          callout: { type: 'tip', text: '"Cache content / static assets / media to global users" → CloudFront. "Non-HTTP, two static IPs, fast Regional failover, optimize the path" → Global Accelerator.' },
+        },
+        {
+          heading: 'Load balancing strategy',
+          body: 'The right load balancer is a recurring performance decision (revisited from D2 with a performance lens).',
+          bullets: [
+            'Application Load Balancer (Layer 7) — HTTP/HTTPS, content-based routing, microservices.',
+            'Network Load Balancer (Layer 4) — ultra-low latency, millions of requests/sec, static IP, TCP/UDP.',
+            'Gateway Load Balancer — transparently insert third-party network appliances.',
+            'Distribute targets across AZs and let the load balancer health-check to keep traffic on healthy targets.',
+          ],
+        },
+        {
+          heading: 'Scalable network topology',
+          body: 'A high-performing VPC design separates tiers and plans for growth.',
+          bullets: [
+            'Use subnet tiers (public for load balancers, private for app and data) across multiple AZs.',
+            'Plan CIDR ranges and IP addressing for future growth so you do not have to re-architect.',
+            'AWS Transit Gateway scales hub-and-spoke connectivity across many VPCs and on-premises, replacing a mesh of peering connections.',
+            'AWS PrivateLink exposes a service privately to other VPCs without exposing it to the internet or peering whole networks.',
+          ],
+        },
+        {
+          heading: 'Connectivity for performance',
+          body: 'Hybrid and private connectivity options trade off consistency, latency, and setup.',
+          table: {
+            headers: ['Option', 'Characteristic', 'Use when'],
+            rows: [
+              ['AWS Direct Connect', 'Dedicated private link, consistent latency/bandwidth', 'Steady high-throughput hybrid traffic needing predictable performance'],
+              ['Site-to-Site VPN', 'Encrypted tunnel over the internet, quick to set up', 'Quick or backup connectivity; tolerant of internet variability'],
+              ['AWS PrivateLink', 'Private access to a service via an interface endpoint', 'Reach a service privately without internet exposure or VPC peering'],
+            ],
+          },
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 0,
+          question: 'An online multiplayer game uses UDP traffic and needs the lowest possible latency to players worldwide, plus fast failover between Regional endpoints and a pair of fixed entry IP addresses. Which service fits?',
+          options: [
+            'Amazon CloudFront',
+            'AWS Global Accelerator',
+            'An Application Load Balancer in one Region',
+            'Amazon Route 53 weighted routing only',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — Global Accelerator optimizes non-HTTP (UDP) traffic over the AWS backbone, provides static anycast IPs, and offers fast Regional failover.',
+          elaborativePrompt: 'CloudFront also uses edge locations. Explain why it is the wrong choice for low-latency UDP game traffic specifically.',
+        },
+        {
+          afterSection: 2,
+          question: 'A company has 20 VPCs and an on-premises network that all need to communicate, and managing individual VPC peering connections has become unmanageable. Which service simplifies this at scale?',
+          options: [
+            'A separate VPN per VPC pair',
+            'AWS Transit Gateway as a central hub',
+            'AWS Direct Connect only',
+            'A NAT gateway in each VPC',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — Transit Gateway provides hub-and-spoke connectivity that scales to many VPCs and on-premises networks, replacing a complex peering mesh.',
+          elaborativePrompt: 'VPC peering is non-transitive. Explain how that limitation makes a full mesh of peering connections grow unmanageably as the number of VPCs increases.',
+        },
+      ],
+      selfExplanationPrompt: 'Explain to yourself how you would design networking for a global web application: where you would put a CDN, which load balancer the web tier uses, how the VPC subnets are tiered across AZs, and which connectivity option links a corporate data center for steady high-throughput traffic.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A company delivers a website with large static assets (images, videos, downloads) to users across the world. Users far from the origin Region experience slow load times, and the origin servers are heavily loaded serving repeated requests for the same files. Which solution improves performance MOST effectively?',
+        options: [
+          'Place an Application Load Balancer in front of the origin servers',
+          'Use Amazon CloudFront to cache the static assets at edge locations near users',
+          'Move the origin servers to a larger instance type',
+          'Enable AWS Global Accelerator in front of the origin',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'CloudFront caches the static assets at edge locations close to users, cutting latency for distant users and offloading repeated requests from the origin — addressing both problems.',
+          perOption: [
+            'An ALB distributes load within a Region but does not cache content or bring it closer to global users.',
+            'Correct — CloudFront edge caching reduces global latency and origin load for repeatedly requested static content.',
+            'A bigger origin instance does not reduce distance-based latency or cache repeated requests.',
+            'Global Accelerator optimizes the network path but does not cache content, so the origin still serves every repeated request.',
+          ],
+          link: 'Domain 3 · Task 3.4 — Determine high-performing and/or scalable network architectures',
+        },
+      },
+      videos: [],
+      keyTerms: [
+        { term: 'Amazon CloudFront', def: 'A content delivery network that caches content at edge locations to reduce latency and origin load.' },
+        { term: 'AWS Global Accelerator', def: 'A service that routes traffic over the AWS backbone to the optimal endpoint with static anycast IPs and fast failover.' },
+        { term: 'AWS Transit Gateway', def: 'A central hub that connects many VPCs and on-premises networks, replacing a peering mesh.' },
+        { term: 'AWS PrivateLink', def: 'Private connectivity to a service via an interface endpoint, without internet exposure or peering.' },
+        { term: 'AWS Direct Connect', def: 'A dedicated private network link from on-premises to AWS for consistent latency and bandwidth.' },
+      ],
+      awsServices: [
+        { name: 'Amazon CloudFront', purpose: 'CDN that caches static and dynamic content at edge locations for low global latency.' },
+        { name: 'AWS Global Accelerator', purpose: 'Optimizes traffic over the AWS backbone with static IPs and fast failover; ideal for non-HTTP and gaming.' },
+        { name: 'Elastic Load Balancing', purpose: 'Distributes traffic; ALB (L7 routing), NLB (L4 low latency/static IP), GWLB (appliances).' },
+        { name: 'AWS Transit Gateway', purpose: 'Scales connectivity across many VPCs and on-premises networks via a central hub.' },
+        { name: 'AWS Direct Connect', purpose: 'Dedicated private connection for predictable, high-throughput hybrid networking.' },
+      ],
+      examTips: [
+        'Cache web/media content for global users → CloudFront. Non-HTTP/UDP, static IPs, fast failover → Global Accelerator.',
+        'Path/host routing → ALB. Extreme low latency, static IP, TCP/UDP → NLB. Insert appliances → GWLB.',
+        'Many VPCs + on-prem connectivity at scale → Transit Gateway (not a peering mesh).',
+        'Steady high-throughput hybrid with predictable performance → Direct Connect; quick/backup → VPN.',
+      ],
+    },
+
+    // ─────────────────────────────────────────────────────────────
+    {
+      id: 'd3-s13',
+      number: 13,
+      module: 'Domain 3 · Design High-Performing Architectures',
+      domain: 'd3',
+      weight: '24%',
+      task: 'Task 3.5',
+      title: 'Data Ingestion and Transformation — Streaming, ETL, and Analytics',
+      duration: 30,
+      summary: 'The last D3 session moves and transforms data at scale. You will learn streaming ingestion with Kinesis, serverless ETL with Glue, querying S3 with Athena, building data lakes, and bulk transfer options like DataSync and Snow Family.',
+      objectives: [
+        'Design streaming ingestion with Amazon Kinesis for real-time data',
+        'Use AWS Glue for serverless ETL and Amazon Athena to query data in S3',
+        'Build and secure data lakes on Amazon S3 with AWS Lake Formation',
+        'Select the right data transfer service for a migration or ingestion need',
+      ],
+      preLearningCheck: {
+        question: 'A company must ingest a continuous, high-volume stream of clickstream events in real time so multiple consumers can process them within seconds. Which service is purpose-built for this?',
+        options: [
+          'Amazon S3 with periodic batch uploads',
+          'Amazon Kinesis Data Streams',
+          'AWS Glue scheduled nightly jobs',
+          'Amazon Athena',
+        ],
+        correct: 1,
+        note: 'Real-time, continuous, high-volume streaming with multiple consumers is the Kinesis signal. Batch uploads and nightly ETL are not real-time.',
+      },
+      sections: [
+        {
+          heading: 'Ingestion patterns — batch vs streaming',
+          body: 'Start by classifying how data arrives. Batch ingestion handles large chunks on a schedule; streaming ingestion handles continuous, real-time events. The exam pairs the pattern with the service.',
+          bullets: [
+            'Real-time streaming → Amazon Kinesis Data Streams (custom consumers) or Amazon Data Firehose (managed delivery to S3/Redshift/OpenSearch).',
+            'Managed Kafka → Amazon MSK when teams already use Apache Kafka.',
+            'Scheduled/batch transformation → AWS Glue jobs.',
+            'Frequency and volume in the scenario tell you whether to stream or batch.',
+          ],
+        },
+        {
+          heading: 'Transform — AWS Glue and EMR',
+          body: 'Transforming data (cleaning, reformatting, enriching) has a serverless option and a cluster option.',
+          table: {
+            headers: ['Service', 'Model', 'Use when'],
+            rows: [
+              ['AWS Glue', 'Serverless ETL + data catalog', 'Serverless transformation, schema discovery, format conversion (e.g. CSV to Parquet)'],
+              ['Amazon EMR', 'Managed Spark/Hadoop clusters', 'Large-scale, custom big-data processing with full framework control'],
+            ],
+          },
+          callout: { type: 'note', text: 'Converting data to a columnar format like Parquet (often via Glue) makes downstream Athena/Redshift queries faster and cheaper, because they scan far less data.' },
+        },
+        {
+          heading: 'Query and visualize',
+          body: 'Once data lands, you analyze it without standing up servers.',
+          bullets: [
+            'Amazon Athena runs serverless SQL directly against data in S3 — no infrastructure, pay per query scanned.',
+            'Amazon Redshift is the data warehouse for large, repeated analytical queries over structured data.',
+            'Amazon QuickSight provides managed dashboards and visualization on top of these sources.',
+            'Amazon OpenSearch Service supports search and log analytics.',
+          ],
+        },
+        {
+          heading: 'Data lakes and bulk transfer',
+          body: 'A data lake centralizes raw and processed data on S3; getting data in is its own decision.',
+          bullets: [
+            'AWS Lake Formation builds and secures a data lake on S3 with centralized, fine-grained permissions.',
+            'AWS DataSync moves large datasets between on-premises and AWS over the network, fast and automated.',
+            'AWS Storage Gateway gives on-premises systems hybrid access to AWS storage.',
+            'AWS Snow Family physically ships data when network transfer would be too slow for petabyte-scale migrations.',
+          ],
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 1,
+          question: 'A team needs to run serverless ETL jobs that crawl data, infer its schema, and convert CSV files in S3 to Parquet, without managing any servers. Which service fits?',
+          options: [
+            'Amazon EMR',
+            'AWS Glue',
+            'Amazon Athena',
+            'Amazon Kinesis Data Streams',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — AWS Glue is serverless ETL with a data catalog and crawlers, and it handles format conversions like CSV to Parquet without server management.',
+          elaborativePrompt: 'EMR can also do this transformation. Explain when a team would choose EMR over Glue despite Glue being serverless.',
+        },
+        {
+          afterSection: 2,
+          question: 'An analyst wants to run ad-hoc SQL queries directly against log files stored in Amazon S3 without loading them into a database or running a cluster. Which service is best?',
+          options: [
+            'Amazon Redshift',
+            'Amazon Athena',
+            'Amazon RDS',
+            'AWS Glue',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — Athena runs serverless SQL directly on data in S3, ideal for ad-hoc queries with no infrastructure to manage.',
+          elaborativePrompt: 'Redshift is also for analytics. Explain the trade-off between Athena (query-in-place on S3) and Redshift (loaded warehouse) for occasional vs heavy repeated queries.',
+        },
+      ],
+      selfExplanationPrompt: 'Explain to yourself an end-to-end analytics pipeline: how real-time events are ingested, how raw data lands in a data lake, how it is transformed to an efficient format, and how analysts query and visualize it. Name a service for each stage and justify it.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A company collects clickstream data from its website and must ingest it in real time, deliver it into an Amazon S3 data lake, and then run ad-hoc SQL analysis on the stored data. The company wants a fully managed, low-maintenance solution. Which combination of services BEST meets these requirements?',
+        options: [
+          'Amazon Data Firehose to deliver the stream into S3, then Amazon Athena to query the data in place',
+          'Batch-upload nightly files to S3, then restore them into Amazon RDS for querying',
+          'Amazon EMR running continuously to ingest and query the data',
+          'Amazon SQS to buffer events, then Amazon Redshift loaded hourly',
+        ],
+        correct: 0,
+        explanation: {
+          summary: 'Amazon Data Firehose is a fully managed stream-delivery service that lands real-time data into S3, and Athena runs serverless SQL directly on that S3 data — a low-maintenance, real-time-to-analysis pipeline.',
+          perOption: [
+            'Correct — Firehose handles managed real-time delivery to the S3 data lake and Athena queries it in place with no servers to manage.',
+            'Nightly batch uploads are not real-time, and loading into RDS adds management and is not ideal for data-lake-scale analytics.',
+            'A continuously running EMR cluster is high-maintenance and costly compared to the managed Firehose + Athena combination.',
+            'SQS is a message queue, not a streaming-to-storage delivery service, and hourly Redshift loads are not real-time ingestion.',
+          ],
+          link: 'Domain 3 · Task 3.5 — Determine high-performing data ingestion and transformation solutions',
+        },
+      },
+      videos: [],
+      keyTerms: [
+        { term: 'Amazon Kinesis Data Streams', def: 'A service for ingesting continuous, high-volume real-time data streams consumed by custom applications.' },
+        { term: 'Amazon Data Firehose', def: 'A managed service that delivers streaming data into destinations like S3, Redshift, and OpenSearch.' },
+        { term: 'AWS Glue', def: 'Serverless ETL with a data catalog and crawlers for transforming and cataloging data (e.g. CSV to Parquet).' },
+        { term: 'Amazon Athena', def: 'Serverless SQL query service that runs directly against data stored in Amazon S3.' },
+        { term: 'AWS Lake Formation', def: 'A service to build and centrally secure a data lake on Amazon S3 with fine-grained permissions.' },
+      ],
+      awsServices: [
+        { name: 'Amazon Kinesis', purpose: 'Real-time streaming ingestion (Data Streams) and managed delivery (Data Firehose) for continuous data.' },
+        { name: 'AWS Glue', purpose: 'Serverless ETL and data catalog for transforming, cataloging, and converting data formats.' },
+        { name: 'Amazon Athena', purpose: 'Serverless, pay-per-query SQL directly over data in Amazon S3.' },
+        { name: 'AWS Lake Formation', purpose: 'Builds and secures S3 data lakes with centralized, fine-grained access control.' },
+        { name: 'AWS DataSync', purpose: 'Fast, automated transfer of large datasets between on-premises and AWS over the network.' },
+      ],
+      examTips: [
+        'Real-time streaming ingestion → Kinesis (Data Streams = custom consumers; Firehose = managed delivery to S3/Redshift/OpenSearch).',
+        'Serverless ETL / schema discovery / CSV→Parquet → Glue. Big-data cluster control → EMR.',
+        'Ad-hoc SQL on S3 with no servers → Athena. Heavy repeated analytics on structured data → Redshift.',
+        'Network bulk transfer → DataSync; petabyte offline migration → Snow Family; secured S3 data lake → Lake Formation.',
+      ],
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    //  DOMAIN 4 — DESIGN COST-OPTIMIZED ARCHITECTURES (20%)
+    // ═══════════════════════════════════════════════════════════════
+
+    {
+      id: 'd4-s14',
+      number: 14,
+      module: 'Domain 4 · Design Cost-Optimized Architectures',
+      domain: 'd4',
+      weight: '20%',
+      task: 'Task 4.1',
+      title: 'Cost-Optimized Storage — Classes, Lifecycle, and Tiering',
+      duration: 30,
+      summary: 'Domain 4 is about spending the least to meet the requirement. This session optimizes storage cost: choosing S3 storage classes by access pattern, automating lifecycle transitions, picking the cheapest EBS option, and using the right data-transfer method.',
+      objectives: [
+        'Select the most cost-effective S3 storage class for an access pattern',
+        'Automate cost reduction with S3 Lifecycle policies and Intelligent-Tiering',
+        'Choose cost-effective EBS volume types and transfer methods',
+        'Use cost management tools to monitor and control storage spend',
+      ],
+      preLearningCheck: {
+        question: 'A company stores objects that must be retained for 7 years for compliance but are almost never accessed, and retrieval times of several hours are acceptable. Which S3 storage class is the most cost-effective?',
+        options: [
+          'S3 Standard',
+          'S3 Glacier Deep Archive',
+          'S3 Standard-Infrequent Access',
+          'S3 One Zone-Infrequent Access',
+        ],
+        correct: 1,
+        note: 'Rarely accessed, long-term archival with multi-hour retrieval tolerance is the Glacier Deep Archive signal — the lowest-cost class.',
+      },
+      sections: [
+        {
+          heading: 'S3 storage classes — pay for the access pattern',
+          interactive: 's3-storage-class',
+          body: 'S3 charges less for storage as you accept slower or less frequent access. Matching the class to the access pattern is the core cost lever.',
+          table: {
+            headers: ['Class', 'Access pattern', 'Notes'],
+            rows: [
+              ['S3 Standard', 'Frequent', 'Default; highest storage cost, no retrieval fee'],
+              ['S3 Standard-IA', 'Infrequent, rapid when needed', 'Lower storage cost, per-GB retrieval fee'],
+              ['S3 One Zone-IA', 'Infrequent, re-creatable', 'Cheaper than Standard-IA but stored in one AZ (less resilient)'],
+              ['S3 Glacier Instant Retrieval', 'Archive, millisecond access', 'Cheap archive when you still need instant reads'],
+              ['S3 Glacier Flexible / Deep Archive', 'Rare archive, minutes-to-hours retrieval', 'Lowest cost; Deep Archive is cheapest for long-term compliance'],
+            ],
+          },
+        },
+        {
+          heading: 'Intelligent-Tiering for unknown patterns',
+          body: 'When access patterns are unknown or changing, S3 Intelligent-Tiering automatically moves objects between tiers based on usage, with no retrieval fees, for a small monitoring charge. It is the exam answer for "unpredictable or unknown access patterns" where you do not want to manage lifecycle rules manually.',
+          callout: { type: 'tip', text: '"Unknown/changing access pattern, no operational overhead" → Intelligent-Tiering. "Known pattern, predictable transitions" → Lifecycle policy to a specific class.' },
+        },
+        {
+          heading: 'Lifecycle policies — automate the transitions',
+          body: 'S3 Lifecycle rules move objects to cheaper classes or expire them on a schedule, removing manual effort.',
+          bullets: [
+            'Transition objects to IA after 30 days, to Glacier after 90, expire after a retention period — all automatically.',
+            'Combine with versioning rules to expire old non-current versions and clean up incomplete multipart uploads.',
+            'Lifecycle is the cost answer when the access pattern is predictable over the object\'s life.',
+          ],
+        },
+        {
+          heading: 'Block storage cost and data transfer',
+          body: 'Storage cost optimization extends beyond S3.',
+          bullets: [
+            'gp3 is generally cheaper than gp2 and lets you pay for only the IOPS/throughput you need; HDD (st1/sc1) is cheaper for large sequential or cold data.',
+            'Delete unattached EBS volumes and old snapshots — a common source of silent waste flagged by Trusted Advisor.',
+            'For one-time bulk migration, AWS Snow Family is cheaper and faster than transferring petabytes over the network; DataSync suits ongoing network transfer.',
+            'Track spend with AWS Cost Explorer, set guardrails with AWS Budgets, and use cost allocation tags to attribute storage cost to teams.',
+          ],
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 1,
+          question: 'A company has a large set of objects whose access frequency is unpredictable and varies over time, and it wants to minimize cost without writing lifecycle rules or risking retrieval fees. Which option fits?',
+          options: [
+            'S3 Standard for everything',
+            'S3 Intelligent-Tiering',
+            'S3 One Zone-IA',
+            'A manual monthly review to move objects',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — Intelligent-Tiering automatically shifts objects between access tiers based on usage with no retrieval fees and minimal management, ideal for unpredictable patterns.',
+          elaborativePrompt: 'Intelligent-Tiering charges a small per-object monitoring fee. Explain when a known, stable access pattern would make a plain Lifecycle policy cheaper than Intelligent-Tiering.',
+        },
+        {
+          afterSection: 0,
+          question: 'Re-creatable thumbnail images are accessed infrequently, and the company is comfortable regenerating them if lost. Which S3 class minimizes cost for this data?',
+          options: [
+            'S3 Standard',
+            'S3 One Zone-IA',
+            'S3 Glacier Deep Archive',
+            'S3 Standard-IA',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — One Zone-IA is cheaper than Standard-IA and its single-AZ storage is acceptable because the data is re-creatable if that AZ is lost.',
+          elaborativePrompt: 'Why is One Zone-IA inappropriate for irreplaceable data even when it is accessed infrequently? Connect this to the durability/availability trade-off.',
+        },
+      ],
+      selfExplanationPrompt: 'Explain to yourself how you would cost-optimize storage for a dataset whose objects are hot for 30 days, occasionally accessed for a year, then kept for compliance for 7 years. Decide between lifecycle policies and Intelligent-Tiering, and name the classes you would transition through.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A company stores application logs in Amazon S3. The logs are accessed frequently for the first 30 days, rarely after that, and must be retained for 7 years to satisfy compliance. Retrieval of old logs can take several hours if ever needed. Which approach minimizes storage cost with the LEAST operational overhead?',
+        options: [
+          'Keep all logs in S3 Standard for the full 7 years',
+          'Create an S3 Lifecycle policy that moves logs to S3 Standard-IA after 30 days and to S3 Glacier Deep Archive for long-term retention',
+          'Manually copy old logs to a cheaper bucket each month',
+          'Store all logs in S3 One Zone-IA from day one',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'A Lifecycle policy automatically transitions logs from Standard to Standard-IA at 30 days and then to Glacier Deep Archive for cheap long-term compliance retention — matching the access pattern with no manual effort.',
+          perOption: [
+            'Keeping everything in Standard for 7 years pays premium storage rates for data that is almost never accessed.',
+            'Correct — Lifecycle transitions align cost with the known access pattern automatically; Deep Archive is cheapest for rarely accessed compliance data.',
+            'Manual monthly copying is operational overhead and error-prone compared to an automated Lifecycle policy.',
+            'One Zone-IA from day one risks data loss if the AZ fails (logs needed for compliance are not re-creatable) and is not optimal for the first 30 days of frequent access.',
+          ],
+          link: 'Domain 4 · Task 4.1 — Design cost-optimized storage solutions',
+        },
+      },
+      videos: [],
+      keyTerms: [
+        { term: 'S3 storage class', def: 'A tier of S3 storage priced by access frequency and retrieval speed, from Standard to Glacier Deep Archive.' },
+        { term: 'S3 Intelligent-Tiering', def: 'A class that auto-moves objects between access tiers based on usage, with no retrieval fees, for unknown patterns.' },
+        { term: 'S3 Lifecycle policy', def: 'Rules that automatically transition objects to cheaper classes or expire them on a schedule.' },
+        { term: 'S3 Glacier Deep Archive', def: 'The lowest-cost S3 class for rarely accessed, long-term archival data with multi-hour retrieval.' },
+        { term: 'Cost allocation tags', def: 'Tags that attribute AWS cost to teams, projects, or environments in billing reports.' },
+      ],
+      awsServices: [
+        { name: 'Amazon S3 (storage classes)', purpose: 'Tiered object storage priced by access pattern; Lifecycle and Intelligent-Tiering reduce cost automatically.' },
+        { name: 'AWS Cost Explorer', purpose: 'Visualizes and analyzes AWS spend and usage trends over time.' },
+        { name: 'AWS Budgets', purpose: 'Sets cost/usage thresholds and alerts when spend is forecast to exceed them.' },
+        { name: 'AWS Snow Family', purpose: 'Physical devices for cost-effective, fast bulk data migration when network transfer is too slow.' },
+        { name: 'AWS Trusted Advisor', purpose: 'Flags cost-optimization opportunities like idle resources and unattached volumes.' },
+      ],
+      examTips: [
+        'Unknown/changing access pattern, no overhead → S3 Intelligent-Tiering. Known pattern → Lifecycle policy.',
+        'Rare, long-term archive with hours-OK retrieval → Glacier Deep Archive (cheapest). Instant archive reads → Glacier Instant Retrieval.',
+        'Re-creatable, infrequent data → One Zone-IA. Irreplaceable data → never One Zone-IA.',
+        'gp3 < gp2 in cost; delete unattached volumes/old snapshots; petabyte one-time migration → Snow Family.',
+      ],
+    },
+
+    // ─────────────────────────────────────────────────────────────
+    {
+      id: 'd4-s15',
+      number: 15,
+      module: 'Domain 4 · Design Cost-Optimized Architectures',
+      domain: 'd4',
+      weight: '20%',
+      task: 'Task 4.2',
+      title: 'Cost-Optimized Compute — Purchasing Options and Right-Sizing',
+      duration: 30,
+      summary: 'This session cuts compute cost. You will learn the EC2 purchasing options (On-Demand, Reserved, Savings Plans, Spot) and which workload each fits, plus right-sizing, auto scaling, and serverless as cost levers.',
+      objectives: [
+        'Match EC2 purchasing options to workload patterns for lowest cost',
+        'Use Spot Instances for fault-tolerant, flexible workloads',
+        'Right-size compute and use auto scaling to avoid paying for idle capacity',
+        'Choose cost-effective compute services (Lambda, Fargate, EC2) for a workload',
+      ],
+      preLearningCheck: {
+        question: 'A company runs a fault-tolerant batch image-processing job that can be interrupted and resumed at any time, and wants to minimize compute cost. Which EC2 purchasing option fits best?',
+        options: [
+          'On-Demand Instances',
+          'Spot Instances',
+          'Reserved Instances (3-year, no upfront)',
+          'Dedicated Hosts',
+        ],
+        correct: 1,
+        note: 'Fault-tolerant, interruptible, flexible-timing work is the Spot signal — up to ~90% cheaper, at the cost of possible interruption.',
+      },
+      sections: [
+        {
+          heading: 'The four purchasing options',
+          body: 'EC2 pricing is a major exam topic. Match the commitment model to the workload pattern.',
+          table: {
+            headers: ['Option', 'Best for', 'Savings vs On-Demand'],
+            rows: [
+              ['On-Demand', 'Short-term, spiky, unpredictable, or first-time workloads', 'Baseline (none)'],
+              ['Savings Plans', 'Steady, predictable usage; flexible across instance family/Region/compute type', 'Up to ~72%'],
+              ['Reserved Instances', 'Steady-state workloads on a known instance type for 1 or 3 years', 'Up to ~72%'],
+              ['Spot Instances', 'Fault-tolerant, interruptible, flexible workloads', 'Up to ~90%'],
+            ],
+          },
+          callout: { type: 'tip', text: 'Workload-to-option reflexes: spiky/unknown → On-Demand. Steady 24/7 baseline → Savings Plans or Reserved. Interruptible batch/CI/big-data → Spot. Savings Plans add flexibility Reserved Instances lack.' },
+        },
+        {
+          heading: 'Savings Plans vs Reserved Instances',
+          body: 'Both reward commitment with discounts; the difference is flexibility.',
+          bullets: [
+            'Compute Savings Plans apply across instance families, sizes, Regions, and even Fargate/Lambda — maximum flexibility.',
+            'EC2 Instance Savings Plans commit to a family in a Region for a deeper discount.',
+            'Reserved Instances commit to specific attributes; Convertible RIs allow some changes, Standard RIs the least.',
+            'For most "predictable steady-state, want flexibility" scenarios, Savings Plans are the modern preferred answer.',
+          ],
+        },
+        {
+          heading: 'Spot for the right workloads',
+          body: 'Spot Instances use spare AWS capacity at steep discounts but can be reclaimed with a short notice.',
+          bullets: [
+            'Ideal for batch jobs, CI/CD, big-data processing, and stateless web tiers that tolerate interruption.',
+            'Not for stateful, time-critical, or single-instance workloads that cannot be interrupted.',
+            'Combine Spot with On-Demand/Reserved in an Auto Scaling group (mixed instances) to balance cost and reliability.',
+          ],
+        },
+        {
+          heading: 'Right-sizing, scaling, and serverless',
+          body: 'Buying cheaper is only half of cost optimization; not over-provisioning is the other half.',
+          bullets: [
+            'Use AWS Compute Optimizer to right-size instances from real utilization data.',
+            'Auto Scaling removes idle capacity automatically — scale in when demand drops so you stop paying for unused instances.',
+            'Serverless (Lambda, Fargate) eliminates idle cost entirely for spiky or low-utilization workloads — you pay only when running.',
+            'Graviton (Arm-based) instances often deliver better price-performance for compatible workloads.',
+          ],
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 0,
+          question: 'A company runs a production web application 24/7 on a predictable, steady fleet and wants to reduce cost while keeping flexibility to change instance families over the commitment term. Which option fits best?',
+          options: [
+            'On-Demand Instances',
+            'Compute Savings Plans',
+            'Spot Instances',
+            'Standard Reserved Instances locked to one instance type',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — Compute Savings Plans give deep discounts for steady usage while remaining flexible across instance families, sizes, and Regions.',
+          elaborativePrompt: 'Spot is cheaper still. Explain why Spot would be the wrong choice for a steady 24/7 production web tier despite the larger discount.',
+        },
+        {
+          afterSection: 2,
+          question: 'A CI/CD system runs many short, interruptible build jobs throughout the day and can simply retry any job that is interrupted. Which purchasing option minimizes cost?',
+          options: [
+            'Reserved Instances',
+            'Spot Instances',
+            'On-Demand Instances',
+            'Dedicated Hosts',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — interruptible, retry-safe build jobs are a textbook Spot use case, capturing the largest discount.',
+          elaborativePrompt: 'How would you combine Spot with On-Demand in an Auto Scaling group so that build throughput stays acceptable even when Spot capacity is reclaimed?',
+        },
+      ],
+      selfExplanationPrompt: 'Explain to yourself how you would price the compute for a system with three parts: an always-on web tier, an interruptible nightly batch job, and an unpredictable new feature still being load-tested. Assign a purchasing option to each and justify it.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A company runs a steady, predictable production workload on Amazon EC2 around the clock and expects to keep running it for at least the next three years. The company wants the lowest cost while retaining the flexibility to change instance families and Regions as the architecture evolves. Which purchasing approach BEST meets these requirements?',
+        options: [
+          'Run entirely on On-Demand Instances',
+          'Purchase a 3-year Compute Savings Plan',
+          'Use Spot Instances for the entire workload',
+          'Buy 3-year Standard Reserved Instances locked to the current instance type',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'A 3-year Compute Savings Plan gives a deep discount for committed steady usage while staying flexible across instance families, sizes, and Regions — matching both the cost and flexibility requirements.',
+          perOption: [
+            'On-Demand is the most expensive option for steady 24/7 usage and captures no commitment discount.',
+            'Correct — Compute Savings Plans deliver the lowest cost for predictable usage while preserving family/Region flexibility.',
+            'Spot can be reclaimed at any time, which is unacceptable for a steady production workload that must stay running.',
+            'Standard Reserved Instances give a similar discount but lock to specific attributes, failing the flexibility requirement.',
+          ],
+          link: 'Domain 4 · Task 4.2 — Design cost-optimized compute solutions',
+        },
+      },
+      videos: [],
+      keyTerms: [
+        { term: 'On-Demand Instances', def: 'Pay-per-use EC2 with no commitment; best for short-term, spiky, or unpredictable workloads.' },
+        { term: 'Savings Plans', def: 'A commitment to a consistent amount of compute usage for 1 or 3 years in exchange for a discount, with family/Region flexibility.' },
+        { term: 'Reserved Instances', def: 'A 1- or 3-year commitment to specific instance attributes for a discount over On-Demand.' },
+        { term: 'Spot Instances', def: 'Spare EC2 capacity at up to ~90% discount that can be reclaimed; for fault-tolerant, interruptible workloads.' },
+        { term: 'AWS Compute Optimizer', def: 'A service that recommends right-sized instance types and sizes from actual utilization.' },
+      ],
+      awsServices: [
+        { name: 'Amazon EC2 (purchasing options)', purpose: 'On-Demand, Savings Plans, Reserved, and Spot models to match cost to workload pattern.' },
+        { name: 'AWS Compute Optimizer', purpose: 'Recommends right-sizing of EC2, Auto Scaling groups, Lambda, and EBS from real metrics.' },
+        { name: 'Amazon EC2 Auto Scaling', purpose: 'Removes idle capacity by scaling in when demand drops, cutting cost.' },
+        { name: 'AWS Lambda', purpose: 'Serverless compute with no idle cost — pay only per invocation and duration.' },
+        { name: 'AWS Cost Explorer', purpose: 'Analyzes spend and surfaces Savings Plans/Reserved Instance recommendations.' },
+      ],
+      examTips: [
+        'Spiky/unknown → On-Demand. Steady 24/7 + flexibility → Savings Plans. Steady, fixed type → Reserved. Interruptible → Spot.',
+        'Savings Plans flex across family/Region/Fargate/Lambda; Reserved Instances lock attributes.',
+        'Cut idle cost: right-size (Compute Optimizer), scale in (Auto Scaling), or go serverless (Lambda/Fargate).',
+        'Spot for batch/CI/big-data/stateless; never for stateful, time-critical, single-instance workloads.',
+      ],
+    },
+
+    // ─────────────────────────────────────────────────────────────
+    {
+      id: 'd4-s16',
+      number: 16,
+      module: 'Domain 4 · Design Cost-Optimized Architectures',
+      domain: 'd4',
+      weight: '20%',
+      task: 'Tasks 4.3 & 4.4',
+      title: 'Cost-Optimized Databases and Networking',
+      duration: 30,
+      summary: 'The final session optimizes database and network cost — the two areas where silent spend hides. You will learn cost-effective database choices and the network cost traps (NAT gateways, data transfer) that the exam loves to test.',
+      objectives: [
+        'Choose cost-effective database types and capacity modes for a workload',
+        'Apply backup, retention, and serverless options to control database cost',
+        'Reduce network cost from NAT gateways and data transfer',
+        'Use VPC endpoints, CloudFront, and routing choices to minimize transfer charges',
+      ],
+      preLearningCheck: {
+        question: 'EC2 instances in a private subnet only need to read and write objects in Amazon S3, and the team wants to avoid the data-processing charges of routing that traffic through a NAT gateway. What should the architect add?',
+        options: [
+          'A second NAT gateway for redundancy',
+          'An S3 gateway VPC endpoint',
+          'A public IP address on each instance',
+          'An internet gateway attached to the private subnet',
+        ],
+        correct: 1,
+        note: 'A gateway VPC endpoint for S3 (and DynamoDB) routes traffic privately and is free, removing both NAT data-processing charges and internet exposure. A classic SAA cost trap.',
+      },
+      sections: [
+        {
+          heading: 'Cost-effective database choices',
+          body: 'Database cost optimization starts with picking the right type and capacity mode, not just a smaller instance.',
+          bullets: [
+            'DynamoDB on-demand for spiky/unpredictable traffic (pay per request); provisioned with auto scaling for steady, predictable load (cheaper at consistent volume).',
+            'Aurora Serverless v2 scales database capacity automatically and is cost-effective for variable or intermittent workloads.',
+            'Match engine to need: a managed service (RDS/Aurora/DynamoDB) usually beats self-managing a database on EC2 on total cost.',
+            'For analytics, a columnar warehouse (Redshift) or query-in-place (Athena) is cheaper than forcing analytics onto an OLTP database.',
+          ],
+          callout: { type: 'tip', text: '"Unpredictable/intermittent database traffic, do not want to manage capacity" → on-demand / serverless (DynamoDB on-demand, Aurora Serverless). "Steady, predictable" → provisioned capacity.' },
+        },
+        {
+          heading: 'Backups, retention, and replicas',
+          body: 'Data protection has a cost dial too.',
+          bullets: [
+            'Set snapshot frequency and retention to the actual recovery requirement — do not keep more snapshots, longer, than needed.',
+            'Read replicas add cost; add them for genuine read-scaling needs, not by default.',
+            'Lifecycle and tiering apply to backups too (e.g. cold storage for old backups via AWS Backup).',
+          ],
+        },
+        {
+          heading: 'The network cost traps',
+          body: 'Networking is where unexpected charges accumulate. The exam tests the well-known traps.',
+          table: {
+            headers: ['Trap', 'Cheaper approach'],
+            rows: [
+              ['NAT gateway data-processing charges for AWS-service traffic', 'Use VPC gateway endpoints (free) for S3/DynamoDB; interface endpoints for other services'],
+              ['Cross-AZ data transfer charges', 'Keep chatty components in the same AZ where resilience allows; be deliberate about cross-AZ traffic'],
+              ['High origin egress for repeated content', 'Put Amazon CloudFront in front to cache and cut origin data-transfer cost'],
+              ['One NAT gateway per AZ when traffic is light', 'Balance HA (per-AZ NAT) against cost (a shared NAT) per the requirement'],
+            ],
+          },
+        },
+        {
+          heading: 'Connectivity and routing cost',
+          body: 'Choose connectivity and topology with cost in mind.',
+          bullets: [
+            'Direct Connect has setup and port cost but lower per-GB transfer than internet/VPN for steady high volume; VPN is cheaper to start for low volume.',
+            'Data transfer out to the internet is charged; transfer in is generally free — design accordingly.',
+            'Transit Gateway simplifies many-VPC connectivity but adds per-attachment and data-processing cost; VPC peering has no per-hour charge for a few VPCs.',
+            'Use Cost Explorer and cost allocation tags to find which workloads drive transfer cost.',
+          ],
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 2,
+          question: 'A workload generates high data-transfer cost because private instances reach Amazon S3 and DynamoDB through a NAT gateway. Which change reduces this cost the most?',
+          options: [
+            'Add more NAT gateways',
+            'Create gateway VPC endpoints for S3 and DynamoDB',
+            'Move the instances to public subnets with public IPs',
+            'Switch the instances to larger types',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — gateway VPC endpoints route S3 and DynamoDB traffic privately for free, removing the NAT gateway data-processing charges entirely.',
+          elaborativePrompt: 'Gateway endpoints are free, but interface endpoints (for most other services) have an hourly and per-GB charge. Explain why endpoints can still be worth it versus NAT for those services.',
+        },
+        {
+          afterSection: 0,
+          question: 'An application has highly unpredictable, intermittent database traffic and the team does not want to plan or pay for capacity during idle periods. Which option is most cost-effective?',
+          options: [
+            'A large provisioned RDS instance running continuously',
+            'DynamoDB on-demand capacity (or Aurora Serverless)',
+            'A 3-year Reserved database instance',
+            'Provisioned DynamoDB capacity set to peak',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — on-demand/serverless database options charge for actual usage and scale to near-zero when idle, ideal for unpredictable, intermittent traffic.',
+          elaborativePrompt: 'At very high, steady request volumes, provisioned capacity can be cheaper than on-demand. Explain the crossover point that flips the cost-optimal choice.',
+        },
+      ],
+      selfExplanationPrompt: 'Explain to yourself how you would cut the bill for an architecture with a private subnet talking to S3 through a NAT gateway, a chatty service spread across AZs, and a globally accessed asset library — naming the specific change for each cost trap and why it works.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A company runs application servers in private subnets that frequently read and write large volumes of data to Amazon S3. The data passes through a NAT gateway, and the company is seeing high NAT gateway data-processing charges. The company wants to reduce these costs while keeping the traffic private. Which solution meets these requirements MOST cost-effectively?',
+        options: [
+          'Add additional NAT gateways to distribute the load',
+          'Create an S3 gateway VPC endpoint so traffic to S3 bypasses the NAT gateway',
+          'Move the application servers into public subnets',
+          'Replace the NAT gateway with a NAT instance on a small EC2 type',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'An S3 gateway VPC endpoint routes S3 traffic privately within the AWS network at no charge, eliminating the NAT gateway data-processing cost while keeping the servers private.',
+          perOption: [
+            'More NAT gateways increase cost rather than reduce it and still process the same S3 traffic.',
+            'Correct — a gateway VPC endpoint for S3 is free, removes NAT data-processing charges, and keeps traffic private.',
+            'Moving servers to public subnets exposes them to the internet, violating the private-traffic requirement.',
+            'A NAT instance shifts management burden to the company and still processes the traffic; it does not eliminate the per-GB cost the way an endpoint does.',
+          ],
+          link: 'Domain 4 · Task 4.4 — Design cost-optimized network architectures',
+        },
+      },
+      videos: [],
+      keyTerms: [
+        { term: 'DynamoDB on-demand', def: 'A capacity mode charging per request that scales automatically — cost-effective for unpredictable traffic.' },
+        { term: 'Aurora Serverless', def: 'An Aurora mode that auto-scales database capacity, cost-effective for variable or intermittent workloads.' },
+        { term: 'Gateway VPC endpoint', def: 'A free endpoint for S3 and DynamoDB that routes traffic privately, avoiding NAT and its data-processing charges.' },
+        { term: 'Cross-AZ data transfer', def: 'Charges incurred when data moves between Availability Zones; a common hidden cost.' },
+        { term: 'Data transfer out', def: 'The charge for data leaving AWS to the internet; transfer in is generally free.' },
+      ],
+      awsServices: [
+        { name: 'Amazon DynamoDB', purpose: 'On-demand and provisioned capacity modes to match database cost to traffic pattern.' },
+        { name: 'Amazon Aurora Serverless', purpose: 'Auto-scaling relational capacity that is cost-effective for variable workloads.' },
+        { name: 'VPC endpoints', purpose: 'Private access to AWS services; gateway endpoints (S3/DynamoDB) are free and avoid NAT charges.' },
+        { name: 'Amazon CloudFront', purpose: 'Caches content at the edge to reduce repeated origin egress and data-transfer cost.' },
+        { name: 'AWS Cost Explorer', purpose: 'Identifies which workloads drive data-transfer and database spend.' },
+      ],
+      examTips: [
+        'Private instances reaching S3/DynamoDB → free gateway VPC endpoint (removes NAT data-processing cost).',
+        'Unpredictable/intermittent DB traffic → on-demand / serverless; steady high volume → provisioned.',
+        'Cut repeated origin egress → CloudFront. Watch cross-AZ and data-transfer-out charges; transfer in is usually free.',
+        'Per-AZ NAT (HA) vs shared NAT (cost) — pick per the requirement. Tag resources to attribute cost.',
       ],
     },
 

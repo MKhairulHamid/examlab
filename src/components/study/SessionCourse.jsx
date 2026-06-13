@@ -832,6 +832,125 @@ function InterpretabilityTradeoffWidget() {
   )
 }
 
+// ── Reusable scenario sorter: match each scenario to the right category ───────
+// Used across the SAA-C03 course for "pick the right choice" exam patterns.
+function ScenarioSorter({ title, intro, cats, items }) {
+  const [picks, setPicks] = useState({})
+  const score = items.reduce((s, it, i) => s + (picks[i] === it.a ? 1 : 0), 0)
+  const answered = Object.keys(picks).length
+  return (
+    <WidgetShell title={title} intro={intro}>
+      <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '0.875rem' }}>
+        {cats.map(c => (
+          <div key={c.id} style={{ flex: '1 1 150px', fontSize: '0.7rem', color: '#475569', borderLeft: `3px solid ${c.color}`, paddingLeft: '0.5rem' }}>
+            <strong style={{ color: c.color }}>{c.label}</strong><br />{c.desc}
+          </div>
+        ))}
+      </div>
+      {items.map((it, i) => {
+        const chosen = picks[i]
+        const correct = chosen === it.a
+        return (
+          <div key={i} style={{ background: 'white', border: '1.5px solid #e2e8f0', borderRadius: '0.6rem', padding: '0.6rem 0.7rem', marginBottom: '0.6rem' }}>
+            <div style={{ fontSize: '0.82rem', color: NAVY, marginBottom: '0.5rem', lineHeight: 1.45 }}>{it.t}</div>
+            <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+              {cats.map(c => {
+                const sel = chosen === c.id
+                return (
+                  <button key={c.id} onClick={() => setPicks(p => ({ ...p, [i]: c.id }))}
+                    style={{
+                      fontSize: '0.72rem', fontWeight: 700, padding: '0.34rem 0.65rem', borderRadius: '0.4rem', cursor: 'pointer',
+                      border: `1.5px solid ${sel ? c.color : '#cbd5e1'}`,
+                      background: sel ? c.color : 'white', color: sel ? 'white' : '#475569',
+                    }}>{c.label}</button>
+                )
+              })}
+            </div>
+            {chosen && (
+              <div style={{ marginTop: '0.5rem', fontSize: '0.72rem', fontWeight: 600, lineHeight: 1.45, color: correct ? '#15803d' : '#b91c1c' }}>
+                {correct ? '✓ Correct — ' : '✗ Not quite — '}{it.why}
+              </div>
+            )}
+          </div>
+        )
+      })}
+      <div style={{ fontSize: '0.8rem', fontWeight: 700, color: NAVY, marginTop: '0.4rem' }}>
+        Score: {score} / {items.length}{answered === items.length && score === items.length ? ' — perfect!' : ''}
+      </div>
+    </WidgetShell>
+  )
+}
+
+// ── SAA D1 (Session 3): Security Group vs Network ACL ─────────────────────────
+function SgVsNaclWidget() {
+  return (
+    <ScenarioSorter
+      title="Security Group vs Network ACL — Sort It"
+      intro="Both are VPC firewalls, but at different layers and with different behavior. Tag each statement with the control it describes — the card confirms instantly."
+      cats={[
+        { id: 'sg', label: 'Security Group', color: '#2563eb', desc: 'Stateful, allow-only, at the instance / ENI level' },
+        { id: 'nacl', label: 'Network ACL', color: '#7c3aed', desc: 'Stateless, allow + deny, at the subnet level' },
+      ]}
+      items={[
+        { t: 'Automatically allows return traffic for any flow you permit', a: 'sg', why: 'Stateful — responses to an allowed request are permitted without a return rule.' },
+        { t: 'Explicitly denies a specific range of malicious IP addresses', a: 'nacl', why: 'Only network ACLs support deny rules; security groups are allow-only.' },
+        { t: 'Evaluated at the subnet boundary in numbered rule order', a: 'nacl', why: 'NACLs act at the subnet and process rules in order, first match wins.' },
+        { t: 'Can reference another security group as its source', a: 'sg', why: 'Security groups can reference each other to control instance-to-instance traffic.' },
+        { t: 'Needs an explicit outbound rule to allow response traffic', a: 'nacl', why: 'Stateless — return traffic must be allowed explicitly.' },
+        { t: 'Attached directly to an EC2 network interface', a: 'sg', why: 'Security groups operate at the resource (ENI) level.' },
+      ]}
+    />
+  )
+}
+
+// ── SAA D2 (Session 8): Disaster Recovery strategy selector ───────────────────
+function DrStrategyWidget() {
+  return (
+    <ScenarioSorter
+      title="Pick the DR Strategy"
+      intro="Disaster recovery is a spectrum from cheap-and-slow to costly-and-instant. Match each requirement to the strategy that fits its RPO, RTO, and budget."
+      cats={[
+        { id: 'br', label: 'Backup & Restore', color: '#64748b', desc: 'Cheapest; RPO/RTO in hours' },
+        { id: 'pl', label: 'Pilot Light', color: '#0891b2', desc: 'Core data live; rest provisioned on disaster' },
+        { id: 'ws', label: 'Warm Standby', color: '#d97706', desc: 'Scaled-down full stack always running' },
+        { id: 'aa', label: 'Active-Active', color: '#16a34a', desc: 'Both Regions live; near-zero RPO/RTO' },
+      ]}
+      items={[
+        { t: 'An internal dev tool where a full day of downtime is fine and cost must be minimal', a: 'br', why: 'Relaxed RPO/RTO plus a cost priority points to backup & restore, the cheapest option.' },
+        { t: 'Keep only the database replicated and running; launch the rest after a disaster', a: 'pl', why: 'A live core (data) with everything else provisioned on disaster is pilot light.' },
+        { t: 'A scaled-down but always-running copy of the full stack, scaled up on failover', a: 'ws', why: 'A smaller live full stack is warm standby — recovery in minutes.' },
+        { t: 'A payment system needing near-zero downtime and near-zero data loss across Regions', a: 'aa', why: 'Near-zero RPO/RTO across Regions requires active-active.' },
+        { t: 'Recover by provisioning the environment from backups only when it is needed', a: 'br', why: 'Provisioning from backups on demand is backup & restore.' },
+        { t: 'A global application already serving live traffic from two Regions at once', a: 'aa', why: 'Multiple Regions serving simultaneously is active-active (multi-site).' },
+      ]}
+    />
+  )
+}
+
+// ── SAA D4 (Session 14): S3 storage class chooser ─────────────────────────────
+function S3StorageClassWidget() {
+  return (
+    <ScenarioSorter
+      title="Choose the Cheapest S3 Storage Class"
+      intro="S3 charges less as you accept slower or rarer access. Match each access pattern to the most cost-effective storage class."
+      cats={[
+        { id: 'std', label: 'S3 Standard', color: '#2563eb', desc: 'Frequent access; highest storage cost' },
+        { id: 'ia', label: 'Standard-IA', color: '#0891b2', desc: 'Infrequent, needs rapid access; retrieval fee' },
+        { id: 'oz', label: 'One Zone-IA', color: '#d97706', desc: 'Infrequent + re-creatable; single AZ' },
+        { id: 'gda', label: 'Glacier Deep Archive', color: '#7c3aed', desc: 'Rare archive; hours to retrieve; cheapest' },
+      ]}
+      items={[
+        { t: 'Active images on a busy website, served thousands of times per day', a: 'std', why: 'Frequent access with no retrieval fee is S3 Standard.' },
+        { t: 'Compliance records kept 7 years, almost never read, hours-to-retrieve acceptable', a: 'gda', why: 'Rare, long-term archival with multi-hour retrieval is Glacier Deep Archive — the cheapest.' },
+        { t: 'Monthly reports accessed occasionally but needed instantly when requested', a: 'ia', why: 'Infrequent access that must still be immediate is Standard-IA.' },
+        { t: 'Re-creatable thumbnails accessed rarely and safe to regenerate if lost', a: 'oz', why: 'Infrequent and re-creatable suits cheaper single-AZ One Zone-IA.' },
+        { t: 'Old backups retained for years that are essentially never accessed', a: 'gda', why: 'Rarely accessed long-term data belongs in Glacier Deep Archive.' },
+        { t: 'A new dataset whose objects are read constantly during its first month', a: 'std', why: 'Constant access means S3 Standard (transition later via a lifecycle rule).' },
+      ]}
+    />
+  )
+}
+
 const INTERACTIVE_WIDGETS = {
   'precision-recall': PrecisionRecallWidget,
   'inference-parameters': InferenceParametersWidget,
@@ -840,6 +959,9 @@ const INTERACTIVE_WIDGETS = {
   'rag-vs-finetune': RagVsFineTuneWidget,
   'ngram-overlap': NgramOverlapWidget,
   'interpretability-tradeoff': InterpretabilityTradeoffWidget,
+  'sg-vs-nacl': SgVsNaclWidget,
+  'dr-strategy': DrStrategyWidget,
+  's3-storage-class': S3StorageClassWidget,
 }
 
 // ─── Small renderers ──────────────────────────────────────────────────────────
