@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MLA-C01 Exam Guide — CloudExamLab Wiki</title>
+  <style>
+    :root {
+      --sidebar-w: 255px;
+      --sidebar-bg: #0f172a;
+      --sidebar-text: #94a3b8;
+      --sidebar-active-text: #38bdf8;
+      --sidebar-active-bg: rgba(56,189,248,0.08);
+      --sidebar-hover: #1e293b;
+      --accent: #2563eb;
+      --accent-light: #eff6ff;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --heading: #0f172a;
+      --code-bg: #1e293b;
+      --code-text: #e2e8f0;
+      --stripe: #f8fafc;
+      --warn-bg: #fef2f2;
+      --warn-border: #ef4444;
+      --tip-bg: #f0fdf4;
+      --tip-border: #22c55e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--text);
+      line-height: 1.65;
+      background: #fff;
+    }
+
+    /* ── Sidebar ── */
+    #sidebar {
+      position: fixed; top: 0; left: 0;
+      width: var(--sidebar-w); height: 100vh;
+      background: var(--sidebar-bg);
+      overflow-y: auto; z-index: 100;
+      display: flex; flex-direction: column;
+    }
+    #sidebar::-webkit-scrollbar { width: 4px; }
+    #sidebar::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+    .sb-header {
+      padding: 20px 16px 14px;
+      border-bottom: 1px solid #1e293b;
+    }
+    .sb-logo { font-size: 13px; font-weight: 700; color: #f1f5f9; letter-spacing: .06em; text-transform: uppercase; }
+    .sb-sub  { font-size: 11px; color: var(--sidebar-text); margin-top: 2px; }
+    .sb-group { padding: 10px 0 2px; }
+    .sb-group-label {
+      font-size: 10px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: #475569;
+      padding: 0 16px; margin-bottom: 3px;
+    }
+    .sb-item {
+      display: block; padding: 6px 16px;
+      font-size: 12.5px; color: var(--sidebar-text);
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: background .12s, color .12s;
+    }
+    .sb-item:hover { background: var(--sidebar-hover); color: #f1f5f9; }
+    .sb-item.active { color: var(--sidebar-active-text); border-left-color: var(--sidebar-active-text); background: var(--sidebar-active-bg); }
+    .sb-item.ext { color: #60a5fa; }
+    .sb-item.ext::after { content: ' ↗'; font-size: 10px; }
+
+    /* ── Main ── */
+    #main {
+      margin-left: var(--sidebar-w);
+      padding: 48px 64px 96px;
+      max-width: calc(var(--sidebar-w) + 880px);
+    }
+
+    /* ── Section ── */
+    .section { padding-top: 52px; border-top: 1px solid var(--border); margin-top: 28px; }
+    .section:first-of-type { border-top: none; margin-top: 0; padding-top: 0; }
+
+    /* ── Typography ── */
+    h1 { font-size: 27px; font-weight: 700; color: var(--heading); margin-bottom: 10px; }
+    h2 { font-size: 19px; font-weight: 700; color: var(--heading); margin-top: 38px; margin-bottom: 14px; }
+    h3 { font-size: 15px; font-weight: 600; color: var(--heading); margin-top: 24px; margin-bottom: 8px; }
+    p  { margin-bottom: 12px; }
+    a  { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ul, ol { padding-left: 22px; margin-bottom: 12px; }
+    li { margin-bottom: 4px; }
+    hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+    .section-meta { font-size: 14px; color: var(--text-muted); margin-bottom: 26px; margin-top: -4px; }
+
+    /* ── Chip label ── */
+    .chip {
+      display: inline-block; padding: 2px 9px; border-radius: 4px;
+      font-size: 10px; font-weight: 700; letter-spacing: .05em;
+      text-transform: uppercase; margin-bottom: 6px;
+    }
+    .chip-platform  { background: #eff6ff; color: #1d4ed8; }
+    .chip-technical { background: #f0fdf4; color: #15803d; }
+    .chip-reference { background: #fdf4ff; color: #7e22ce; }
+    .chip-exam      { background: #fff7ed; color: #c2410c; }
+
+    /* ── Tables ── */
+    .tw { overflow-x: auto; margin: 16px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    th {
+      background: #f1f5f9; padding: 7px 12px;
+      text-align: left; font-size: 11px; font-weight: 700;
+      color: var(--text-muted); border-bottom: 2px solid var(--border);
+      white-space: nowrap;
+    }
+    td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:nth-child(even) td { background: var(--stripe); }
+
+    /* ── Code ── */
+    code {
+      font-family: 'SF Mono','Fira Code','Cascadia Code',Consolas,monospace;
+      font-size: 12px; background: #f1f5f9; color: #be185d;
+      padding: 2px 5px; border-radius: 3px;
+    }
+
+    /* ── Callouts ── */
+    .callout {
+      padding: 12px 16px; border-radius: 6px;
+      margin: 14px 0; font-size: 13.5px;
+    }
+    .callout-note    { background: var(--accent-light); border-left: 4px solid var(--accent); }
+    .callout-warning { background: var(--warn-bg);      border-left: 4px solid var(--warn-border); }
+    .callout-tip     { background: var(--tip-bg);       border-left: 4px solid var(--tip-border); }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 10px;
+      font-size: 11px; font-weight: 600;
+    }
+    .badge-green  { background: #dcfce7; color: #15803d; }
+    .badge-yellow { background: #fef3c7; color: #b45309; }
+    .badge-gray   { background: #f1f5f9; color: #475569; }
+    .badge-blue   { background: #dbeafe; color: #1d4ed8; }
+    .badge-orange { background: #ffedd5; color: #c2410c; }
+
+    /* ── Numbered steps ── */
+    .steps { counter-reset: step; list-style: none; padding: 0; margin-bottom: 14px; }
+    .steps li {
+      counter-increment: step;
+      padding: 7px 0 7px 36px; position: relative;
+      border-left: 2px solid var(--border); margin-left: 11px;
+    }
+    .steps li::before {
+      content: counter(step);
+      position: absolute; left: -11px; top: 7px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--accent); color: #fff;
+      font-size: 10px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── Page title ── */
+    .page-title { margin-bottom: 36px; }
+    .page-title h1 { font-size: 30px; margin-bottom: 8px; }
+    .page-title p  { font-size: 15px; color: var(--text-muted); margin: 0; }
+
+    /* ── Domain bar ── */
+    .domain-bar { display: flex; gap: 6px; flex-wrap: wrap; margin: 18px 0 8px; }
+    .domain-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 12px; border-radius: 20px;
+      font-size: 12px; font-weight: 600;
+      border: 1px solid var(--border); background: #f8fafc;
+    }
+    .domain-pill .pct {
+      background: var(--accent); color: #fff;
+      border-radius: 10px; padding: 1px 6px;
+      font-size: 10px; font-weight: 700;
+    }
+
+    /* ── Highlight row ── */
+    .hl td { background: #eff6ff !important; font-weight: 600; }
+
+    /* ── Jump-to-top ── */
+    #top-btn {
+      position: fixed; bottom: 28px; right: 28px;
+      background: var(--accent); color: #fff;
+      border: none; border-radius: 50%; width: 38px; height: 38px;
+      font-size: 18px; cursor: pointer; display: none;
+      align-items: center; justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+      transition: opacity .2s;
+    }
+    #top-btn:hover { background: #1d4ed8; }
+  </style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<nav id="sidebar">
+  <div class="sb-header">
+    <div class="sb-logo">CloudExamLab</div>
+    <div class="sb-sub">Exam Guide Series</div>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">On this page</div>
+    <a class="sb-item active" href="#overview">Overview</a>
+    <a class="sb-item" href="#structure">Exam Structure</a>
+    <a class="sb-item" href="#domains">Content Domains</a>
+    <a class="sb-item" href="#domain1">D1 — Data Preparation</a>
+    <a class="sb-item" href="#domain2">D2 — Model Development</a>
+    <a class="sb-item" href="#domain3">D3 — Deployment &amp; Orchestration</a>
+    <a class="sb-item" href="#domain4">D4 — Monitoring, Maintenance &amp; Security</a>
+    <a class="sb-item" href="#services">In / Out of Scope Services</a>
+    <a class="sb-item" href="#candidate-prep">Helping Candidates</a>
+    <a class="sb-item" href="#simulation">Simulation Design</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Wiki</div>
+    <a class="sb-item ext" href="index.html">Developer Wiki</a>
+    <a class="sb-item ext" href="new-program-playbook.html">New Program Playbook</a>
+    <a class="sb-item ext" href="exam-authoring-standard.html">Exam &amp; Question Authoring</a>
+    <a class="sb-item ext" href="aws-certification-roadmap.html">AWS Cert Roadmap</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Official</div>
+    <a class="sb-item ext" href="https://docs.aws.amazon.com/aws-certification/latest/machine-learning-engineer-associate-01/machine-learning-engineer-associate-01.html">AWS Exam Guide ↗</a>
+  </div>
+</nav>
+
+<!-- ══ MAIN ══ -->
+<main id="main">
+
+  <!-- OVERVIEW -->
+  <div class="page-title" id="overview">
+    <h1>AWS Certified Machine Learning Engineer – Associate (MLA-C01)</h1>
+    <p>Everything we need to know about this exam — structure, domains, candidate prep strategy, and simulation design.</p>
+  </div>
+
+  <h2>What This Exam Is</h2>
+  <p>The AWS Certified Machine Learning Engineer – Associate (MLA-C01) validates a candidate's ability to build, operationalize, deploy, and maintain machine learning (ML) solutions and pipelines on the AWS Cloud. It is the role-based successor to the retiring ML Specialty (MLS-C01), and it leans toward <em>ML engineering and MLOps</em> — operationalizing models in production — rather than pure data science or model research.</p>
+  <ul>
+    <li><strong>Target audience:</strong> ML engineers, MLOps engineers, and backend/DevOps/data engineers who build, deploy, and maintain ML systems on AWS (Amazon SageMaker front and center).</li>
+    <li><strong>Prerequisite experience:</strong> At least 1 year using Amazon SageMaker and other AWS services for ML engineering, plus 1 year in a related role (backend developer, DevOps engineer, data engineer, or data scientist).</li>
+    <li><strong>Why candidates take it:</strong> To validate production ML engineering skills, qualify for ML/MLOps engineer roles (avg ~$187K/yr, highest demand of any AWS path), and build toward the Generative AI Developer Professional path. Often paired with AI Practitioner (AIF-C01) and Data Engineer Associate (DEA-C01).</li>
+  </ul>
+
+  <!-- STRUCTURE -->
+  <div class="section" id="structure">
+    <span class="chip chip-exam">Exam Format</span>
+    <h1>Question Format &amp; Scoring</h1>
+    <p class="section-meta">Exact parameters from the official exam guide — use these verbatim in the simulation design.</p>
+
+    <h2>Question Types</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>Multiple choice</td><td>One correct answer from four options (three distractors)</td></tr>
+        <tr><td>Multiple response</td><td>Two or more correct answers from five or more options — must select all correct to earn credit</td></tr>
+        <tr><td>Ordering</td><td>Place 3–5 responses in the correct order to complete a task</td></tr>
+        <tr><td>Matching</td><td>Match a list of responses to 3–7 prompts; all pairs must be correct</td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout callout-note">MLA-C01 introduces <strong>Ordering</strong> and <strong>Matching</strong> question types not seen on earlier associate exams. Our simulation platform renders Multiple Choice and Multiple Response; we capture the same knowledge by converting ordering/matching scenarios into equivalent MR "select all that apply" or sequencing-as-MC questions.</div>
+
+    <h2>Scoring Model</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Setting</th><th>Value</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Total questions on exam</td><td>65</td><td>50 scored + 15 unscored pretest (unidentified)</td></tr>
+        <tr><td>Duration</td><td>130 minutes</td><td>Scenario-heavy — ML pipeline questions take more reading</td></tr>
+        <tr><td>Passing score</td><td>720 / 1,000</td><td>Display as % equivalent: ~72%</td></tr>
+        <tr><td>Scoring</td><td>Compensatory</td><td>No per-domain minimums — total score only</td></tr>
+        <tr><td>Result</td><td>Pass / Fail</td><td>Scaled scoring equalizes difficulty across exam forms</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Out-of-Scope Job Tasks (Do NOT Test)</h2>
+    <p>The official exam guide explicitly excludes these tasks from the target candidate role. Any question that requires them is out of scope — cut it.</p>
+    <ul>
+      <li>Designing and architecting full end-to-end ML solutions from scratch</li>
+      <li>Setting up best practices and guiding overall ML strategy for an organization</li>
+      <li>Handling integration with a wide array of services or brand-new tools and technologies</li>
+      <li>Working deeply in two or more ML domains simultaneously (e.g. advanced NLP <em>and</em> computer vision)</li>
+      <li>Quantizing models and analyzing the impact on accuracy</li>
+    </ul>
+    <div class="callout callout-tip"><strong>Exam tip:</strong> MLA-C01 tests <em>ML engineering</em> — preparing data, training and tuning with SageMaker, deploying to the right endpoint type, and monitoring/securing the pipeline. If a question is about choosing the ML algorithm's underlying mathematics or designing a novel architecture, it leans toward data-science/specialty territory and is likely out of scope here.</div>
+  </div>
+
+  <!-- DOMAIN OVERVIEW -->
+  <div class="section" id="domains">
+    <span class="chip chip-platform">Domains</span>
+    <h1>Domain Breakdown</h1>
+    <p class="section-meta">Four domains, tightly balanced. D1 (Data Preparation) carries the most weight, but all four are within 6 points — the exam expects competence across the full ML lifecycle.</p>
+
+    <div class="domain-bar">
+      <span class="domain-pill">D1 — Data Preparation <span class="pct">28%</span></span>
+      <span class="domain-pill">D2 — Model Development <span class="pct">26%</span></span>
+      <span class="domain-pill">D4 — Monitoring, Maintenance &amp; Security <span class="pct">24%</span></span>
+      <span class="domain-pill">D3 — Deployment &amp; Orchestration <span class="pct">22%</span></span>
+    </div>
+
+    <div class="tw"><table>
+      <thead><tr><th>Domain</th><th>Weight</th><th>Task statements</th></tr></thead>
+      <tbody>
+        <tr><td>D1 — Data Preparation for Machine Learning</td><td>28%</td><td>1.1 Ingest &amp; store data · 1.2 Transform data &amp; perform feature engineering · 1.3 Ensure data integrity &amp; prepare data for modeling</td></tr>
+        <tr><td>D2 — ML Model Development</td><td>26%</td><td>2.1 Choose a modeling approach · 2.2 Train &amp; refine models · 2.3 Analyze model performance</td></tr>
+        <tr><td>D3 — Deployment &amp; Orchestration of ML Workflows</td><td>22%</td><td>3.1 Select deployment infrastructure · 3.2 Create &amp; script infrastructure (IaC) · 3.3 CI/CD pipelines &amp; orchestration</td></tr>
+        <tr><td>D4 — ML Solution Monitoring, Maintenance &amp; Security</td><td>24%</td><td>4.1 Monitor model inference · 4.2 Monitor &amp; optimize infrastructure &amp; costs · 4.3 Secure AWS resources</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <!-- DOMAIN 1 -->
+  <div class="section" id="domain1">
+    <span class="chip chip-platform">Domain 1 · 28%</span>
+    <h1>Data Preparation for Machine Learning (ML)</h1>
+    <p class="section-meta">The largest domain. Covers ingesting and storing data, transforming it and engineering features, and ensuring data quality, integrity, and freedom from bias before modeling.</p>
+
+    <h2>Task 1.1 — Ingest and store data</h2>
+    <p><strong>Knowledge &amp; skills in:</strong></p>
+    <ul>
+      <li>Data formats and ingestion mechanisms — validated/non-validated formats, Apache Parquet, JSON, CSV, Apache ORC, Apache Avro, RecordIO</li>
+      <li>Core AWS data sources (Amazon S3, Amazon EFS, Amazon FSx for NetApp ONTAP) and streaming sources (Amazon Kinesis, Apache Flink, Apache Kafka)</li>
+      <li>Extracting data from storage (S3, EBS, EFS, RDS, DynamoDB) using options like S3 Transfer Acceleration and EBS Provisioned IOPS</li>
+      <li>Choosing data formats based on access patterns; ingesting into SageMaker Data Wrangler and SageMaker Feature Store</li>
+      <li>Merging data from multiple sources (AWS Glue, Apache Spark); making storage decisions based on cost, performance, and structure</li>
+    </ul>
+
+    <h2>Task 1.2 — Transform data and perform feature engineering</h2>
+    <p><strong>Knowledge &amp; skills in:</strong></p>
+    <ul>
+      <li>Data cleaning and transformation — outlier detection, imputing missing data, combining, deduplication</li>
+      <li>Feature engineering — scaling and standardization, feature splitting, binning, log transformation, normalization</li>
+      <li>Encoding techniques — one-hot, binary, label encoding, tokenization</li>
+      <li>Tools to explore, visualize, and transform data — SageMaker Data Wrangler, AWS Glue, AWS Glue DataBrew, Spark on Amazon EMR</li>
+      <li>Creating and managing features with SageMaker Feature Store; labeling with SageMaker Ground Truth and Amazon Mechanical Turk; transforming streaming data with Lambda and Spark</li>
+    </ul>
+
+    <h2>Task 1.3 — Ensure data integrity and prepare data for modeling</h2>
+    <p><strong>Knowledge &amp; skills in:</strong></p>
+    <ul>
+      <li>Pre-training bias metrics — class imbalance (CI), difference in proportions of labels (DPL) — for numeric, text, and image data</li>
+      <li>Strategies to address class imbalance (synthetic data generation, resampling) and to mitigate bias (selection, measurement) using SageMaker Clarify</li>
+      <li>Validating data quality with AWS Glue Data Quality and DataBrew</li>
+      <li>Encryption, data classification, anonymization, and masking; compliance with PII, PHI, and data residency requirements</li>
+      <li>Preparing data to reduce prediction bias — dataset splitting, shuffling, augmentation; configuring EFS/FSx to load data into training resources</li>
+    </ul>
+  </div>
+
+  <!-- DOMAIN 2 -->
+  <div class="section" id="domain2">
+    <span class="chip chip-technical">Domain 2 · 26%</span>
+    <h1>ML Model Development</h1>
+    <p class="section-meta">Choosing the right modeling approach, training and refining models with SageMaker, and rigorously analyzing model performance to detect bias, overfitting, and convergence issues.</p>
+
+    <h2>Task 2.1 — Choose a modeling approach</h2>
+    <p><strong>Knowledge &amp; skills in:</strong></p>
+    <ul>
+      <li>Capabilities and appropriate uses of ML algorithms to solve business problems</li>
+      <li>Using AWS AI services (Amazon Translate, Transcribe, Rekognition, Comprehend, Bedrock) to solve common business needs without training a model</li>
+      <li>SageMaker built-in algorithms and when to apply them; foundation models and solution templates in SageMaker JumpStart and Amazon Bedrock</li>
+      <li>Considering interpretability and cost during model/algorithm selection</li>
+      <li>Assessing data availability and problem complexity to determine ML feasibility</li>
+    </ul>
+
+    <h2>Task 2.2 — Train and refine models</h2>
+    <p><strong>Knowledge &amp; skills in:</strong></p>
+    <ul>
+      <li>Training elements — epoch, steps, batch size; methods to reduce training time (early stopping, distributed training)</li>
+      <li>Using SageMaker built-in algorithms and script mode with TensorFlow/PyTorch; fine-tuning pre-trained models (Bedrock, JumpStart); integrating externally built models into SageMaker</li>
+      <li>Hyperparameter tuning — random search, Bayesian optimization, SageMaker automatic model tuning (AMT); model hyperparameters and their effects</li>
+      <li>Preventing overfitting, underfitting, and catastrophic forgetting — regularization (dropout, weight decay, L1/L2), feature selection</li>
+      <li>Combining models (ensembling, stacking, boosting); reducing model size (data types, pruning, compression); versioning with SageMaker Model Registry</li>
+    </ul>
+
+    <h2>Task 2.3 — Analyze model performance</h2>
+    <p><strong>Knowledge &amp; skills in:</strong></p>
+    <ul>
+      <li>Evaluation metrics — confusion matrix, F1 score, accuracy, precision, recall, RMSE, ROC, AUC; heat maps</li>
+      <li>Creating performance baselines; identifying overfitting and underfitting; diagnosing convergence issues</li>
+      <li>Selecting and interpreting metrics and detecting model bias; assessing tradeoffs between performance, training time, and cost</li>
+      <li>Comparing a shadow variant to a production variant; performing reproducible experiments</li>
+      <li>Using SageMaker Clarify to interpret model outputs and SageMaker Debugger to debug convergence</li>
+    </ul>
+  </div>
+
+  <!-- DOMAIN 3 -->
+  <div class="section" id="domain3">
+    <span class="chip chip-reference">Domain 3 · 22%</span>
+    <h1>Deployment and Orchestration of ML Workflows</h1>
+    <p class="section-meta">The MLOps core: choosing the right deployment infrastructure and endpoint type, scripting it as infrastructure as code, and automating the whole workflow through CI/CD pipelines.</p>
+
+    <h2>Task 3.1 — Select deployment infrastructure based on architecture and requirements</h2>
+    <p><strong>Knowledge &amp; skills in:</strong></p>
+    <ul>
+      <li>Deployment best practices — versioning, rollback strategies; serving models in real time and in batches</li>
+      <li>Endpoint types — real-time, serverless, asynchronous endpoints, and batch inference (batch transform); their model and resource requirements</li>
+      <li>Provisioning compute (CPU/GPU) for production and test; choosing provided vs. custom containers; optimizing models for edge devices with SageMaker Neo</li>
+      <li>Evaluating performance, cost, and latency tradeoffs; selecting deployment targets (SageMaker endpoints, Kubernetes, Amazon ECS, Amazon EKS, AWS Lambda)</li>
+      <li>Selecting multi-model or multi-container deployments and the correct orchestrator (Apache Airflow, SageMaker Pipelines)</li>
+    </ul>
+
+    <h2>Task 3.2 — Create and script infrastructure based on requirements</h2>
+    <p><strong>Knowledge &amp; skills in:</strong></p>
+    <ul>
+      <li>On-demand vs. provisioned resources; comparing scaling policies</li>
+      <li>Infrastructure as code — AWS CloudFormation and AWS CDK tradeoffs; automating provisioning and inter-stack communication</li>
+      <li>Building and maintaining containers (Amazon ECR, ECS, EKS, bring-your-own-container with SageMaker)</li>
+      <li>SageMaker endpoint auto scaling policies (demand- and time-based); choosing scaling metrics (model latency, CPU utilization, invocations per instance)</li>
+      <li>Configuring SageMaker endpoints within a VPC; deploying with the SageMaker SDK; using Spot Instances and Lambda behind endpoints for cost-effectiveness</li>
+    </ul>
+
+    <h2>Task 3.3 — Use automated orchestration tools to set up CI/CD pipelines</h2>
+    <p><strong>Knowledge &amp; skills in:</strong></p>
+    <ul>
+      <li>Capabilities and quotas of AWS CodePipeline, CodeBuild, and CodeDeploy; configuring and troubleshooting their stages</li>
+      <li>Version control (Git) and continuous-deployment flows (Gitflow, GitHub Flow); how repositories and pipelines work together</li>
+      <li>Deployment strategies and rollback actions — blue/green, canary, linear</li>
+      <li>Configuring training and inference jobs with Amazon EventBridge rules, SageMaker Pipelines, and CodePipeline</li>
+      <li>Creating automated tests (unit, integration, end-to-end) in CI/CD; building mechanisms to retrain models</li>
+    </ul>
+  </div>
+
+  <!-- DOMAIN 4 -->
+  <div class="section" id="domain4">
+    <span class="chip chip-exam">Domain 4 · 24%</span>
+    <h1>ML Solution Monitoring, Maintenance, and Security</h1>
+    <p class="section-meta">Keeping deployed ML systems healthy, cost-efficient, and secure: detecting drift, monitoring and right-sizing infrastructure, controlling costs, and locking down access.</p>
+
+    <h2>Task 4.1 — Monitor model inference</h2>
+    <p><strong>Knowledge &amp; skills in:</strong></p>
+    <ul>
+      <li>Drift in ML models; techniques to monitor data quality and model performance; ML lens design principles for monitoring</li>
+      <li>Monitoring models in production with Amazon SageMaker Model Monitor</li>
+      <li>Monitoring workflows to detect anomalies or errors in data processing and inference</li>
+      <li>Detecting data-distribution changes that affect performance using SageMaker Clarify</li>
+      <li>Monitoring production performance with A/B testing</li>
+    </ul>
+
+    <h2>Task 4.2 — Monitor and optimize infrastructure and costs</h2>
+    <p><strong>Knowledge &amp; skills in:</strong></p>
+    <ul>
+      <li>Key infrastructure metrics — utilization, throughput, availability, scalability, fault tolerance</li>
+      <li>Observability tools — Amazon CloudWatch (Logs, Logs Insights, alarms, dashboards, Lambda Insights), AWS X-Ray, AWS CloudTrail, Amazon EventBridge, Amazon QuickSight</li>
+      <li>Instance type differences (memory/compute/general-purpose/inference-optimized); right-sizing with SageMaker Inference Recommender and AWS Compute Optimizer</li>
+      <li>Cost analysis and control — AWS Cost Explorer, Billing and Cost Management, AWS Budgets, AWS Trusted Advisor; tagging strategy for cost allocation</li>
+      <li>Purchasing options — Spot, On-Demand, Reserved Instances, SageMaker Savings Plans; troubleshooting capacity (provisioned concurrency, service quotas, auto scaling)</li>
+    </ul>
+
+    <h2>Task 4.3 — Secure AWS resources</h2>
+    <p><strong>Knowledge &amp; skills in:</strong></p>
+    <ul>
+      <li>IAM roles, policies, and groups; bucket policies; SageMaker Role Manager — configuring least-privilege access to ML artifacts</li>
+      <li>SageMaker security and compliance features</li>
+      <li>Controls for network access to ML resources — building VPCs, subnets, and security groups to isolate ML systems</li>
+      <li>Security best practices for CI/CD pipelines</li>
+      <li>Monitoring, auditing, and logging ML systems for continued security and compliance; troubleshooting security issues</li>
+    </ul>
+  </div>
+
+  <!-- SERVICES SCOPE -->
+  <div class="section" id="services">
+    <span class="chip chip-reference">Service Scope</span>
+    <h1>In-Scope &amp; Out-of-Scope Services</h1>
+    <p class="section-meta">The exam centers on SageMaker plus a broad supporting cast across data, deployment, monitoring, and security. Know the in-scope set well; treat the out-of-scope list as a signal that a service is not the intended answer.</p>
+
+    <h2>In-Scope Services (by category)</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Category</th><th>Services</th></tr></thead>
+      <tbody>
+        <tr><td>Machine Learning</td><td>Amazon SageMaker, Amazon Bedrock, Amazon Augmented AI (A2I), Amazon Comprehend (&amp; Medical), Amazon Rekognition, Amazon Textract, Amazon Transcribe, Amazon Translate, Amazon Polly, Amazon Lex, Amazon Kendra, Amazon Personalize, Amazon Fraud Detector, Amazon CodeGuru, Amazon DevOps Guru, Amazon Q, Amazon Mechanical Turk, AWS HealthLake, Lookout for Equipment/Metrics/Vision</td></tr>
+        <tr><td>Analytics</td><td>Amazon Athena, Amazon EMR, AWS Glue, Glue DataBrew, Glue Data Quality, Amazon Kinesis, Amazon Data Firehose, Amazon Managed Service for Apache Flink, AWS Lake Formation, Amazon OpenSearch Service, Amazon QuickSight, Amazon Redshift</td></tr>
+        <tr><td>Storage</td><td>Amazon S3, Amazon S3 Glacier, Amazon EBS, Amazon EFS, Amazon FSx, AWS Storage Gateway</td></tr>
+        <tr><td>Compute &amp; Containers</td><td>Amazon EC2, AWS Lambda, AWS Batch, AWS Serverless Application Repository, Amazon ECR, Amazon ECS, Amazon EKS</td></tr>
+        <tr><td>Database</td><td>Amazon DynamoDB, Amazon RDS, Amazon ElastiCache, Amazon DocumentDB, Amazon Neptune</td></tr>
+        <tr><td>App Integration</td><td>Amazon EventBridge, Amazon MWAA (Managed Workflows for Apache Airflow), Amazon SNS, Amazon SQS, AWS Step Functions</td></tr>
+        <tr><td>Developer Tools</td><td>AWS CDK, AWS CodeArtifact, AWS CodeBuild, AWS CodeDeploy, AWS CodePipeline, AWS X-Ray</td></tr>
+        <tr><td>Management &amp; Governance</td><td>AWS CloudFormation, AWS CloudTrail, Amazon CloudWatch (&amp; Logs), AWS Auto Scaling, AWS Compute Optimizer, AWS Config, AWS Organizations, AWS Service Catalog, AWS Systems Manager, AWS Trusted Advisor, AWS Chatbot</td></tr>
+        <tr><td>Cloud Financial Mgmt</td><td>AWS Billing and Cost Management, AWS Budgets, AWS Cost Explorer</td></tr>
+        <tr><td>Networking &amp; Security</td><td>Amazon API Gateway, Amazon CloudFront, AWS Direct Connect, Amazon VPC · AWS KMS, AWS Secrets Manager, Amazon Macie, IAM</td></tr>
+        <tr><td>Migration &amp; Media</td><td>AWS DataSync · Amazon Kinesis Video Streams</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Out-of-Scope Services (selected)</h2>
+    <p>Examples AWS lists as out of scope — useful as confident distractors that should never be the correct answer:</p>
+    <ul>
+      <li><strong>ML:</strong> AWS DeepRacer, Amazon Monitron, AWS Panorama, AWS HealthImaging, AWS HealthOmics</li>
+      <li><strong>Security:</strong> Amazon Cognito, Amazon GuardDuty, Amazon Inspector, AWS Security Hub, AWS WAF, AWS Shield, AWS Certificate Manager, AWS CloudHSM</li>
+      <li><strong>Compute / Containers:</strong> AWS Elastic Beanstalk, AWS App Runner, Amazon Lightsail, AWS Outposts, ROSA</li>
+      <li><strong>Frontend / Integration:</strong> AWS Amplify, AWS AppSync, Amazon MQ, Amazon SWF, Amazon AppFlow</li>
+      <li><strong>Management:</strong> AWS AppConfig, AWS Control Tower, AWS Proton, Amazon Managed Grafana</li>
+      <li><strong>IoT &amp; Media:</strong> the entire AWS IoT family, Elemental media services, Elastic Transcoder</li>
+    </ul>
+    <div class="callout callout-warning"><strong>Note the Cognito reversal:</strong> unlike the Developer Associate exam, Amazon Cognito is <em>out of scope</em> for MLA-C01. Authentication/authorization here is about IAM roles, policies, and SageMaker Role Manager — not user-pool identity federation.</div>
+  </div>
+
+  <!-- CANDIDATE PREP -->
+  <div class="section" id="candidate-prep">
+    <span class="chip chip-platform">Candidate Prep</span>
+    <h1>How We Help MLA-C01 Candidates</h1>
+    <p class="section-meta">Who takes this exam, where they struggle, and how to build a study path that gets them to 720+.</p>
+
+    <h2>Who Takes This Exam</h2>
+    <ul>
+      <li><strong>ML / MLOps engineers</strong> — practitioners who already train and deploy models and want to validate production ML engineering on AWS.</li>
+      <li><strong>Backend, DevOps, and data engineers moving into ML</strong> — engineers who know AWS infrastructure and CI/CD and are adding the ML lifecycle.</li>
+      <li><strong>ML Specialty holders re-certifying</strong> — candidates migrating from the retiring MLS-C01 to the new role-based associate credential.</li>
+    </ul>
+
+    <h2>What Candidates Struggle With</h2>
+    <ul>
+      <li><strong>SageMaker endpoint types</strong> — real-time vs. serverless vs. asynchronous vs. batch transform. Choosing by latency, payload size, traffic pattern, and cost is the single densest decision on the exam.</li>
+      <li><strong>Data preparation tool sprawl</strong> — Data Wrangler vs. Glue vs. DataBrew vs. EMR Spark, plus Feature Store and Ground Truth. Knowing which tool fits which job.</li>
+      <li><strong>Evaluation metrics</strong> — precision vs. recall vs. F1, ROC/AUC, RMSE, and reading a confusion matrix. Which metric matters for imbalanced classes or for a fraud-detection use case.</li>
+      <li><strong>Bias and Clarify</strong> — pre-training bias metrics (CI, DPL) vs. post-training drift; what SageMaker Clarify does at each stage.</li>
+      <li><strong>Overfitting remedies</strong> — regularization (dropout, L1/L2, weight decay), early stopping, more data/augmentation, and how hyperparameter tuning (AMT) finds the right settings.</li>
+      <li><strong>MLOps orchestration</strong> — SageMaker Pipelines vs. Step Functions vs. Airflow (MWAA); where CodePipeline/CodeBuild/CodeDeploy and EventBridge-triggered retraining fit.</li>
+      <li><strong>Monitoring &amp; cost</strong> — Model Monitor for drift, CloudWatch/X-Ray for infrastructure, and right-sizing/purchasing options (Spot, Savings Plans, Inference Recommender) to control cost.</li>
+    </ul>
+
+    <h2>Recommended Study Path</h2>
+    <ol class="steps">
+      <li><strong>Domain 1 — Data Preparation first.</strong> Highest weight (28%) and the foundation of every ML pipeline. Master the ingestion/storage choices and the Data Wrangler / Glue / Feature Store toolset before modeling.</li>
+      <li><strong>Domain 2 — Model Development.</strong> SageMaker training (built-in algorithms, script mode, JumpStart), hyperparameter tuning, and—critically—evaluation metrics and bias analysis with Clarify.</li>
+      <li><strong>Domain 3 — Deployment &amp; Orchestration.</strong> Learn endpoint types and the CI/CD + SageMaker Pipelines story as one connected MLOps workflow (build → train → deploy → retrain).</li>
+      <li><strong>Domain 4 — Monitoring, Maintenance &amp; Security.</strong> Drift detection, observability, cost optimization, and IAM/VPC isolation. It reuses CloudWatch and IAM concepts and ties the whole lifecycle together — efficient marks close to exam day.</li>
+    </ol>
+
+    <h2>AI Explanation Quality for This Exam</h2>
+    <p>MLA-C01 questions use concrete ML-engineering scenarios. Every wrong answer needs an explanation that says WHY the distractor is wrong — not just "this is not correct." Common patterns to cover:</p>
+    <ul>
+      <li>For endpoint questions: explain the selection reason (e.g. "asynchronous endpoints queue large payloads and long-running inference; serverless suits intermittent traffic with cold-start tolerance").</li>
+      <li>For data-prep questions: explain the tool fit (e.g. "Data Wrangler is for visual, interactive feature engineering inside SageMaker Studio; Glue is for serverless ETL at scale").</li>
+      <li>For metric questions: explain what the metric optimizes (e.g. "recall matters when missing a positive is costly, as in fraud or disease detection — precision trades off against it").</li>
+      <li>For monitoring questions: explain the distinction (e.g. "Model Monitor detects data and quality drift on a live endpoint; CloudWatch tracks infrastructure metrics like latency and invocations").</li>
+    </ul>
+  </div>
+
+  <!-- SIMULATION DESIGN -->
+  <div class="section" id="simulation">
+    <span class="chip chip-exam">Simulation Design</span>
+    <h1>How to Formulate the Exam Simulation</h1>
+    <p class="section-meta">Parameters for building practice sets that match the real MLA-C01 exam. See the <a href="exam-authoring-standard.html">Exam &amp; Question Authoring Standard</a> for question-writing rules.</p>
+
+    <h2>Question Set Structure</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Setting</th><th>Value</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Total questions per simulation</td><td>65</td><td>Match real exam — 50 scored + 15 unscored (unannounced)</td></tr>
+        <tr><td>Duration</td><td>130 minutes</td><td>Exact match to real exam</td></tr>
+        <tr><td>Passing threshold</td><td>720 / 1,000</td><td>Display as % equivalent: ~72%</td></tr>
+        <tr><td>Scoring</td><td>Compensatory</td><td>No domain minimums — total score only</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Domain Distribution per Set</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Domain</th><th>Weight</th><th>Qs in 65-Q set</th><th>Qs in 50-Q scored set</th></tr></thead>
+      <tbody>
+        <tr><td>D1 — Data Preparation</td><td>28%</td><td>18</td><td>14</td></tr>
+        <tr><td>D2 — ML Model Development</td><td>26%</td><td>17</td><td>13</td></tr>
+        <tr><td>D3 — Deployment &amp; Orchestration</td><td>22%</td><td>14</td><td>11</td></tr>
+        <tr><td>D4 — Monitoring, Maintenance &amp; Security</td><td>24%</td><td>16</td><td>12</td></tr>
+        <tr class="hl"><td><strong>Total</strong></td><td><strong>100%</strong></td><td><strong>65</strong></td><td><strong>50</strong></td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Question Type Mix</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Type</th><th>Suggested % of set</th><th>Implementation priority</th></tr></thead>
+      <tbody>
+        <tr><td>Multiple choice (1-of-4)</td><td>~75%</td><td><span class="badge badge-green">High — launch with this</span></td></tr>
+        <tr><td>Multiple response (select N)</td><td>~25%</td><td><span class="badge badge-green">High — common on exam</span></td></tr>
+        <tr><td>Ordering / Matching</td><td>n/a</td><td><span class="badge badge-gray">Convert to MR / sequencing MC</span></td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout callout-note">Three simulations, three angles: <strong>Sim 1 Foundational</strong> (know the services and ML concepts, 100% MC) · <strong>Sim 2 Architectural</strong> (apply to an ML pipeline / business problem, ~25% MR) · <strong>Sim 3 Comparative</strong> (distinguish similar services and trade-offs, ~25% MR).</div>
+
+    <h2>Question Writing Rules (MLA-C01 specific)</h2>
+    <ul>
+      <li><strong>Scenario-based, ML-engineer-framed stems</strong> — "An ML engineer needs to…" or "A team is training a model on SageMaker and…" Never "What is the definition of…?"</li>
+      <li><strong>Lifecycle-aware</strong> — anchor each question in a pipeline stage (ingest, transform, train, tune, evaluate, deploy, monitor, secure) so the set covers the full ML workflow.</li>
+      <li><strong>Service operation over service awareness</strong> — ask HOW to configure or choose (which endpoint type, which Clarify report, which scaling metric), not just which service.</li>
+      <li><strong>Best-practice framing</strong> — many questions reduce to "which is the MOST cost-effective / LOWEST-latency / LEAST operational-overhead way to do X."</li>
+      <li><strong>Ground every question in a task statement</strong> — tie each to a specific 1.x–4.x skill so the set stays on-blueprint.</li>
+    </ul>
+
+    <h2>Distractor Quality Guidelines</h2>
+    <ul>
+      <li>Use real ML-engineer confusions as distractors: real-time vs. serverless vs. async vs. batch endpoints; Data Wrangler vs. Glue vs. DataBrew; precision vs. recall vs. F1; CI/DPL pre-training bias vs. post-deployment drift; SageMaker Pipelines vs. Step Functions vs. MWAA.</li>
+      <li>For modeling questions: make one distractor an out-of-scope or wrong-fit algorithm/AI service, and one that confuses overfitting remedies (e.g. "add more layers" when the model is already overfitting).</li>
+      <li>For deployment questions: make each distractor a real but wrong endpoint type or strategy for the stated latency/throughput/cost goal.</li>
+      <li>Use out-of-scope services (Cognito, Beanstalk, DeepRacer, GuardDuty) as confident distractors that should never be the correct answer.</li>
+    </ul>
+
+    <h2>AI Explanation Template</h2>
+    <p>Each question requires an explanation covering:</p>
+    <ul>
+      <li>Why the correct answer is right — with a brief conceptual reason</li>
+      <li>Why each distractor is wrong — one sentence per option, naming the specific reason</li>
+      <li>Concept link — which domain/task statement this tests (e.g. "D3 · Task 3.1 — SageMaker endpoint types")</li>
+      <li>Service context — if a service appears, one line on what it does and what distinguishes it from similar services</li>
+    </ul>
+  </div>
+
+</main>
+
+<button id="top-btn" title="Back to top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<script>
+  const topBtn = document.getElementById('top-btn');
+  window.addEventListener('scroll', () => {
+    topBtn.style.display = window.scrollY > 400 ? 'flex' : 'none';
+  });
+</script>
+</body>
+</html>
