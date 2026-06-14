@@ -951,6 +951,162 @@ function S3StorageClassWidget() {
   )
 }
 
+// ── DVA D1 (Session 3): DynamoDB capacity (RCU/WCU) calculator ─────────────────
+function DdbCapacityWidget() {
+  const [size, setSize] = useState(6)        // item size in KB
+  const [reads, setReads] = useState(100)    // reads per second
+  const [writes, setWrites] = useState(50)   // writes per second
+  const [mode, setMode] = useState('eventual') // read consistency
+
+  const readBlocks = Math.ceil(size / 4)     // reads round up to 4 KB
+  const writeBlocks = Math.ceil(size)        // writes round up to 1 KB
+  const baseR = reads * readBlocks
+  const rcu = mode === 'strong' ? baseR
+    : mode === 'transactional' ? baseR * 2
+    : Math.ceil(baseR / 2)                    // eventual = half of strong
+  const wcu = writes * writeBlocks
+
+  const MODES = [
+    { id: 'eventual', label: 'Eventually consistent' },
+    { id: 'strong', label: 'Strongly consistent' },
+    { id: 'transactional', label: 'Transactional' },
+  ]
+  const slider = (label, val, set, min, max, step, unit) => (
+    <div style={{ marginBottom: '0.7rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.74rem', fontWeight: 700, color: NAVY, marginBottom: '0.2rem' }}>
+        <span>{label}</span><span style={{ color: TEAL_DARK }}>{val}{unit}</span>
+      </div>
+      <input type="range" min={min} max={max} step={step} value={val}
+        onChange={e => set(Number(e.target.value))}
+        style={{ width: '100%', accentColor: TEAL_DARK }} />
+    </div>
+  )
+
+  return (
+    <WidgetShell
+      title="DynamoDB Capacity Calculator — RCU / WCU"
+      intro="Capacity is the throughput currency of DynamoDB, and the exam tests the rounding rules directly. Drag the dials and watch the units recompute — note how reads round up to 4 KB, writes to 1 KB, and eventual consistency costs half of strong."
+    >
+      {slider('Item size', size, setSize, 1, 16, 1, ' KB')}
+      {slider('Reads per second', reads, setReads, 0, 500, 10, '')}
+      {slider('Writes per second', writes, setWrites, 0, 500, 10, '')}
+      <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', margin: '0.2rem 0 0.9rem' }}>
+        {MODES.map(m => {
+          const sel = mode === m.id
+          return (
+            <button key={m.id} onClick={() => setMode(m.id)}
+              style={{
+                fontSize: '0.72rem', fontWeight: 700, padding: '0.34rem 0.65rem', borderRadius: '0.4rem', cursor: 'pointer',
+                border: `1.5px solid ${sel ? TEAL_DARK : '#cbd5e1'}`,
+                background: sel ? TEAL_DARK : 'white', color: sel ? 'white' : '#475569',
+              }}>{m.label}</button>
+          )
+        })}
+      </div>
+      <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+        {[
+          { k: 'Read units / item', v: readBlocks, c: NAVY },
+          { k: 'RCU / sec', v: rcu, c: TEAL_DARK },
+          { k: 'WCU / sec', v: wcu, c: '#b45309' },
+        ].map(s => (
+          <div key={s.k} style={{ flex: '1 1 90px', textAlign: 'center', background: 'white', border: '1.5px solid #e2e8f0', borderRadius: '0.6rem', padding: '0.5rem 0.25rem' }}>
+            <div style={{ fontSize: '1.2rem', fontWeight: 800, color: s.c }}>{s.v}</div>
+            <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{s.k}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ marginTop: '0.75rem', fontSize: '0.74rem', fontWeight: 600, lineHeight: 1.5, color: '#475569', background: '#f1f5f9', borderRadius: '0.5rem', padding: '0.6rem 0.7rem' }}>
+        A {size} KB item rounds up to {readBlocks * 4} KB for reads ({readBlocks} block{readBlocks > 1 ? 's' : ''} of 4 KB) and {writeBlocks} KB for writes.{' '}
+        {mode === 'eventual' && `Eventually consistent reads cost half of strong — ${rcu} RCU instead of ${baseR}.`}
+        {mode === 'strong' && `Strongly consistent reads cost a full unit per 4 KB block — ${rcu} RCU (eventual would be ${Math.ceil(baseR / 2)}).`}
+        {mode === 'transactional' && `Transactional reads double the cost — ${rcu} RCU. Transactional writes would likewise double WCU.`}
+      </div>
+    </WidgetShell>
+  )
+}
+
+// ── DVA D1 (Session 2): Lambda concurrency — reserved vs provisioned ───────────
+function LambdaConcurrencyWidget() {
+  const [rps, setRps] = useState(200)        // requests per second
+  const [dur, setDur] = useState(250)        // avg duration in ms
+  const [provisioned, setProvisioned] = useState(20)
+  const [reserved, setReserved] = useState(120)
+
+  const concurrency = Math.ceil(rps * dur / 1000)  // Little's Law
+  const throttled = Math.max(0, concurrency - reserved)
+  const served = concurrency - throttled
+  const cold = Math.max(0, served - provisioned)
+  const coldPct = served ? Math.round(cold / served * 100) : 0
+
+  const slider = (label, val, set, min, max, step, unit) => (
+    <div style={{ marginBottom: '0.7rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.74rem', fontWeight: 700, color: NAVY, marginBottom: '0.2rem' }}>
+        <span>{label}</span><span style={{ color: TEAL_DARK }}>{val}{unit}</span>
+      </div>
+      <input type="range" min={min} max={max} step={step} value={val}
+        onChange={e => set(Number(e.target.value))}
+        style={{ width: '100%', accentColor: TEAL_DARK }} />
+    </div>
+  )
+
+  return (
+    <WidgetShell
+      title="Lambda Concurrency — Reserved vs Provisioned"
+      intro="Concurrency is how many invocations run at the same instant (requests/sec × duration). Provisioned concurrency keeps environments warm to kill cold starts; reserved concurrency caps the maximum and throttles the rest. Drag the dials to see each one act."
+    >
+      {slider('Requests per second', rps, setRps, 0, 1000, 10, '')}
+      {slider('Average duration', dur, setDur, 50, 2000, 50, ' ms')}
+      {slider('Provisioned concurrency (warm)', provisioned, setProvisioned, 0, 300, 5, '')}
+      {slider('Reserved concurrency (cap)', reserved, setReserved, 0, 300, 5, '')}
+      <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+        {[
+          { k: 'Required concurrency', v: concurrency, c: NAVY },
+          { k: 'Cold starts', v: `${cold} (${coldPct}%)`, c: cold ? '#b45309' : '#15803d' },
+          { k: 'Throttled', v: throttled, c: throttled ? '#b91c1c' : '#15803d' },
+        ].map(s => (
+          <div key={s.k} style={{ flex: '1 1 100px', textAlign: 'center', background: 'white', border: '1.5px solid #e2e8f0', borderRadius: '0.6rem', padding: '0.5rem 0.25rem' }}>
+            <div style={{ fontSize: '1.15rem', fontWeight: 800, color: s.c }}>{s.v}</div>
+            <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{s.k}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ marginTop: '0.75rem', fontSize: '0.74rem', fontWeight: 600, lineHeight: 1.5, color: '#475569', background: '#f1f5f9', borderRadius: '0.5rem', padding: '0.6rem 0.7rem' }}>
+        At {rps} req/s × {dur} ms you need {concurrency} concurrent environments.{' '}
+        {throttled > 0
+          ? `Reserved concurrency is capped at ${reserved}, so ${throttled} invocation${throttled > 1 ? 's are' : ' is'} throttled — raise the cap or it will reject requests.`
+          : `The reserved cap of ${reserved} is high enough — nothing is throttled.`}{' '}
+        {cold > 0
+          ? `Only ${provisioned} are pre-warmed, so ${cold} (${coldPct}%) pay a cold start. Raise provisioned concurrency to eliminate them.`
+          : `Provisioned concurrency covers all served invocations — zero cold starts.`}
+      </div>
+    </WidgetShell>
+  )
+}
+
+// ── DVA D3 (Session 12): deployment strategy selector ─────────────────────────
+function DeployStrategyWidget() {
+  return (
+    <ScenarioSorter
+      title="Pick the Deployment Strategy"
+      intro="Each release strategy trades speed, risk, and cost differently. Match each requirement to the strategy that fits — the card confirms instantly."
+      cats={[
+        { id: 'aao', label: 'All-at-once', color: '#64748b', desc: 'Fastest, cheapest; brief downtime and full blast radius' },
+        { id: 'rolling', label: 'Rolling', color: '#0891b2', desc: 'Replace in batches; no extra fleet, slower rollback' },
+        { id: 'canary', label: 'Canary', color: '#d97706', desc: 'Shift a small % first, then the rest; limits blast radius' },
+        { id: 'bg', label: 'Blue/Green', color: '#16a34a', desc: 'Full parallel environment; instant switch and rollback' },
+      ]}
+      items={[
+        { t: 'A payment service that needs instant rollback if the new version misbehaves', a: 'bg', why: 'A parallel green environment lets you switch back to blue instantly — the fastest rollback.' },
+        { t: 'Shift 10% of traffic to the new Lambda version, watch metrics, then send the rest', a: 'canary', why: 'Routing a small slice first and then completing is the canary pattern.' },
+        { t: 'A non-critical internal tool where a few seconds of downtime is acceptable and cost matters', a: 'aao', why: 'All-at-once is cheapest and simplest when brief downtime and full blast radius are tolerable.' },
+        { t: 'Update instances a batch at a time using the existing fleet, with no duplicate environment', a: 'rolling', why: 'Replacing in batches on the same fleet with no extra capacity is a rolling deployment.' },
+        { t: 'Eliminate downtime by running two identical environments and flipping the router', a: 'bg', why: 'Two full environments with a router cut-over is blue/green.' },
+        { t: 'Catch a bad release while it affects only a small fraction of users', a: 'canary', why: 'Exposing a small percentage first limits the blast radius — the canary goal.' },
+      ]}
+    />
+  )
+}
+
 const INTERACTIVE_WIDGETS = {
   'precision-recall': PrecisionRecallWidget,
   'inference-parameters': InferenceParametersWidget,
@@ -962,6 +1118,9 @@ const INTERACTIVE_WIDGETS = {
   'sg-vs-nacl': SgVsNaclWidget,
   'dr-strategy': DrStrategyWidget,
   's3-storage-class': S3StorageClassWidget,
+  'ddb-capacity': DdbCapacityWidget,
+  'lambda-concurrency': LambdaConcurrencyWidget,
+  'deploy-strategy': DeployStrategyWidget,
 }
 
 // ─── Small renderers ──────────────────────────────────────────────────────────
