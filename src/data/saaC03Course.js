@@ -142,7 +142,9 @@ const saaC03Course = {
           link: 'Domain 1 · Task 1.1 — Design secure access to AWS resources',
         },
       },
-      videos: [],
+      videos: [
+        { videoId: 'c3Cn4xYfxJY', title: 'AWS Solutions Architect Associate (SAA-C03) — Full Course to PASS the Exam', channel: 'freeCodeCamp.org', relevance: 'Andrew Brown\'s full freeCodeCamp SAA-C03 course (ExamPro). A comprehensive video companion covering this session\'s services alongside the rest of the exam blueprint.' },
+      ],
       keyTerms: [
         { term: 'Principal', def: 'The entity (user, role, or service) making a request to AWS. One of the four parts of every authorization decision.' },
         { term: 'IAM role', def: 'An identity with no permanent credentials that is assumed temporarily via STS. The preferred way to grant access to workloads and across accounts.' },
@@ -278,7 +280,9 @@ const saaC03Course = {
           link: 'Domain 1 · Task 1.1 — Design a security strategy for multiple AWS accounts',
         },
       },
-      videos: [],
+      videos: [
+        { videoId: 'c3Cn4xYfxJY', title: 'AWS Solutions Architect Associate (SAA-C03) — Full Course to PASS the Exam', channel: 'freeCodeCamp.org', relevance: 'Andrew Brown\'s full freeCodeCamp SAA-C03 course (ExamPro). A comprehensive video companion covering this session\'s services alongside the rest of the exam blueprint.' },
+      ],
       keyTerms: [
         { term: 'AWS Organizations', def: 'Central management of multiple AWS accounts, with organizational units, consolidated billing, and SCPs.' },
         { term: 'Service control policy (SCP)', def: 'An organization policy that sets the maximum permissions for accounts in an OU; it filters but never grants.' },
@@ -432,7 +436,10 @@ const saaC03Course = {
           link: 'Domain 1 · Task 1.2 — Integrate AWS services to secure applications',
         },
       },
-      videos: [],
+      videos: [
+        { videoId: 'c3Cn4xYfxJY', title: 'AWS Solutions Architect Associate (SAA-C03) — Full Course to PASS the Exam', channel: 'freeCodeCamp.org', relevance: 'Andrew Brown\'s full freeCodeCamp SAA-C03 course (ExamPro). A comprehensive video companion covering this session\'s services alongside the rest of the exam blueprint.' },
+        { videoId: 'h9R3ACtjc0k', title: 'AWS VPC, Subnets, NACLs & Security Groups (SAA-C03)', channel: 'DevOps Cloud and AI Labs', relevance: 'A focused walkthrough of the VPC security model in this session — security groups vs network ACLs, public and private subnets, and NAT.' },
+      ],
       keyTerms: [
         { term: 'Security group', def: 'A stateful, allow-only firewall at the resource level. Return traffic for an allowed flow is automatically permitted.' },
         { term: 'Network ACL', def: 'A stateless, ordered allow/deny firewall at the subnet level. Return traffic must be allowed explicitly.' },
@@ -583,7 +590,9 @@ const saaC03Course = {
           link: 'Domain 1 · Task 1.3 — Determine appropriate data security controls',
         },
       },
-      videos: [],
+      videos: [
+        { videoId: 'c3Cn4xYfxJY', title: 'AWS Solutions Architect Associate (SAA-C03) — Full Course to PASS the Exam', channel: 'freeCodeCamp.org', relevance: 'Andrew Brown\'s full freeCodeCamp SAA-C03 course (ExamPro). A comprehensive video companion covering this session\'s services alongside the rest of the exam blueprint.' },
+      ],
       keyTerms: [
         { term: 'Encryption at rest', def: 'Protecting stored data on disk, typically using AWS KMS keys (e.g. SSE-KMS for S3, encrypted EBS/RDS volumes).' },
         { term: 'Encryption in transit', def: 'Protecting data moving over a network with TLS, using certificates from AWS Certificate Manager.' },
@@ -719,7 +728,9 @@ const saaC03Course = {
           link: 'Domain 2 · Task 2.1 — Determine the AWS services required to achieve loose coupling',
         },
       },
-      videos: [],
+      videos: [
+        { videoId: 'c3Cn4xYfxJY', title: 'AWS Solutions Architect Associate (SAA-C03) — Full Course to PASS the Exam', channel: 'freeCodeCamp.org', relevance: 'Andrew Brown\'s full freeCodeCamp SAA-C03 course (ExamPro). A comprehensive video companion covering this session\'s services alongside the rest of the exam blueprint.' },
+      ],
       keyTerms: [
         { term: 'Loose coupling', def: 'A design where components interact through an intermediary so they can fail and scale independently.' },
         { term: 'Queue-based load leveling', def: 'Placing a queue between producer and consumer so demand spikes are buffered and processed at a sustainable rate.' },
@@ -859,7 +870,9 @@ const saaC03Course = {
           link: 'Domain 2 · Task 2.1 — Designing scalable, loosely coupled architectures',
         },
       },
-      videos: [],
+      videos: [
+        { videoId: 'c3Cn4xYfxJY', title: 'AWS Solutions Architect Associate (SAA-C03) — Full Course to PASS the Exam', channel: 'freeCodeCamp.org', relevance: 'Andrew Brown\'s full freeCodeCamp SAA-C03 course (ExamPro). A comprehensive video companion covering this session\'s services alongside the rest of the exam blueprint.' },
+      ],
       keyTerms: [
         { term: 'Horizontal scaling', def: 'Adding more instances behind a load balancer to handle load; no practical ceiling and improves availability.' },
         { term: 'Stateless tier', def: 'A tier that holds no client-specific state locally, so any instance can serve any request — a prerequisite for scaling out.' },
@@ -1013,7 +1026,9 @@ const saaC03Course = {
           link: 'Domain 2 · Task 2.2 — Implement designs to mitigate single points of failure',
         },
       },
-      videos: [],
+      videos: [
+        { videoId: 'c3Cn4xYfxJY', title: 'AWS Solutions Architect Associate (SAA-C03) — Full Course to PASS the Exam', channel: 'freeCodeCamp.org', relevance: 'Andrew Brown\'s full freeCodeCamp SAA-C03 course (ExamPro). A comprehensive video companion covering this session\'s services alongside the rest of the exam blueprint.' },
+      ],
       keyTerms: [
         { term: 'Availability Zone (AZ)', def: 'One or more isolated data centers in a Region with independent power and networking.' },
         { term: 'RDS Multi-AZ', def: 'A deployment with a synchronous standby in another AZ and automatic failover, for high availability.' },
@@ -1156,7 +1171,10 @@ const saaC03Course = {
           link: 'Domain 2 · Task 2.2 — Selecting an appropriate DR strategy',
         },
       },
-      videos: [],
+      videos: [
+        { videoId: 'c3Cn4xYfxJY', title: 'AWS Solutions Architect Associate (SAA-C03) — Full Course to PASS the Exam', channel: 'freeCodeCamp.org', relevance: 'Andrew Brown\'s full freeCodeCamp SAA-C03 course (ExamPro). A comprehensive video companion covering this session\'s services alongside the rest of the exam blueprint.' },
+        { videoId: 'dn4F15S4cNw', title: 'Cloud DR Architecture: Backup, Pilot Light, Warm Standby, Active-Active', channel: 'Go Cloud Architects', relevance: 'A visual comparison of the four DR strategies and their RPO/RTO and cost trade-offs — exactly this session\'s topic.' },
+      ],
       keyTerms: [
         { term: 'RPO', def: 'Recovery Point Objective — the maximum acceptable amount of data loss, measured in time.' },
         { term: 'RTO', def: 'Recovery Time Objective — the maximum acceptable time to restore service after a disaster.' },
@@ -1308,7 +1326,9 @@ const saaC03Course = {
           link: 'Domain 3 · Task 3.1 — Determine high-performing and/or scalable storage solutions',
         },
       },
-      videos: [],
+      videos: [
+        { videoId: 'c3Cn4xYfxJY', title: 'AWS Solutions Architect Associate (SAA-C03) — Full Course to PASS the Exam', channel: 'freeCodeCamp.org', relevance: 'Andrew Brown\'s full freeCodeCamp SAA-C03 course (ExamPro). A comprehensive video companion covering this session\'s services alongside the rest of the exam blueprint.' },
+      ],
       keyTerms: [
         { term: 'Object storage', def: 'Data stored as objects accessed via API (Amazon S3); massively scalable, ideal for unstructured data.' },
         { term: 'Block storage', def: 'Raw volumes attached to a single instance like a disk (Amazon EBS, instance store).' },
@@ -1456,7 +1476,9 @@ const saaC03Course = {
           link: 'Domain 3 · Task 3.2 — Design high-performing and elastic compute solutions',
         },
       },
-      videos: [],
+      videos: [
+        { videoId: 'c3Cn4xYfxJY', title: 'AWS Solutions Architect Associate (SAA-C03) — Full Course to PASS the Exam', channel: 'freeCodeCamp.org', relevance: 'Andrew Brown\'s full freeCodeCamp SAA-C03 course (ExamPro). A comprehensive video companion covering this session\'s services alongside the rest of the exam blueprint.' },
+      ],
       keyTerms: [
         { term: 'Instance family', def: 'A group of EC2 instance types optimized for a resource profile (compute, memory, storage, accelerated).' },
         { term: 'Target tracking scaling', def: 'An Auto Scaling policy that adjusts capacity to keep a chosen metric at a target value.' },
@@ -1604,7 +1626,10 @@ const saaC03Course = {
           link: 'Domain 3 · Task 3.3 — Determine high-performing database solutions',
         },
       },
-      videos: [],
+      videos: [
+        { videoId: 'c3Cn4xYfxJY', title: 'AWS Solutions Architect Associate (SAA-C03) — Full Course to PASS the Exam', channel: 'freeCodeCamp.org', relevance: 'Andrew Brown\'s full freeCodeCamp SAA-C03 course (ExamPro). A comprehensive video companion covering this session\'s services alongside the rest of the exam blueprint.' },
+        { videoId: 'QOVK6CIbgdI', title: 'Which AWS Database Should I Use?', channel: 'Code to the Moon', relevance: 'A concise decision guide across RDS, Aurora, DynamoDB, and more — reinforces choosing the right database for the workload.' },
+      ],
       keyTerms: [
         { term: 'Amazon Aurora', def: 'A high-performance, MySQL/PostgreSQL-compatible relational engine with up to 15 fast read replicas and auto-scaling storage.' },
         { term: 'Read replica', def: 'An asynchronous read-only database copy that offloads reads from the primary to scale read throughput.' },
@@ -1752,7 +1777,9 @@ const saaC03Course = {
           link: 'Domain 3 · Task 3.4 — Determine high-performing and/or scalable network architectures',
         },
       },
-      videos: [],
+      videos: [
+        { videoId: 'c3Cn4xYfxJY', title: 'AWS Solutions Architect Associate (SAA-C03) — Full Course to PASS the Exam', channel: 'freeCodeCamp.org', relevance: 'Andrew Brown\'s full freeCodeCamp SAA-C03 course (ExamPro). A comprehensive video companion covering this session\'s services alongside the rest of the exam blueprint.' },
+      ],
       keyTerms: [
         { term: 'Amazon CloudFront', def: 'A content delivery network that caches content at edge locations to reduce latency and origin load.' },
         { term: 'AWS Global Accelerator', def: 'A service that routes traffic over the AWS backbone to the optimal endpoint with static anycast IPs and fast failover.' },
@@ -1897,7 +1924,9 @@ const saaC03Course = {
           link: 'Domain 3 · Task 3.5 — Determine high-performing data ingestion and transformation solutions',
         },
       },
-      videos: [],
+      videos: [
+        { videoId: 'c3Cn4xYfxJY', title: 'AWS Solutions Architect Associate (SAA-C03) — Full Course to PASS the Exam', channel: 'freeCodeCamp.org', relevance: 'Andrew Brown\'s full freeCodeCamp SAA-C03 course (ExamPro). A comprehensive video companion covering this session\'s services alongside the rest of the exam blueprint.' },
+      ],
       keyTerms: [
         { term: 'Amazon Kinesis Data Streams', def: 'A service for ingesting continuous, high-volume real-time data streams consumed by custom applications.' },
         { term: 'Amazon Data Firehose', def: 'A managed service that delivers streaming data into destinations like S3, Redshift, and OpenSearch.' },
@@ -2042,7 +2071,9 @@ const saaC03Course = {
           link: 'Domain 4 · Task 4.1 — Design cost-optimized storage solutions',
         },
       },
-      videos: [],
+      videos: [
+        { videoId: 'c3Cn4xYfxJY', title: 'AWS Solutions Architect Associate (SAA-C03) — Full Course to PASS the Exam', channel: 'freeCodeCamp.org', relevance: 'Andrew Brown\'s full freeCodeCamp SAA-C03 course (ExamPro). A comprehensive video companion covering this session\'s services alongside the rest of the exam blueprint.' },
+      ],
       keyTerms: [
         { term: 'S3 storage class', def: 'A tier of S3 storage priced by access frequency and retrieval speed, from Standard to Glacier Deep Archive.' },
         { term: 'S3 Intelligent-Tiering', def: 'A class that auto-moves objects between access tiers based on usage, with no retrieval fees, for unknown patterns.' },
@@ -2188,7 +2219,9 @@ const saaC03Course = {
           link: 'Domain 4 · Task 4.2 — Design cost-optimized compute solutions',
         },
       },
-      videos: [],
+      videos: [
+        { videoId: 'c3Cn4xYfxJY', title: 'AWS Solutions Architect Associate (SAA-C03) — Full Course to PASS the Exam', channel: 'freeCodeCamp.org', relevance: 'Andrew Brown\'s full freeCodeCamp SAA-C03 course (ExamPro). A comprehensive video companion covering this session\'s services alongside the rest of the exam blueprint.' },
+      ],
       keyTerms: [
         { term: 'On-Demand Instances', def: 'Pay-per-use EC2 with no commitment; best for short-term, spiky, or unpredictable workloads.' },
         { term: 'Savings Plans', def: 'A commitment to a consistent amount of compute usage for 1 or 3 years in exchange for a discount, with family/Region flexibility.' },
@@ -2334,7 +2367,9 @@ const saaC03Course = {
           link: 'Domain 4 · Task 4.4 — Design cost-optimized network architectures',
         },
       },
-      videos: [],
+      videos: [
+        { videoId: 'c3Cn4xYfxJY', title: 'AWS Solutions Architect Associate (SAA-C03) — Full Course to PASS the Exam', channel: 'freeCodeCamp.org', relevance: 'Andrew Brown\'s full freeCodeCamp SAA-C03 course (ExamPro). A comprehensive video companion covering this session\'s services alongside the rest of the exam blueprint.' },
+      ],
       keyTerms: [
         { term: 'DynamoDB on-demand', def: 'A capacity mode charging per request that scales automatically — cost-effective for unpredictable traffic.' },
         { term: 'Aurora Serverless', def: 'An Aurora mode that auto-scales database capacity, cost-effective for variable or intermittent workloads.' },
