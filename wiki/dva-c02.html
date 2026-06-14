@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DVA-C02 Exam Guide — CloudExamLab Wiki</title>
+  <style>
+    :root {
+      --sidebar-w: 255px;
+      --sidebar-bg: #0f172a;
+      --sidebar-text: #94a3b8;
+      --sidebar-active-text: #38bdf8;
+      --sidebar-active-bg: rgba(56,189,248,0.08);
+      --sidebar-hover: #1e293b;
+      --accent: #2563eb;
+      --accent-light: #eff6ff;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --heading: #0f172a;
+      --code-bg: #1e293b;
+      --code-text: #e2e8f0;
+      --stripe: #f8fafc;
+      --warn-bg: #fef2f2;
+      --warn-border: #ef4444;
+      --tip-bg: #f0fdf4;
+      --tip-border: #22c55e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--text);
+      line-height: 1.65;
+      background: #fff;
+    }
+
+    /* ── Sidebar ── */
+    #sidebar {
+      position: fixed; top: 0; left: 0;
+      width: var(--sidebar-w); height: 100vh;
+      background: var(--sidebar-bg);
+      overflow-y: auto; z-index: 100;
+      display: flex; flex-direction: column;
+    }
+    #sidebar::-webkit-scrollbar { width: 4px; }
+    #sidebar::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+    .sb-header {
+      padding: 20px 16px 14px;
+      border-bottom: 1px solid #1e293b;
+    }
+    .sb-logo { font-size: 13px; font-weight: 700; color: #f1f5f9; letter-spacing: .06em; text-transform: uppercase; }
+    .sb-sub  { font-size: 11px; color: var(--sidebar-text); margin-top: 2px; }
+    .sb-group { padding: 10px 0 2px; }
+    .sb-group-label {
+      font-size: 10px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: #475569;
+      padding: 0 16px; margin-bottom: 3px;
+    }
+    .sb-item {
+      display: block; padding: 6px 16px;
+      font-size: 12.5px; color: var(--sidebar-text);
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: background .12s, color .12s;
+    }
+    .sb-item:hover { background: var(--sidebar-hover); color: #f1f5f9; }
+    .sb-item.active { color: var(--sidebar-active-text); border-left-color: var(--sidebar-active-text); background: var(--sidebar-active-bg); }
+    .sb-item.ext { color: #60a5fa; }
+    .sb-item.ext::after { content: ' ↗'; font-size: 10px; }
+
+    /* ── Main ── */
+    #main {
+      margin-left: var(--sidebar-w);
+      padding: 48px 64px 96px;
+      max-width: calc(var(--sidebar-w) + 880px);
+    }
+
+    /* ── Section ── */
+    .section { padding-top: 52px; border-top: 1px solid var(--border); margin-top: 28px; }
+    .section:first-of-type { border-top: none; margin-top: 0; padding-top: 0; }
+
+    /* ── Typography ── */
+    h1 { font-size: 27px; font-weight: 700; color: var(--heading); margin-bottom: 10px; }
+    h2 { font-size: 19px; font-weight: 700; color: var(--heading); margin-top: 38px; margin-bottom: 14px; }
+    h3 { font-size: 15px; font-weight: 600; color: var(--heading); margin-top: 24px; margin-bottom: 8px; }
+    p  { margin-bottom: 12px; }
+    a  { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ul, ol { padding-left: 22px; margin-bottom: 12px; }
+    li { margin-bottom: 4px; }
+    hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+    .section-meta { font-size: 14px; color: var(--text-muted); margin-bottom: 26px; margin-top: -4px; }
+
+    /* ── Chip label ── */
+    .chip {
+      display: inline-block; padding: 2px 9px; border-radius: 4px;
+      font-size: 10px; font-weight: 700; letter-spacing: .05em;
+      text-transform: uppercase; margin-bottom: 6px;
+    }
+    .chip-platform  { background: #eff6ff; color: #1d4ed8; }
+    .chip-technical { background: #f0fdf4; color: #15803d; }
+    .chip-reference { background: #fdf4ff; color: #7e22ce; }
+    .chip-exam      { background: #fff7ed; color: #c2410c; }
+
+    /* ── Tables ── */
+    .tw { overflow-x: auto; margin: 16px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    th {
+      background: #f1f5f9; padding: 7px 12px;
+      text-align: left; font-size: 11px; font-weight: 700;
+      color: var(--text-muted); border-bottom: 2px solid var(--border);
+      white-space: nowrap;
+    }
+    td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:nth-child(even) td { background: var(--stripe); }
+
+    /* ── Code ── */
+    code {
+      font-family: 'SF Mono','Fira Code','Cascadia Code',Consolas,monospace;
+      font-size: 12px; background: #f1f5f9; color: #be185d;
+      padding: 2px 5px; border-radius: 3px;
+    }
+
+    /* ── Callouts ── */
+    .callout {
+      padding: 12px 16px; border-radius: 6px;
+      margin: 14px 0; font-size: 13.5px;
+    }
+    .callout-note    { background: var(--accent-light); border-left: 4px solid var(--accent); }
+    .callout-warning { background: var(--warn-bg);      border-left: 4px solid var(--warn-border); }
+    .callout-tip     { background: var(--tip-bg);       border-left: 4px solid var(--tip-border); }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 10px;
+      font-size: 11px; font-weight: 600;
+    }
+    .badge-green  { background: #dcfce7; color: #15803d; }
+    .badge-yellow { background: #fef3c7; color: #b45309; }
+    .badge-gray   { background: #f1f5f9; color: #475569; }
+    .badge-blue   { background: #dbeafe; color: #1d4ed8; }
+    .badge-orange { background: #ffedd5; color: #c2410c; }
+
+    /* ── Numbered steps ── */
+    .steps { counter-reset: step; list-style: none; padding: 0; margin-bottom: 14px; }
+    .steps li {
+      counter-increment: step;
+      padding: 7px 0 7px 36px; position: relative;
+      border-left: 2px solid var(--border); margin-left: 11px;
+    }
+    .steps li::before {
+      content: counter(step);
+      position: absolute; left: -11px; top: 7px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--accent); color: #fff;
+      font-size: 10px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── Page title ── */
+    .page-title { margin-bottom: 36px; }
+    .page-title h1 { font-size: 30px; margin-bottom: 8px; }
+    .page-title p  { font-size: 15px; color: var(--text-muted); margin: 0; }
+
+    /* ── Domain bar ── */
+    .domain-bar { display: flex; gap: 6px; flex-wrap: wrap; margin: 18px 0 8px; }
+    .domain-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 12px; border-radius: 20px;
+      font-size: 12px; font-weight: 600;
+      border: 1px solid var(--border); background: #f8fafc;
+    }
+    .domain-pill .pct {
+      background: var(--accent); color: #fff;
+      border-radius: 10px; padding: 1px 6px;
+      font-size: 10px; font-weight: 700;
+    }
+
+    /* ── Highlight row ── */
+    .hl td { background: #eff6ff !important; font-weight: 600; }
+
+    /* ── Jump-to-top ── */
+    #top-btn {
+      position: fixed; bottom: 28px; right: 28px;
+      background: var(--accent); color: #fff;
+      border: none; border-radius: 50%; width: 38px; height: 38px;
+      font-size: 18px; cursor: pointer; display: none;
+      align-items: center; justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+      transition: opacity .2s;
+    }
+    #top-btn:hover { background: #1d4ed8; }
+  </style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<nav id="sidebar">
+  <div class="sb-header">
+    <div class="sb-logo">CloudExamLab</div>
+    <div class="sb-sub">Exam Guide Series</div>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">On this page</div>
+    <a class="sb-item active" href="#overview">Overview</a>
+    <a class="sb-item" href="#structure">Exam Structure</a>
+    <a class="sb-item" href="#domains">Content Domains</a>
+    <a class="sb-item" href="#domain1">D1 — Development</a>
+    <a class="sb-item" href="#domain2">D2 — Security</a>
+    <a class="sb-item" href="#domain3">D3 — Deployment</a>
+    <a class="sb-item" href="#domain4">D4 — Troubleshooting &amp; Optimization</a>
+    <a class="sb-item" href="#services">In / Out of Scope Services</a>
+    <a class="sb-item" href="#candidate-prep">Helping Candidates</a>
+    <a class="sb-item" href="#simulation">Simulation Design</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Wiki</div>
+    <a class="sb-item ext" href="index.html">Developer Wiki</a>
+    <a class="sb-item ext" href="new-program-playbook.html">New Program Playbook</a>
+    <a class="sb-item ext" href="exam-authoring-standard.html">Exam &amp; Question Authoring</a>
+    <a class="sb-item ext" href="aws-certification-roadmap.html">AWS Cert Roadmap</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Official</div>
+    <a class="sb-item ext" href="https://docs.aws.amazon.com/aws-certification/latest/developer-associate-02/developer-associate-02.html">AWS Exam Guide ↗</a>
+  </div>
+</nav>
+
+<!-- ══ MAIN ══ -->
+<main id="main">
+
+  <!-- OVERVIEW -->
+  <div class="page-title" id="overview">
+    <h1>AWS Certified Developer – Associate (DVA-C02)</h1>
+    <p>Everything we need to know about this exam — structure, domains, candidate prep strategy, and simulation design.</p>
+  </div>
+
+  <h2>What This Exam Is</h2>
+  <p>The AWS Certified Developer – Associate (DVA-C02) validates a candidate's ability to develop, test, deploy, and debug AWS Cloud-based applications. Unlike the foundational Cloud Practitioner exam, DVA-C02 is hands-on: it expects you to read and reason about code, configure services through SDKs and the CLI, and operate CI/CD pipelines.</p>
+  <ul>
+    <li><strong>Target audience:</strong> Software developers and application engineers who build and maintain applications on AWS.</li>
+    <li><strong>Prerequisite experience:</strong> 1+ years of hands-on experience developing and maintaining AWS applications; proficiency in at least one high-level programming language.</li>
+    <li><strong>Why candidates take it:</strong> To validate cloud-native development skills, qualify for cloud/backend developer roles, or build toward the DevOps Engineer Professional path. Often paired with SAA for a stronger profile.</li>
+  </ul>
+
+  <!-- STRUCTURE -->
+  <div class="section" id="structure">
+    <span class="chip chip-exam">Exam Format</span>
+    <h1>Question Format &amp; Scoring</h1>
+    <p class="section-meta">Exact parameters from the official exam guide — use these verbatim in the simulation design.</p>
+
+    <h2>Question Types</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>Multiple choice</td><td>One correct answer from four options (three distractors)</td></tr>
+        <tr><td>Multiple response</td><td>Two or more correct answers from five or more options</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Scoring Model</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Setting</th><th>Value</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Total questions on exam</td><td>65</td><td>50 scored + 15 unscored pretest (unidentified)</td></tr>
+        <tr><td>Duration</td><td>130 minutes</td><td>Longer than the foundational exam — scenarios take more reading</td></tr>
+        <tr><td>Passing score</td><td>720 / 1,000</td><td>Display as % equivalent: ~72%</td></tr>
+        <tr><td>Scoring</td><td>Compensatory</td><td>No per-domain minimums — total score only</td></tr>
+        <tr><td>Result</td><td>Pass / Fail</td><td>Scaled scoring equalizes difficulty across exam forms</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Out-of-Scope Job Tasks (Do NOT Test)</h2>
+    <p>The official exam guide explicitly excludes these tasks from the target candidate role. Any question that requires them is out of scope — cut it.</p>
+    <ul>
+      <li>Designing architectures (distributed systems, microservices, database schemas and modeling)</li>
+      <li>Designing and creating CI/CD pipelines (the candidate <em>uses</em> pipelines, does not design them)</li>
+      <li>Administering IAM users and groups</li>
+      <li>Administering servers and operating systems</li>
+      <li>Designing AWS networking infrastructure (Amazon VPC, AWS Direct Connect)</li>
+    </ul>
+    <div class="callout callout-tip"><strong>Exam tip:</strong> DVA-C02 tests <em>developer</em> skills — writing application code, calling service APIs, configuring Lambda, deploying through existing pipelines, and debugging. If a question is about designing the architecture or networking from scratch, it leans toward SAA territory and is out of scope here.</div>
+  </div>
+
+  <!-- DOMAIN OVERVIEW -->
+  <div class="section" id="domains">
+    <span class="chip chip-platform">Domains</span>
+    <h1>Domain Breakdown</h1>
+    <p class="section-meta">Four domains. D1 (Development) carries the most weight — the exam is built around writing and reasoning about application code on AWS.</p>
+
+    <div class="domain-bar">
+      <span class="domain-pill">D1 — Development <span class="pct">32%</span></span>
+      <span class="domain-pill">D2 — Security <span class="pct">26%</span></span>
+      <span class="domain-pill">D3 — Deployment <span class="pct">24%</span></span>
+      <span class="domain-pill">D4 — Troubleshooting &amp; Optimization <span class="pct">18%</span></span>
+    </div>
+
+    <div class="tw"><table>
+      <thead><tr><th>Domain</th><th>Weight</th><th>Task statements</th></tr></thead>
+      <tbody>
+        <tr><td>D1 — Development with AWS Services</td><td>32%</td><td>1.1 Develop code for apps on AWS · 1.2 Develop code for AWS Lambda · 1.3 Use data stores</td></tr>
+        <tr><td>D2 — Security</td><td>26%</td><td>2.1 Authentication &amp; authorization · 2.2 Encryption with AWS services · 2.3 Manage sensitive data in code</td></tr>
+        <tr><td>D3 — Deployment</td><td>24%</td><td>3.1 Prepare artifacts · 3.2 Test in dev environments · 3.3 Automate deployment testing · 3.4 Deploy via CI/CD</td></tr>
+        <tr><td>D4 — Troubleshooting &amp; Optimization</td><td>18%</td><td>4.1 Root cause analysis · 4.2 Instrument code for observability · 4.3 Optimize applications</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <!-- DOMAIN 1 -->
+  <div class="section" id="domain1">
+    <span class="chip chip-platform">Domain 1 · 32%</span>
+    <h1>Development with AWS Services</h1>
+    <p class="section-meta">The core of the exam. Covers writing resilient application code, building on AWS Lambda, and using data stores (DynamoDB front and center).</p>
+
+    <h2>Task 1.1 — Develop code for applications hosted on AWS</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Describing architectural patterns (event-driven, microservices, monolithic, choreography, orchestration, fanout)</li>
+      <li>Distinguishing stateful vs. stateless, tightly vs. loosely coupled, synchronous vs. asynchronous patterns</li>
+      <li>Creating fault-tolerant and resilient applications in a programming language (Java, C#, Python, JavaScript, TypeScript, Go)</li>
+      <li>Creating, extending, and maintaining APIs (request/response transformations, validation rules, status-code overrides)</li>
+      <li>Writing and running unit tests in development environments (e.g. using AWS SAM)</li>
+      <li>Writing code that uses messaging services and interacts with AWS services via APIs and SDKs</li>
+      <li>Handling streaming data; using Amazon EventBridge to implement event-driven patterns</li>
+      <li>Implementing resilient code for third-party integrations (retry logic, circuit breakers, error handling)</li>
+    </ul>
+
+    <h2>Task 1.2 — Develop code for AWS Lambda</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Accessing private resources in VPCs from Lambda code</li>
+      <li>Configuring functions: environment variables, memory, concurrency, timeout, runtime, handler, layers, extensions, triggers, destinations</li>
+      <li>Handling the event lifecycle and errors (Lambda Destinations, dead-letter queues)</li>
+      <li>Writing and running test code; integrating Lambda functions with AWS services</li>
+      <li>Tuning Lambda functions for optimal performance</li>
+      <li>Using Lambda to process and transform data in near real time</li>
+    </ul>
+
+    <h2>Task 1.3 — Use data stores in application development</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Designing high-cardinality partition keys for balanced partition access</li>
+      <li>Understanding consistency models (strongly consistent vs. eventually consistent)</li>
+      <li>Distinguishing query vs. scan operations; defining DynamoDB keys and indexing (LSI/GSI)</li>
+      <li>Serializing/deserializing data for persistence; managing and maintaining data stores</li>
+      <li>Managing data lifecycles (e.g. TTL); using data caching services (ElastiCache, DAX)</li>
+      <li>Using specialized data stores based on access patterns (e.g. Amazon OpenSearch Service)</li>
+    </ul>
+  </div>
+
+  <!-- DOMAIN 2 -->
+  <div class="section" id="domain2">
+    <span class="chip chip-technical">Domain 2 · 26%</span>
+    <h1>Security</h1>
+    <p class="section-meta">Application-level security from a developer's seat: authenticating users and services, encrypting data, and keeping secrets out of code.</p>
+
+    <h2>Task 2.1 — Implement authentication and/or authorization for applications and AWS services</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Using an identity provider for federated access (Amazon Cognito, IAM)</li>
+      <li>Securing applications with bearer tokens; configuring programmatic access to AWS</li>
+      <li>Making authenticated calls to AWS services; assuming an IAM role</li>
+      <li>Defining permissions for IAM principals; implementing application-level (fine-grained) authorization</li>
+      <li>Handling cross-service authentication in microservice architectures</li>
+    </ul>
+
+    <h2>Task 2.2 — Implement encryption by using AWS services</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Defining encryption at rest and in transit; describing certificate management (e.g. AWS Private CA)</li>
+      <li>Distinguishing client-side vs. server-side encryption</li>
+      <li>Using encryption keys to encrypt/decrypt data; using encryption across account boundaries</li>
+      <li>Generating certificates and SSH keys for development; enabling and disabling key rotation</li>
+    </ul>
+
+    <h2>Task 2.3 — Manage sensitive data in application code</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Describing data classification (PII, PHI)</li>
+      <li>Encrypting environment variables that contain sensitive data</li>
+      <li>Using secret management services (AWS Secrets Manager, SSM Parameter Store) to secure data</li>
+      <li>Sanitizing sensitive data; implementing application-level data masking and sanitization</li>
+      <li>Implementing data access patterns for multi-tenant applications</li>
+    </ul>
+  </div>
+
+  <!-- DOMAIN 3 -->
+  <div class="section" id="domain3">
+    <span class="chip chip-reference">Domain 3 · 24%</span>
+    <h1>Deployment</h1>
+    <p class="section-meta">Packaging application artifacts, testing in development environments, automating deployment tests, and shipping code through AWS CI/CD services.</p>
+
+    <h2>Task 3.1 — Prepare application artifacts to be deployed to AWS</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Managing code-module dependencies (environment variables, configuration files, container images) within the package</li>
+      <li>Organizing files and directory structure for deployment; using code repositories in deployment environments</li>
+      <li>Applying application resource requirements (memory, cores)</li>
+      <li>Preparing application configurations for specific environments (e.g. using AWS AppConfig)</li>
+    </ul>
+
+    <h2>Task 3.2 — Test applications in development environments</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Testing deployed code by using AWS services and tools</li>
+      <li>Writing integration tests and mock APIs for external dependencies</li>
+      <li>Testing applications using development endpoints (e.g. configuring stages in Amazon API Gateway)</li>
+      <li>Deploying application stack updates to existing environments (e.g. a SAM template to a different staging environment)</li>
+      <li>Testing event-driven applications</li>
+    </ul>
+
+    <h2>Task 3.3 — Automate deployment testing</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Creating application test events (JSON payloads for testing Lambda, API Gateway, SAM resources)</li>
+      <li>Deploying API resources to various environments</li>
+      <li>Creating environments that use approved versions for integration testing (Lambda aliases, container image tags, Amplify branches, Copilot environments)</li>
+      <li>Implementing and deploying IaC templates (AWS SAM, AWS CloudFormation)</li>
+      <li>Managing environments in individual AWS services (differentiating dev/test/prod in API Gateway)</li>
+    </ul>
+
+    <h2>Task 3.4 — Deploy code by using AWS CI/CD services</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Describing Lambda deployment packaging options; API Gateway stages and custom domains</li>
+      <li>Updating existing IaC templates (SAM, CloudFormation)</li>
+      <li>Deploying an application version using deployment strategies; performing rollbacks</li>
+      <li>Committing code to a repository to invoke build, test, and deployment actions</li>
+      <li>Using orchestrated workflows to deploy code to different environments</li>
+      <li>Using labels and branches for version and release management</li>
+      <li>Configuring deployment strategies (blue/green, canary, rolling) for application releases</li>
+    </ul>
+  </div>
+
+  <!-- DOMAIN 4 -->
+  <div class="section" id="domain4">
+    <span class="chip chip-exam">Domain 4 · 18%</span>
+    <h1>Troubleshooting and Optimization</h1>
+    <p class="section-meta">The smallest domain, but where the developer earns their keep: finding root causes, instrumenting code for observability, and optimizing performance and cost.</p>
+
+    <h2>Task 4.1 — Assist in a root cause analysis</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Debugging code to identify defects; interpreting application metrics, logs, and traces</li>
+      <li>Querying logs to find relevant data (e.g. CloudWatch Logs Insights)</li>
+      <li>Implementing custom metrics (e.g. CloudWatch embedded metric format [EMF])</li>
+      <li>Reviewing application health using dashboards and insights</li>
+      <li>Troubleshooting deployment failures using service output logs</li>
+      <li>Debugging service-integration issues in applications</li>
+    </ul>
+
+    <h2>Task 4.2 — Instrument code for observability</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Describing differences between logging, monitoring, and observability</li>
+      <li>Implementing an effective logging strategy; implementing structured logging for events and user actions</li>
+      <li>Implementing code that emits custom metrics; adding annotations for tracing services</li>
+      <li>Implementing notification alerts for specific actions (quota limits, deployment completions)</li>
+      <li>Implementing tracing with AWS services and tools (e.g. AWS X-Ray)</li>
+      <li>Configuring application health checks and readiness probes</li>
+    </ul>
+
+    <h2>Task 4.3 — Optimize applications by using AWS services and features</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Defining concurrency; profiling application performance</li>
+      <li>Determining minimum memory and compute power for an application</li>
+      <li>Using subscription filter policies to optimize messaging</li>
+      <li>Caching content based on request headers; implementing application-level caching</li>
+      <li>Optimizing application resource usage; analyzing performance issues</li>
+      <li>Using application logs to identify performance bottlenecks</li>
+    </ul>
+  </div>
+
+  <!-- SERVICES SCOPE -->
+  <div class="section" id="services">
+    <span class="chip chip-reference">Service Scope</span>
+    <h1>In-Scope &amp; Out-of-Scope Services</h1>
+    <p class="section-meta">The exam draws from a developer-focused service set. Know these well; treat the out-of-scope list as a signal that a service is not the intended answer.</p>
+
+    <h2>In-Scope Services (by category)</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Category</th><th>Services</th></tr></thead>
+      <tbody>
+        <tr><td>Compute</td><td>Amazon EC2, AWS Elastic Beanstalk, AWS Lambda</td></tr>
+        <tr><td>Containers</td><td>Amazon ECR, Amazon ECS, Amazon EKS</td></tr>
+        <tr><td>Database</td><td>Amazon Aurora, Amazon DynamoDB, Amazon ElastiCache, Amazon RDS</td></tr>
+        <tr><td>Application Integration</td><td>AWS AppSync, Amazon EventBridge, Amazon SNS, Amazon SQS, AWS Step Functions</td></tr>
+        <tr><td>Developer Tools</td><td>AWS Amplify, AWS CloudShell, AWS CodeArtifact, AWS CodeBuild, AWS CodeDeploy, AWS CodePipeline, AWS X-Ray, Amazon Q Developer</td></tr>
+        <tr><td>Management &amp; Governance</td><td>AWS AppConfig, AWS CDK, AWS CloudFormation, AWS CloudTrail, Amazon CloudWatch, AWS CLI, AWS Systems Manager</td></tr>
+        <tr><td>Networking &amp; Content Delivery</td><td>Amazon API Gateway, Amazon CloudFront, Elastic Load Balancing, Amazon Route 53, Amazon VPC</td></tr>
+        <tr><td>Security, Identity &amp; Compliance</td><td>Amazon Cognito, AWS IAM, AWS KMS, AWS Secrets Manager, AWS STS, AWS WAF</td></tr>
+        <tr><td>Storage</td><td>Amazon EBS, Amazon EFS, Amazon S3</td></tr>
+        <tr><td>Analytics</td><td>Amazon Athena, Amazon Kinesis, Amazon OpenSearch Service</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Out-of-Scope Services (selected)</h2>
+    <p>Examples AWS lists as out of scope — useful as confident distractors that should never be the correct answer:</p>
+    <ul>
+      <li><strong>ML:</strong> Amazon Polly, Amazon Rekognition</li>
+      <li><strong>Analytics:</strong> Amazon QuickSight</li>
+      <li><strong>Migration &amp; Transfer:</strong> AWS Application Migration Service, AWS Application Discovery Service</li>
+      <li><strong>Storage:</strong> AWS Snow Family, AWS Storage Gateway</li>
+      <li><strong>Security:</strong> AWS Shield Standard, AWS Shield Advanced</li>
+      <li><strong>End-User Computing / Business Apps:</strong> WorkSpaces, AppStream 2.0, Connect, Chime, WorkMail</li>
+    </ul>
+  </div>
+
+  <!-- CANDIDATE PREP -->
+  <div class="section" id="candidate-prep">
+    <span class="chip chip-platform">Candidate Prep</span>
+    <h1>How We Help DVA-C02 Candidates</h1>
+    <p class="section-meta">Who takes this exam, where they struggle, and how to build a study path that gets them to 720+.</p>
+
+    <h2>Who Takes This Exam</h2>
+    <ul>
+      <li><strong>Working developers</strong> — backend and full-stack engineers who already write code and want to validate AWS-native development skills.</li>
+      <li><strong>Cloud Practitioners moving up</strong> — candidates who hold CLF-C02 and want their first associate-level, role-based certification.</li>
+      <li><strong>DevOps aspirants</strong> — engineers using DVA as the on-ramp to the DevOps Engineer Professional path.</li>
+    </ul>
+
+    <h2>What Candidates Struggle With</h2>
+    <ul>
+      <li><strong>DynamoDB data modeling</strong> — partition vs. sort keys, LSI vs. GSI, query vs. scan, capacity modes, and RCU/WCU math. The single densest topic on the exam.</li>
+      <li><strong>Lambda configuration depth</strong> — concurrency (reserved vs. provisioned), memory/timeout tuning, layers, environment variables, VPC access, and error handling with DLQs and Destinations.</li>
+      <li><strong>Cognito user pools vs. identity pools</strong> — authentication (who you are) vs. authorization to AWS resources (what you can access). Constantly confused.</li>
+      <li><strong>KMS and envelope encryption</strong> — how data keys, the CMK, and client- vs. server-side encryption fit together.</li>
+      <li><strong>Secrets Manager vs. SSM Parameter Store</strong> — automatic rotation and cost vs. free hierarchical config. Choosing the right one for the scenario.</li>
+      <li><strong>Deployment strategies</strong> — blue/green vs. canary vs. rolling vs. all-at-once, and how Lambda aliases and traffic shifting implement them.</li>
+      <li><strong>CI/CD service roles</strong> — what CodePipeline, CodeBuild, CodeDeploy, and CodeArtifact each do and where they sit in a pipeline.</li>
+    </ul>
+
+    <h2>Recommended Study Path</h2>
+    <ol class="steps">
+      <li><strong>Domain 1 — Development first.</strong> Highest weight (32%) and the foundation everything else builds on. Master DynamoDB and Lambda before anything else — they recur across every other domain.</li>
+      <li><strong>Domain 2 — Security.</strong> Application-level auth, KMS encryption, and secrets management. Cognito and IAM roles for applications are the highest-yield subtopics.</li>
+      <li><strong>Domain 3 — Deployment.</strong> Learn the CI/CD service map and deployment strategies as a single connected story (commit → build → test → deploy → rollback).</li>
+      <li><strong>Domain 4 — Troubleshooting last.</strong> Smallest domain (18%), but it ties the others together. CloudWatch, X-Ray, and Lambda optimization reuse concepts you already learned — efficient marks close to exam day.</li>
+    </ol>
+
+    <h2>AI Explanation Quality for This Exam</h2>
+    <p>DVA-C02 questions use concrete developer scenarios. Every wrong answer needs an explanation that says WHY the distractor is wrong — not just "this is not correct." Common patterns to cover:</p>
+    <ul>
+      <li>For DynamoDB questions: explain the access-pattern reason (e.g. "a Scan reads every item and then filters — use a Query on the GSI to read only the matching partition").</li>
+      <li>For Lambda questions: explain the configuration consequence (e.g. "provisioned concurrency keeps instances warm to remove cold starts; reserved concurrency only caps the maximum").</li>
+      <li>For security questions: explain the authN vs. authZ or key-handling distinction (e.g. "a Cognito user pool authenticates users; an identity pool vends temporary AWS credentials").</li>
+      <li>For deployment questions: explain what each strategy optimizes for (e.g. "canary shifts a small percentage of traffic first to limit blast radius before a full rollout").</li>
+    </ul>
+  </div>
+
+  <!-- SIMULATION DESIGN -->
+  <div class="section" id="simulation">
+    <span class="chip chip-exam">Simulation Design</span>
+    <h1>How to Formulate the Exam Simulation</h1>
+    <p class="section-meta">Parameters for building practice sets that match the real DVA-C02 exam. See the <a href="exam-authoring-standard.html">Exam &amp; Question Authoring Standard</a> for question-writing rules.</p>
+
+    <h2>Question Set Structure</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Setting</th><th>Value</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Total questions per simulation</td><td>65</td><td>Match real exam — 50 scored + 15 unscored (unannounced)</td></tr>
+        <tr><td>Duration</td><td>130 minutes</td><td>Exact match to real exam</td></tr>
+        <tr><td>Passing threshold</td><td>720 / 1,000</td><td>Display as % equivalent: ~72%</td></tr>
+        <tr><td>Scoring</td><td>Compensatory</td><td>No domain minimums — total score only</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Domain Distribution per Set</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Domain</th><th>Weight</th><th>Qs in 65-Q set</th><th>Qs in 50-Q scored set</th></tr></thead>
+      <tbody>
+        <tr><td>D1 — Development with AWS Services</td><td>32%</td><td>21</td><td>16</td></tr>
+        <tr><td>D2 — Security</td><td>26%</td><td>17</td><td>13</td></tr>
+        <tr><td>D3 — Deployment</td><td>24%</td><td>16</td><td>12</td></tr>
+        <tr><td>D4 — Troubleshooting &amp; Optimization</td><td>18%</td><td>11</td><td>9</td></tr>
+        <tr class="hl"><td><strong>Total</strong></td><td><strong>100%</strong></td><td><strong>65</strong></td><td><strong>50</strong></td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Question Type Mix</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Type</th><th>Suggested % of set</th><th>Implementation priority</th></tr></thead>
+      <tbody>
+        <tr><td>Multiple choice (1-of-4)</td><td>~75%</td><td><span class="badge badge-green">High — launch with this</span></td></tr>
+        <tr><td>Multiple response (select N)</td><td>~25%</td><td><span class="badge badge-green">High — common on exam</span></td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout callout-note">Three simulations, three angles: <strong>Sim 1 Foundational</strong> (know the services, 100% MC) · <strong>Sim 2 Architectural</strong> (apply to a business problem, ~25% MR) · <strong>Sim 3 Comparative</strong> (distinguish similar services and trade-offs, ~25% MR).</div>
+
+    <h2>Question Writing Rules (DVA-C02 specific)</h2>
+    <ul>
+      <li><strong>Scenario-based, developer-framed stems</strong> — "A developer needs to…" or "An application running on Lambda must…" Never "What is the definition of…?"</li>
+      <li><strong>Code-aware, not code-heavy</strong> — questions may reference SDK calls, IAM policy snippets, or buildspec/SAM fragments, but they test the decision, not syntax recall.</li>
+      <li><strong>Service operation over service awareness</strong> — unlike CLF, DVA asks HOW to configure or use a service (e.g. which concurrency setting, which DynamoDB index), not just which service to pick.</li>
+      <li><strong>Best-practice framing</strong> — many questions reduce to "which is the MOST secure / MOST cost-effective / LEAST operational-overhead way to do X."</li>
+      <li><strong>Ground every question in a task statement</strong> — tie each to a specific 1.x–4.x skill so the set stays on-blueprint.</li>
+    </ul>
+
+    <h2>Distractor Quality Guidelines</h2>
+    <ul>
+      <li>Use real developer confusions as distractors: Query vs. Scan; LSI vs. GSI; reserved vs. provisioned concurrency; user pool vs. identity pool; Secrets Manager vs. Parameter Store; SNS vs. SQS vs. EventBridge.</li>
+      <li>For security questions: make one distractor confuse authentication with authorization, and one mishandle key management (e.g. storing a plaintext key, or client-side where server-side is required).</li>
+      <li>For deployment questions: make each distractor a real but wrong strategy for the stated goal (e.g. "all-at-once for a zero-downtime production release" is plausible but wrong).</li>
+    </ul>
+
+    <h2>AI Explanation Template</h2>
+    <p>Each question requires an explanation covering:</p>
+    <ul>
+      <li>Why the correct answer is right — with a brief conceptual reason</li>
+      <li>Why each distractor is wrong — one sentence per option, naming the specific reason</li>
+      <li>Concept link — which domain/task statement this tests (e.g. "D1 · Task 1.3 — DynamoDB keys and indexing")</li>
+      <li>Service context — if a service appears, one line on what it does and what distinguishes it from similar services</li>
+    </ul>
+  </div>
+
+</main>
+
+<button id="top-btn" title="Back to top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<script>
+  const topBtn = document.getElementById('top-btn');
+  window.addEventListener('scroll', () => {
+    topBtn.style.display = window.scrollY > 400 ? 'flex' : 'none';
+  });
+</script>
+</body>
+</html>
