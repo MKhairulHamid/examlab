@@ -27,6 +27,12 @@ async function callAdminApi(payload) {
   return json
 }
 
+// ── Users ─────────────────────────────────────────────────────────────────────
+
+export async function getUsers() {
+  return callAdminApi({ action: 'getUsers' })
+}
+
 // ── Exam Types ────────────────────────────────────────────────────────────────
 
 export async function getExamTypes() {

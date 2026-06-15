@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Ticket, GraduationCap, Video, Flag } from 'lucide-react'
+import { Ticket, GraduationCap, Video, Flag, Users } from 'lucide-react'
 import useAuthStore from '../stores/authStore'
 import { getExamTypes } from '../services/adminService'
 import DashboardHeader from '../components/layout/DashboardHeader'
@@ -8,9 +8,11 @@ import ExamTypeForm from '../components/admin/ExamTypeForm'
 import PromoCodeManager from '../components/admin/PromoCodeManager'
 import CommunityVideoReview from '../components/admin/CommunityVideoReview'
 import VideoReportsManager from '../components/admin/VideoReportsManager'
+import UsersManager from '../components/admin/UsersManager'
 import './AdminPage.css'
 
 const TABS = [
+  { id: 'users', label: 'Users', Icon: Users },
   { id: 'promo-codes', label: 'Promo Codes', Icon: Ticket },
   { id: 'exam-types', label: 'Exam Types', Icon: GraduationCap },
   { id: 'community-videos', label: 'Community Videos', Icon: Video },
@@ -106,6 +108,10 @@ export default function AdminPage() {
         </nav>
 
         <main className="admin-main">
+          {activeTab === 'users' && (
+            <UsersManager />
+          )}
+
           {activeTab === 'promo-codes' && (
             <PromoCodeManager examTypes={examTypes} />
           )}

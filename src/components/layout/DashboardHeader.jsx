@@ -44,6 +44,7 @@ function DashboardHeader() {
                 className="text-white/70 hover:text-white hover:bg-white/[0.08] px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
               >
                 <span className="dashboard-header-nav-text">Admin</span>
+                <span className="dashboard-header-nav-icon hidden">🛠️</span>
               </Link>
             )}
 

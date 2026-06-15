@@ -459,6 +459,107 @@ Deno.serve(async (req) => {
         return jsonResponse({ data })
       }
 
+      // ── Users (read-only directory + activity) ───────────────────────────────
+      case 'getUsers': {
+        // Pull every user-facing table once, then stitch together per user in
+        // memory. The user base is small, so a handful of full scans is cheap
+        // and avoids N+1 round trips.
+        const [
+          profilesRes,
+          subsRes,
+          plansRes,
+          attemptsRes,
+          streaksRes,
+          courseRes,
+          enrollRes,
+          examTypesRes,
+          aiRes,
+        ] = await Promise.all([
+          supabase.from('profiles').select('id, email, full_name, is_admin, exam_dates_json, created_at, updated_at'),
+          supabase.from('user_subscriptions').select('user_id, plan_id, status, current_period_start, current_period_end, cancelled_at, created_at'),
+          supabase.from('subscription_plans').select('id, name, slug, price_cents, currency, interval_unit'),
+          supabase.from('exam_attempts').select('user_id, question_set_id, status, percentage_score, scaled_score, passed, completed_at, created_at'),
+          supabase.from('study_streaks').select('user_id, current_streak, longest_streak, total_study_days, daily_goal_questions, last_activity_date'),
+          supabase.from('study_course_progress').select('user_id, course_slug, completed_sessions, last_session_id, updated_at'),
+          supabase.from('user_enrollments').select('user_id, exam_type_id, enrolled_at'),
+          supabase.from('exam_types').select('id, name, slug'),
+          supabase.from('ai_usage').select('user_id, usage_date, call_count'),
+        ])
+
+        const firstErr = [profilesRes, subsRes, plansRes, attemptsRes, streaksRes, courseRes, enrollRes, examTypesRes, aiRes]
+          .find(r => r.error)
+        if (firstErr?.error) return jsonResponse({ error: firstErr.error.message }, 500)
+
+        const plansById = new Map((plansRes.data || []).map(p => [p.id, p]))
+        const examTypesById = new Map((examTypesRes.data || []).map(t => [t.id, t]))
+
+        const byUser = (rows: any[]) => {
+          const m = new Map<string, any[]>()
+          for (const row of rows || []) {
+            if (!m.has(row.user_id)) m.set(row.user_id, [])
+            m.get(row.user_id)!.push(row)
+          }
+          return m
+        }
+
+        const subsByUser = byUser(subsRes.data || [])
+        const attemptsByUser = byUser(attemptsRes.data || [])
+        const streaksByUser = byUser(streaksRes.data || [])
+        const courseByUser = byUser(courseRes.data || [])
+        const enrollByUser = byUser(enrollRes.data || [])
+        const aiByUser = byUser(aiRes.data || [])
+
+        const countSessions = (v: unknown) =>
+          Array.isArray(v) ? v.length : (v && typeof v === 'object' ? Object.keys(v).length : 0)
+
+        const users = (profilesRes.data || []).map(p => {
+          const subs = (subsByUser.get(p.id) || [])
+            .map(s => ({ ...s, plan: plansById.get(s.plan_id) || null }))
+            .sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''))
+          const attempts = attemptsByUser.get(p.id) || []
+          const completed = attempts.filter(a => a.status === 'completed')
+          const scores = completed.map(a => Number(a.percentage_score)).filter(n => !isNaN(n))
+          const lastAttempt = [...attempts].sort((a, b) =>
+            (b.completed_at || b.created_at || '').localeCompare(a.completed_at || a.created_at || ''))[0] || null
+          const streak = (streaksByUser.get(p.id) || [])[0] || null
+          const courses = (courseByUser.get(p.id) || []).map(c => ({
+            course_slug: c.course_slug,
+            completed_sessions: countSessions(c.completed_sessions),
+            last_session_id: c.last_session_id,
+            updated_at: c.updated_at,
+          }))
+          const enrollments = (enrollByUser.get(p.id) || []).map(e => ({
+            exam_type: examTypesById.get(e.exam_type_id)?.name || e.exam_type_id,
+            enrolled_at: e.enrolled_at,
+          }))
+          const aiCalls = (aiByUser.get(p.id) || []).reduce((sum, r) => sum + (r.call_count || 0), 0)
+
+          return {
+            id: p.id,
+            email: p.email,
+            full_name: p.full_name,
+            is_admin: p.is_admin,
+            created_at: p.created_at,
+            exam_dates: p.exam_dates_json || null,
+            subscription: subs[0] || null,
+            stats: {
+              attempts_total: attempts.length,
+              attempts_completed: completed.length,
+              attempts_passed: completed.filter(a => a.passed).length,
+              best_score: scores.length ? Math.max(...scores) : null,
+              avg_score: scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null,
+              last_active: lastAttempt?.completed_at || lastAttempt?.created_at || null,
+              ai_calls_total: aiCalls,
+            },
+            streak,
+            courses,
+            enrollments,
+          }
+        }).sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''))
+
+        return jsonResponse({ data: users })
+      }
+
       default:
         return jsonResponse({ error: `Unknown action: ${action}` }, 400)
     }
