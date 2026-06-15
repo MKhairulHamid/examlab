@@ -122,22 +122,22 @@ export const useAuthStore = create((set, get) => ({
    */
   login: async (email, password) => {
     try {
-      set({ loading: true, error: null })
-      
+      set({ error: null })
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
       })
-      
+
       if (error) throw error
-      
-      set({ user: data.user, loading: false })
+
+      set({ user: data.user })
       await get().loadProfile(data.user.id)
-      
+
       return { success: true }
     } catch (error) {
       console.error('Login error:', error)
-      set({ error: error.message, loading: false })
+      set({ error: error.message })
       return { success: false, error: error.message }
     }
   },
@@ -147,8 +147,8 @@ export const useAuthStore = create((set, get) => ({
    */
   signup: async (email, password, metadata = {}) => {
     try {
-      set({ loading: true, error: null })
-      
+      set({ error: null })
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -157,9 +157,9 @@ export const useAuthStore = create((set, get) => ({
           data: metadata
         }
       })
-      
+
       if (error) throw error
-      
+
       // Create profile if signup successful
       if (data.user) {
         try {
@@ -172,13 +172,13 @@ export const useAuthStore = create((set, get) => ({
           console.warn('Profile creation error (may already exist):', profileError)
         }
       }
-      
-      set({ user: data.user, loading: false })
-      
+
+      set({ user: data.user })
+
       return { success: true, needsVerification: data.user?.identities?.length === 0 }
     } catch (error) {
       console.error('Signup error:', error)
-      set({ error: error.message, loading: false })
+      set({ error: error.message })
       return { success: false, error: error.message }
     }
   },
@@ -188,7 +188,7 @@ export const useAuthStore = create((set, get) => ({
    */
   signInWithGoogle: async () => {
     try {
-      set({ loading: true, error: null })
+      set({ error: null })
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -196,10 +196,10 @@ export const useAuthStore = create((set, get) => ({
         },
       })
       if (error) throw error
-      // Redirect happens automatically — no need to set loading: false
+      // Redirect happens automatically
     } catch (error) {
       console.error('Google sign-in error:', error)
-      set({ error: error.message, loading: false })
+      set({ error: error.message })
       return { success: false, error: error.message }
     }
   },
@@ -209,8 +209,8 @@ export const useAuthStore = create((set, get) => ({
    */
   signInWithMagicLink: async (email, metadata = {}) => {
     try {
-      set({ loading: true, error: null })
-      
+      set({ error: null })
+
       const { data, error } = await supabase.auth.signInWithOtp({
         email,
         options: {
@@ -218,14 +218,13 @@ export const useAuthStore = create((set, get) => ({
           data: metadata
         }
       })
-      
+
       if (error) throw error
-      
-      set({ loading: false })
+
       return { success: true }
     } catch (error) {
       console.error('Magic link error:', error)
-      set({ error: error.message, loading: false })
+      set({ error: error.message })
       return { success: false, error: error.message }
     }
   },
@@ -235,19 +234,19 @@ export const useAuthStore = create((set, get) => ({
    */
   logout: async () => {
     try {
-      set({ loading: true })
-      
       const { error } = await supabase.auth.signOut()
-      
-      if (error) throw error
-      
-      set({ user: null, profile: null, loading: false })
+
+      // AuthSessionMissingError means the session is already gone — treat as success
+      if (error && error.name !== 'AuthSessionMissingError') throw error
+
+      set({ user: null, profile: null })
       cacheService.clearAll()
-      
+
       return { success: true }
     } catch (error) {
       console.error('Logout error:', error)
-      set({ error: error.message, loading: false })
+      set({ user: null, profile: null, error: error.message })
+      cacheService.clearAll()
       return { success: false, error: error.message }
     }
   },
@@ -287,19 +286,18 @@ export const useAuthStore = create((set, get) => ({
    */
   resetPassword: async (email) => {
     try {
-      set({ loading: true, error: null })
-      
+      set({ error: null })
+
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`
       })
-      
+
       if (error) throw error
-      
-      set({ loading: false })
+
       return { success: true }
     } catch (error) {
       console.error('Reset password error:', error)
-      set({ error: error.message, loading: false })
+      set({ error: error.message })
       return { success: false, error: error.message }
     }
   },
@@ -309,19 +307,18 @@ export const useAuthStore = create((set, get) => ({
    */
   updatePassword: async (newPassword) => {
     try {
-      set({ loading: true, error: null })
-      
+      set({ error: null })
+
       const { error } = await supabase.auth.updateUser({
         password: newPassword
       })
-      
+
       if (error) throw error
-      
-      set({ loading: false })
+
       return { success: true }
     } catch (error) {
       console.error('Update password error:', error)
-      set({ error: error.message, loading: false })
+      set({ error: error.message })
       return { success: false, error: error.message }
     }
   },
@@ -331,7 +328,7 @@ export const useAuthStore = create((set, get) => ({
    */
   sendMagicLink: async (email, metadata = {}) => {
     try {
-      set({ loading: true, error: null })
+      set({ error: null })
       
       const { error } = await supabase.auth.signInWithOtp({
         email,
@@ -342,12 +339,11 @@ export const useAuthStore = create((set, get) => ({
       })
       
       if (error) throw error
-      
-      set({ loading: false })
+
       return { success: true }
     } catch (error) {
       console.error('Magic link error:', error)
-      set({ error: error.message, loading: false })
+      set({ error: error.message })
       return { success: false, error: error.message }
     }
   }
