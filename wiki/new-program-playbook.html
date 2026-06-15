@@ -236,7 +236,10 @@
   </div>
 
   <div class="callout callout-note">
-    <strong>What "a program" means here:</strong> one certification (e.g. AWS Certified AI Practitioner, Solutions Architect Associate). A complete program has five shippable layers: an <strong>exam blueprint</strong>, a <strong>study course</strong>, <strong>interactive widgets</strong>, an <strong>exam simulation</strong>, and the <strong>platform wiring</strong> that exposes it to learners. AIF-C01 is the reference implementation — every step below points at how it was done.</p>
+    <strong>What "a program" means here:</strong> one certification (e.g. AWS Certified AI Practitioner, Solutions Architect Associate). A complete program has five shippable layers: an <strong>exam blueprint</strong>, a <strong>study course</strong>, <strong>interactive widgets</strong>, an <strong>exam simulation</strong>, and the <strong>platform wiring</strong> that exposes it to learners. Reference implementations: <strong>AIF-C01</strong> (original), <strong>CLF-C02</strong>, and <strong>SAA-C03</strong> (first build to use the 4-step plan, Multiple-Response questions, and curated videos).
+  </div>
+  <div class="callout callout-tip">
+    <strong>This page is self-contained.</strong> The only thing you need from the user is the <strong>official exam guide URL</strong>. Every concrete shape — the course registry pattern, the Supabase table columns and gotchas, the scaffold SQL, the <code>ai_cache</code> structure, Multiple-Response rules, validation queries, the widget pattern, and video curation — is documented here in <a href="#reference">Build Reference</a>. You should never need to reverse-engineer an existing program. Start with the <a href="#plan">4-step plan</a>.
   </div>
 
   <div class="section" id="layers">
@@ -254,6 +257,37 @@
       </tbody>
     </table></div>
     <div class="callout callout-tip"><strong>Rule of thumb:</strong> ship layer by layer, not all at once. A blueprint + 3 polished sessions in front of learners beats 16 half-written sessions in a branch.</div>
+  </div>
+
+  <div class="section" id="plan">
+    <span class="chip chip-standard">Planning</span>
+    <h1>Planning the Build — Four Token-Balanced Steps</h1>
+    <p class="section-meta">The five layers cost wildly different amounts. Before starting, split the whole build into four work-steps so each fits one working session and ends on a clean, committable checkpoint. This is the plan to propose to the user.</p>
+
+    <h2>Why split at all</h2>
+    <p>Two layers dominate token usage: the <strong>study course</strong> (~16 richly-structured sessions) and the <strong>exam simulation</strong> (205 questions, each carrying a full <code>ai_cache</code> payload). The blueprint, widgets, and wiring are comparatively light. Doing everything in one pass exhausts the context window and risks quality drift. The fix is to spread the two giants across four steps that each carry roughly a quarter of the work.</p>
+
+    <h2>The canonical 4-step split</h2>
+    <p>Run <strong>one step per working session</strong>. Commit at the end of each. Keep the app building at every checkpoint.</p>
+    <div class="tw"><table>
+      <thead><tr><th>Step</th><th>Scope (layers)</th><th>Deliverables</th></tr></thead>
+      <tbody>
+        <tr><td><strong>1 — Blueprint + Course A</strong></td><td>Layer 1 (all) + Layer 2 first half</td><td>Fetch the official guide → <code>wiki/&lt;exam&gt;.html</code>; add roadmap entry + sidebars; author the first half of the study sessions (roughly the first two domains) in <code>src/data/&lt;exam&gt;Course.js</code></td></tr>
+        <tr><td><strong>2 — Course B + Widgets</strong></td><td>Layer 2 second half + Layer 3</td><td>Author the remaining study sessions; build the interactive widgets; register the course in <code>src/utils/sessionCourses.js</code>; confirm the Node-20 build passes</td></tr>
+        <tr><td><strong>3 — Simulation A</strong></td><td>Layer 4 scaffold + first questions</td><td>Insert the <code>exam_types</code> row (<code>is_active = false</code>) + 4 <code>question_sets</code> rows; author the Free sample (10 Qs) + Simulation 1 "Foundational" (65 Qs), each with full <code>ai_cache</code></td></tr>
+        <tr><td><strong>4 — Simulation B + Launch</strong></td><td>Layer 4 finish + Layer 5 + QA</td><td>Author Simulation 2 "Architectural" + Simulation 3 "Comparative" (65 Qs each); validate every set; set <code>is_active = true</code>; verify, build, and run the Definition of Done</td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="callout callout-note"><strong>Token-balance rationale:</strong> the 205 questions are the single biggest sink, so they fill Steps 3–4 (≈75 then ≈130 questions). The ~16 study sessions fill Steps 1–2. The light layers (blueprint, widgets, wiring) ride along in the bookend steps. If Step 4 feels heavy, the lever is to move Simulation 2 into Step 3.</div>
+
+    <h2>Rules that keep the steps clean</h2>
+    <ul>
+      <li><strong>One step = one session.</strong> Each step is sized to a single session's context budget. Record progress and the Supabase set IDs in memory so the next session resumes cold.</li>
+      <li><strong>Keep <code>exam_types.is_active = false</code> until Step 4.</strong> The exam stays hidden from the dashboard while you build; flipping it to <code>true</code> is the launch act.</li>
+      <li><strong>Steps 3–4 are pure Supabase</strong> — no repo changes — so they need no redeploy; the live site reads questions from the database. Steps 1–2 are code and must be committed + pushed to deploy.</li>
+      <li><strong>The only user input required is the official exam guide URL</strong> (provided at Step 1). Everything else is on this page and the linked standards.</li>
+    </ul>
   </div>
 
   <div class="section" id="phase1">
@@ -382,8 +416,9 @@
     <div class="callout callout-warning">Do not insert questions with <code>ai_cache: {}</code>. Questions without explanations give learners no feedback and violate the authoring standard. Generate the full <code>ai_cache</code> for every question in the same pass as writing the question — it is harder to retrofit later.</div>
 
     <h2>Step 6 — Insert into Supabase</h2>
-    <p>Insert questions into the <code>question_items</code> table. Required columns: <code>question_set_id</code>, <code>question_number</code> (sequential from 1), <code>question_text</code>, <code>question_type</code> ('Multiple Choice'), <code>domain</code>, <code>options</code> (jsonb array of 4 strings), <code>correct_answers</code> (jsonb array with the exact text of the correct option), <code>tags</code> (jsonb), <code>ai_cache</code> (jsonb — the full structure above).</p>
-    <p>Insert in batches of 10–15 per SQL call via the Supabase MCP. Escape single quotes in text by doubling them (<code>it''s</code>, <code>AWS''s</code>).</p>
+    <p>Insert questions into the <code>question_items</code> table. Required columns: <code>question_set_id</code>, <code>question_number</code> (sequential from 1), <code>question_text</code>, <code>question_type</code> (<code>'Multiple Choice'</code> or <code>'Multiple Response'</code>), <code>domain</code>, <code>options</code> (jsonb array of 4–6 strings), <code>correct_answers</code> (jsonb array of the <strong>exact full text</strong> of each correct option — not indices), <code>tags</code> (jsonb), <code>ai_cache</code> (jsonb — the full structure above).</p>
+    <p><strong>Insert at most 5 questions per SQL call</strong> via the Supabase MCP — larger batches can exceed the MCP payload limit and silently truncate. Escape single quotes in text by doubling them (<code>it''s</code>, <code>AWS''s</code>).</p>
+    <div class="callout callout-warning">See <a href="#reference">Build Reference § Scaffold SQL</a> for the ready-to-run <code>exam_types</code> + <code>question_sets</code> insert template, including the required <code>questions_json = '[]'</code> NOT-NULL vestigial column, and § Validation queries to run after each set.</div>
   </div>
 
   <div class="section" id="phase5">
@@ -400,6 +435,134 @@
         <tr><td>Roadmap placement</td><td><code>wiki/aws-certification-roadmap.html</code></td><td>Add the cert to its level &amp; learning path so it's discoverable</td></tr>
       </tbody>
     </table></div>
+  </div>
+
+  <div class="section" id="reference">
+    <span class="chip chip-standard">Build Reference</span>
+    <h1>Build Reference</h1>
+    <p class="section-meta">Concrete schemas, SQL templates, and rules for every step. This section is what makes the playbook self-contained — you should never need to open an existing program's files.</p>
+
+    <h2>1. Course data file &amp; registry</h2>
+    <p>Create <code>src/data/&lt;exam&gt;Course.js</code> (e.g. <code>saaC03Course.js</code>) and register it in <code>src/utils/sessionCourses.js</code>:</p>
+    <pre><code>import newExamCourse from '../data/newExamCourse'
+
+const SESSION_COURSES = [
+  { match: ['aif', 'ai-practitioner'],            course: aifC01Course },
+  { match: ['clf', 'cloud-practitioner'],          course: clfC02Course },
+  { match: ['saa', 'solutions-architect-associate'], course: saaC03Course },
+  // Add new exam:
+  { match: ['&lt;short-prefix&gt;', '&lt;full-exam-slug&gt;'], course: newExamCourse },
+]</code></pre>
+    <div class="callout callout-warning"><strong>Collision rule:</strong> use a unique short prefix (e.g. <code>'saa'</code>) AND the full hyphenated slug (e.g. <code>'solutions-architect-associate'</code>) — never a bare fragment that matches two exams. Example: <code>'solutions-architect'</code> would also match SAP-C02.</div>
+
+    <h2>2. Blueprint page template</h2>
+    <p>Copy <code>wiki/clf-c02.html</code> as the starting template for a new blueprint page — it is the most recently updated and cleanest. Rename to <code>wiki/&lt;exam-slug&gt;.html</code>. Update the title, all domain text, scoring model, and Simulation Design table. Required sections: What this exam is · Question format &amp; scoring · Domain breakdown · Helping candidates · Simulation design.</p>
+
+    <h2>3. Scaffold SQL — <code>exam_types</code> + <code>question_sets</code></h2>
+    <p>Run via Supabase MCP <code>execute_sql</code> on project <code>welefxmyxajrxjhwvmbj</code>. Insert <code>exam_types</code> first, then all four <code>question_sets</code>. Capture the returned IDs — questions reference them.</p>
+    <pre><code>-- 1. exam_types (is_active=false keeps it hidden until Step 4)
+INSERT INTO exam_types (slug, name, description, is_active)
+VALUES (
+  'new-exam-slug',
+  'AWS Certified Example Associate',
+  'Practice exam for the AWS Certified Example Associate (XYZ-C01)',
+  false
+)
+RETURNING id;
+
+-- 2. question_sets (replace &lt;exam_type_id&gt; with the id returned above)
+INSERT INTO question_sets
+  (exam_type_id, name, description, price, is_free_sample, questions_json)
+VALUES
+  (&lt;exam_type_id&gt;, 'Free Practice Set — 10 Questions',
+   'Sample set',                                                  0,     true,  '[]'),
+  (&lt;exam_type_id&gt;, 'Full Exam Simulation 1',
+   'Foundational — know the services and concepts',              19.99, false, '[]'),
+  (&lt;exam_type_id&gt;, 'Full Exam Simulation 2',
+   'Architectural — apply knowledge to solve business problems', 19.99, false, '[]'),
+  (&lt;exam_type_id&gt;, 'Full Exam Simulation 3',
+   'Comparative — distinguish similar services and trade-offs',  19.99, false, '[]')
+RETURNING id, name;</code></pre>
+    <div class="callout callout-warning"><strong><code>questions_json</code> is NOT NULL — always pass <code>'[]'</code>.</strong> The app reads questions from <code>question_items</code>; this column is vestigial but the schema constraint requires a value.</div>
+
+    <h2>4. <code>question_items</code> column reference</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Column</th><th>Type</th><th>Rules</th></tr></thead>
+      <tbody>
+        <tr><td><code>question_set_id</code></td><td>uuid</td><td>From the <code>RETURNING</code> clause above</td></tr>
+        <tr><td><code>question_number</code></td><td>int</td><td>Sequential from 1 within each set</td></tr>
+        <tr><td><code>question_text</code></td><td>text</td><td>Full scenario stem</td></tr>
+        <tr><td><code>question_type</code></td><td>text</td><td><code>'Multiple Choice'</code> or <code>'Multiple Response'</code></td></tr>
+        <tr><td><code>domain</code></td><td>text</td><td>Exact string, e.g. <code>"Domain 1: Design Secure Architectures"</code></td></tr>
+        <tr><td><code>options</code></td><td>jsonb</td><td>Array of 4 strings (MC) or 5–6 strings (MR)</td></tr>
+        <tr><td><code>correct_answers</code></td><td>jsonb</td><td>Array of the <strong>exact full text</strong> of each correct option — not indices</td></tr>
+        <tr><td><code>tags</code></td><td>jsonb</td><td>e.g. <code>["iam","security"]</code></td></tr>
+        <tr><td><code>ai_cache</code></td><td>jsonb</td><td>Full explanation payload — see Layer 4 Step 5</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>5. Multiple Response rules</h2>
+    <p>Multiple Response questions ("Select TWO" / "Select THREE") appear on most AWS exams at ~20–25%. Target: Sim 1 is 100% Multiple Choice; Sims 2 and 3 each ~25% Multiple Response. Do not use MR in the free sample set.</p>
+    <ul>
+      <li>Set <code>question_type</code> to <code>'Multiple Response'</code>.</li>
+      <li>Stem <strong>must</strong> state the exact count: "Select TWO" or "Select THREE."</li>
+      <li>Provide 5–6 option strings (not 4) so the selection is non-trivial.</li>
+      <li><code>correct_answers</code> holds the full text of every correct option (2 or 3 entries).</li>
+      <li><code>ai_cache.explanations.per_option</code> must cover every option, with <code>"correct": true</code> on each correct one.</li>
+    </ul>
+    <pre><code>-- Multiple Response insert example
+question_type    = 'Multiple Response'
+options          = '["Option A","Option B","Option C","Option D","Option E"]'
+correct_answers  = '["Option B","Option D"]'   -- exact full text, not indices
+-- per_option array must have 5 entries (one per option)</code></pre>
+
+    <h2>6. Validation queries</h2>
+    <p>Run after inserting each question set. Fix any failures before continuing.</p>
+    <pre><code>-- Count per set
+SELECT qs.name, COUNT(qi.id) AS q_count
+FROM question_sets qs
+LEFT JOIN question_items qi ON qi.question_set_id = qs.id
+WHERE qs.exam_type_id = '&lt;exam_type_id&gt;'
+GROUP BY qs.name ORDER BY qs.name;
+
+-- Integrity: correct_answers must be a subset of options
+SELECT question_number, question_text
+FROM question_items
+WHERE question_set_id = '&lt;set_id&gt;'
+  AND NOT (correct_answers &lt;@ options);
+
+-- Integrity: per_option count must equal options count
+SELECT question_number,
+  jsonb_array_length(options) AS opt_count,
+  jsonb_array_length(ai_cache->'explanations'->'per_option') AS per_opt_count
+FROM question_items
+WHERE question_set_id = '&lt;set_id&gt;'
+  AND jsonb_array_length(options)
+    != jsonb_array_length(ai_cache->'explanations'->'per_option');
+
+-- Domain distribution
+SELECT domain, COUNT(*) AS count
+FROM question_items
+WHERE question_set_id = '&lt;set_id&gt;'
+GROUP BY domain ORDER BY domain;</code></pre>
+    <div class="callout callout-tip">Query 2 returning rows means <code>correct_answers</code> contains text that doesn't exactly match an option string — likely a typo or stray space. Fix and re-insert before proceeding.</div>
+
+    <h2>7. Video curation rules</h2>
+    <p>Every session must have at least one entry in its <code>videos[]</code> array. Videos live in the course data file (<code>src/data/&lt;exam&gt;Course.js</code>), not in Supabase.</p>
+    <ul>
+      <li><strong>Never fabricate video IDs.</strong> Verify every ID via the YouTube oEmbed endpoint before adding it: <code>https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=VIDEO_ID&amp;format=json</code>. A 200 response with a title confirms the video is real and public.</li>
+      <li><strong>Recommended pattern:</strong> add one full-course companion video (e.g. a freeCodeCamp exam-specific course) to <em>every</em> session in the program, plus one per-topic video on sessions where a good one exists.</li>
+    </ul>
+    <pre><code>videos: [
+  {
+    videoId: 'Ia-UEYYR44s',      // YouTube ID only — verified via oEmbed
+    title: 'AWS Certified Solutions Architect Associate 2024 Full Course',
+    channel: 'freeCodeCamp.org',
+    startSeconds: null,          // null = full video; set to clip to a segment
+    endSeconds: null,
+    relevance: 'Full SAA-C03 curriculum — use as companion to any session.'
+  }
+]</code></pre>
   </div>
 
   <div class="section" id="ship">

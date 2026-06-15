@@ -1,26 +1,51 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import useAuthStore from '../stores/authStore'
+import { supabase } from '../services/supabase'
 
 function ResetPassword() {
   const navigate = useNavigate()
   const { updatePassword } = useAuthStore()
-  
+
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [validToken, setValidToken] = useState(false)
+  // null = still checking, true = valid, false = invalid/expired
+  const [validToken, setValidToken] = useState(null)
 
   useEffect(() => {
-    // Check for recovery token in URL
+    let mounted = true
+
+    // The Supabase client (detectSessionInUrl: true) parses the recovery
+    // token out of the URL hash on load and clears it asynchronously, so
+    // we can't reliably read window.location.hash here. Instead, listen for
+    // the PASSWORD_RECOVERY event and fall back to checking for an existing
+    // recovery session.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!mounted) return
+      if (event === 'PASSWORD_RECOVERY' || session) {
+        setValidToken(true)
+      }
+    })
+
+    // Fallback: token may already be in the hash (event not yet fired), or a
+    // session may already be established by the time this runs.
     const hashParams = new URLSearchParams(window.location.hash.substring(1))
-    const accessToken = hashParams.get('access_token')
-    const type = hashParams.get('type')
-    
-    if (type === 'recovery' && accessToken) {
+    if (hashParams.get('type') === 'recovery' && hashParams.get('access_token')) {
       setValidToken(true)
+    } else {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (!mounted) return
+        // Only mark invalid if nothing established a session in the meantime.
+        setValidToken(prev => (prev === null ? !!session : prev))
+      })
+    }
+
+    return () => {
+      mounted = false
+      subscription?.unsubscribe()
     }
   }, [])
 
@@ -52,6 +77,17 @@ function ResetPassword() {
     } else {
       setError(result.error || 'Failed to reset password')
     }
+  }
+
+  if (validToken === null) {
+    return (
+      <div className="loading-container">
+        <div className="modal-content text-center">
+          <div className="spinner"></div>
+          <p className="text-muted mt-4">Verifying your reset link...</p>
+        </div>
+      </div>
+    )
   }
 
   if (!validToken) {
