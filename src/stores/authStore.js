@@ -124,16 +124,14 @@ export const useAuthStore = create((set, get) => ({
     try {
       set({ error: null })
 
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password
       })
 
       if (error) throw error
 
-      set({ user: data.user })
-      await get().loadProfile(data.user.id)
-
+      // onAuthStateChange handles setting user + loading profile
       return { success: true }
     } catch (error) {
       console.error('Login error:', error)
@@ -173,8 +171,7 @@ export const useAuthStore = create((set, get) => ({
         }
       }
 
-      set({ user: data.user })
-
+      // onAuthStateChange handles setting user + loading profile
       return { success: true, needsVerification: data.user?.identities?.length === 0 }
     } catch (error) {
       console.error('Signup error:', error)
