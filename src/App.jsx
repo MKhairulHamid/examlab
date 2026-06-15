@@ -19,6 +19,7 @@ const StudyMaterial = lazy(() => import('./pages/StudyMaterial'))
 const AdminPage = lazy(() => import('./pages/AdminPage'))
 const AwsAiPractitioner = lazy(() => import('./pages/AwsAiPractitioner'))
 const RedeemPromo = lazy(() => import('./pages/RedeemPromo'))
+const ProgramLanding = lazy(() => import('./pages/ProgramLanding'))
 
 // Protected Route wrapper — by the time this renders, auth loading is already done
 function ProtectedRoute({ children }) {
@@ -157,6 +158,10 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        {/* Per-program marketing pages — e.g. /CLF-C02. Static routes above win;
+            this only catches single-segment paths and validates against the catalog. */}
+        <Route path="/:code" element={<ProgramLanding />} />
 
         {/* Catch all - redirect to home */}
         <Route path="*" element={<Navigate to="/" replace />} />

@@ -1,91 +1,99 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { useNavigate, Navigate } from 'react-router-dom'
+import { useNavigate, Navigate, Link } from 'react-router-dom'
 import {
-  ArrowRight, Check, X, ChevronDown, Clock, Cloud,
-  BrainCircuit, ShieldCheck, Sparkles, Lock, Zap, RefreshCw,
-  BookOpen, Target, BarChart3, Users, Briefcase, Code2,
+  ArrowRight, Check, ChevronDown, Clock, Cloud,
+  ShieldCheck, Sparkles, Lock, Zap, RefreshCw,
+  BookOpen, Target, BarChart3, Users,
   BadgeCheck, GraduationCap, Calendar, Gift, Lightbulb,
+  Mic, Repeat, FileCheck,
 } from 'lucide-react'
 import useAuthStore from '../stores/authStore'
 import AuthModal from '../components/auth/AuthModal'
 import { Button } from '../design-system'
+import { PROGRAMS } from '../data/programs'
 
-const DOMAINS = [
-  { id: 'd1', label: 'Fundamentals of AI & ML',          weight: '20%', sessions: 3, color: '#0EA5E9', Icon: BrainCircuit,
-    topics: ['AI vs ML vs Deep Learning', 'Supervised / unsupervised / reinforcement', 'AWS managed AI services', 'ML development lifecycle'] },
-  { id: 'd2', label: 'Fundamentals of Generative AI',     weight: '24%', sessions: 4, color: '#8B5CF6', Icon: Sparkles,
-    topics: ['Foundation models & LLMs', 'GenAI use cases & agentic AI', 'Capabilities & limitations', 'AWS GenAI infrastructure'] },
-  { id: 'd3', label: 'Applications of Foundation Models', weight: '28%', sessions: 4, color: '#00D4AA', Icon: Target,
-    topics: ['RAG & FM design', 'Prompt engineering', 'Fine-tuning approaches', 'Evaluating FM performance'] },
-  { id: 'd4', label: 'Guidelines for Responsible AI',     weight: '14%', sessions: 2, color: '#F59E0B', Icon: ShieldCheck,
-    topics: ['Building responsible AI systems', 'Transparency & explainability'] },
-  { id: 'd5', label: 'Security, Compliance & Governance', weight: '14%', sessions: 2, color: '#EF4444', Icon: Lock,
-    topics: ['Securing AI systems on AWS', 'AI governance & compliance'] },
+const LEARNING_FEATURES = [
+  {
+    Icon: BookOpen,
+    title: 'Sessions written to teach, not to cram',
+    desc: 'Every topic is a focused ~30-minute session that explains the why before the what — built from the ground up so concepts actually stick, not just survive until exam day.',
+  },
+  {
+    Icon: Lightbulb,
+    title: 'Active recall, built in',
+    desc: 'Each session opens with a pre-learning question and ends with a real exam-style problem. Retrieving an answer — even getting it wrong — is what moves knowledge into long-term memory.',
+  },
+  {
+    Icon: Mic,
+    title: 'Teach to Learn',
+    desc: 'The fastest way to remember something is to teach it. Every session ends with a prompt to explain it in your own words, watch how others explain it, then record your own — and build public proof you understand it.',
+  },
+  {
+    Icon: BarChart3,
+    title: 'Exam-realistic practice',
+    desc: 'Full-length timed practice exams mapped to the official blueprint. Every question carries a complete explanation and a link to the official AWS documentation, so you learn from every answer.',
+  },
+  {
+    Icon: Repeat,
+    title: 'Track progress, find weak spots',
+    desc: 'See your progress domain by domain, surface the topics you are weakest on, and review with purpose instead of re-reading everything.',
+  },
+  {
+    Icon: ShieldCheck,
+    title: 'Learn anywhere, even offline',
+    desc: 'A fast, installable app that works on any device and keeps your progress in sync — study on the train, pick up exactly where you left off.',
+  },
 ]
 
-const PERSONAS = [
+const HOW_IT_WORKS = [
   {
-    Icon: Briefcase,
-    title: 'Business & Product Roles',
-    examples: 'Product manager, business analyst, consultant',
-    desc: "You work alongside AI every day but lack a formal credential to back it. AIF-C01 proves you understand AI at the depth that matters for decisions — not just buzzwords.",
+    step: '01',
+    Icon: BookOpen,
+    title: 'Learn every domain',
+    desc: 'Work through structured 30-minute sessions — one per topic. Each builds real understanding from first principles: key concepts, the AWS services that matter, and exam-style checks to lock it in.',
   },
   {
-    Icon: Code2,
-    title: 'Developers Pivoting to AI',
-    examples: 'Software engineer, data analyst, DevOps',
-    desc: "You already build software. AIF-C01 fills in the AI/ML foundations and GenAI layer your next role will expect. It's the credential that bridges your background to the AI space.",
+    step: '02',
+    Icon: Mic,
+    title: 'Teach it to prove it',
+    desc: 'Explain each topic in your own words and record yourself teaching it. This is the single most effective study technique there is — and it leaves you with a portfolio that proves what you know.',
   },
   {
-    Icon: Users,
-    title: 'Anyone Validating AI Literacy',
-    examples: 'IT professional, team lead, recent graduate',
-    desc: "Your org is going all-in on AI and you want to be ahead of it. AIF-C01 is AWS's broadest AI cert — no coding required, and it signals you're serious about the shift.",
+    step: '03',
+    Icon: GraduationCap,
+    title: 'Practice, then pass',
+    desc: 'Sit full-length timed exams, review every explanation, and watch your scores climb. Walk into the real exam already knowing you are ready — or simply walk away genuinely skilled.',
   },
 ]
 
 const FAQ_ITEMS = [
   {
-    question: 'Do I need coding or ML experience to pass AIF-C01?',
-    answer: "No. AIF-C01 is designed as an AI literacy cert, not an engineering cert. The exam tests your ability to identify the right AI approach, understand how models work conceptually, and apply responsible AI principles — not write code or tune models. Our study sessions are written for exactly this audience.",
+    question: 'Do I have to take the AWS exam to get value from this?',
+    answer: "Not at all. Our curriculum is built to make you genuinely good at the subject — cloud, AI, architecture, development, or ML — not just to pass a test. Many learners use us purely to build real, durable skills. If you do decide to sit the exam, you will already be fully prepared.",
+  },
+  {
+    question: 'What is "Teach to Learn"?',
+    answer: "Teaching a topic is the most effective way to learn it. At the end of every session we prompt you to explain the concept in your own words, watch how others explain it, and record your own short explanation. It cements the knowledge — and gives you public proof that you genuinely understand the material, which you can share with employers.",
+  },
+  {
+    question: 'Which certifications do you cover?',
+    answer: "We cover the AWS foundational and associate certifications: Cloud Practitioner (CLF-C02), AI Practitioner (AIF-C01), Solutions Architect Associate (SAA-C03), Developer Associate (DVA-C02), and Machine Learning Engineer Associate (MLA-C01). One subscription gives you access to all of them.",
   },
   {
     question: 'How long does it take to prepare?',
-    answer: "Most people are ready in 2–4 weeks studying 30–60 minutes per day. Our 16 study sessions (30 min each) cover every exam domain — that's 8 hours of structured learning. Then add a few days for full practice exams and you're ready.",
+    answer: "Most people are ready for a foundational exam in 2–4 weeks and an associate exam in 4–8 weeks, studying 30–60 minutes a day. Each program is broken into ~30-minute sessions, so it fits around real life — and you move at your own pace.",
   },
   {
-    question: 'What is the passing score for AIF-C01?',
-    answer: "700 out of 1000 (approximately 70%). The exam has 65 questions total — 50 are scored and 15 are unscored pilot questions (you won't know which is which). Scoring is compensatory, meaning there's no per-domain minimum — your total score is what matters.",
+    question: 'Do I need a coding or technical background?',
+    answer: "It depends on the cert. Cloud Practitioner and AI Practitioner require no coding at all. The associate certs (Solutions Architect, Developer, ML Engineer) assume some technical comfort, and our sessions build the rest up for you from the fundamentals.",
   },
   {
-    question: 'How does AIF-C01 compare to other AWS certifications?',
-    answer: "AIF-C01 is AWS's newest foundational cert, launched in 2024. It sits at the same difficulty level as Cloud Practitioner (CLF-C02) but is focused entirely on AI, ML, and generative AI. It's a great standalone cert and a natural first step before more technical AI/ML certifications.",
-  },
-  {
-    question: 'What subscription options are available?',
-    answer: "Monthly at $19.99/month or annual at $99/year ($8.25/month — save $141). Both include full access to all study sessions, all 65 practice questions, detailed explanations, and official AWS doc links. Cancel anytime.",
+    question: 'What does it cost?',
+    answer: "Start free — every program includes 10 sample questions with full explanations, no card required. Full access is $19.99/month or $99/year ($8.25/month), and includes every program plus all new certifications we add. Cancel anytime.",
   },
 ]
 
-const WHAT_YOU_GET = [
-  { value: '16',  label: 'Study sessions',    sub: '~30 min each, one per topic' },
-  { value: '5',   label: 'Exam domains',      sub: 'Every domain in the official guide' },
-  { value: '65',  label: 'Practice questions', sub: 'Mapped to the AIF-C01 blueprint' },
-  { value: '$0',  label: 'To get started',    sub: '10 free questions, no card required' },
-]
-
-const SAMPLE_QUESTION = {
-  stem: 'A retailer wants to group its customers into segments based on purchasing behavior. It has transaction data but no predefined segment labels. Which machine learning approach is most appropriate?',
-  options: [
-    { text: 'Supervised learning with a classification algorithm',  correct: false, reason: 'Classification needs labeled examples of each segment, which the retailer does not have.' },
-    { text: 'Unsupervised learning with a clustering algorithm',    correct: true,  reason: 'Correct — clustering is unsupervised and finds natural groupings without labels.' },
-    { text: 'Reinforcement learning with a reward function',        correct: false, reason: 'Reinforcement learning fits sequential decision-making with rewards, not segmentation.' },
-    { text: 'Supervised learning with a regression algorithm',      correct: false, reason: 'Regression predicts a continuous numeric value (e.g., spend), not groupings.' },
-  ],
-  explanation: 'There are no predefined labels (segments), so the model must discover natural groupings on its own — that is clustering, an unsupervised technique.',
-  domain: 'Domain 1 · Fundamentals of AI & ML',
-  source: 'Official AIF-C01 exam guide · Task 1.1',
-}
+const LEVEL_ORDER = ['Foundational', 'Associate']
 
 function Reveal({ children, className = '', delay = 0, as: Tag = 'div', style, ...props }) {
   const ref = useRef(null)
@@ -112,18 +120,49 @@ function Reveal({ children, className = '', delay = 0, as: Tag = 'div', style, .
   )
 }
 
+function ProgramCard({ program, delay }) {
+  const { Icon, color } = program
+  return (
+    <Reveal delay={delay}>
+      <Link
+        to={`/${program.code}`}
+        className="block group bg-white rounded-[1.25rem] p-6 border border-gray-200 hover:border-[#00D4AA] hover:shadow-[0_12px_32px_rgba(0,212,170,0.14)] transition-all duration-200 no-underline h-full"
+      >
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${color}14` }}>
+            <Icon size={24} style={{ color }} strokeWidth={2.2} />
+          </div>
+          <div>
+            <div className="text-[0.7rem] font-bold uppercase tracking-[0.06em]" style={{ color }}>
+              {program.level} · {program.code}
+            </div>
+            <div className="font-bold text-[#0A2540] text-[1.0625rem] leading-tight">{program.shortName}</div>
+          </div>
+        </div>
+        <p className="text-gray-600 text-[0.9rem] leading-[1.6] mb-4">{program.tagline}</p>
+        <div className="flex flex-wrap gap-x-4 gap-y-1 text-[0.78rem] text-gray-400 font-medium mb-4">
+          <span className="inline-flex items-center gap-1"><BookOpen size={13} /> {program.sessions} sessions</span>
+          <span className="inline-flex items-center gap-1"><Target size={13} /> {program.domains.length} domains</span>
+          <span className="inline-flex items-center gap-1"><Clock size={13} /> {program.facts.time}</span>
+        </div>
+        <span className="inline-flex items-center gap-1.5 text-[0.85rem] font-semibold text-[#00A884] group-hover:gap-2.5 transition-all">
+          Explore this program <ArrowRight size={15} />
+        </span>
+      </Link>
+    </Reveal>
+  )
+}
+
 function Landing() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
-  const [showAuthModal, setShowAuthModal]   = useState(false)
-  const [authModalMode, setAuthModalMode]   = useState('login')
-  const [expandedFAQ, setExpandedFAQ]       = useState(null)
-  const [scrolled, setScrolled]             = useState(false)
-  const [sampleSelected, setSampleSelected] = useState(null)
-  const [sampleRevealed, setSampleRevealed] = useState(false)
+  const [showAuthModal, setShowAuthModal] = useState(false)
+  const [authModalMode, setAuthModalMode] = useState('login')
+  const [expandedFAQ, setExpandedFAQ] = useState(null)
+  const [scrolled, setScrolled] = useState(false)
 
   const openSignup = () => { setAuthModalMode('signup'); setShowAuthModal(true) }
-  const openLogin  = () => { setAuthModalMode('login');  setShowAuthModal(true) }
+  const openLogin = () => { setAuthModalMode('login'); setShowAuthModal(true) }
 
   // Auth is already resolved by App before Landing renders, so redirect synchronously.
   const hasAuthTokens = window.location.hash.includes('access_token') ||
@@ -160,7 +199,8 @@ function Landing() {
           <span className="text-white font-bold text-[0.9375rem] tracking-tight hidden sm:inline">CloudExamLab</span>
         </button>
         <nav className="header-nav">
-          <button type="button" onClick={() => scrollTo('domains')}      className="nav-link">Domains</button>
+          <button type="button" onClick={() => scrollTo('programs')}     className="nav-link">Programs</button>
+          <button type="button" onClick={() => scrollTo('why')}          className="nav-link">Why Us</button>
           <button type="button" onClick={() => scrollTo('how-it-works')} className="nav-link">How It Works</button>
           <button type="button" onClick={() => scrollTo('pricing')}      className="nav-link">Pricing</button>
           <button type="button" onClick={() => scrollTo('faq')}          className="nav-link">FAQ</button>
@@ -179,115 +219,39 @@ function Landing() {
         <div className="hero-bg-2" />
         <div className="absolute inset-0 grid-texture pointer-events-none" />
 
-        <div className="max-w-[72rem] mx-auto w-full relative z-10">
-          <div className="grid gap-12 items-center" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 420px), 1fr))' }}>
+        <div className="max-w-[60rem] mx-auto w-full relative z-10 text-center">
+          <Reveal>
+            <div className="inline-flex items-center gap-2 mb-6 px-4 py-1.5 rounded-full border border-white/20 bg-white/[0.07] backdrop-blur-sm">
+              <BadgeCheck size={15} className="text-[#00D4AA]" />
+              <span className="text-white/90 text-sm font-semibold tracking-wide">{PROGRAMS.length} AWS certification programs · one subscription</span>
+            </div>
 
-            {/* Left — copy */}
-            <Reveal>
-              <div className="inline-flex items-center gap-2 mb-6 px-4 py-1.5 rounded-full border border-white/20 bg-white/[0.07] backdrop-blur-sm">
-                <BadgeCheck size={15} className="text-[#00D4AA]" />
-                <span className="text-white/90 text-sm font-semibold tracking-wide">AWS AI Practitioner · AIF-C01</span>
-              </div>
+            <h1 className="text-[clamp(2.25rem,5.5vw,4rem)] font-extrabold text-white leading-[1.08] mb-6 tracking-[-0.03em]">
+              Learn the cloud the right way.<br />
+              <span className="gradient-text">Earn the certificate to prove it.</span>
+            </h1>
 
-              <h1 className="text-[clamp(2.25rem,5vw,3.75rem)] font-extrabold text-white leading-[1.1] mb-6 tracking-[-0.03em]">
-                AI is changing every role.<br />
-                <span className="gradient-text">Get certified.</span>
-              </h1>
+            <p className="text-[clamp(1rem,2.5vw,1.25rem)] text-white/85 leading-[1.7] mb-10 max-w-[44rem] mx-auto">
+              CloudExamLab teaches AWS the way it actually sticks — structured sessions that build real understanding, active-recall practice, and our Teach to Learn method. Become genuinely skilled first; pass the exam as a natural result.
+            </p>
 
-              <p className="text-[clamp(1rem,2.5vw,1.175rem)] text-white/85 leading-[1.7] mb-10 max-w-[38rem]">
-                The AWS AI Practitioner proves you understand AI, machine learning, and generative AI at the depth that matters — for every role, not just developers. 16 structured study sessions + exam-realistic practice questions.
-              </p>
+            <div className="hero-buttons" style={{ marginBottom: '1.25rem', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
+              <button onClick={openSignup} className="btn-primary inline-flex items-center justify-center gap-2" style={{ fontSize: '1.0625rem', padding: '1rem 2rem' }}>
+                Start Free <ArrowRight size={18} />
+              </button>
+              <button onClick={() => scrollTo('programs')} className="btn-secondary" style={{ fontSize: '0.9375rem', padding: '1rem 1.5rem' }}>
+                Browse Programs
+              </button>
+            </div>
 
-              <div className="hero-buttons" style={{ marginBottom: '1rem' }}>
-                <button onClick={openSignup} className="btn-primary inline-flex items-center justify-center gap-2" style={{ fontSize: '1.0625rem', padding: '1rem 2rem' }}>
-                  Start Free <ArrowRight size={18} />
-                </button>
-                <button onClick={() => scrollTo('domains')} className="btn-secondary" style={{ fontSize: '0.9375rem', padding: '1rem 1.5rem' }}>
-                  See What's Covered
-                </button>
-              </div>
-
-              <div style={{ marginBottom: '2rem' }}>
-                <button
-                  onClick={() => navigate('/redeem')}
-                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#00D4AA] bg-transparent border-none cursor-pointer p-0 hover:underline"
-                >
-                  Have a promo code from a friend? Redeem it <ArrowRight size={15} />
-                </button>
-                <p className="text-white/45 text-xs mt-1">Sign in to apply your code.</p>
-              </div>
-
-              <div className="flex gap-x-6 gap-y-2 flex-wrap text-white/65 text-sm">
-                {['No coding experience required', '16 study sessions', 'From $8.25/month'].map((t, i) => (
-                  <span key={i} className="inline-flex items-center gap-1.5">
-                    <Check size={15} className="text-[#00D4AA]" strokeWidth={3} /> {t}
-                  </span>
-                ))}
-              </div>
-            </Reveal>
-
-            {/* Right — exam snapshot card */}
-            <Reveal delay={120} className="flex justify-center items-start">
-              <div
-                className="w-full max-w-[400px] rounded-2xl overflow-hidden border border-white/[0.1]"
-                style={{ boxShadow: '0 30px 80px rgba(0,0,0,0.45)', background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(16px)' }}
-              >
-                {/* Card header */}
-                <div className="px-6 py-5 border-b border-white/[0.08]">
-                  <div className="flex items-center gap-3 mb-1">
-                    <div className="w-10 h-10 rounded-xl bg-[#00D4AA]/15 border border-[#00D4AA]/25 flex items-center justify-center shrink-0">
-                      <BrainCircuit size={20} className="text-[#00D4AA]" strokeWidth={2.2} />
-                    </div>
-                    <div>
-                      <div className="text-[0.7rem] font-bold text-[#00D4AA] uppercase tracking-[0.06em]">AWS Certified</div>
-                      <div className="text-white font-bold text-base leading-tight">AI Practitioner</div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Exam facts */}
-                <div className="grid grid-cols-2 divide-x divide-y divide-white/[0.07]">
-                  {[
-                    { label: 'Questions',     value: '65',       sub: '50 scored + 15 unscored' },
-                    { label: 'Time limit',    value: '90 min',   sub: 'Timed exam' },
-                    { label: 'Passing score', value: '700/1000', sub: 'Approx. 70%' },
-                    { label: 'Exam cost',     value: '$300',     sub: 'USD (AWS voucher)' },
-                  ].map((f, i) => (
-                    <div key={i} className="px-5 py-4">
-                      <div className="text-[0.7rem] text-white/45 font-semibold uppercase tracking-[0.05em] mb-0.5">{f.label}</div>
-                      <div className="text-white font-extrabold text-lg leading-tight">{f.value}</div>
-                      <div className="text-white/45 text-[0.7rem] mt-0.5">{f.sub}</div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Domains */}
-                <div className="px-6 py-5">
-                  <div className="text-[0.7rem] font-bold text-white/45 uppercase tracking-[0.06em] mb-3">5 Exam Domains</div>
-                  <div className="flex flex-col gap-2">
-                    {DOMAINS.map(d => (
-                      <div key={d.id} className="flex items-center justify-between">
-                        <span className="text-white/75 text-[0.8125rem]">{d.label}</span>
-                        <span className="text-[0.75rem] font-bold tabular-nums" style={{ color: d.color }}>{d.weight}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* CTA */}
-                <div className="px-6 pb-6">
-                  <button
-                    onClick={openSignup}
-                    className="w-full py-3 rounded-xl font-bold text-sm text-white inline-flex items-center justify-center gap-2"
-                    style={{ background: 'var(--gradient-teal)', boxShadow: '0 4px 14px rgba(0,212,170,0.3)' }}
-                  >
-                    Start Preparing Free <ArrowRight size={16} />
-                  </button>
-                </div>
-              </div>
-            </Reveal>
-
-          </div>
+            <div className="flex gap-x-6 gap-y-2 flex-wrap justify-center text-white/65 text-sm">
+              {['10 free questions, no card required', 'Skills first, certificate second', 'All certs · from $8.25/month'].map((t, i) => (
+                <span key={i} className="inline-flex items-center gap-1.5">
+                  <Check size={15} className="text-[#00D4AA]" strokeWidth={3} /> {t}
+                </span>
+              ))}
+            </div>
+          </Reveal>
         </div>
       </section>
 
@@ -295,88 +259,112 @@ function Landing() {
       <section className="bg-[#0A2540] border-y border-white/[0.06] py-4 overflow-hidden">
         <div className="marquee-mask">
           <div className="marquee-track gap-10 pr-10">
-            {[
-              'No coding required', '16 study sessions', '65 practice questions',
-              'Blueprint-mapped domains', 'Official AWS doc links', 'Timed practice exam',
-              'No coding required', '16 study sessions', '65 practice questions',
-              'Blueprint-mapped domains', 'Official AWS doc links', 'Timed practice exam',
+            {[...Array(2)].flatMap((_, r) => [
+              'Structured study sessions', 'Teach to Learn method', 'Timed practice exams',
+              'Blueprint-mapped domains', 'Official AWS doc links', 'Progress tracking', 'Works offline',
             ].map((t, i) => (
-              <span key={i} className="inline-flex items-center gap-2 text-white/55 text-sm font-medium whitespace-nowrap shrink-0">
+              <span key={`${r}-${i}`} className="inline-flex items-center gap-2 text-white/55 text-sm font-medium whitespace-nowrap shrink-0">
                 <BadgeCheck size={16} className="text-[#00D4AA]" /> {t}
               </span>
+            )))}
+          </div>
+        </div>
+      </section>
+
+      {/* PROGRAMS */}
+      <section id="programs" className="py-20 px-6 bg-white">
+        <div className="max-w-[72rem] mx-auto">
+          <Reveal className="text-center mb-12">
+            <p className="text-[0.8125rem] font-bold text-[#00A884] uppercase tracking-[0.08em] mb-3">PROGRAMS</p>
+            <h2 className="text-[clamp(1.75rem,4vw,2.5rem)] font-extrabold text-[#0A2540] tracking-tight mb-3">
+              Five complete AWS programs
+            </h2>
+            <p className="text-gray-500 text-base max-w-[42rem] mx-auto">
+              From your first day in the cloud to designing production systems. Each program is a full curriculum — pick where you are and go deep. One subscription unlocks them all.
+            </p>
+          </Reveal>
+
+          {LEVEL_ORDER.map((level) => {
+            const items = PROGRAMS.filter(p => p.level === level)
+            if (!items.length) return null
+            return (
+              <div key={level} className="mb-10 last:mb-0">
+                <Reveal className="flex items-center gap-3 mb-5">
+                  <span className="text-[0.8125rem] font-bold text-[#0A2540] uppercase tracking-[0.08em]">{level}</span>
+                  <span className="flex-1 h-px bg-gray-200" />
+                </Reveal>
+                <div className="grid gap-5" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))' }}>
+                  {items.map((p, i) => <ProgramCard key={p.code} program={p} delay={i * 80} />)}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </section>
+
+      {/* WHY US — learning features */}
+      <section id="why" className="py-20 px-6 bg-slate-50">
+        <div className="max-w-[72rem] mx-auto">
+          <Reveal className="text-center mb-12">
+            <p className="text-[0.8125rem] font-bold text-[#00A884] uppercase tracking-[0.08em] mb-3">WHY CLOUDEXAMLAB</p>
+            <h2 className="text-[clamp(1.75rem,4vw,2.5rem)] font-extrabold text-[#0A2540] tracking-tight mb-3">
+              The best way to actually learn this
+            </h2>
+            <p className="text-gray-500 text-base max-w-[42rem] mx-auto">
+              Most exam prep teaches you to memorize. We teach you to understand — using the learning science that makes knowledge last well beyond exam day.
+            </p>
+          </Reveal>
+
+          <div className="grid gap-5" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))' }}>
+            {LEARNING_FEATURES.map((f, i) => (
+              <Reveal key={i} delay={i * 70} className="bg-white rounded-[1.25rem] p-7 border border-gray-200 hover:border-[#00D4AA] hover:shadow-[0_8px_28px_rgba(0,212,170,0.12)] transition-all duration-200">
+                <div className="w-11 h-11 rounded-xl bg-[#00D4AA]/10 flex items-center justify-center mb-4">
+                  <f.Icon size={22} className="text-[#00A884]" strokeWidth={2.2} />
+                </div>
+                <h3 className="font-bold text-[#0A2540] text-[1.0625rem] mb-2">{f.title}</h3>
+                <p className="text-gray-600 text-[0.9rem] leading-[1.65]">{f.desc}</p>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
-      {/* WHO IT'S FOR */}
+      {/* TWO PROMISES — skills-first + exam-ready */}
       <section className="py-20 px-6 bg-white">
         <div className="max-w-[72rem] mx-auto">
           <Reveal className="text-center mb-12">
-            <p className="text-[0.8125rem] font-bold text-[#00A884] uppercase tracking-[0.08em] mb-3">WHO IT'S FOR</p>
-            <h2 className="text-[clamp(1.75rem,4vw,2.5rem)] font-extrabold text-[#0A2540] tracking-tight mb-3">
-              Built for every role, not just developers
+            <p className="text-[0.8125rem] font-bold text-[#00A884] uppercase tracking-[0.08em] mb-3">OUR PROMISE</p>
+            <h2 className="text-[clamp(1.75rem,4vw,2.5rem)] font-extrabold text-[#0A2540] tracking-tight">
+              Worth it with or without the exam
             </h2>
-            <p className="text-gray-500 text-base max-w-[40rem] mx-auto">
-              AIF-C01 is AWS's broadest AI cert. If you work with AI — or want to — this is your credential.
-            </p>
           </Reveal>
 
-          <div className="grid gap-5" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))' }}>
-            {PERSONAS.map((p, i) => (
-              <Reveal key={i} delay={i * 100} className="bg-white rounded-[1.25rem] p-7 border border-gray-200 hover:border-[#00D4AA] hover:shadow-[0_8px_28px_rgba(0,212,170,0.12)] transition-all duration-200">
-                <div className="w-11 h-11 rounded-xl bg-[#00D4AA]/10 flex items-center justify-center mb-4">
-                  <p.Icon size={22} className="text-[#00A884]" strokeWidth={2.2} />
-                </div>
-                <h3 className="font-bold text-[#0A2540] text-[1.0625rem] mb-1">{p.title}</h3>
-                <p className="text-[0.8rem] text-gray-400 font-medium mb-3">{p.examples}</p>
-                <p className="text-gray-600 text-[0.9rem] leading-[1.65]">{p.desc}</p>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
+          <div className="grid gap-6" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 360px), 1fr))' }}>
+            <Reveal className="rounded-[1.25rem] p-8 border border-gray-200 bg-slate-50">
+              <div className="w-12 h-12 rounded-xl bg-[#6366F1]/10 flex items-center justify-center mb-4">
+                <GraduationCap size={24} className="text-[#6366F1]" strokeWidth={2.2} />
+              </div>
+              <h3 className="font-bold text-[#0A2540] text-[1.25rem] mb-3">If you never sit the exam</h3>
+              <p className="text-gray-600 text-[0.95rem] leading-[1.7] mb-4">
+                You still come out genuinely skilled. Our curriculum is built to teach the subject for real — the concepts, the trade-offs, the way professionals actually think. That understanding shows up in your work immediately, no certificate required.
+              </p>
+              <p className="text-gray-600 text-[0.95rem] leading-[1.7]">
+                And with Teach to Learn, you build a portfolio of yourself explaining each concept — concrete proof of skill you can show an employer, exam or not.
+              </p>
+            </Reveal>
 
-      {/* DOMAIN BREAKDOWN */}
-      <section id="domains" className="py-20 px-6 bg-slate-50">
-        <div className="max-w-[72rem] mx-auto">
-          <Reveal className="text-center mb-12">
-            <p className="text-[0.8125rem] font-bold text-[#00A884] uppercase tracking-[0.08em] mb-3">EXAM DOMAINS</p>
-            <h2 className="text-[clamp(1.75rem,4vw,2.5rem)] font-extrabold text-[#0A2540] tracking-tight mb-3">
-              Every domain, covered in depth
-            </h2>
-            <p className="text-gray-500 text-base max-w-[38rem] mx-auto">
-              Our study sessions are mapped directly to the official AIF-C01 exam guide. Nothing is skipped.
-            </p>
-          </Reveal>
-
-          <div className="flex flex-col gap-4">
-            {DOMAINS.map((d, i) => (
-              <Reveal key={d.id} delay={i * 80}
-                className="bg-white rounded-[1.25rem] p-6 border border-gray-200 flex flex-wrap items-start gap-6"
-                style={{ borderLeft: `4px solid ${d.color}` }}
-              >
-                <div className="flex items-center gap-4 min-w-[220px] flex-1">
-                  <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${d.color}14` }}>
-                    <d.Icon size={22} style={{ color: d.color }} strokeWidth={2.2} />
-                  </div>
-                  <div>
-                    <div className="text-[0.7rem] font-bold uppercase tracking-[0.06em] mb-0.5" style={{ color: d.color }}>
-                      {d.weight} of exam · {d.sessions} {d.sessions === 1 ? 'session' : 'sessions'}
-                    </div>
-                    <div className="font-bold text-[#0A2540] text-[1rem]">{d.label}</div>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap gap-2 flex-1 items-center justify-end">
-                  {d.topics.map((t, ti) => (
-                    <span key={ti} className="px-3 py-1.5 bg-slate-50 rounded-full text-[0.78rem] font-medium text-gray-600 border border-gray-200 whitespace-nowrap">
-                      {t}
-                    </span>
-                  ))}
-                </div>
-              </Reveal>
-            ))}
+            <Reveal delay={100} className="rounded-[1.25rem] p-8 border-2 border-[#00D4AA] bg-[#00D4AA]/[0.04]">
+              <div className="w-12 h-12 rounded-xl bg-[#00D4AA]/15 flex items-center justify-center mb-4">
+                <BadgeCheck size={24} className="text-[#00A884]" strokeWidth={2.2} />
+              </div>
+              <h3 className="font-bold text-[#0A2540] text-[1.25rem] mb-3">If you do take the exam</h3>
+              <p className="text-gray-600 text-[0.95rem] leading-[1.7] mb-4">
+                This is the best place to prepare. Every session maps to the official exam blueprint, every practice question mirrors the real format, and every answer comes with a full explanation and a link to the official AWS docs.
+              </p>
+              <p className="text-gray-600 text-[0.95rem] leading-[1.7]">
+                Because you learned the material properly instead of memorizing it, you walk in confident — and passing is the natural result, not a gamble.
+              </p>
+            </Reveal>
           </div>
         </div>
       </section>
@@ -387,33 +375,14 @@ function Landing() {
         <div className="aurora-blob w-80 h-80 bg-[#00D4AA]/[0.08] top-0 left-1/4" />
         <div className="max-w-[72rem] mx-auto relative z-10">
           <Reveal className="text-center mb-14">
-            <p className="text-[0.8125rem] font-bold text-[#00D4AA] uppercase tracking-[0.08em] mb-3">YOUR STUDY PLAN</p>
+            <p className="text-[0.8125rem] font-bold text-[#00D4AA] uppercase tracking-[0.08em] mb-3">HOW IT WORKS</p>
             <h2 className="text-[clamp(1.75rem,4vw,2.5rem)] font-extrabold text-white tracking-tight">
-              From zero to AIF-C01 certified
+              Learn it. Teach it. Pass it.
             </h2>
           </Reveal>
 
           <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))' }}>
-            {[
-              {
-                step: '01',
-                Icon: BookOpen,
-                title: 'Learn Every Domain',
-                desc: '16 structured 30-minute sessions — one per topic. Each covers key concepts, AWS services, exam tips, and a real exam-style question to lock in what you just learned. No prior AI experience needed.',
-              },
-              {
-                step: '02',
-                Icon: BarChart3,
-                title: 'Practice Under Exam Conditions',
-                desc: '65 questions mapped to the official AIF-C01 blueprint — timed, just like the real thing. Every question includes a full explanation and official AWS documentation link so you know exactly why each answer is right.',
-              },
-              {
-                step: '03',
-                Icon: GraduationCap,
-                title: 'Walk In Prepared',
-                desc: "Track your progress domain by domain, identify weak areas, and review before exam day. Our students pass at 82% on the first attempt — you'll know when you're ready.",
-              },
-            ].map((item, index) => (
+            {HOW_IT_WORKS.map((item, index) => (
               <Reveal key={index} delay={index * 120} className={`p-8 relative ${index > 0 ? 'md:border-l border-white/[0.08]' : ''}`}>
                 <div className="text-[4.5rem] font-black text-[#00D4AA]/[0.12] leading-none mb-3.5 tracking-tighter tabular-nums">
                   {item.step}
@@ -435,130 +404,55 @@ function Landing() {
             >
               Start Free <ArrowRight size={18} />
             </Button>
-            <p className="text-white/45 text-sm mt-3">No credit card required · 10 free questions to start</p>
+            <p className="text-white/45 text-sm mt-3">No credit card required · 10 free questions in every program</p>
           </div>
         </div>
       </section>
 
-      {/* WHAT YOU GET + SAMPLE QUESTION */}
+      {/* TEACH TO LEARN spotlight */}
       <section className="py-20 px-6 bg-white">
         <div className="max-w-[72rem] mx-auto">
-
-          <Reveal className="grid gap-4 mb-16 p-8 bg-slate-50 rounded-[1.25rem] border border-gray-200"
-            style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))' }}
-          >
-            {WHAT_YOU_GET.map((item, i) => (
-              <div key={i} className="text-center py-2">
-                <div className="text-[clamp(1.75rem,4vw,2.25rem)] font-extrabold text-[#0A2540] tracking-tight mb-1">
-                  {item.value}
-                </div>
-                <div className="text-sm font-semibold text-gray-700 mb-0.5">{item.label}</div>
-                <div className="text-xs text-gray-400">{item.sub}</div>
-              </div>
-            ))}
-          </Reveal>
-
-          <Reveal className="text-center mb-10">
-            <p className="text-[0.8125rem] font-bold text-[#00A884] uppercase tracking-[0.08em] mb-3">SAMPLE QUESTION</p>
-            <h2 className="text-[clamp(1.5rem,3.5vw,2rem)] font-extrabold text-[#0A2540] tracking-tight mb-3">
-              See exactly what you're getting
-            </h2>
-            <p className="text-gray-500 text-base max-w-[36rem] mx-auto">
-              This is a real question from the AIF-C01 prep course — the same format, depth, and explanation you'll get for every question.
-            </p>
-          </Reveal>
-
-          <Reveal className="max-w-[680px] mx-auto rounded-2xl overflow-hidden border border-gray-200" style={{ boxShadow: '0 12px 40px rgba(0,0,0,0.10)' }}>
-            <div style={{ background: 'var(--gradient-brand)', padding: '1.25rem' }}>
-
-              <div className="mb-4">
-                <div className="inline-flex items-center gap-2 text-[0.7rem] font-bold text-white/60 uppercase tracking-[0.06em] mb-3">
-                  <span className="px-2 py-0.5 bg-white/10 rounded text-white/70">{SAMPLE_QUESTION.domain}</span>
-                  <span>· Multiple Choice — select one</span>
-                </div>
-                <p className="text-white font-semibold text-[1rem] leading-[1.6]">
-                  {SAMPLE_QUESTION.stem}
-                </p>
-              </div>
-
-              <div className="flex flex-col gap-2 mb-4">
-                {SAMPLE_QUESTION.options.map((opt, i) => {
-                  const isSelected = sampleSelected === i
-                  const showResult = sampleRevealed
-                  let optClass = 'option-default'
-                  if (showResult && opt.correct)                     optClass = 'option-correct'
-                  else if (showResult && isSelected && !opt.correct) optClass = 'option-incorrect'
-                  else if (isSelected)                               optClass = 'option-selected'
-
-                  return (
-                    <div
-                      key={i}
-                      onClick={() => { if (!sampleRevealed) setSampleSelected(i) }}
-                      className={`option ${optClass} ${sampleRevealed ? 'cursor-default' : 'cursor-pointer'}`}
-                    >
-                      <div className="option-content">
-                        <div className={`option-checkbox option-checkbox-circle ${isSelected || (showResult && opt.correct) ? 'option-checkbox-selected' : 'option-checkbox-default'}`}>
-                          {showResult && opt.correct              && <Check size={14} strokeWidth={3} />}
-                          {showResult && !opt.correct && isSelected && <X size={14} strokeWidth={3} />}
-                          {!showResult && isSelected               && <Check size={14} strokeWidth={3} />}
-                        </div>
-                        <span className="option-text">{opt.text}</span>
-                      </div>
+          <div className="grid gap-12 items-center" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 360px), 1fr))' }}>
+            <Reveal>
+              <p className="text-[0.8125rem] font-bold text-[#00A884] uppercase tracking-[0.08em] mb-3">TEACH TO LEARN</p>
+              <h2 className="text-[clamp(1.75rem,4vw,2.5rem)] font-extrabold text-[#0A2540] tracking-tight mb-5">
+                Build proof you can actually do this
+              </h2>
+              <p className="text-gray-600 text-[1rem] leading-[1.75] mb-5">
+                A certificate says you passed a test. Being able to clearly explain a concept proves you understand it — and that is what Teach to Learn is built around.
+              </p>
+              <div className="flex flex-col gap-4">
+                {[
+                  { Icon: Lightbulb, t: 'Explain it first', d: 'Put the concept in your own words before you move on — the moment understanding becomes real.' },
+                  { Icon: Users, t: 'See how others explain it', d: 'Watch peer and curated explanations to fill the gaps and sharpen your own mental model.' },
+                  { Icon: FileCheck, t: 'Record and keep the proof', d: 'Teach it back from auto-generated slides and save it — a growing portfolio of demonstrated skill to share with employers.' },
+                ].map((s, i) => (
+                  <div key={i} className="flex gap-3.5">
+                    <div className="w-10 h-10 rounded-xl bg-[#00D4AA]/10 flex items-center justify-center shrink-0">
+                      <s.Icon size={20} className="text-[#00A884]" strokeWidth={2.2} />
                     </div>
-                  )
-                })}
-              </div>
-
-              {!sampleRevealed ? (
-                <button
-                  onClick={() => { if (sampleSelected !== null) setSampleRevealed(true) }}
-                  disabled={sampleSelected === null}
-                  className="w-full py-3 rounded-xl font-bold text-sm transition-all duration-150"
-                  style={{
-                    background: sampleSelected !== null ? 'var(--gradient-teal)' : 'rgba(255,255,255,0.1)',
-                    color: sampleSelected !== null ? 'white' : 'rgba(255,255,255,0.35)',
-                    cursor: sampleSelected !== null ? 'pointer' : 'not-allowed',
-                  }}
-                >
-                  {sampleSelected === null ? 'Select an answer to reveal explanation' : 'Check My Answer'}
-                </button>
-              ) : (
-                <div className="bg-white/[0.08] rounded-xl p-4 border border-white/[0.12]">
-                  <div className="flex items-start gap-2 mb-3">
-                    <Lightbulb size={16} className="text-amber-400 shrink-0 mt-0.5" />
-                    <p className="text-white/90 text-sm leading-[1.6] font-medium">{SAMPLE_QUESTION.explanation}</p>
-                  </div>
-                  {SAMPLE_QUESTION.options.map((opt, i) => (
-                    <div key={i} className="flex items-start gap-2 py-1.5 border-t border-white/[0.07]">
-                      <span className="shrink-0 mt-0.5">
-                        {opt.correct
-                          ? <Check size={13} className="text-[#00D4AA]" strokeWidth={3} />
-                          : <X size={13} className="text-white/30" strokeWidth={2.5} />}
-                      </span>
-                      <p className="text-white/60 text-xs leading-[1.55]">
-                        <span className={`font-semibold ${opt.correct ? 'text-[#00D4AA]' : 'text-white/45'}`}>{opt.text}: </span>
-                        {opt.reason}
-                      </p>
+                    <div>
+                      <h3 className="font-bold text-[#0A2540] text-[1rem] mb-0.5">{s.t}</h3>
+                      <p className="text-gray-600 text-[0.9rem] leading-[1.6]">{s.d}</p>
                     </div>
-                  ))}
-                  <div className="mt-3 pt-2.5 border-t border-white/[0.07] flex items-center justify-between">
-                    <span className="text-[0.7rem] text-white/35">{SAMPLE_QUESTION.source}</span>
-                    <button onClick={openSignup} className="inline-flex items-center gap-1 text-[0.8rem] font-semibold text-[#00D4AA] bg-transparent border-none cursor-pointer p-0">
-                      See all 65 questions <ArrowRight size={13} />
-                    </button>
                   </div>
-                </div>
-              )}
-            </div>
-          </Reveal>
+                ))}
+              </div>
+            </Reveal>
 
-          <div className="text-center mt-8">
-            <p className="text-gray-400 text-sm mb-4">Every question includes a full explanation like this — plus a link to the official AWS documentation.</p>
-            <Button variant="primary" onClick={openSignup} className="gap-2 !px-8 !py-3.5 !rounded-xl shadow-teal">
-              Try 10 Free Questions <ArrowRight size={16} />
-            </Button>
+            <Reveal delay={120} className="rounded-2xl p-8 border border-gray-200 bg-slate-50" style={{ boxShadow: '0 12px 40px rgba(0,0,0,0.06)' }}>
+              <div className="flex items-center gap-2 mb-5">
+                <Mic size={18} className="text-[#00A884]" />
+                <span className="text-[0.75rem] font-bold text-[#0A2540] uppercase tracking-[0.06em]">The science is settled</span>
+              </div>
+              <blockquote className="text-[#0A2540] text-[1.125rem] leading-[1.6] font-semibold mb-4">
+                “Those who teach learn best. Explaining an idea to someone else forces you to organize and clarify it in your own mind.”
+              </blockquote>
+              <p className="text-gray-500 text-[0.875rem] leading-[1.6]">
+                Decades of research on the protégé effect show that preparing to teach — and teaching — produces deeper, longer-lasting understanding than studying alone. We built it into every session.
+              </p>
+            </Reveal>
           </div>
-
         </div>
       </section>
 
@@ -570,10 +464,10 @@ function Landing() {
           <Reveal className="text-center mb-12">
             <p className="text-[0.8125rem] font-bold text-[#00D4AA] uppercase tracking-[0.08em] mb-3">SIMPLE PRICING</p>
             <h2 className="text-[clamp(1.75rem,4vw,2.25rem)] font-extrabold text-white mb-3 tracking-tight">
-              Choose your study plan
+              One subscription. Every program.
             </h2>
             <p className="text-white/80 text-base">
-              Unlimited access · Study at your own pace · Cancel anytime
+              All {PROGRAMS.length} certifications · every new cert we add · study at your own pace · cancel anytime
             </p>
           </Reveal>
 
@@ -587,7 +481,7 @@ function Landing() {
               <div className="text-[2.75rem] font-extrabold text-[#00D4AA] mb-1.5 tracking-tight">$0</div>
               <p className="text-white/65 text-sm mb-6">Try before you subscribe</p>
               <ul className="list-none p-0 mb-6 text-left space-y-2 flex-1">
-                {['10 sample questions', 'Full explanations', 'No credit card required'].map((item, i) => (
+                {['10 sample questions per program', 'Full explanations', 'No credit card required'].map((item, i) => (
                   <li key={i} className="text-white/85 flex items-center gap-2 text-[0.9rem]">
                     <Check size={16} className="text-[#00D4AA] shrink-0" strokeWidth={3} /> {item}
                   </li>
@@ -607,7 +501,7 @@ function Landing() {
               <div className="text-[2.75rem] font-extrabold text-[#00D4AA] mb-1.5 tracking-tight">$19.99</div>
               <p className="text-white/65 text-sm mb-6">Per month · Billed monthly</p>
               <ul className="list-none p-0 mb-6 text-left space-y-2 flex-1">
-                {['All 65 AIF-C01 questions', '16 study sessions', 'Cancel anytime'].map((item, i) => (
+                {['All 5 programs', 'Every study session & practice exam', 'Teach to Learn', 'Cancel anytime'].map((item, i) => (
                   <li key={i} className="text-white/85 flex items-center gap-2 text-[0.9rem]">
                     <Check size={16} className="text-[#00D4AA] shrink-0" strokeWidth={3} /> {item}
                   </li>
@@ -631,7 +525,7 @@ function Landing() {
               <p className="text-white/45 text-[0.8125rem] line-through mb-1">$239.88/year</p>
               <p className="text-white/75 text-sm mb-6">12 months · Save $141 · $8.25/mo</p>
               <ul className="list-none p-0 mb-6 text-left space-y-2 flex-1">
-                {['All 65 AIF-C01 questions', '16 study sessions', 'Cancel anytime', 'All new certs included'].map((item, i) => (
+                {['Everything in Monthly', 'All new certs included', 'Best value', 'Cancel anytime'].map((item, i) => (
                   <li key={i} className="text-white/90 flex items-center gap-2 text-[0.9rem]">
                     <Check size={16} className="text-[#00D4AA] shrink-0" strokeWidth={3} /> {item}
                   </li>
@@ -645,7 +539,7 @@ function Landing() {
 
           <div className="text-center mt-8 relative z-10">
             <p className="text-white/55 text-sm">
-              The AIF-C01 exam costs $300 — your prep investment is a fraction of that.
+              A single AWS exam costs $100–$150 — your prep across every program is a fraction of one attempt.
             </p>
           </div>
         </div>
@@ -657,7 +551,7 @@ function Landing() {
           <Reveal className="text-center mb-12">
             <p className="text-[0.8125rem] font-bold text-[#00A884] uppercase tracking-[0.08em] mb-3">FAQ</p>
             <h2 className="text-[clamp(1.5rem,3.5vw,2rem)] font-extrabold text-[#0A2540] tracking-tight">
-              Questions about AIF-C01
+              Questions, answered
             </h2>
           </Reveal>
 
@@ -692,14 +586,14 @@ function Landing() {
         <div className="aurora-blob w-[600px] h-[300px] bg-[#00D4AA]/[0.08] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
         <div className="max-w-[52rem] mx-auto relative z-10">
           <div className="inline-flex items-center gap-2 bg-[#00D4AA]/15 border border-[#00D4AA]/30 text-[#00D4AA] px-4 py-1.5 rounded-full text-[0.8125rem] font-bold mb-6 uppercase tracking-[0.06em]">
-            <BadgeCheck size={14} /> AWS AI Practitioner · AIF-C01
+            <BadgeCheck size={14} /> {PROGRAMS.length} programs · one subscription
           </div>
           <h2 className="text-[clamp(2rem,5vw,3rem)] font-extrabold text-white mb-5 leading-[1.15] tracking-tighter">
-            Ready to add AI Practitioner<br />
-            <span className="gradient-text">to your credentials?</span>
+            Become genuinely good at AWS.<br />
+            <span className="gradient-text">The certificate follows.</span>
           </h2>
           <p className="text-[clamp(1rem,2.5vw,1.1875rem)] text-white/75 mb-10 leading-[1.65]">
-            Start with 10 free questions — no credit card, no commitment. See exactly what the exam covers and how we prepare you for it.
+            Start with 10 free questions in any program — no credit card, no commitment. See how it feels to actually understand the material.
           </p>
           <Button
             variant="primary"
@@ -733,25 +627,27 @@ function Landing() {
                 <h3 className="text-white font-bold text-base m-0">Cloud Exam Lab</h3>
               </div>
               <p className="text-white/60 text-sm leading-relaxed">
-                Full exam preparation for cloud certifications — structured study sessions and practice exams.
+                Learn AWS the way it sticks — structured study sessions, the Teach to Learn method, and exam-realistic practice across every program.
               </p>
             </div>
             <div>
-              <h3 className="text-white font-bold mb-3.5 text-sm">AIF-C01 Prep</h3>
+              <h3 className="text-white font-bold mb-3.5 text-sm">Programs</h3>
               <ul className="list-none p-0 m-0">
-                {['16 study sessions', '5 exam domains', '65 practice questions', 'Official AWS doc links'].map((item, i) => (
-                  <li key={i} className="text-white/45 text-sm mb-1.5 flex items-center gap-1.5">
-                    <Check size={12} className="text-[#00D4AA] shrink-0" strokeWidth={3} /> {item}
+                {PROGRAMS.map((p) => (
+                  <li key={p.code} className="mb-2">
+                    <Link to={`/${p.code}`} className="text-white/60 text-sm no-underline hover:text-white transition-colors flex items-center gap-1.5">
+                      <p.Icon size={13} className="shrink-0" style={{ color: p.color }} /> {p.shortName} ({p.code})
+                    </Link>
                   </li>
                 ))}
               </ul>
             </div>
             <div>
-              <h3 className="text-white font-bold mb-3.5 text-sm">Other Certifications</h3>
+              <h3 className="text-white font-bold mb-3.5 text-sm">How You Learn</h3>
               <ul className="list-none p-0 m-0">
-                {['AWS Developer Associate (DVA-C02)', 'AWS Solutions Architect', 'Azure & GCP — Coming Soon'].map((item, i) => (
-                  <li key={i} className="text-white/45 text-sm mb-2 flex items-center gap-1.5">
-                    <Clock size={12} className="shrink-0" /> {item}
+                {['Structured study sessions', 'Teach to Learn method', 'Timed practice exams', 'Official AWS doc links'].map((item, i) => (
+                  <li key={i} className="text-white/45 text-sm mb-1.5 flex items-center gap-1.5">
+                    <Check size={12} className="text-[#00D4AA] shrink-0" strokeWidth={3} /> {item}
                   </li>
                 ))}
               </ul>
@@ -775,7 +671,7 @@ function Landing() {
 
           <div className="border-t border-white/[0.08] pt-6">
             <p className="text-white/40 text-xs text-center mb-1.5">
-              <strong>Disclaimer:</strong> Independent practice questions. Not affiliated with or endorsed by Amazon Web Services (AWS).
+              <strong>Disclaimer:</strong> Independent study materials and practice questions. Not affiliated with or endorsed by Amazon Web Services (AWS).
             </p>
             <p className="text-white/40 text-xs text-center">
               © {new Date().getFullYear()} Cloud Exam Lab. All rights reserved.
