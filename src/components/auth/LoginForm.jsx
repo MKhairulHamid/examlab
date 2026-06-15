@@ -70,7 +70,12 @@ function LoginForm({ onSuccess }) {
       onSuccess()
       navigate('/dashboard')
     } else {
-      setError(result.error || 'Login failed')
+      const msg = result.error || 'Login failed'
+      if (msg.toLowerCase().includes('invalid login credentials')) {
+        setError('Incorrect email or password. If you signed up with Google, use the "Continue with Google" button below.')
+      } else {
+        setError(msg)
+      }
     }
   }
 
