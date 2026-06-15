@@ -1107,8 +1107,33 @@ function DeployStrategyWidget() {
   )
 }
 
+// ── MLA D3 (Session 9): SageMaker endpoint / inference option selector ─────────
+function EndpointSelectorWidget() {
+  return (
+    <ScenarioSorter
+      title="Pick the SageMaker Inference Option"
+      intro="SageMaker offers four ways to serve a model, each tuned to a different traffic and payload pattern. Match each requirement to the right option — the card confirms instantly."
+      cats={[
+        { id: 'rt', label: 'Real-time endpoint', color: '#2563eb', desc: 'Persistent, low-latency, steady traffic' },
+        { id: 'sl', label: 'Serverless', color: '#0891b2', desc: 'Auto-scales (incl. to zero); spiky/idle traffic, cold-start tolerant' },
+        { id: 'as', label: 'Asynchronous', color: '#d97706', desc: 'Queued; large payloads and long-running inference' },
+        { id: 'bt', label: 'Batch transform', color: '#7c3aed', desc: 'Offline scoring of a whole dataset; no persistent endpoint' },
+      ]}
+      items={[
+        { t: 'A web app needs predictions in a few milliseconds, 24/7, with steady traffic', a: 'rt', why: 'Persistent low-latency serving with steady demand is a real-time endpoint.' },
+        { t: 'Traffic is sporadic with long idle gaps; pay only when used and tolerate occasional cold starts', a: 'sl', why: 'Intermittent traffic with pay-per-use and cold-start tolerance fits a serverless endpoint.' },
+        { t: 'Each request carries a 500 MB payload and takes several minutes to process', a: 'as', why: 'Large payloads and long processing are queued on an asynchronous endpoint.' },
+        { t: 'Score an entire 50 GB dataset overnight, then tear everything down', a: 'bt', why: 'Offline scoring of a full dataset with no always-on endpoint is batch transform.' },
+        { t: 'Queue long-running inference requests and return results when they finish', a: 'as', why: 'Decoupled, queued, long-running inference is the asynchronous endpoint pattern.' },
+        { t: 'A strict low-latency fraud check on every transaction in real time', a: 'rt', why: 'Per-request strict low latency in real time is a real-time endpoint.' },
+      ]}
+    />
+  )
+}
+
 const INTERACTIVE_WIDGETS = {
   'precision-recall': PrecisionRecallWidget,
+  'endpoint-selector': EndpointSelectorWidget,
   'inference-parameters': InferenceParametersWidget,
   'learning-types': LearningTypesWidget,
   'tokenizer': TokenizerWidget,

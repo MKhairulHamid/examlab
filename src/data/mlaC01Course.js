@@ -1181,6 +1181,7 @@ const mlaC01Course = {
             ],
           },
           callout: { type: 'tip', text: 'Precision vs. recall is the most-tested trade-off. Costly false negatives (fraud, disease) → optimize recall. Costly false positives (spam blocking a real email) → optimize precision. Need balance → F1.' },
+          interactive: 'precision-recall',
         },
         {
           heading: 'ROC, AUC, and regression metrics',
@@ -1290,6 +1291,1107 @@ const mlaC01Course = {
         'Accuracy is misleading on imbalanced data — compare against the majority-class baseline and use AUC/F1.',
         'Compare a new model on live traffic without user impact → shadow variant; split traffic → A/B (production variants).',
         'Diagnose training convergence problems → SageMaker Debugger; interpret/bias-check outputs → SageMaker Clarify.',
+      ],
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    //  DOMAIN 3 — DEPLOYMENT AND ORCHESTRATION OF ML WORKFLOWS (22%)
+    // ═══════════════════════════════════════════════════════════════
+
+    {
+      id: 'd3-s9',
+      number: 9,
+      module: 'Domain 3 · Deployment & Orchestration',
+      domain: 'd3',
+      weight: '22%',
+      task: 'Task 3.1',
+      title: 'Deployment Infrastructure and Endpoint Types',
+      duration: 30,
+      summary: 'A trained model is useless until it serves predictions. This session covers the single densest decision in Domain 3 — choosing the right SageMaker inference option (real-time, serverless, asynchronous, batch) — plus compute selection, containers, multi-model endpoints, and edge deployment.',
+      objectives: [
+        'Choose the right SageMaker inference option for a traffic and payload pattern',
+        'Select CPU vs. GPU compute and the right deployment target (SageMaker, EKS/ECS, Lambda)',
+        'Use multi-model and multi-container endpoints to consolidate models',
+        'Recognize when to optimize a model for edge devices with SageMaker Neo',
+      ],
+      preLearningCheck: {
+        question: 'An inference request carries a 400 MB payload and can take several minutes to process, and the client does not need an instant response. Which SageMaker option fits best?',
+        options: [
+          'A real-time endpoint',
+          'An asynchronous endpoint',
+          'A serverless endpoint',
+          'Batch transform',
+        ],
+        correct: 1,
+        note: 'Guess first — the attempt primes you to retain the endpoint distinctions.',
+      },
+      sections: [
+        {
+          heading: 'Four ways to serve a model',
+          body: 'SageMaker offers four inference options. The exam tests which one fits a described traffic pattern, payload size, and latency need. Learn the decision boundaries cold.',
+          table: {
+            headers: ['Option', 'Best for', 'Key trait'],
+            rows: [
+              ['Real-time endpoint', 'Steady traffic needing low-latency responses 24/7', 'Persistent instances; you pay while it runs'],
+              ['Serverless endpoint', 'Intermittent/spiky traffic with idle gaps', 'Auto-scales (including to zero); cold starts possible; pay per use'],
+              ['Asynchronous endpoint', 'Large payloads and long-running inference', 'Requests are queued; results returned when ready'],
+              ['Batch transform', 'Scoring a whole dataset offline', 'No persistent endpoint; spin up, score, tear down'],
+            ],
+          },
+          callout: { type: 'tip', text: 'Decision cues: instant + steady → real-time; spiky/idle + pay-per-use → serverless; big payload / minutes-long → asynchronous; whole dataset offline → batch transform.' },
+          interactive: 'endpoint-selector',
+        },
+        {
+          heading: 'Choosing compute: CPU vs. GPU',
+          body: 'Compute choice drives both performance and cost for training and inference.',
+          bullets: [
+            'GPU — needed for deep-learning training and high-throughput deep-learning inference; expensive, so justify it.',
+            'CPU — fine for classical ML (XGBoost, linear models) and many lighter inference workloads; cheaper.',
+            'Inference-optimized instances (e.g. AWS Inferentia) deliver high inference throughput per dollar for supported models.',
+            'Match instance family to the bottleneck: memory-optimized for large models, compute-optimized for CPU-bound inference.',
+          ],
+        },
+        {
+          heading: 'Deployment targets and containers',
+          body: 'SageMaker endpoints are the default, but models can be served on other targets, and containers package the runtime.',
+          table: {
+            headers: ['Target', 'Use when'],
+            rows: [
+              ['SageMaker endpoint', 'Default managed model hosting with built-in scaling and monitoring'],
+              ['Amazon EKS / ECS', 'You already standardize on Kubernetes/containers and want models in that platform'],
+              ['AWS Lambda', 'Lightweight, intermittent inference for small models; fully serverless'],
+              ['Provided vs. custom container', 'Use AWS-provided framework containers, or bring your own (BYOC) for custom dependencies'],
+            ],
+          },
+        },
+        {
+          heading: 'Multi-model endpoints and the edge',
+          body: 'Two cost/performance optimizations the exam likes.',
+          bullets: [
+            'Multi-model endpoint (MME) — host many models behind one endpoint, loading each into memory on demand. Cost-effective when you have many models, each with low/intermittent traffic.',
+            'Multi-container endpoint — host different containers/frameworks behind one endpoint, optionally as an inference pipeline.',
+            'SageMaker Neo — compile/optimize a model to run efficiently on edge devices (and cloud), reducing footprint and latency on constrained hardware.',
+          ],
+          callout: { type: 'note', text: '"Hundreds of models, each rarely called, minimize cost" → multi-model endpoint. "Run the model on a constrained edge device" → SageMaker Neo.' },
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 1,
+          question: 'A company hosts hundreds of customer-specific models, each receiving only occasional traffic, and wants to minimize hosting cost. Which option fits best?',
+          options: [
+            'A separate real-time endpoint per model',
+            'A multi-model endpoint that loads each model on demand',
+            'Batch transform run continuously',
+            'A serverless endpoint per model with provisioned concurrency',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — a multi-model endpoint shares infrastructure across many low-traffic models, loading each on demand, which is far cheaper than one endpoint per model.',
+          elaborativePrompt: 'What is the trade-off of loading models on demand — what happens on the first request for a model not currently in memory?',
+        },
+        {
+          afterSection: 3,
+          question: 'A model must run inference directly on a fleet of low-power IoT cameras with limited memory. Which AWS capability helps?',
+          options: [
+            'SageMaker Neo to compile and optimize the model for the edge devices',
+            'A larger GPU real-time endpoint in the cloud',
+            'Batch transform',
+            'SageMaker Feature Store',
+          ],
+          correct: 0,
+          explainCorrect: 'Correct — SageMaker Neo optimizes a model to run efficiently on constrained edge hardware with a smaller footprint and lower latency.',
+          elaborativePrompt: 'Why might running inference on the edge be preferable to sending every frame to a cloud endpoint?',
+        },
+      ],
+      selfExplanationPrompt: 'In your own words, give the one-line cue that distinguishes an asynchronous endpoint from batch transform. Both handle large/long jobs — what is the difference?',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'An ML team serves a model that receives unpredictable, bursty traffic with long idle periods overnight. They want to avoid paying for idle capacity and can tolerate an occasional cold-start delay. Which SageMaker inference option should they choose?',
+        options: [
+          'A real-time endpoint with several always-on instances',
+          'A serverless inference endpoint',
+          'Batch transform on a schedule',
+          'An asynchronous endpoint with large instances',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'Serverless inference automatically scales capacity with demand (including to zero during idle periods), so the team pays only for what they use and tolerates the occasional cold start — exactly matching bursty, idle-heavy traffic.',
+          perOption: [
+            'Always-on real-time instances waste money during the long idle periods the team wants to avoid paying for.',
+            'Correct — serverless inference scales to zero when idle and charges per use, fitting bursty traffic with cold-start tolerance.',
+            'Batch transform scores datasets offline; it cannot serve unpredictable real-time request traffic.',
+            'An asynchronous endpoint targets large payloads/long jobs, not the idle-cost problem; it still provisions instances.',
+          ],
+          link: 'D3 · Task 3.1 — Selecting the deployment endpoint type',
+        },
+      },
+      videos: [
+        {
+          videoId: 'ylZH9RLHGyw',
+          title: 'Everything You Need to Know About AWS ML Engineer Associate (MLA-C01)',
+          channel: 'K21Academy',
+          startSeconds: null,
+          endSeconds: null,
+          relevance: 'MLA-C01 overview companion — frames deployment options within the exam.',
+        },
+      ],
+      keyTerms: [
+        { term: 'Real-time endpoint', def: 'A persistent SageMaker endpoint serving low-latency predictions for steady traffic; you pay while it runs.' },
+        { term: 'Serverless inference', def: 'An endpoint that auto-scales with demand (including to zero), charging per use; suited to intermittent traffic, with possible cold starts.' },
+        { term: 'Asynchronous endpoint', def: 'An endpoint that queues requests for large payloads or long-running inference and returns results when ready.' },
+        { term: 'Batch transform', def: 'An offline job that scores an entire dataset without a persistent endpoint.' },
+        { term: 'Multi-model endpoint', def: 'One endpoint hosting many models loaded on demand, to cost-effectively serve many low-traffic models.' },
+        { term: 'SageMaker Neo', def: 'A service that compiles and optimizes models to run efficiently on edge devices and in the cloud.' },
+      ],
+      awsServices: [
+        { name: 'Amazon SageMaker Endpoints', purpose: 'Managed real-time, serverless, and asynchronous model hosting with scaling and monitoring.' },
+        { name: 'SageMaker Batch Transform', purpose: 'Offline scoring of whole datasets without a persistent endpoint.' },
+        { name: 'SageMaker Neo', purpose: 'Compiles and optimizes models for efficient edge and cloud inference.' },
+        { name: 'AWS Inferentia', purpose: 'Inference-optimized chips delivering high throughput per dollar for supported models.' },
+      ],
+      examTips: [
+        'Instant + steady → real-time; spiky/idle + pay-per-use → serverless; large payload/long job → asynchronous; whole dataset offline → batch transform.',
+        'Many low-traffic models, minimize cost → multi-model endpoint.',
+        'Run on constrained edge hardware → SageMaker Neo.',
+        'GPU for deep learning; CPU/Inferentia for classical or cost-sensitive inference.',
+      ],
+    },
+
+    // ─────────────────────────────────────────────────────────────
+    {
+      id: 'd3-s10',
+      number: 10,
+      module: 'Domain 3 · Deployment & Orchestration',
+      domain: 'd3',
+      weight: '22%',
+      task: 'Task 3.2',
+      title: 'Infrastructure as Code and Endpoint Auto Scaling',
+      duration: 30,
+      summary: 'Production ML infrastructure must be reproducible, scalable, and cost-aware. This session covers infrastructure as code (CloudFormation, CDK), building and storing containers (ECR, ECS, EKS, BYOC), configuring SageMaker endpoint auto scaling, securing endpoints in a VPC, and using Spot to cut cost.',
+      objectives: [
+        'Choose between CloudFormation and CDK and explain why IaC matters for ML',
+        'Build, store, and deploy containers with ECR/ECS/EKS and BYOC',
+        'Configure SageMaker endpoint auto scaling and pick the right scaling metric',
+        'Secure endpoints inside a VPC and reduce cost with Spot Instances',
+      ],
+      preLearningCheck: {
+        question: 'An ML team wants their entire training and hosting stack to be version-controlled, repeatable, and deployable to multiple accounts with one definition. Which approach achieves this?',
+        options: [
+          'Click through the SageMaker console each time',
+          'Define the stack as infrastructure as code (CloudFormation or AWS CDK)',
+          'Email a runbook to the team',
+          'Manually tag resources after creating them',
+        ],
+        correct: 1,
+        note: 'Guess before reading — retrieval practice helps retention.',
+      },
+      sections: [
+        {
+          heading: 'Why infrastructure as code',
+          body: 'Manually clicking through the console is not repeatable, auditable, or reviewable. Infrastructure as code (IaC) defines the whole stack — endpoints, roles, pipelines — as a template you version, review, and deploy consistently across environments.',
+          table: {
+            headers: ['Tool', 'Style', 'Use when'],
+            rows: [
+              ['AWS CloudFormation', 'Declarative templates (JSON/YAML)', 'You want native AWS IaC with a declarative definition of resources'],
+              ['AWS CDK', 'Code (Python/TypeScript/…) that synthesizes CloudFormation', 'You prefer real programming constructs (loops, classes) to generate infrastructure'],
+            ],
+          },
+          callout: { type: 'tip', text: 'Both CDK and CloudFormation end up as CloudFormation stacks. CDK is "IaC in a programming language"; CloudFormation is "IaC as declarative templates." Either gives repeatable, reviewable provisioning.' },
+        },
+        {
+          heading: 'On-demand vs. provisioned, and Spot',
+          body: 'Resourcing choices trade cost against availability.',
+          bullets: [
+            'On-demand — pay-as-you-go, no commitment; the default for unpredictable workloads.',
+            'Provisioned/reserved capacity — commit for steady workloads to lower cost (covered with Savings Plans in Session 14).',
+            'Spot Instances — deeply discounted spare capacity that can be reclaimed; ideal for fault-tolerant, checkpointed training jobs. Avoid for endpoints that need guaranteed availability.',
+          ],
+        },
+        {
+          heading: 'Containers for ML',
+          body: 'Models ship as containers. Know the container services and the bring-your-own-container path.',
+          table: {
+            headers: ['Service', 'Role'],
+            rows: [
+              ['Amazon ECR', 'Private registry that stores your Docker images (training and inference containers)'],
+              ['Amazon ECS', 'Run containers on a managed cluster (or Fargate, serverless)'],
+              ['Amazon EKS', 'Run containers on managed Kubernetes'],
+              ['BYOC with SageMaker', 'Bring your own container when you need a framework/dependency SageMaker does not provide'],
+            ],
+          },
+        },
+        {
+          heading: 'Endpoint auto scaling and VPC',
+          body: 'A production endpoint should scale with demand and be network-isolated.',
+          bullets: [
+            'Auto scaling — attach a scaling policy to a SageMaker endpoint so instance count rises and falls with load, controlling both latency and cost.',
+            'Scaling metric — choose what to scale on: invocations per instance (the common default), model latency, or CPU/GPU utilization.',
+            'Target tracking keeps a chosen metric at a target value; scheduled scaling handles known time-based patterns.',
+            'VPC configuration — place the endpoint in a VPC with private subnets and security groups so traffic stays off the public internet; use VPC endpoints for private access to AWS services.',
+          ],
+          callout: { type: 'note', text: 'For endpoint auto scaling, "invocations per instance" (SageMakerVariantInvocationsPerInstance) is the standard target-tracking metric. Scale on model latency or utilization when those are the binding constraint.' },
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 1,
+          question: 'A team prefers to define their ML infrastructure using Python with loops and reusable classes, while still deploying through AWS-native stacks. Which tool fits best?',
+          options: [
+            'AWS CDK',
+            'Hand-written CloudFormation YAML only',
+            'The SageMaker console',
+            'A shell script with the AWS CLI run manually',
+          ],
+          correct: 0,
+          explainCorrect: 'Correct — the AWS CDK lets you express infrastructure in a programming language and synthesizes CloudFormation under the hood.',
+          elaborativePrompt: 'Since CDK compiles to CloudFormation anyway, what does using a programming language buy you over writing the YAML directly?',
+        },
+        {
+          afterSection: 3,
+          question: 'A real-time endpoint sees traffic that doubles during business hours. The team wants instance count to follow demand to control latency and cost. What should they configure?',
+          options: [
+            'A fixed, large number of instances at all times',
+            'Auto scaling with a target-tracking policy on invocations per instance',
+            'Batch transform instead of an endpoint',
+            'Manual scaling by an engineer each morning',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — a target-tracking auto scaling policy (commonly on invocations per instance) automatically adds/removes instances as load changes.',
+          elaborativePrompt: 'When would scaling on model latency be a better metric than invocations per instance?',
+        },
+      ],
+      selfExplanationPrompt: 'Explain why Spot Instances are great for training jobs but risky for a production inference endpoint. What property of each workload drives the difference?',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'An ML platform team must deploy identical SageMaker hosting stacks to dev, staging, and production accounts, with peer review of every infrastructure change and the ability to roll back. The model endpoint must also scale automatically with traffic. Which approach BEST meets these requirements?',
+        options: [
+          'Create resources manually in each account and document the steps',
+          'Define the stack as infrastructure as code (CloudFormation/CDK) and attach an auto scaling policy to the endpoint',
+          'Use a single oversized fixed-capacity endpoint shared across all accounts',
+          'Write a one-off shell script run by hand per account',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'IaC gives repeatable, peer-reviewable, rollback-capable deployment of identical stacks across accounts, and an auto scaling policy makes the endpoint follow traffic — together meeting every requirement.',
+          perOption: [
+            'Manual creation is not repeatable, reviewable, or reliably identical across three accounts, and does not address scaling.',
+            'Correct — IaC for reproducible, reviewable, rollback-capable stacks plus endpoint auto scaling for traffic-following capacity.',
+            'A single shared oversized endpoint breaks account isolation and wastes cost rather than scaling with demand.',
+            'A hand-run script is not reviewable or rollback-friendly and drifts between accounts.',
+          ],
+          link: 'D3 · Task 3.2 — Infrastructure as code and endpoint auto scaling',
+        },
+      },
+      videos: [
+        {
+          videoId: 'ylZH9RLHGyw',
+          title: 'Everything You Need to Know About AWS ML Engineer Associate (MLA-C01)',
+          channel: 'K21Academy',
+          startSeconds: null,
+          endSeconds: null,
+          relevance: 'MLA-C01 overview companion — covers IaC and scaling for ML infrastructure.',
+        },
+      ],
+      keyTerms: [
+        { term: 'Infrastructure as code (IaC)', def: 'Defining infrastructure in version-controlled templates/code (CloudFormation, CDK) for repeatable, reviewable deployment.' },
+        { term: 'AWS CDK', def: 'A framework to define infrastructure in a programming language that synthesizes CloudFormation.' },
+        { term: 'Amazon ECR', def: 'A private container registry for storing Docker images used in training and inference.' },
+        { term: 'Endpoint auto scaling', def: 'A policy that adjusts a SageMaker endpoint’s instance count based on a metric like invocations per instance.' },
+        { term: 'Spot Instances', def: 'Discounted reclaimable capacity, ideal for fault-tolerant, checkpointed training but not for always-available endpoints.' },
+      ],
+      awsServices: [
+        { name: 'AWS CloudFormation', purpose: 'Declarative infrastructure-as-code templates for repeatable AWS provisioning.' },
+        { name: 'AWS CDK', purpose: 'Defines infrastructure in a programming language, synthesizing CloudFormation.' },
+        { name: 'Amazon ECR', purpose: 'Stores container images for SageMaker training and inference, including BYOC.' },
+        { name: 'AWS Auto Scaling', purpose: 'Scales SageMaker endpoint capacity with demand via target-tracking and scheduled policies.' },
+      ],
+      examTips: [
+        'Repeatable, reviewable, multi-account provisioning → infrastructure as code (CloudFormation or CDK).',
+        'CDK = IaC in a programming language; both compile to CloudFormation.',
+        'Endpoint should follow traffic → auto scaling, commonly target-tracking on invocations per instance.',
+        'Spot for fault-tolerant/checkpointed training; never for endpoints needing guaranteed availability.',
+      ],
+    },
+
+    // ─────────────────────────────────────────────────────────────
+    {
+      id: 'd3-s11',
+      number: 11,
+      module: 'Domain 3 · Deployment & Orchestration',
+      domain: 'd3',
+      weight: '22%',
+      task: 'Task 3.3',
+      title: 'CI/CD and Orchestration for ML Workflows',
+      duration: 30,
+      summary: 'MLOps in action: automating the build → train → deploy → retrain loop. We cover the AWS CI/CD services (CodePipeline, CodeBuild, CodeDeploy), SageMaker Pipelines vs. Step Functions vs. Airflow, deployment strategies for models, automated testing, and event-driven retraining.',
+      objectives: [
+        'Map the roles of CodePipeline, CodeBuild, and CodeDeploy in an ML pipeline',
+        'Choose the right orchestrator: SageMaker Pipelines, Step Functions, or MWAA (Airflow)',
+        'Apply deployment strategies (blue/green, canary, linear) to model releases',
+        'Trigger training/retraining with EventBridge and add automated tests to the pipeline',
+      ],
+      preLearningCheck: {
+        question: 'A team wants a purpose-built, ML-native way to define a repeatable workflow of data processing, training, evaluation, and model registration steps. Which AWS service is designed for this?',
+        options: [
+          'AWS CodeDeploy',
+          'Amazon SageMaker Pipelines',
+          'Amazon SQS',
+          'AWS Config',
+        ],
+        correct: 1,
+        note: 'Guess first — the attempt strengthens recall of the orchestrators.',
+      },
+      sections: [
+        {
+          heading: 'The CI/CD service map',
+          body: 'AWS CI/CD is a small set of services that hand off to each other. Know what each one does.',
+          table: {
+            headers: ['Service', 'Role in the pipeline'],
+            rows: [
+              ['AWS CodePipeline', 'Orchestrates the stages (source → build → test → deploy) end to end'],
+              ['AWS CodeBuild', 'Compiles, packages, and runs tests in a managed build environment'],
+              ['AWS CodeDeploy', 'Automates the deployment, including traffic-shifting strategies'],
+              ['AWS CodeArtifact', 'Stores and shares package dependencies'],
+            ],
+          },
+          callout: { type: 'tip', text: 'CodePipeline = the conductor; CodeBuild = build/test; CodeDeploy = release with strategy. Source events (Git push) and EventBridge rules kick the pipeline off.' },
+        },
+        {
+          heading: 'Choosing an ML orchestrator',
+          body: 'Beyond code CI/CD, ML workflows themselves need orchestration. Three common choices differ in focus.',
+          table: {
+            headers: ['Orchestrator', 'Best for'],
+            rows: [
+              ['SageMaker Pipelines', 'ML-native pipelines (process → train → evaluate → register → deploy) with lineage tracking'],
+              ['AWS Step Functions', 'General serverless workflow orchestration across many AWS services with branching/retries'],
+              ['Amazon MWAA (Managed Airflow)', 'Teams already standardized on Apache Airflow DAGs'],
+            ],
+          },
+          callout: { type: 'note', text: 'Default to SageMaker Pipelines for an ML-specific workflow with built-in lineage. Choose Step Functions for broad multi-service orchestration, and MWAA when the team already uses Airflow.' },
+        },
+        {
+          heading: 'Deployment strategies for models',
+          body: 'How you release a new model version controls risk. SageMaker supports traffic-shifting strategies on endpoints.',
+          bullets: [
+            'Blue/green — stand up the new version alongside the old and switch traffic; instant rollback by switching back.',
+            'Canary — shift a small percentage of traffic to the new version first, watch metrics, then complete the rollout.',
+            'Linear — shift traffic in equal increments over time (e.g. 10% every few minutes), monitoring as you go.',
+            'Rollback — automatically revert if alarms fire during the shift, limiting the blast radius of a bad model.',
+          ],
+          interactive: 'deploy-strategy',
+        },
+        {
+          heading: 'Automated testing and retraining',
+          body: 'CI/CD for ML adds tests and a loop back to training.',
+          bullets: [
+            'Automated tests — unit tests for code, integration/end-to-end tests for the pipeline, and model-quality gates (e.g. only register a model if it beats a metric threshold).',
+            'Continuous deployment flows — Gitflow / GitHub Flow structure how commits and branches trigger pipelines.',
+            'Event-driven retraining — an Amazon EventBridge rule (on a schedule, new data arriving, or a drift alarm from Model Monitor) starts a SageMaker Pipeline to retrain and redeploy.',
+            'Approval steps — a human or automated approval can gate promotion of a newly registered model to production.',
+          ],
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 1,
+          question: 'In an ML CI/CD pipeline, which service is responsible for running the unit and integration tests and packaging the model container?',
+          options: [
+            'AWS CodePipeline',
+            'AWS CodeBuild',
+            'AWS CodeDeploy',
+            'Amazon EventBridge',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — CodeBuild provides the managed build environment that compiles, packages, and runs tests; CodePipeline orchestrates and CodeDeploy releases.',
+          elaborativePrompt: 'Where in the same pipeline would a model-quality gate (only deploy if accuracy improves) most naturally live?',
+        },
+        {
+          afterSection: 3,
+          question: 'A team wants to release a new model version by routing 10% of live traffic to it, monitoring, and only then sending the remaining 90%. Which deployment strategy is this?',
+          options: [
+            'All-at-once',
+            'Canary',
+            'Blue/green with instant full switch',
+            'Batch transform',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — shifting a small percentage first and then completing the rollout is the canary strategy, which limits blast radius.',
+          elaborativePrompt: 'How does canary differ from linear traffic shifting, and when would you prefer each?',
+        },
+      ],
+      selfExplanationPrompt: 'Describe an end-to-end automated retraining loop using EventBridge, SageMaker Pipelines, and Model Registry. What event starts it and what gate decides whether the new model ships?',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'An ML team wants to automatically retrain and redeploy a model whenever Model Monitor detects significant data drift, with an ML-native workflow that tracks lineage from data processing through training, evaluation, and model registration. Which combination BEST implements this?',
+        options: [
+          'A cron job on an EC2 instance that retrains nightly regardless of drift',
+          'An EventBridge rule on the drift alarm that triggers a SageMaker Pipeline, registering the model in the Model Registry on success',
+          'AWS CodeDeploy alone polling the data for changes',
+          'Manual retraining whenever an engineer notices the drift',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'EventBridge reacts to the drift alarm and triggers a SageMaker Pipeline — the ML-native orchestrator with lineage tracking — which processes data, trains, evaluates, and registers the model. This is event-driven, automated, and auditable.',
+          perOption: [
+            'A nightly cron retrains on a fixed schedule, ignoring drift, and lacks lineage tracking and a quality gate.',
+            'Correct — EventBridge on the drift alarm → SageMaker Pipeline (with lineage) → Model Registry on success is the canonical drift-triggered retraining loop.',
+            'CodeDeploy releases applications; it neither orchestrates ML training steps nor tracks ML lineage.',
+            'Manual retraining is not automated and does not react reliably to drift.',
+          ],
+          link: 'D3 · Task 3.3 — Event-driven retraining and ML orchestration',
+        },
+      },
+      videos: [
+        {
+          videoId: 'ylZH9RLHGyw',
+          title: 'Everything You Need to Know About AWS ML Engineer Associate (MLA-C01)',
+          channel: 'K21Academy',
+          startSeconds: null,
+          endSeconds: null,
+          relevance: 'MLA-C01 overview companion — covers CI/CD and MLOps orchestration.',
+        },
+      ],
+      keyTerms: [
+        { term: 'SageMaker Pipelines', def: 'An ML-native workflow service that orchestrates processing, training, evaluation, and registration with lineage tracking.' },
+        { term: 'AWS CodePipeline', def: 'A service that orchestrates CI/CD stages (source, build, test, deploy) end to end.' },
+        { term: 'Canary deployment', def: 'Shifting a small percentage of traffic to a new version first, then completing the rollout after monitoring.' },
+        { term: 'Linear deployment', def: 'Shifting traffic to a new version in equal increments over time while monitoring.' },
+        { term: 'Event-driven retraining', def: 'Using an EventBridge rule (schedule, new data, or drift alarm) to automatically trigger a retraining pipeline.' },
+      ],
+      awsServices: [
+        { name: 'Amazon SageMaker Pipelines', purpose: 'ML-native orchestration of the build-train-evaluate-register-deploy workflow with lineage.' },
+        { name: 'AWS CodePipeline / CodeBuild / CodeDeploy', purpose: 'Orchestrate, build/test, and release stages of a CI/CD pipeline.' },
+        { name: 'Amazon EventBridge', purpose: 'Triggers training/retraining jobs and pipelines on schedules or events such as drift alarms.' },
+        { name: 'Amazon MWAA', purpose: 'Managed Apache Airflow for teams orchestrating workflows with DAGs.' },
+      ],
+      examTips: [
+        'CodePipeline orchestrates; CodeBuild builds/tests; CodeDeploy releases with a strategy.',
+        'ML-native workflow with lineage → SageMaker Pipelines; broad multi-service → Step Functions; existing Airflow → MWAA.',
+        'Canary = small % first then rest; linear = equal increments; blue/green = parallel env with instant switch/rollback.',
+        'Drift alarm → EventBridge → SageMaker Pipeline → Model Registry is the standard automated retraining loop.',
+      ],
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    //  DOMAIN 4 — ML SOLUTION MONITORING, MAINTENANCE & SECURITY (24%)
+    // ═══════════════════════════════════════════════════════════════
+
+    {
+      id: 'd4-s12',
+      number: 12,
+      module: 'Domain 4 · Monitoring, Maintenance & Security',
+      domain: 'd4',
+      weight: '24%',
+      task: 'Task 4.1',
+      title: 'Monitoring Model Inference and Drift',
+      duration: 30,
+      summary: 'A model that was accurate at launch silently degrades as the world changes. This session covers detecting that decay: types of drift, SageMaker Model Monitor, using Clarify for distribution changes, and comparing model versions with A/B testing in production.',
+      objectives: [
+        'Distinguish data drift from concept drift and why both hurt accuracy',
+        'Use SageMaker Model Monitor to watch data quality and model quality in production',
+        'Detect distribution changes with SageMaker Clarify',
+        'Compare model versions safely with A/B testing (production variants)',
+      ],
+      preLearningCheck: {
+        question: 'A fraud model performs worse over months because fraud patterns and customer behavior have shifted away from the training data. What is this phenomenon called?',
+        options: [
+          'Overfitting',
+          'Model/data drift',
+          'Underfitting',
+          'Data leakage',
+        ],
+        correct: 1,
+        note: 'Guess first — the attempt aids retention even when wrong.',
+      },
+      sections: [
+        {
+          heading: 'Why models decay: drift',
+          body: 'A deployed model assumes the future resembles the data it learned from. When that assumption breaks, accuracy drifts down even though the model itself never changed.',
+          table: {
+            headers: ['Type', 'What changes', 'Example'],
+            rows: [
+              ['Data (covariate) drift', 'The distribution of the input features', 'Customer demographics shift; a new device sends different feature values'],
+              ['Concept drift', 'The relationship between inputs and the target', 'What counts as "fraud" evolves as fraudsters adapt'],
+              ['Label/prior drift', 'The distribution of the target class', 'The fraud rate itself rises or falls over time'],
+            ],
+          },
+          callout: { type: 'warning', text: 'Drift is silent — the endpoint keeps returning predictions with no errors. You only catch it by monitoring input distributions and model quality against a baseline.' },
+        },
+        {
+          heading: 'SageMaker Model Monitor',
+          body: 'Model Monitor continuously checks a live endpoint against a baseline captured from the training data and raises alerts when things drift.',
+          bullets: [
+            'Data quality monitoring — detects when incoming feature distributions or statistics deviate from the training baseline.',
+            'Model quality monitoring — compares predictions against actual labels (when they arrive) to track accuracy/precision/recall over time.',
+            'Bias drift and feature-attribution drift — integrates with SageMaker Clarify to flag fairness and explanation changes.',
+            'It captures endpoint data, runs scheduled monitoring jobs, and emits metrics/alarms to CloudWatch.',
+          ],
+          callout: { type: 'tip', text: '"Detect that live data has drifted from the training distribution" → SageMaker Model Monitor (data quality), often paired with Clarify for bias/attribution drift.' },
+        },
+        {
+          heading: 'A/B testing model versions',
+          body: 'Before fully trusting a new model, compare it against the current one on real traffic.',
+          bullets: [
+            'Production variants — a SageMaker endpoint can host multiple model variants and split live traffic between them by weight.',
+            'A/B testing — route, say, 90% to the current model and 10% to the candidate, then compare real-world metrics before promoting.',
+            'Shadow testing (from Session 8) — send a copy of traffic to the candidate with no user impact, when you want comparison without serving its responses.',
+          ],
+        },
+        {
+          heading: 'Monitoring the whole workflow',
+          body: 'Inference monitoring extends beyond the model to the pipeline around it.',
+          bullets: [
+            'Watch for anomalies or errors in data processing and inference (failed jobs, malformed inputs, latency spikes).',
+            'Apply the ML lens design principles: monitor data quality, model quality, and the operational health of the pipeline together.',
+            'Feed drift signals back into the retraining loop (Session 11) so detection leads to action.',
+          ],
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 1,
+          question: 'A recommendation model’s accuracy falls because the meaning of a "trending" product changed seasonally — the input/output relationship itself shifted. Which kind of drift is this?',
+          options: [
+            'Data (covariate) drift',
+            'Concept drift',
+            'Overfitting',
+            'Data leakage',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — when the relationship between inputs and the target changes, that is concept drift, not merely a shift in the input distribution.',
+          elaborativePrompt: 'How would your remediation differ for concept drift versus pure data drift?',
+        },
+        {
+          afterSection: 2,
+          question: 'A team needs to be alerted automatically when the feature distributions hitting a production endpoint diverge from the training baseline. Which service should they configure?',
+          options: [
+            'SageMaker Model Monitor',
+            'AWS CloudFormation',
+            'Amazon ECR',
+            'SageMaker Feature Store',
+          ],
+          correct: 0,
+          explainCorrect: 'Correct — Model Monitor compares live endpoint data against a training baseline and raises alerts on data-quality drift.',
+          elaborativePrompt: 'Once Model Monitor fires a drift alarm, what automated action from Session 11 should follow?',
+        },
+      ],
+      selfExplanationPrompt: 'Explain why a model with zero errors in production can still be failing the business, and how monitoring catches that.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A deployed credit-risk model returns predictions normally, but the data science team suspects its accuracy is slipping as applicant behavior changes. They want automated detection when live input data diverges from the training distribution, plus the ability to track prediction quality over time. What should they implement?',
+        options: [
+          'Increase the endpoint instance size to improve accuracy',
+          'Enable SageMaker Model Monitor for data-quality and model-quality monitoring against a training baseline, with CloudWatch alarms',
+          'Switch the endpoint to batch transform',
+          'Retrain the model once and assume it will stay accurate',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'Model Monitor captures endpoint data, compares it to a training baseline for data-quality drift, and (with labels) tracks model-quality over time, emitting CloudWatch alarms — exactly the automated drift detection the team needs.',
+          perOption: [
+            'A larger instance changes throughput/latency, not accuracy or drift detection.',
+            'Correct — Model Monitor provides baseline-based data- and model-quality monitoring with alarms.',
+            'Batch transform changes how inference runs; it does not detect drift on a live endpoint.',
+            'A one-time retrain ignores that drift is ongoing; without monitoring the team will not know when accuracy slips again.',
+          ],
+          link: 'D4 · Task 4.1 — Monitoring data quality and model performance for drift',
+        },
+      },
+      videos: [
+        {
+          videoId: 'ylZH9RLHGyw',
+          title: 'Everything You Need to Know About AWS ML Engineer Associate (MLA-C01)',
+          channel: 'K21Academy',
+          startSeconds: null,
+          endSeconds: null,
+          relevance: 'MLA-C01 overview companion — covers monitoring and drift detection.',
+        },
+      ],
+      keyTerms: [
+        { term: 'Data drift', def: 'A change in the distribution of input features away from the training data, degrading accuracy.' },
+        { term: 'Concept drift', def: 'A change in the relationship between inputs and the target variable over time.' },
+        { term: 'SageMaker Model Monitor', def: 'A service that compares a live endpoint against a training baseline to detect data- and model-quality drift.' },
+        { term: 'Production variant', def: 'A model version hosted on an endpoint, with live traffic split by weight to enable A/B testing.' },
+        { term: 'A/B testing', def: 'Routing portions of live traffic to different model versions to compare real-world performance before promotion.' },
+      ],
+      awsServices: [
+        { name: 'SageMaker Model Monitor', purpose: 'Detects data- and model-quality drift on live endpoints against a baseline and alerts via CloudWatch.' },
+        { name: 'SageMaker Clarify', purpose: 'Detects bias drift and feature-attribution changes in production data.' },
+        { name: 'Amazon SageMaker', purpose: 'Hosts production variants to enable A/B and shadow testing of model versions.' },
+        { name: 'Amazon CloudWatch', purpose: 'Receives monitoring metrics and fires alarms on drift and anomalies.' },
+      ],
+      examTips: [
+        'Drift is silent — only baseline monitoring catches it; the endpoint keeps returning predictions.',
+        'Detect live-data divergence from training distribution → SageMaker Model Monitor (data quality).',
+        'Compare a candidate model on a slice of live traffic → A/B testing with production variants; no user impact → shadow.',
+        'Data drift = inputs change; concept drift = input→target relationship changes.',
+      ],
+    },
+
+    // ─────────────────────────────────────────────────────────────
+    {
+      id: 'd4-s13',
+      number: 13,
+      module: 'Domain 4 · Monitoring, Maintenance & Security',
+      domain: 'd4',
+      weight: '24%',
+      task: 'Task 4.2',
+      title: 'Infrastructure Observability and Troubleshooting',
+      duration: 30,
+      summary: 'Beyond the model, the infrastructure serving it must be observable. This session covers the CloudWatch family (Logs, Logs Insights, alarms, dashboards), X-Ray tracing, CloudTrail auditing, EventBridge, QuickSight dashboards, and choosing instance types to fix latency and performance problems.',
+      objectives: [
+        'Use CloudWatch Logs, Logs Insights, alarms, and dashboards to troubleshoot ML systems',
+        'Apply X-Ray tracing and CloudWatch Lambda Insights to latency problems',
+        'Use CloudTrail to audit API activity and trigger actions',
+        'Match instance families to performance bottlenecks',
+      ],
+      preLearningCheck: {
+        question: 'An ML engineer needs to run ad-hoc queries across large volumes of endpoint and Lambda log data to find the cause of intermittent errors. Which tool is purpose-built for this?',
+        options: [
+          'Amazon CloudWatch Logs Insights',
+          'AWS CloudTrail',
+          'Amazon S3 Select',
+          'AWS Config',
+        ],
+        correct: 0,
+        note: 'Guess first — retrieval practice strengthens the distinction.',
+      },
+      sections: [
+        {
+          heading: 'The CloudWatch family',
+          body: 'CloudWatch is the backbone of AWS observability. Know the pieces and when each applies.',
+          table: {
+            headers: ['Tool', 'Use for'],
+            rows: [
+              ['CloudWatch Metrics', 'Numeric time-series (invocations, latency, CPU/GPU, errors) with alarms'],
+              ['CloudWatch Logs', 'Centralized log collection from endpoints, Lambda, and training jobs'],
+              ['CloudWatch Logs Insights', 'Ad-hoc query language to search and aggregate large log volumes'],
+              ['CloudWatch Alarms', 'Threshold/anomaly alarms that notify (SNS) or trigger actions'],
+              ['CloudWatch Dashboards', 'At-a-glance operational views of key metrics'],
+            ],
+          },
+          callout: { type: 'tip', text: '"Query/aggregate across large log data to find a cause" → CloudWatch Logs Insights. "Alert when a metric crosses a threshold" → CloudWatch alarm (often → SNS).' },
+        },
+        {
+          heading: 'Tracing and deep latency analysis',
+          body: 'Metrics tell you something is slow; tracing tells you where.',
+          bullets: [
+            'AWS X-Ray — distributed tracing that follows a request across services to pinpoint the slow component in an inference pipeline.',
+            'CloudWatch Lambda Insights — deeper performance metrics for Lambda functions (memory, cold starts, CPU).',
+            'Use traces and segment timing to separate model inference time from data-fetch or network time.',
+          ],
+        },
+        {
+          heading: 'Auditing and event-driven ops',
+          body: 'Security and operations both rely on knowing who did what, and reacting to events.',
+          bullets: [
+            'AWS CloudTrail — records API calls across the account for auditing, compliance, and forensics; create a trail to persist events to S3. CloudTrail can also be used to invoke re-training or other actions in response to logged activity.',
+            'Amazon EventBridge — routes events (including CloudWatch alarms and CloudTrail events) to targets that take action, such as starting a retraining pipeline.',
+            'Amazon QuickSight — build business-facing dashboards over metrics/data; CloudWatch dashboards serve the operational/engineering view.',
+          ],
+        },
+        {
+          heading: 'Choosing instance types for performance',
+          body: 'Many "fix the performance/latency" answers come down to selecting the right instance family.',
+          table: {
+            headers: ['Family', 'Optimized for', 'Use when'],
+            rows: [
+              ['General purpose', 'Balanced CPU/memory', 'Mixed workloads with no single bottleneck'],
+              ['Compute optimized', 'High CPU', 'CPU-bound inference or preprocessing'],
+              ['Memory optimized', 'Large RAM', 'Large models or in-memory datasets'],
+              ['Accelerated / inference optimized', 'GPU / Inferentia', 'Deep-learning training or high-throughput DL inference'],
+            ],
+          },
+          callout: { type: 'note', text: 'Rightsizing tools (SageMaker Inference Recommender, AWS Compute Optimizer) recommend the instance type/size that meets latency and throughput at the lowest cost — covered next session.' },
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 1,
+          question: 'An inference pipeline spans an API Gateway, a Lambda preprocessor, and a SageMaker endpoint, and the team needs to find which component adds the most latency. Which tool is best?',
+          options: [
+            'AWS X-Ray distributed tracing',
+            'AWS CloudTrail',
+            'Amazon S3 access logs',
+            'AWS Config rules',
+          ],
+          correct: 0,
+          explainCorrect: 'Correct — X-Ray traces a request across services and shows per-segment timing, pinpointing the slow component.',
+          elaborativePrompt: 'How does a trace give you information that a single latency metric on the endpoint cannot?',
+        },
+        {
+          afterSection: 2,
+          question: 'A compliance team must review every API action taken against the SageMaker and S3 resources in the account over the last 90 days. Which service provides this audit record?',
+          options: [
+            'AWS CloudTrail',
+            'Amazon CloudWatch Dashboards',
+            'AWS X-Ray',
+            'Amazon QuickSight',
+          ],
+          correct: 0,
+          explainCorrect: 'Correct — CloudTrail records API activity across the account for auditing and compliance; a trail persists the history to S3.',
+          elaborativePrompt: 'What is the difference in purpose between CloudTrail (API audit) and CloudWatch Logs (application/operational logs)?',
+        },
+      ],
+      selfExplanationPrompt: 'Distinguish CloudWatch, X-Ray, and CloudTrail in one sentence each — what unique question does each answer?',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A real-time inference endpoint intermittently returns high latency. The ML engineer must (1) get alerted when p99 latency crosses a threshold, (2) query large volumes of logs to find the pattern, and (3) trace individual slow requests across the API Gateway, Lambda, and the endpoint. Which combination of tools is correct?',
+        options: [
+          'CloudTrail for alerts, S3 Select for logs, and Config for tracing',
+          'A CloudWatch alarm on latency, CloudWatch Logs Insights for log queries, and AWS X-Ray for request tracing',
+          'QuickSight for alerts, EventBridge for logs, and CloudFormation for tracing',
+          'Model Monitor for all three',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'A CloudWatch alarm handles threshold alerting on latency, Logs Insights queries large log volumes for patterns, and X-Ray traces individual requests across services to localize the slow component — each tool maps to one requirement.',
+          perOption: [
+            'CloudTrail audits API calls (not metric alerts), S3 Select queries S3 objects (not operational logs), and Config tracks configuration (not request traces).',
+            'Correct — CloudWatch alarm + Logs Insights + X-Ray map exactly to alerting, log querying, and request tracing.',
+            'QuickSight is BI dashboards, EventBridge routes events, and CloudFormation is IaC — none match these three needs.',
+            'Model Monitor watches model/data drift, not infrastructure latency, log querying, or distributed tracing.',
+          ],
+          link: 'D4 · Task 4.2 — Observability tools for latency and performance',
+        },
+      },
+      videos: [
+        {
+          videoId: 'ylZH9RLHGyw',
+          title: 'Everything You Need to Know About AWS ML Engineer Associate (MLA-C01)',
+          channel: 'K21Academy',
+          startSeconds: null,
+          endSeconds: null,
+          relevance: 'MLA-C01 overview companion — covers observability and troubleshooting.',
+        },
+      ],
+      keyTerms: [
+        { term: 'CloudWatch Logs Insights', def: 'A query language for searching and aggregating large volumes of CloudWatch log data ad hoc.' },
+        { term: 'CloudWatch alarm', def: 'A rule that triggers a notification or action when a metric crosses a threshold or behaves anomalously.' },
+        { term: 'AWS X-Ray', def: 'Distributed tracing that follows a request across services to localize latency and errors.' },
+        { term: 'AWS CloudTrail', def: 'A service that records account API activity for auditing, compliance, and event-driven actions.' },
+        { term: 'Instance family', def: 'A category of EC2/SageMaker instance optimized for compute, memory, general use, or acceleration.' },
+      ],
+      awsServices: [
+        { name: 'Amazon CloudWatch', purpose: 'Metrics, logs, Logs Insights, alarms, and dashboards for ML monitoring and troubleshooting.' },
+        { name: 'AWS X-Ray', purpose: 'Distributed request tracing to pinpoint latency across an inference pipeline.' },
+        { name: 'AWS CloudTrail', purpose: 'Records API activity for auditing and can trigger actions like retraining.' },
+        { name: 'Amazon QuickSight', purpose: 'Business-facing dashboards over metrics and data.' },
+      ],
+      examTips: [
+        'Query/aggregate large logs → CloudWatch Logs Insights; threshold alert → CloudWatch alarm (→ SNS).',
+        'Pinpoint the slow service in a request path → AWS X-Ray tracing.',
+        'Audit who-did-what via API → AWS CloudTrail (trail to S3).',
+        'Operational dashboards → CloudWatch; business dashboards → QuickSight.',
+      ],
+    },
+
+    // ─────────────────────────────────────────────────────────────
+    {
+      id: 'd4-s14',
+      number: 14,
+      module: 'Domain 4 · Monitoring, Maintenance & Security',
+      domain: 'd4',
+      weight: '24%',
+      task: 'Task 4.2',
+      title: 'Cost Optimization for ML Workloads',
+      duration: 30,
+      summary: 'ML compute — especially GPUs — is expensive, so the exam tests cost control directly. This session covers the cost-management tools (Cost Explorer, Budgets, Trusted Advisor), tagging for allocation, rightsizing with Inference Recommender and Compute Optimizer, and purchasing options (Spot, Reserved, Savings Plans).',
+      objectives: [
+        'Use Cost Explorer, AWS Budgets, and Trusted Advisor to analyze and control ML spend',
+        'Apply a tagging strategy for cost allocation and tracking',
+        'Rightsize instances with SageMaker Inference Recommender and AWS Compute Optimizer',
+        'Choose purchasing options: On-Demand, Spot, Reserved, and SageMaker Savings Plans',
+      ],
+      preLearningCheck: {
+        question: 'A team runs a steady, predictable 24/7 inference endpoint and wants the largest discount over the next year in exchange for a usage commitment. Which option fits best?',
+        options: [
+          'On-Demand Instances',
+          'Spot Instances',
+          'SageMaker Savings Plans (or Reserved capacity)',
+          'Provisioned concurrency',
+        ],
+        correct: 2,
+        note: 'Guess first — the attempt helps the pricing models stick.',
+      },
+      sections: [
+        {
+          heading: 'Cost management tools',
+          body: 'AWS provides distinct tools for understanding, forecasting, and capping spend. The exam tests which one fits the verb in the question.',
+          table: {
+            headers: ['Tool', 'Answers', 'Verb'],
+            rows: [
+              ['AWS Cost Explorer', 'Where has my spend gone, and what is the trend?', 'Analyze / visualize'],
+              ['AWS Budgets', 'Alert or act when spend approaches a limit', 'Cap / alert'],
+              ['AWS Trusted Advisor', 'What idle/underused resources can I cut?', 'Recommend savings'],
+              ['Cost allocation tags', 'Attribute cost to a team/project/model', 'Track / allocate'],
+            ],
+          },
+          callout: { type: 'tip', text: '"Analyze/visualize past spend" → Cost Explorer. "Alert/stop at a threshold" → AWS Budgets. "Attribute cost by team/project" → cost allocation tags. "Recommend idle-resource savings" → Trusted Advisor.' },
+        },
+        {
+          heading: 'Tagging for cost allocation',
+          body: 'You cannot manage what you cannot attribute. A consistent tagging strategy (e.g. team, project, environment, model) lets Cost Explorer and Budgets break spend down by dimension and enforce per-team budgets.',
+          bullets: [
+            'Define and enforce mandatory tags (often via AWS Organizations tag policies).',
+            'Activate cost allocation tags so they appear in billing reports.',
+            'Tag training jobs, endpoints, and storage so ML spend is visible per workload.',
+          ],
+        },
+        {
+          heading: 'Rightsizing',
+          body: 'Over-provisioned instances are the most common ML cost leak. AWS recommends the smallest instance that still meets your performance target.',
+          bullets: [
+            'SageMaker Inference Recommender — load-tests a model across instance types and recommends the one meeting latency/throughput at the lowest cost.',
+            'AWS Compute Optimizer — analyzes utilization of EC2/other resources and recommends rightsizing.',
+            'Watch capacity issues: provisioned concurrency, service quotas, and auto scaling all affect both cost and the ability to handle load.',
+          ],
+          callout: { type: 'note', text: '"Find the cheapest instance that still meets the model’s latency SLA" → SageMaker Inference Recommender.' },
+        },
+        {
+          heading: 'Purchasing options',
+          body: 'Matching the pricing model to the workload pattern is the biggest single lever on ML cost.',
+          table: {
+            headers: ['Option', 'Discount', 'Best for'],
+            rows: [
+              ['On-Demand', 'None (baseline)', 'Unpredictable or short-lived workloads'],
+              ['Spot Instances', 'Largest (up to ~90%)', 'Fault-tolerant, interruptible training with checkpointing'],
+              ['Reserved Instances', 'Significant (1–3 yr commit)', 'Steady, predictable instance usage'],
+              ['SageMaker Savings Plans', 'Significant (commit $/hr)', 'Steady SageMaker usage across instance types with flexibility'],
+            ],
+          },
+          callout: { type: 'warning', text: 'Spot can be reclaimed at any time — perfect for checkpointed training, wrong for an always-on production endpoint. Commit-based plans (Reserved/Savings) reward predictable, steady usage.' },
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 0,
+          question: 'A finance team wants to be automatically notified — and optionally stop further spend — when the ML project’s monthly cost reaches 80% of its limit. Which tool fits?',
+          options: [
+            'AWS Cost Explorer',
+            'AWS Budgets',
+            'AWS Trusted Advisor',
+            'Amazon CloudWatch dashboards',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — AWS Budgets sets thresholds that trigger alerts (and budget actions) as spend approaches a limit.',
+          elaborativePrompt: 'Why is Cost Explorer the wrong tool here even though it shows spend?',
+        },
+        {
+          afterSection: 3,
+          question: 'A large model is trained repeatedly in jobs that can checkpoint and safely resume after interruption. Which purchasing option minimizes training cost?',
+          options: [
+            'On-Demand Instances',
+            'Spot Instances with checkpointing',
+            'A 3-year Reserved Instance',
+            'Provisioned concurrency',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — Spot Instances offer the deepest discount and suit interruptible, checkpointed training jobs.',
+          elaborativePrompt: 'Why would a 3-year Reserved Instance be a poor fit for sporadic training jobs?',
+        },
+      ],
+      selfExplanationPrompt: 'Give the one-line decision rule for choosing among On-Demand, Spot, and a commitment plan (Reserved/Savings). What workload property decides it?',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'An ML team must reduce costs. They run (a) nightly training jobs that checkpoint and can tolerate interruption, and (b) a steady 24/7 production endpoint with predictable load. They also need to attribute spend to each project and be alerted before exceeding budget. Which combination is MOST cost-effective?',
+        options: [
+          'Run both on On-Demand, and check Cost Explorer occasionally',
+          'Use Spot for the training jobs, a SageMaker Savings Plan (or Reserved) for the steady endpoint, cost allocation tags for attribution, and AWS Budgets for alerts',
+          'Use Reserved Instances for the training jobs and Spot for the production endpoint',
+          'Use provisioned concurrency for everything and disable monitoring',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'Spot fits interruptible, checkpointed training (deepest discount); a Savings Plan/Reserved fits the steady, predictable endpoint; cost allocation tags attribute spend per project; and Budgets alerts before overspending — each tool matches one requirement.',
+          perOption: [
+            'All-On-Demand forgoes the large discounts available for both interruptible training and steady usage.',
+            'Correct — Spot for training, Savings Plan/Reserved for the steady endpoint, tags for attribution, Budgets for alerts.',
+            'This inverts the fit: Spot can be reclaimed and is wrong for an always-on endpoint, while a 3-year Reserved is wrong for sporadic training.',
+            'Provisioned concurrency does not minimize these costs, and disabling monitoring removes the visibility the team needs.',
+          ],
+          link: 'D4 · Task 4.2 — Cost optimization and purchasing options',
+        },
+      },
+      videos: [
+        {
+          videoId: 'ylZH9RLHGyw',
+          title: 'Everything You Need to Know About AWS ML Engineer Associate (MLA-C01)',
+          channel: 'K21Academy',
+          startSeconds: null,
+          endSeconds: null,
+          relevance: 'MLA-C01 overview companion — covers cost monitoring and optimization.',
+        },
+      ],
+      keyTerms: [
+        { term: 'AWS Cost Explorer', def: 'A tool to analyze and visualize historical AWS spend and trends.' },
+        { term: 'AWS Budgets', def: 'A tool to set spend/usage thresholds that trigger alerts and optional budget actions.' },
+        { term: 'Cost allocation tags', def: 'Tags that attribute AWS cost to a team, project, or workload in billing reports.' },
+        { term: 'SageMaker Inference Recommender', def: 'A service that load-tests a model across instance types to recommend the cheapest that meets the SLA.' },
+        { term: 'SageMaker Savings Plans', def: 'A commitment ($/hour for 1–3 years) that discounts steady SageMaker usage with instance-type flexibility.' },
+      ],
+      awsServices: [
+        { name: 'AWS Cost Explorer', purpose: 'Analyzes and visualizes ML spend over time.' },
+        { name: 'AWS Budgets', purpose: 'Alerts and acts when spend approaches defined limits.' },
+        { name: 'SageMaker Inference Recommender', purpose: 'Recommends the lowest-cost instance meeting a model’s latency/throughput targets.' },
+        { name: 'AWS Compute Optimizer', purpose: 'Recommends rightsizing based on resource utilization.' },
+      ],
+      examTips: [
+        'Analyze past spend → Cost Explorer; alert/cap at threshold → AWS Budgets; attribute spend → cost allocation tags.',
+        'Cheapest instance meeting an SLA → SageMaker Inference Recommender; rightsizing → Compute Optimizer.',
+        'Interruptible/checkpointed training → Spot; steady predictable usage → Reserved or SageMaker Savings Plans.',
+        'Idle/underused resource recommendations → Trusted Advisor.',
+      ],
+    },
+
+    // ─────────────────────────────────────────────────────────────
+    {
+      id: 'd4-s15',
+      number: 15,
+      module: 'Domain 4 · Monitoring, Maintenance & Security',
+      domain: 'd4',
+      weight: '24%',
+      task: 'Task 4.3',
+      title: 'Securing ML Resources',
+      duration: 30,
+      summary: 'The final session locks down the ML system. We cover IAM least-privilege for ML artifacts, SageMaker Role Manager and security features, network isolation with VPCs/subnets/security groups, securing CI/CD pipelines, and auditing for continued compliance.',
+      objectives: [
+        'Apply least-privilege IAM to ML roles, users, and applications',
+        'Use SageMaker Role Manager and SageMaker security/compliance features',
+        'Isolate ML resources with VPCs, subnets, and security groups',
+        'Secure CI/CD pipelines and audit ML systems for compliance',
+      ],
+      preLearningCheck: {
+        question: 'A SageMaker training job needs to read one specific S3 bucket and write model artifacts to another, and nothing more. What is the correct IAM approach?',
+        options: [
+          'Attach AdministratorAccess to the execution role for simplicity',
+          'Grant a least-privilege role scoped to exactly those two buckets and actions',
+          'Use the AWS account root user credentials',
+          'Make both buckets public',
+        ],
+        correct: 1,
+        note: 'Guess first — the retrieval attempt aids retention.',
+      },
+      sections: [
+        {
+          heading: 'Least-privilege IAM for ML',
+          body: 'Security on AWS starts with identity. The principle of least privilege — grant only the permissions a role needs, nothing more — is the most-tested security idea.',
+          bullets: [
+            'IAM roles for compute — a SageMaker execution role grants the training/hosting job temporary, scoped permissions (e.g. read input bucket, write artifact bucket). Never embed long-lived keys.',
+            'Scope policies tightly — limit actions and resources (specific buckets, KMS keys), not Action:* Resource:*.',
+            'SageMaker Role Manager — helps build scoped IAM roles for ML personas (data scientist, MLOps) using predefined permission templates.',
+            'Bucket policies / resource policies — control access to the S3 artifacts and other resources from the resource side.',
+          ],
+          callout: { type: 'tip', text: 'Default security answer: a least-privilege IAM role scoped to the exact resources and actions, using temporary credentials — never admin access, root, or hard-coded keys.' },
+        },
+        {
+          heading: 'SageMaker security features',
+          body: 'SageMaker has built-in controls for protecting data and workloads.',
+          bullets: [
+            'Encryption — encrypt data at rest (S3/EBS/EFS with KMS) and in transit (TLS); encrypt training volumes and inter-node traffic for distributed jobs.',
+            'Network isolation — run training/processing jobs with no internet access (network isolation mode) so containers cannot exfiltrate data.',
+            'VPC mode — launch SageMaker resources inside your VPC to keep traffic private.',
+            'Compliance — SageMaker supports common compliance programs; combine with CloudTrail auditing for evidence.',
+          ],
+        },
+        {
+          heading: 'Network isolation',
+          body: 'Keeping ML traffic off the public internet is a frequent requirement.',
+          bullets: [
+            'VPC, subnets, security groups — place endpoints and jobs in private subnets, with security groups restricting inbound/outbound traffic.',
+            'VPC endpoints (PrivateLink) — reach AWS services (S3, SageMaker API) privately without traversing the internet.',
+            'Combine with KMS encryption and least-privilege IAM for defense in depth.',
+          ],
+          callout: { type: 'note', text: '"Endpoint must not be reachable from the public internet" → deploy in a VPC with private subnets + security groups, and use VPC endpoints for AWS service access.' },
+        },
+        {
+          heading: 'Securing pipelines and auditing',
+          body: 'The CI/CD pipeline and ongoing audit are part of the security surface.',
+          bullets: [
+            'CI/CD security — scope pipeline roles to least privilege, store secrets in AWS Secrets Manager (not in code), and scan artifacts; protect the source repository.',
+            'Auditing & logging — CloudTrail records API activity; CloudWatch Logs captures operational logs; together they provide the audit trail for continued compliance.',
+            'Continuously monitor for security drift and respond to anomalies (failed auth, unexpected API calls).',
+          ],
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 0,
+          question: 'An ML engineer is creating an IAM role for a data scientist who should be able to run SageMaker training and notebooks but not modify billing or IAM. What is the best way to build this scoped role quickly?',
+          options: [
+            'Attach AdministratorAccess and trust the data scientist',
+            'Use SageMaker Role Manager with a persona-based permission template',
+            'Share the root account credentials',
+            'Grant Action:* on Resource:* but only in one Region',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — SageMaker Role Manager builds least-privilege roles from ML persona templates, granting only what that persona needs.',
+          elaborativePrompt: 'Why is "Action:* in one Region" still a violation of least privilege despite the Region limit?',
+        },
+        {
+          afterSection: 2,
+          question: 'A regulated company requires that a SageMaker endpoint never send or receive traffic over the public internet. Which configuration meets this?',
+          options: [
+            'Deploy the endpoint in a VPC with private subnets and security groups, using VPC endpoints for AWS service access',
+            'Make the endpoint public but add a strong password',
+            'Disable CloudTrail to reduce exposure',
+            'Use On-Demand instances instead of Spot',
+          ],
+          correct: 0,
+          explainCorrect: 'Correct — placing the endpoint in a VPC with private subnets/security groups and using VPC endpoints keeps all traffic private.',
+          elaborativePrompt: 'What additional controls (encryption, IAM) would you layer on for defense in depth?',
+        },
+      ],
+      selfExplanationPrompt: 'Explain "least privilege" to a teammate and give one concrete example of tightening an over-broad SageMaker execution role.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A healthcare ML system must: give each training job only the access it needs, keep all inference traffic off the public internet, encrypt data at rest with auditable keys, and retain an audit trail of all API activity. Which combination meets ALL requirements?',
+        options: [
+          'A shared admin role, a public endpoint, default encryption, and no logging',
+          'Least-privilege IAM execution roles, a VPC with private subnets and security groups, KMS customer-managed keys, and CloudTrail',
+          'Root credentials for jobs, a VPC, and S3 public buckets',
+          'AdministratorAccess roles, Spot Instances, and QuickSight dashboards',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'Least-privilege roles scope each job’s access, a VPC with private subnets/security groups keeps inference traffic private, KMS customer-managed keys give auditable encryption at rest, and CloudTrail provides the API audit trail — every requirement is satisfied.',
+          perOption: [
+            'A shared admin role, public endpoint, and no logging violate least privilege, network isolation, and auditability.',
+            'Correct — least-privilege IAM + private VPC + KMS CMK + CloudTrail maps to all four requirements.',
+            'Root credentials and public buckets are major security violations, regardless of the VPC.',
+            'AdministratorAccess breaks least privilege, and Spot/QuickSight do not address isolation, encryption, or auditing.',
+          ],
+          link: 'D4 · Task 4.3 — Securing ML resources with IAM, VPC, KMS, and auditing',
+        },
+      },
+      videos: [
+        {
+          videoId: 'ylZH9RLHGyw',
+          title: 'Everything You Need to Know About AWS ML Engineer Associate (MLA-C01)',
+          channel: 'K21Academy',
+          startSeconds: null,
+          endSeconds: null,
+          relevance: 'MLA-C01 overview companion — covers ML security and the full exam wrap-up.',
+        },
+      ],
+      keyTerms: [
+        { term: 'Least privilege', def: 'Granting an identity only the permissions required for its task, and no more.' },
+        { term: 'SageMaker execution role', def: 'An IAM role that grants a training or hosting job temporary, scoped permissions to AWS resources.' },
+        { term: 'SageMaker Role Manager', def: 'A tool to build least-privilege IAM roles for ML personas from permission templates.' },
+        { term: 'Network isolation', def: 'Running ML resources in a VPC (and optionally with no internet) so traffic stays private.' },
+        { term: 'VPC endpoint', def: 'A private connection (PrivateLink) to AWS services that avoids the public internet.' },
+      ],
+      awsServices: [
+        { name: 'AWS IAM', purpose: 'Defines least-privilege roles and policies controlling access to ML resources.' },
+        { name: 'SageMaker Role Manager', purpose: 'Builds scoped IAM roles for ML personas from templates.' },
+        { name: 'Amazon VPC', purpose: 'Isolates ML resources in private subnets with security groups and VPC endpoints.' },
+        { name: 'AWS CloudTrail', purpose: 'Provides the API audit trail for security and compliance.' },
+      ],
+      examTips: [
+        'Default security answer = least-privilege IAM role, scoped resources/actions, temporary credentials — never admin/root/hard-coded keys.',
+        'Build scoped ML roles fast → SageMaker Role Manager (persona templates).',
+        'No public internet for an endpoint → VPC private subnets + security groups + VPC endpoints.',
+        'Auditable encryption at rest → KMS customer-managed key; API audit trail → CloudTrail.',
       ],
     },
 
