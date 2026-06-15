@@ -236,18 +236,20 @@ export const useAuthStore = create((set, get) => ({
   logout: async () => {
     try {
       set({ loading: true })
-      
+
       const { error } = await supabase.auth.signOut()
-      
-      if (error) throw error
-      
+
+      // AuthSessionMissingError means the session is already gone — treat as success
+      if (error && error.name !== 'AuthSessionMissingError') throw error
+
       set({ user: null, profile: null, loading: false })
       cacheService.clearAll()
-      
+
       return { success: true }
     } catch (error) {
       console.error('Logout error:', error)
-      set({ error: error.message, loading: false })
+      set({ user: null, profile: null, error: error.message, loading: false })
+      cacheService.clearAll()
       return { success: false, error: error.message }
     }
   },
