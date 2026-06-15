@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Ticket, GraduationCap, Video, Flag, Users } from 'lucide-react'
+import { Ticket, GraduationCap, Video, Flag, Users, StickyNote } from 'lucide-react'
 import useAuthStore from '../stores/authStore'
 import { getExamTypes } from '../services/adminService'
 import DashboardHeader from '../components/layout/DashboardHeader'
@@ -9,6 +9,7 @@ import PromoCodeManager from '../components/admin/PromoCodeManager'
 import CommunityVideoReview from '../components/admin/CommunityVideoReview'
 import VideoReportsManager from '../components/admin/VideoReportsManager'
 import UsersManager from '../components/admin/UsersManager'
+import AdminNotesManager from '../components/admin/AdminNotesManager'
 import './AdminPage.css'
 
 const TABS = [
@@ -17,6 +18,7 @@ const TABS = [
   { id: 'exam-types', label: 'Exam Types', Icon: GraduationCap },
   { id: 'community-videos', label: 'Community Videos', Icon: Video },
   { id: 'video-reports', label: 'Video Reports', Icon: Flag },
+  { id: 'notes', label: 'Notes', Icon: StickyNote },
 ]
 
 export default function AdminPage() {
@@ -129,6 +131,10 @@ export default function AdminPage() {
 
           {activeTab === 'video-reports' && (
             <VideoReportsManager />
+          )}
+
+          {activeTab === 'notes' && (
+            <AdminNotesManager />
           )}
         </main>
       </div>

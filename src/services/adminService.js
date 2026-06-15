@@ -89,3 +89,38 @@ export async function resolveReport(id, status, { videoId, videoAction, rejectio
     rejection_reason: rejectionReason,
   })
 }
+
+// ── Admin Notes ───────────────────────────────────────────────────────────────
+
+let _adminPingCache = null
+
+export async function pingAdmin() {
+  if (_adminPingCache !== null) return _adminPingCache
+  try {
+    await callAdminApi({ action: 'pingAdmin' })
+    _adminPingCache = true
+  } catch {
+    _adminPingCache = false
+  }
+  return _adminPingCache
+}
+
+export async function getNotes(pagePath) {
+  return callAdminApi({ action: 'getNotes', page_path: pagePath })
+}
+
+export async function getAllNotes() {
+  return callAdminApi({ action: 'getNotes' })
+}
+
+export async function createNote(fields) {
+  return callAdminApi({ action: 'createNote', ...fields })
+}
+
+export async function updateNote(id, fields) {
+  return callAdminApi({ action: 'updateNote', id, ...fields })
+}
+
+export async function deleteNote(id) {
+  return callAdminApi({ action: 'deleteNote', id })
+}

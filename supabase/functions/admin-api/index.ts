@@ -560,6 +560,61 @@ Deno.serve(async (req) => {
         return jsonResponse({ data: users })
       }
 
+      // ── Admin Notes ───────────────────────────────────────────────────────────
+      case 'getNotes': {
+        const { page_path } = body
+        let query = supabase
+          .from('admin_notes')
+          .select('*')
+          .order('created_at', { ascending: false })
+        if (page_path) query = query.eq('page_path', page_path)
+        const { data, error } = await query
+        if (error) return jsonResponse({ error: error.message }, 500)
+        return jsonResponse({ data })
+      }
+
+      case 'createNote': {
+        const { page_path, page_title, note, type = 'bug', priority = 'medium' } = body
+        if (!page_path || !note) return jsonResponse({ error: 'page_path and note are required.' }, 400)
+        const { data, error } = await supabase
+          .from('admin_notes')
+          .insert({ page_path, page_title: page_title || '', note, type, priority })
+          .select()
+          .single()
+        if (error) return jsonResponse({ error: error.message }, 500)
+        return jsonResponse({ data })
+      }
+
+      case 'updateNote': {
+        const { id, note, type, priority, status } = body
+        if (!id) return jsonResponse({ error: 'id is required.' }, 400)
+        const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
+        if (note !== undefined) updates.note = note
+        if (type !== undefined) updates.type = type
+        if (priority !== undefined) updates.priority = priority
+        if (status !== undefined) updates.status = status
+        const { data, error } = await supabase
+          .from('admin_notes')
+          .update(updates)
+          .eq('id', id)
+          .select()
+          .single()
+        if (error) return jsonResponse({ error: error.message }, 500)
+        return jsonResponse({ data })
+      }
+
+      case 'deleteNote': {
+        const { id } = body
+        if (!id) return jsonResponse({ error: 'id is required.' }, 400)
+        const { error } = await supabase.from('admin_notes').delete().eq('id', id)
+        if (error) return jsonResponse({ error: error.message }, 500)
+        return jsonResponse({ success: true })
+      }
+
+      case 'pingAdmin': {
+        return jsonResponse({ ok: true })
+      }
+
       default:
         return jsonResponse({ error: `Unknown action: ${action}` }, 400)
     }
