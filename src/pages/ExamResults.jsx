@@ -9,7 +9,7 @@ import AnswerReview from '../components/AnswerReview'
 import { isOrderingQuestion, getTypeLabel } from '../utils/questionTypes'
 import { Modal, Button } from '../design-system'
 import CertificateCard from '../components/certificate/CertificateCard'
-import certificateService from '../services/certificateService'
+import certificateService, { buildVerifyPath } from '../services/certificateService'
 import { getProgram } from '../data/programs'
 import { getSessionCourse } from '../utils/sessionCourses'
 
@@ -423,7 +423,7 @@ function ExamResults() {
                   Credential ID {earnedCert.credentialCode}
                 </div>
               </div>
-              <Button variant="primary" onClick={() => navigate(`/verify/${earnedCert.credentialCode}`)}>
+              <Button variant="primary" onClick={() => navigate(buildVerifyPath(earnedCert.programCode, earnedCert.credentialCode))}>
                 View / share credential
               </Button>
             </div>
@@ -628,7 +628,7 @@ function ExamResults() {
             />
             <div className="flex justify-center gap-3 mt-5">
               <Button variant="secondary" onClick={() => setShowCelebrate(false)}>Close</Button>
-              <Button variant="primary" onClick={() => navigate(`/verify/${earnedCert.credentialCode}`)}>
+              <Button variant="primary" onClick={() => navigate(buildVerifyPath(earnedCert.programCode, earnedCert.credentialCode))}>
                 View / share credential
               </Button>
             </div>

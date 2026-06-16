@@ -6,7 +6,7 @@ import usePurchaseStore from '../stores/purchaseStore'
 import DashboardHeader from '../components/layout/DashboardHeader'
 import EnrollmentModal from '../components/enrollment/EnrollmentModal'
 import streakService from '../services/streakService'
-import certificateService from '../services/certificateService'
+import certificateService, { buildVerifyPath } from '../services/certificateService'
 import CertificateCard from '../components/certificate/CertificateCard'
 import { getProgram } from '../data/programs'
 import supabase from '../services/supabase'
@@ -481,7 +481,7 @@ function Dashboard() {
                   issuedAt={c.issuedAt}
                 />
                 <div className="mt-3">
-                  <Button variant="primary" size="sm" onClick={() => navigate(`/verify/${c.credentialCode}`)}>
+                  <Button variant="primary" size="sm" onClick={() => navigate(buildVerifyPath(c.programCode, c.credentialCode))}>
                     View / share credential
                   </Button>
                 </div>

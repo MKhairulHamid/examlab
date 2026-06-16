@@ -8,6 +8,17 @@
 
 import supabase from './supabase'
 
+/**
+ * Canonical public verify path: /verify/<programSlug>/?id=<code>. The program
+ * slug in the path drives the prerendered per-program OG card; the trailing slash
+ * maps straight to the static file on GitHub Pages (avoids a redirect that could
+ * drop the query). See the prerender plugin in vite.config.js.
+ */
+export function buildVerifyPath(programCode, credentialCode) {
+  const slug = String(programCode || '').toLowerCase()
+  return `/verify/${slug}/?id=${encodeURIComponent(credentialCode || '')}`
+}
+
 /** Normalize a row coming back from get_certificate_by_code / certificates table. */
 function normalize(row) {
   if (!row) return null

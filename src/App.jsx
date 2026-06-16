@@ -102,9 +102,11 @@ function App() {
         <Route path="/reset-password" element={<ResetPassword />} />
         {/* Public so logged-out visitors land here; sign-in happens in-page. */}
         <Route path="/redeem" element={<RedeemPromo />} />
-        {/* Public credential verification — must be declared before /:code so the
+        {/* Public credential verification — /verify/<programSlug>?id=<code>. The
+            program slug in the path lets crawlers fetch a program-correct
+            prerendered OG card (see vite.config.js). Declared before /:code so the
             literal "verify" segment isn't swallowed by the program-code route. */}
-        <Route path="/verify/:credentialCode" element={<VerifyCertificate />} />
+        <Route path="/verify/:programSlug" element={<VerifyCertificate />} />
 
         {/* Protected routes */}
         <Route

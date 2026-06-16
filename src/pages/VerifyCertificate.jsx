@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, useSearchParams, Link } from 'react-router-dom'
 import {
   Cloud, ArrowRight, ShieldCheck, AlertCircle, Copy, Check, Share2, BookOpen, FileCheck2,
 } from 'lucide-react'
@@ -77,7 +77,13 @@ function linkedInAddUrl(cert, verifyUrl) {
 }
 
 function VerifyCertificate() {
-  const { credentialCode } = useParams()
+  // URL shape: /verify/<programSlug>?id=<credentialCode>. The program slug in the
+  // path lets crawlers get a program-correct prerendered OG card (5 static files,
+  // one per program) without per-credential prerendering. The actual credential is
+  // identified by the ?id query, which the SPA reads to render the live page.
+  const { programSlug } = useParams()
+  const [searchParams] = useSearchParams()
+  const credentialCode = searchParams.get('id')
   const { user } = useAuthStore()
   const [cert, setCert] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -109,7 +115,7 @@ function VerifyCertificate() {
     return () => { active = false }
   }, [user, cert])
 
-  const program = cert ? getProgram(cert.programCode) : null
+  const program = (cert ? getProgram(cert.programCode) : null) || getProgram(programSlug)
 
   useDocumentMeta({
     title: cert

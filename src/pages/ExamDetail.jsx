@@ -9,7 +9,7 @@ import { Button } from '../design-system'
 import supabase from '../services/supabase'
 import studyProgressService from '../services/studyProgressService'
 import progressService from '../services/progressService'
-import certificateService from '../services/certificateService'
+import certificateService, { buildVerifyPath } from '../services/certificateService'
 import CertificateCard from '../components/certificate/CertificateCard'
 import HowToEarn from '../components/certificate/HowToEarn'
 import { getSessionCourse } from '../utils/sessionCourses'
@@ -428,7 +428,7 @@ function ExamDetail() {
                     <p className="text-gray-600 text-sm mb-4">
                       Your {program.shortName} Proficiency credential is live with a public verification link.
                     </p>
-                    <Button variant="primary" onClick={() => navigate(`/verify/${certificate.credentialCode}`)} className="gap-2">
+                    <Button variant="primary" onClick={() => navigate(buildVerifyPath(certificate.programCode, certificate.credentialCode))} className="gap-2">
                       View / share credential <ArrowRight className="w-4 h-4" />
                     </Button>
                   </div>
