@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SAP-C02 Exam Guide — CloudExamLab Wiki</title>
+  <style>
+    :root {
+      --sidebar-w: 255px;
+      --sidebar-bg: #0f172a;
+      --sidebar-text: #94a3b8;
+      --sidebar-active-text: #38bdf8;
+      --sidebar-active-bg: rgba(56,189,248,0.08);
+      --sidebar-hover: #1e293b;
+      --accent: #4338ca;
+      --accent-light: #eef2ff;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --heading: #0f172a;
+      --code-bg: #1e293b;
+      --code-text: #e2e8f0;
+      --stripe: #f8fafc;
+      --warn-bg: #fef2f2;
+      --warn-border: #ef4444;
+      --tip-bg: #f0fdf4;
+      --tip-border: #22c55e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--text);
+      line-height: 1.65;
+      background: #fff;
+    }
+
+    /* ── Sidebar ── */
+    #sidebar {
+      position: fixed; top: 0; left: 0;
+      width: var(--sidebar-w); height: 100vh;
+      background: var(--sidebar-bg);
+      overflow-y: auto; z-index: 100;
+      display: flex; flex-direction: column;
+    }
+    #sidebar::-webkit-scrollbar { width: 4px; }
+    #sidebar::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+    .sb-header {
+      padding: 20px 16px 14px;
+      border-bottom: 1px solid #1e293b;
+    }
+    .sb-logo { font-size: 13px; font-weight: 700; color: #f1f5f9; letter-spacing: .06em; text-transform: uppercase; }
+    .sb-sub  { font-size: 11px; color: var(--sidebar-text); margin-top: 2px; }
+    .sb-group { padding: 10px 0 2px; }
+    .sb-group-label {
+      font-size: 10px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: #475569;
+      padding: 0 16px; margin-bottom: 3px;
+    }
+    .sb-item {
+      display: block; padding: 6px 16px;
+      font-size: 12.5px; color: var(--sidebar-text);
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: background .12s, color .12s;
+    }
+    .sb-item:hover { background: var(--sidebar-hover); color: #f1f5f9; }
+    .sb-item.active { color: var(--sidebar-active-text); border-left-color: var(--sidebar-active-text); background: var(--sidebar-active-bg); }
+    .sb-item.ext { color: #60a5fa; }
+    .sb-item.ext::after { content: ' ↗'; font-size: 10px; }
+
+    /* ── Main ── */
+    #main {
+      margin-left: var(--sidebar-w);
+      padding: 48px 64px 96px;
+      max-width: calc(var(--sidebar-w) + 880px);
+    }
+
+    /* ── Section ── */
+    .section { padding-top: 52px; border-top: 1px solid var(--border); margin-top: 28px; }
+    .section:first-of-type { border-top: none; margin-top: 0; padding-top: 0; }
+
+    /* ── Typography ── */
+    h1 { font-size: 27px; font-weight: 700; color: var(--heading); margin-bottom: 10px; }
+    h2 { font-size: 19px; font-weight: 700; color: var(--heading); margin-top: 38px; margin-bottom: 14px; }
+    h3 { font-size: 15px; font-weight: 600; color: var(--heading); margin-top: 24px; margin-bottom: 8px; }
+    p  { margin-bottom: 12px; }
+    a  { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ul, ol { padding-left: 22px; margin-bottom: 12px; }
+    li { margin-bottom: 4px; }
+    hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+    .section-meta { font-size: 14px; color: var(--text-muted); margin-bottom: 26px; margin-top: -4px; }
+
+    /* ── Chip label ── */
+    .chip {
+      display: inline-block; padding: 2px 9px; border-radius: 4px;
+      font-size: 10px; font-weight: 700; letter-spacing: .05em;
+      text-transform: uppercase; margin-bottom: 6px;
+    }
+    .chip-platform  { background: #eef2ff; color: #4338ca; }
+    .chip-technical { background: #f0fdf4; color: #15803d; }
+    .chip-reference { background: #fdf4ff; color: #7e22ce; }
+    .chip-exam      { background: #fff7ed; color: #c2410c; }
+
+    /* ── Tables ── */
+    .tw { overflow-x: auto; margin: 16px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    th {
+      background: #f1f5f9; padding: 7px 12px;
+      text-align: left; font-size: 11px; font-weight: 700;
+      color: var(--text-muted); border-bottom: 2px solid var(--border);
+      white-space: nowrap;
+    }
+    td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:nth-child(even) td { background: var(--stripe); }
+
+    /* ── Code ── */
+    code {
+      font-family: 'SF Mono','Fira Code','Cascadia Code',Consolas,monospace;
+      font-size: 12px; background: #f1f5f9; color: #be185d;
+      padding: 2px 5px; border-radius: 3px;
+    }
+
+    /* ── Callouts ── */
+    .callout {
+      padding: 12px 16px; border-radius: 6px;
+      margin: 14px 0; font-size: 13.5px;
+    }
+    .callout-note    { background: var(--accent-light); border-left: 4px solid var(--accent); }
+    .callout-warning { background: var(--warn-bg);      border-left: 4px solid var(--warn-border); }
+    .callout-tip     { background: var(--tip-bg);       border-left: 4px solid var(--tip-border); }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 10px;
+      font-size: 11px; font-weight: 600;
+    }
+    .badge-green  { background: #dcfce7; color: #15803d; }
+    .badge-yellow { background: #fef3c7; color: #b45309; }
+    .badge-gray   { background: #f1f5f9; color: #475569; }
+    .badge-blue   { background: #dbeafe; color: #1d4ed8; }
+    .badge-orange { background: #ffedd5; color: #c2410c; }
+
+    /* ── Numbered steps ── */
+    .steps { counter-reset: step; list-style: none; padding: 0; margin-bottom: 14px; }
+    .steps li {
+      counter-increment: step;
+      padding: 7px 0 7px 36px; position: relative;
+      border-left: 2px solid var(--border); margin-left: 11px;
+    }
+    .steps li::before {
+      content: counter(step);
+      position: absolute; left: -11px; top: 7px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--accent); color: #fff;
+      font-size: 10px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── Page title ── */
+    .page-title { margin-bottom: 36px; }
+    .page-title h1 { font-size: 30px; margin-bottom: 8px; }
+    .page-title p  { font-size: 15px; color: var(--text-muted); margin: 0; }
+
+    /* ── Domain bar ── */
+    .domain-bar { display: flex; gap: 6px; flex-wrap: wrap; margin: 18px 0 8px; }
+    .domain-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 12px; border-radius: 20px;
+      font-size: 12px; font-weight: 600;
+      border: 1px solid var(--border); background: #f8fafc;
+    }
+    .domain-pill .pct {
+      background: var(--accent); color: #fff;
+      border-radius: 10px; padding: 1px 6px;
+      font-size: 10px; font-weight: 700;
+    }
+
+    /* ── Highlight row ── */
+    .hl td { background: #eef2ff !important; font-weight: 600; }
+
+    /* ── Jump-to-top ── */
+    #top-btn {
+      position: fixed; bottom: 28px; right: 28px;
+      background: var(--accent); color: #fff;
+      border: none; border-radius: 50%; width: 38px; height: 38px;
+      font-size: 18px; cursor: pointer; display: none;
+      align-items: center; justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+      transition: opacity .2s;
+    }
+    #top-btn:hover { background: #3730a3; }
+  </style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<nav id="sidebar">
+  <div class="sb-header">
+    <div class="sb-logo">CloudExamLab</div>
+    <div class="sb-sub">Exam Guide Series</div>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">On this page</div>
+    <a class="sb-item active" href="#overview">Overview</a>
+    <a class="sb-item" href="#structure">Exam Structure</a>
+    <a class="sb-item" href="#domains">Content Domains</a>
+    <a class="sb-item" href="#domain1">D1 — Organizational Complexity</a>
+    <a class="sb-item" href="#domain2">D2 — New Solutions</a>
+    <a class="sb-item" href="#domain3">D3 — Continuous Improvement</a>
+    <a class="sb-item" href="#domain4">D4 — Migration &amp; Modernization</a>
+    <a class="sb-item" href="#candidate-prep">Helping Candidates</a>
+    <a class="sb-item" href="#simulation">Simulation Design</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Wiki</div>
+    <a class="sb-item ext" href="index.html">Developer Wiki</a>
+    <a class="sb-item ext" href="new-program-playbook.html">New Program Playbook</a>
+    <a class="sb-item ext" href="exam-authoring-standard.html">Exam &amp; Question Authoring</a>
+    <a class="sb-item ext" href="aws-certification-roadmap.html">AWS Cert Roadmap</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Official</div>
+    <a class="sb-item ext" href="https://docs.aws.amazon.com/aws-certification/latest/solutions-architect-professional-02/solutions-architect-professional-02.html">AWS Exam Guide ↗</a>
+  </div>
+</nav>
+
+<!-- ══ MAIN ══ -->
+<main id="main">
+
+  <!-- OVERVIEW -->
+  <div class="page-title" id="overview">
+    <h1>AWS Certified Solutions Architect – Professional (SAP-C02)</h1>
+    <p>Everything we need to know about this exam — structure, domains, candidate prep strategy, and simulation design.</p>
+  </div>
+
+  <h2>What This Exam Is</h2>
+  <p>The AWS Certified Solutions Architect – Professional (SAP-C02) validates advanced technical skill in designing optimized AWS solutions grounded in the AWS Well-Architected Framework. It is a senior-level exam: it does not test whether you know the services, it tests whether you can make the right architectural call when several options all work, across an entire organization.</p>
+  <ul>
+    <li><strong>Target audience:</strong> Solutions architects with 2+ years of hands-on AWS experience who evaluate application requirements, make architectural recommendations, and guide design across multiple applications and projects within a complex organization.</li>
+    <li><strong>Prerequisite experience:</strong> 2+ years using AWS to design and implement cloud solutions. No certification is required, but the Associate (SAA-C03) covers roughly a third of the assumed knowledge.</li>
+    <li><strong>Why candidates take it:</strong> To move into senior, lead, and principal architect roles, to validate enterprise-scale design judgment, and to complete the architecture track after the Associate.</li>
+  </ul>
+  <div class="callout callout-note"><strong>The professional difference:</strong> SAP-C02 questions are long, scenario-heavy, and frequently have two technically correct answers — the credit goes to the one that best fits the stated constraints (cost, RTO/RPO, operational overhead, blast radius, time-to-migrate). Reading the requirement precisely matters as much as knowing the services.</div>
+
+  <!-- STRUCTURE -->
+  <div class="section" id="structure">
+    <span class="chip chip-exam">Exam Format</span>
+    <h1>Question Format &amp; Scoring</h1>
+    <p class="section-meta">Exact parameters from the official exam guide — use these verbatim in the simulation design.</p>
+
+    <h2>Question Types</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>Multiple choice</td><td>One correct answer from four options (three distractors)</td></tr>
+        <tr><td>Multiple response</td><td>Two or more correct answers from five or more options — all correct responses required for credit</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Scoring Model</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Setting</th><th>Value</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Total questions on exam</td><td>75</td><td>65 scored + 10 unscored pretest (unidentified)</td></tr>
+        <tr><td>Duration</td><td>180 minutes</td><td>Exact match to real exam — long stems demand pacing</td></tr>
+        <tr><td>Passing score</td><td>750 / 1,000</td><td>Display as % equivalent: 75%</td></tr>
+        <tr><td>Scoring</td><td>Compensatory</td><td>No per-domain minimums — total score only</td></tr>
+        <tr><td>Result</td><td>Pass / Fail</td><td>Scaled scoring equalizes difficulty across exam forms</td></tr>
+        <tr><td>Cost</td><td>$300 USD</td><td>Professional-tier pricing</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Out-of-Scope Skills (Do NOT Test)</h2>
+    <p>The official exam guide explicitly excludes these. Any question that touches them is out of scope — cut it.</p>
+    <ul>
+      <li>Frontend development for mobile apps</li>
+      <li>12-factor app methodology</li>
+      <li>In-depth knowledge of operating systems</li>
+    </ul>
+    <div class="callout callout-tip"><strong>Exam tip:</strong> SAP-C02 tests <em>architectural judgment under constraints</em>. If a question reduces to a single fact lookup, it is more Associate-level than Professional. Engineer stems that force a trade-off — two valid services, one best fit for the stated RTO/RPO, cost ceiling, operational overhead, or migration timeline.</div>
+
+    <h2>Emerging Topics (unscored pretest)</h2>
+    <p>The guide notes you may also see unscored questions on emerging topics — currently security and responsible-AI controls: content filtering and compliance for generative AI (Amazon Bedrock Guardrails), access controls for generative and agentic AI applications (AgentCore Identity), and human-oversight/approval workflows (AWS Step Functions). These do not affect the score and are not a focus of our simulations.</p>
+  </div>
+
+  <!-- DOMAIN OVERVIEW -->
+  <div class="section" id="domains">
+    <span class="chip chip-platform">Domains</span>
+    <h1>Domain Breakdown</h1>
+    <p class="section-meta">Four domains, fairly even in weight. D2 (Design for New Solutions) is the largest, but every domain carries 20%+ — there is no domain you can safely skip.</p>
+
+    <div class="domain-bar">
+      <span class="domain-pill">D1 — Organizational Complexity <span class="pct">26%</span></span>
+      <span class="domain-pill">D2 — New Solutions <span class="pct">29%</span></span>
+      <span class="domain-pill">D3 — Continuous Improvement <span class="pct">25%</span></span>
+      <span class="domain-pill">D4 — Migration &amp; Modernization <span class="pct">20%</span></span>
+    </div>
+
+    <div class="tw"><table>
+      <thead><tr><th>Domain</th><th>Weight</th><th>Task statements</th></tr></thead>
+      <tbody>
+        <tr><td>D1 — Design Solutions for Organizational Complexity</td><td>26%</td><td>1.1 Network connectivity · 1.2 Security controls · 1.3 Reliable &amp; resilient architectures · 1.4 Multi-account environment · 1.5 Cost optimization &amp; visibility</td></tr>
+        <tr><td>D2 — Design for New Solutions</td><td>29%</td><td>2.1 Deployment strategy · 2.2 Business continuity · 2.3 Security controls · 2.4 Reliability · 2.5 Performance · 2.6 Cost optimization</td></tr>
+        <tr><td>D3 — Continuous Improvement for Existing Solutions</td><td>25%</td><td>3.1 Operational excellence · 3.2 Security · 3.3 Performance · 3.4 Reliability · 3.5 Cost optimization</td></tr>
+        <tr><td>D4 — Accelerate Workload Migration &amp; Modernization</td><td>20%</td><td>4.1 Select workloads for migration · 4.2 Migration approach · 4.3 New architecture for existing workloads · 4.4 Modernization opportunities</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <!-- DOMAIN 1 -->
+  <div class="section" id="domain1">
+    <span class="chip chip-platform">Domain 1 · 26%</span>
+    <h1>Design Solutions for Organizational Complexity</h1>
+    <p class="section-meta">The enterprise-scale domain. Covers connectivity across many VPCs and on-premises, cross-account security and identity, resilient design, multi-account governance, and cost visibility at scale.</p>
+
+    <h2>Task 1.1 — Architect network connectivity strategies</h2>
+    <p><strong>Knowledge of:</strong> AWS Global Infrastructure; AWS networking concepts (Amazon VPC, AWS Direct Connect, AWS VPN, transitive routing, AWS container services); hybrid DNS (Route 53 Resolver, on-premises DNS integration); network segmentation (subnetting, IP addressing, connectivity among VPCs); network traffic monitoring.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Evaluating connectivity options for multiple VPCs (peering, Transit Gateway, PrivateLink)</li>
+      <li>Evaluating connectivity options for on-premises, co-location, and cloud integration</li>
+      <li>Selecting Regions and Availability Zones based on network and latency requirements</li>
+      <li>Troubleshooting traffic flows using AWS tools (VPC Flow Logs, Reachability Analyzer)</li>
+      <li>Using service endpoints for service integrations</li>
+    </ul>
+
+    <h2>Task 1.2 — Prescribe security controls</h2>
+    <p><strong>Knowledge of:</strong> IAM and IAM Identity Center; route tables, security groups, and network ACLs; encryption keys and certificate management (AWS KMS, ACM); security, identity, and compliance tools (CloudTrail, IAM Access Analyzer, Security Hub, Amazon Inspector).</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Evaluating cross-account access management</li>
+      <li>Integrating with third-party identity providers (SAML, OIDC federation)</li>
+      <li>Deploying encryption strategies for data at rest and in transit</li>
+      <li>Developing a strategy for centralized security event notifications and auditing</li>
+    </ul>
+
+    <h2>Task 1.3 — Design reliable and resilient architectures</h2>
+    <p><strong>Knowledge of:</strong> RTOs and RPOs; disaster recovery strategies (AWS Elastic Disaster Recovery, pilot light, warm standby, multi-site); data backup and restoration.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Designing disaster recovery solutions based on RTO and RPO requirements</li>
+      <li>Implementing architectures that automatically recover from failure</li>
+      <li>Developing the optimal architecture by considering scale-up and scale-out options</li>
+      <li>Designing an effective backup and restoration strategy</li>
+    </ul>
+
+    <h2>Task 1.4 — Design a multi-account AWS environment</h2>
+    <p><strong>Knowledge of:</strong> AWS Organizations and AWS Control Tower; multi-account event notifications; AWS resource sharing across environments (RAM).</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Evaluating the most appropriate account structure for organizational requirements</li>
+      <li>Recommending a strategy for central logging and event notifications</li>
+      <li>Developing a multi-account governance model (SCPs, OUs, guardrails)</li>
+    </ul>
+
+    <h2>Task 1.5 — Determine cost optimization and visibility strategies</h2>
+    <p><strong>Knowledge of:</strong> Cost and usage monitoring tools (Trusted Advisor, Pricing Calculator, Cost Explorer, AWS Budgets); purchasing options (Reserved Instances, Savings Plans, Spot); rightsizing visibility tools (Compute Optimizer, S3 Storage Lens).</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Monitoring cost and usage with AWS tools</li>
+      <li>Developing an effective tagging strategy that maps costs to business units</li>
+      <li>Understanding how purchasing options affect cost and performance</li>
+    </ul>
+  </div>
+
+  <!-- DOMAIN 2 -->
+  <div class="section" id="domain2">
+    <span class="chip chip-technical">Domain 2 · 29%</span>
+    <h1>Design for New Solutions</h1>
+    <p class="section-meta">The largest domain. Greenfield design against demanding requirements — deployment, business continuity, security, reliability, performance, and cost, all balanced against the Well-Architected Framework.</p>
+
+    <h2>Task 2.1 — Design a deployment strategy to meet business requirements</h2>
+    <p><strong>Knowledge of:</strong> Infrastructure as code (CloudFormation); CI/CD; change management; configuration management (AWS Systems Manager).</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Determining an application or upgrade path for new services and features</li>
+      <li>Selecting services for deployment strategies and appropriate rollback mechanisms</li>
+      <li>Adopting managed services to reduce provisioning and patching overhead</li>
+      <li>Making advanced technologies accessible by delegating complex tasks to AWS</li>
+    </ul>
+
+    <h2>Task 2.2 — Design a solution to ensure business continuity</h2>
+    <p><strong>Knowledge of:</strong> Global Infrastructure; networking (Route 53, routing methods); RTOs and RPOs; DR scenarios (backup &amp; restore, pilot light, warm standby, multi-site); DR solutions on AWS.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Configuring DR solutions and data/database replication</li>
+      <li>Performing disaster recovery testing</li>
+      <li>Architecting an automated, cost-effective backup solution across AZs or Regions</li>
+      <li>Designing for application and infrastructure availability during a disruption</li>
+      <li>Using centralized monitoring to proactively recover from failures</li>
+    </ul>
+
+    <h2>Task 2.3 — Determine security controls based on requirements</h2>
+    <p><strong>Knowledge of:</strong> IAM; route tables, security groups, network ACLs; encryption at rest and in transit; service endpoints; credential management; managed security services (Shield, WAF, GuardDuty, Security Hub).</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Specifying IAM users and roles that follow least privilege</li>
+      <li>Specifying inbound/outbound flows with security group and network ACL rules</li>
+      <li>Developing attack-mitigation strategies for large-scale web applications</li>
+      <li>Developing encryption strategies and specifying service endpoints</li>
+      <li>Developing patch-management strategies to remain compliant</li>
+    </ul>
+
+    <h2>Task 2.4 — Design a strategy to meet reliability requirements</h2>
+    <p><strong>Knowledge of:</strong> Global Infrastructure; storage and replication strategies (S3, RDS, ElastiCache); Multi-AZ and multi-Region; auto scaling policies and events; application integration (SNS, SQS, Step Functions); service quotas and limits.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Designing highly available environments based on business requirements</li>
+      <li>Designing for failure and ensuring seamless recoverability</li>
+      <li>Implementing loosely coupled dependencies</li>
+      <li>Operating and maintaining HA architectures (application and database failovers)</li>
+      <li>Implementing DNS routing policies (latency-based, geolocation, simple)</li>
+    </ul>
+
+    <h2>Task 2.5 — Design a solution to meet performance objectives</h2>
+    <p><strong>Knowledge of:</strong> Performance monitoring technologies; storage options; instance families and use cases; purpose-built databases.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Designing large-scale architectures for a variety of access patterns</li>
+      <li>Designing an elastic architecture based on business objectives</li>
+      <li>Applying caching, buffering, and replicas to meet performance objectives</li>
+      <li>Developing a methodology for selecting purpose-built services</li>
+      <li>Designing a rightsizing strategy</li>
+    </ul>
+
+    <h2>Task 2.6 — Determine a cost optimization strategy to meet solution goals</h2>
+    <p><strong>Knowledge of:</strong> Cost and usage monitoring tools (Cost Explorer, Trusted Advisor, Pricing Calculator); pricing models (Reserved Instances, Savings Plans); storage tiering; data transfer costs; managed service offerings.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Identifying opportunities to select and rightsize cost-effective resources</li>
+      <li>Identifying appropriate pricing models</li>
+      <li>Performing data-transfer modeling and selecting services to reduce transfer costs</li>
+      <li>Implementing controls for expenditure and usage awareness</li>
+    </ul>
+  </div>
+
+  <!-- DOMAIN 3 -->
+  <div class="section" id="domain3">
+    <span class="chip chip-reference">Domain 3 · 25%</span>
+    <h1>Continuous Improvement for Existing Solutions</h1>
+    <p class="section-meta">The brownfield domain. You are handed a system that already runs and must improve it — operationally, in security, performance, reliability, and cost — usually without a full rebuild.</p>
+
+    <h2>Task 3.1 — Determine a strategy to improve overall operational excellence</h2>
+    <p><strong>Knowledge of:</strong> Alerting and automatic remediation; DR planning; monitoring and logging (CloudWatch); CI/CD and deployment strategies (blue/green, all-at-once, rolling); configuration management (Systems Manager).</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Determining the most appropriate logging and monitoring strategy</li>
+      <li>Evaluating current deployment processes for improvement</li>
+      <li>Prioritizing opportunities for automation within a solution stack</li>
+      <li>Recommending solutions for configuration-management automation</li>
+      <li>Engineering failure-scenario activities to exercise recovery actions</li>
+    </ul>
+
+    <h2>Task 3.2 — Determine a strategy to improve security</h2>
+    <p><strong>Knowledge of:</strong> Data retention, sensitivity, and regulatory requirements; automated monitoring and remediation (AWS Config rules); secrets management (Systems Manager, Secrets Manager); least privilege; security-specific solutions; patching; backup practices.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Evaluating secure management of secrets and credentials</li>
+      <li>Auditing an environment for least-privilege access</li>
+      <li>Reviewing solutions to ensure security at every layer and full traceability</li>
+      <li>Prioritizing automated responses to detected vulnerabilities</li>
+      <li>Designing and implementing patch, update, and backup processes; employing remediation techniques</li>
+    </ul>
+
+    <h2>Task 3.3 — Determine a strategy to improve performance</h2>
+    <p><strong>Knowledge of:</strong> High-performing architectures (auto scaling, instance fleets, placement groups); global offerings (Global Accelerator, CloudFront, edge computing); monitoring tools (CloudWatch); SLAs and KPIs.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Translating business requirements into measurable metrics</li>
+      <li>Testing potential remediation solutions and making recommendations</li>
+      <li>Proposing adoption of new technologies and managed services</li>
+      <li>Assessing solutions and applying rightsizing based on requirements</li>
+      <li>Identifying and examining performance bottlenecks</li>
+    </ul>
+
+    <h2>Task 3.4 — Determine a strategy to improve reliability</h2>
+    <p><strong>Knowledge of:</strong> Global Infrastructure; data replication methods; scaling methodologies (load balancing, auto scaling); high availability and resiliency; DR methods and tools; service quotas and limits.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Understanding application growth and usage trends</li>
+      <li>Evaluating existing architecture for insufficient reliability</li>
+      <li>Remediating single points of failure</li>
+      <li>Enabling data replication, self-healing, and elastic features</li>
+    </ul>
+
+    <h2>Task 3.5 — Identify opportunities for cost optimizations</h2>
+    <p><strong>Knowledge of:</strong> Cost-conscious choices (Spot, scaling policies, rightsizing); price-model adoption (Reserved Instances, Savings Plans); networking and data-transfer costs; cost management, alerting, and reporting.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Analyzing usage reports to identify under/over-utilized resources</li>
+      <li>Using AWS solutions to identify unused resources</li>
+      <li>Designing billing alarms based on expected usage patterns</li>
+      <li>Investigating Cost and Usage Reports at a granular level</li>
+      <li>Using tagging for cost allocation and reporting</li>
+    </ul>
+  </div>
+
+  <!-- DOMAIN 4 -->
+  <div class="section" id="domain4">
+    <span class="chip chip-exam">Domain 4 · 20%</span>
+    <h1>Accelerate Workload Migration and Modernization</h1>
+    <p class="section-meta">The migration domain. From choosing what to migrate and how (the 7 Rs, TCO, the right transfer tool) to landing it on a better architecture and modernizing toward serverless and purpose-built services.</p>
+
+    <h2>Task 4.1 — Select existing workloads and processes for potential migration</h2>
+    <p><strong>Knowledge of:</strong> Migration assessment and tracking tools (AWS Migration Hub); portfolio assessment; asset planning; prioritization and migration of workloads (wave planning).</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Completing an application migration assessment</li>
+      <li>Evaluating applications against the seven common migration strategies (7 Rs)</li>
+      <li>Evaluating total cost of ownership (TCO)</li>
+    </ul>
+
+    <h2>Task 4.2 — Determine the optimal migration approach for existing workloads</h2>
+    <p><strong>Knowledge of:</strong> Data migration tools (DataSync, Transfer Family, Snow Family, S3 Transfer Acceleration); application migration tools (Application Discovery Service, Application Migration Service); networking and DNS (Direct Connect, Site-to-Site VPN, Route 53); identity (IAM Identity Center, Directory Service); database migration (DMS, SCT); governance (Control Tower, Organizations).</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Selecting the appropriate database transfer mechanism</li>
+      <li>Selecting the appropriate application transfer mechanism</li>
+      <li>Selecting the appropriate data transfer service and migration strategy</li>
+      <li>Applying appropriate security methods to migration tools</li>
+      <li>Selecting the appropriate governance model</li>
+    </ul>
+
+    <h2>Task 4.3 — Determine a new architecture for existing workloads</h2>
+    <p><strong>Knowledge of:</strong> Compute (EC2, Elastic Beanstalk); containers (ECS, EKS, Fargate, ECR); storage (EBS, EFS, FSx, S3, Storage Gateway Volume Gateway); databases (DynamoDB, OpenSearch Service, RDS, self-managed on EC2).</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Selecting the appropriate compute platform</li>
+      <li>Selecting the appropriate container hosting platform</li>
+      <li>Selecting the appropriate storage service</li>
+      <li>Selecting the appropriate database platform</li>
+    </ul>
+
+    <h2>Task 4.4 — Determine opportunities for modernization and enhancements</h2>
+    <p><strong>Knowledge of:</strong> Serverless compute (AWS Lambda); containers (ECS, EKS, Fargate); storage (S3, EFS); purpose-built databases (DynamoDB, Aurora Serverless, ElastiCache); integration services (SQS, SNS, EventBridge, Step Functions).</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Identifying opportunities to decouple application components</li>
+      <li>Identifying opportunities for serverless solutions</li>
+      <li>Selecting the appropriate service for containers</li>
+      <li>Identifying opportunities for purpose-built databases</li>
+      <li>Selecting the appropriate application integration service</li>
+    </ul>
+  </div>
+
+  <!-- CANDIDATE PREP -->
+  <div class="section" id="candidate-prep">
+    <span class="chip chip-platform">Candidate Prep</span>
+    <h1>How We Help SAP-C02 Candidates</h1>
+    <p class="section-meta">Who takes this exam, where they struggle, and how to build a study path that gets them to 750+.</p>
+
+    <h2>Who Takes This Exam</h2>
+    <ul>
+      <li><strong>Experienced architects</strong> — already designing on AWS, now formalizing senior-level breadth and trade-off judgment.</li>
+      <li><strong>SAA holders leveling up</strong> — Associate-certified engineers moving from "can design" to "can own the architecture."</li>
+      <li><strong>Migration and platform leads</strong> — responsible for moving and modernizing real workloads at organizational scale.</li>
+    </ul>
+
+    <h2>What Candidates Struggle With</h2>
+    <ul>
+      <li><strong>Long, multi-constraint stems</strong> — Professional questions bury the deciding constraint (RTO/RPO, cost ceiling, operational overhead, blast radius) in a wall of text. Missing it picks the wrong "correct" answer.</li>
+      <li><strong>Two-valid-answers problem</strong> — both options work; only one best fits the requirement. Candidates who pattern-match on keywords instead of constraints get these wrong.</li>
+      <li><strong>Connectivity at scale</strong> — VPC peering vs. Transit Gateway vs. PrivateLink vs. Direct Connect vs. VPN, plus hybrid DNS. Easy to confuse transitive routing and shared-services patterns.</li>
+      <li><strong>Multi-account governance</strong> — Organizations, SCPs, Control Tower, and RAM interact in ways that trip up single-account thinkers.</li>
+      <li><strong>DR strategy selection</strong> — mapping backup &amp; restore / pilot light / warm standby / multi-site to a specific RTO/RPO and budget.</li>
+      <li><strong>The 7 Rs and migration tooling</strong> — rehost vs. replatform vs. refactor, and which transfer tool (DataSync, DMS, Snow, Transfer Family) fits the data size, downtime window, and connectivity.</li>
+      <li><strong>Pacing</strong> — 75 questions in 180 minutes with long stems is ~2.4 min/question. Time management is itself a skill the exam tests.</li>
+    </ul>
+
+    <h2>Recommended Study Path</h2>
+    <ol class="steps">
+      <li><strong>Domain 2 — New Solutions first.</strong> Largest weight (29%) and the broadest application of the Well-Architected pillars. Build the trade-off muscle here.</li>
+      <li><strong>Domain 1 — Organizational Complexity.</strong> Connectivity, cross-account security, multi-account governance — the topics most unique to the Professional level and the biggest jump from the Associate.</li>
+      <li><strong>Domain 3 — Continuous Improvement.</strong> Reuses D1/D2 knowledge but reframed as "improve what exists." Strong overlap, efficient to study after the first two.</li>
+      <li><strong>Domain 4 — Migration &amp; Modernization.</strong> Smallest (20%) and the most tool-and-process oriented (7 Rs, TCO, transfer tools). A well-bounded final sweep.</li>
+    </ol>
+
+    <h2>AI Explanation Quality for This Exam</h2>
+    <p>SAP-C02 explanations must do more than mark right/wrong — they must show <em>why this option beats the other valid one</em>. Patterns to cover:</p>
+    <ul>
+      <li>For two-valid-answer questions: name the deciding constraint and show how the chosen option satisfies it while the runner-up violates it (e.g. "warm standby meets the 5-minute RTO that pilot light cannot").</li>
+      <li>For connectivity questions: explain why a given pattern scales (Transit Gateway as a hub vs. the O(n²) mesh of peering) and when the simpler option still wins.</li>
+      <li>For migration questions: tie the tool to the data size, downtime tolerance, and link bandwidth (Snowball for petabytes over weeks vs. DataSync over an existing link).</li>
+      <li>For cost questions: quantify the trade-off (Savings Plans for steady baseline, Spot for fault-tolerant burst) rather than just naming the cheaper option.</li>
+    </ul>
+  </div>
+
+  <!-- SIMULATION DESIGN -->
+  <div class="section" id="simulation">
+    <span class="chip chip-exam">Simulation Design</span>
+    <h1>How to Formulate the Exam Simulation</h1>
+    <p class="section-meta">Parameters for building practice sets that match the real SAP-C02 exam. See the <a href="exam-authoring-standard.html">Exam &amp; Question Authoring Standard</a> for question-writing rules.</p>
+
+    <h2>Question Set Structure</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Setting</th><th>Value</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Total questions per simulation</td><td>65</td><td>Mirrors the scored question count on the real exam</td></tr>
+        <tr><td>Duration</td><td>180 minutes</td><td>Exact match to real exam</td></tr>
+        <tr><td>Passing threshold</td><td>750 / 1,000</td><td>Display as % equivalent: 75%</td></tr>
+        <tr><td>Scoring</td><td>Compensatory</td><td>No domain minimums — total score only</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Domain Distribution per Set</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Domain</th><th>Weight</th><th>Qs in 65-Q set</th></tr></thead>
+      <tbody>
+        <tr><td>D1 — Organizational Complexity</td><td>26%</td><td>17</td></tr>
+        <tr><td>D2 — New Solutions</td><td>29%</td><td>19</td></tr>
+        <tr><td>D3 — Continuous Improvement</td><td>25%</td><td>16</td></tr>
+        <tr><td>D4 — Migration &amp; Modernization</td><td>20%</td><td>13</td></tr>
+        <tr class="hl"><td><strong>Total</strong></td><td><strong>100%</strong></td><td><strong>65</strong></td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Question Type Mix</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Type</th><th>Suggested % of set</th><th>Implementation priority</th></tr></thead>
+      <tbody>
+        <tr><td>Multiple choice (1-of-4)</td><td>~75%</td><td><span class="badge badge-green">High — launch with this</span></td></tr>
+        <tr><td>Multiple response (select N of 5–6)</td><td>~25%</td><td><span class="badge badge-green">High — common on exam</span></td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout callout-note">SAP-C02 uses only multiple choice and multiple response. Our three simulations carry a Foundational set (100% MC), then Architectural and Comparative sets (~25% multiple response each).</div>
+
+    <h2>Three-Simulation Design</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Set</th><th>Angle</th><th>Style</th></tr></thead>
+      <tbody>
+        <tr><td>Sim 1 — Foundational</td><td>Know the services and concepts</td><td>Identify the right service/pattern for a clearly stated need; 100% MC</td></tr>
+        <tr><td>Sim 2 — Architectural</td><td>Apply knowledge to a business problem</td><td>Multi-constraint scenarios, end-to-end designs; ~25% MR</td></tr>
+        <tr><td>Sim 3 — Comparative</td><td>Distinguish similar options and trade-offs</td><td>"MOST/LEAST appropriate" where two options both work; ~25% MR</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Question Writing Rules (SAP-C02 specific)</h2>
+    <ul>
+      <li><strong>Constraint-driven stems</strong> — every scenario states the deciding constraint (RTO/RPO, cost ceiling, operational overhead, compliance, migration window). The crux is matching the option to the constraint, not recalling a fact.</li>
+      <li><strong>Two-valid-answers by design</strong> — for comparative questions, make at least one distractor a genuinely workable option that simply fits worse. Explain the deciding factor.</li>
+      <li><strong>Cross-domain scenarios</strong> — Professional questions blend connectivity + security + cost, or migration + reliability. Reflect that in Sim 2.</li>
+      <li><strong>Enterprise framing</strong> — multi-account, hybrid, large-scale. Avoid single-account toy problems.</li>
+      <li><strong>No out-of-scope content</strong> — no mobile frontend, no 12-factor methodology, no deep OS internals.</li>
+    </ul>
+
+    <h2>Distractor Quality Guidelines</h2>
+    <ul>
+      <li>Use real architectural confusions: Transit Gateway vs. VPC peering vs. PrivateLink; pilot light vs. warm standby; Savings Plans vs. Reserved Instances vs. Spot; DataSync vs. DMS vs. Snow.</li>
+      <li>For comparative questions, make one distractor the option that is correct under a <em>different</em> constraint, so the candidate must read the stated requirement carefully.</li>
+      <li>For migration questions, make a distractor a tool that technically works but ignores the stated downtime, data-size, or bandwidth constraint.</li>
+    </ul>
+
+    <h2>AI Explanation Template</h2>
+    <p>Each question requires an explanation covering:</p>
+    <ul>
+      <li>Why the correct answer is right — the conceptual reason tied to the stated constraint</li>
+      <li>Why each distractor is wrong — one sentence per option, naming the specific reason (including why a workable-but-worse option loses)</li>
+      <li>Concept link — which domain/task statement this tests (e.g. "D1 · Task 1.3 — DR strategy selection by RTO/RPO")</li>
+      <li>Service context — if a service appears, one line on what it does and what distinguishes it from similar services</li>
+    </ul>
+  </div>
+
+</main>
+
+<button id="top-btn" title="Back to top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<script>
+  const topBtn = document.getElementById('top-btn');
+  window.addEventListener('scroll', () => {
+    topBtn.style.display = window.scrollY > 400 ? 'flex' : 'none';
+  });
+</script>
+</body>
+</html>

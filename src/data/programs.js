@@ -6,7 +6,7 @@
 // the Supabase exam_types/question_sets rows. Exam facts below are the official
 // AWS numbers at time of writing.
 
-import { Cloud, BrainCircuit, Layers, Code2, Cpu } from 'lucide-react'
+import { Cloud, BrainCircuit, Layers, Code2, Cpu, Network } from 'lucide-react'
 
 export const PROGRAMS = [
   {
@@ -189,6 +189,42 @@ export const PROGRAMS = [
     facts: { questions: '65', time: '130 min', passing: '720 / 1000', cost: '$150' },
     evergreenValue:
       'Even if you never take the exam, you learn how real ML systems are built and operated — the production skills that separate a working prototype from something a business can depend on.',
+  },
+  {
+    code: 'SAP-C02',
+    slug: 'sap-c02',
+    name: 'AWS Certified Solutions Architect – Professional',
+    shortName: 'Solutions Architect Pro',
+    level: 'Professional',
+    Icon: Network,
+    color: '#4338CA',
+    tagline: 'Design and evolve complex, multi-account AWS architectures at enterprise scale.',
+    heroLead: 'Architect the enterprise —',
+    heroAccent: 'across every account and Region.',
+    blurb:
+      'SAP-C02 is AWS’s flagship architecture certification. It teaches you to design for organizational complexity, build new solutions against demanding requirements, continuously improve systems already in production, and lead large-scale migration and modernization — the work of a senior architect.',
+    whyTopic:
+      'There is a real gap between knowing the AWS services and being trusted to design across an entire organization — dozens of accounts, hybrid networks, competing requirements, and systems that already exist and cannot simply be rebuilt. This program trains that senior judgment: how to weigh trade-offs no single right answer covers, design for failure and scale, and lead a migration without breaking the business. It is the difference between building a system and owning the architecture.',
+    learnOutcomes: [
+      'Designing for organizational complexity: multi-account governance, hybrid connectivity, and centralized security',
+      'Architecting new solutions that meet exacting reliability, performance, security, and cost requirements at once',
+      'Continuously improving production systems — operational excellence, resilience, and cost without a rebuild',
+      'Leading workload migration and modernization with the 7 Rs, the right tools, and a sound TCO case',
+      'Reasoning through the genuine trade-offs of professional-level scenarios where several options all work',
+    ],
+    careerBenefit:
+      'Solutions Architect Professional is one of the highest-value credentials in cloud and a recognized signal for senior, lead, and principal architect roles. It is the natural next step after the Associate and the cert that moves you from "can design on AWS" to "can own the architecture for an enterprise."',
+    roles: ['Senior & lead architects', 'Principal engineers', 'Cloud architects', 'Migration & platform leads'],
+    sessions: 17,
+    domains: [
+      { label: 'Design Solutions for Organizational Complexity', weight: '26%' },
+      { label: 'Design for New Solutions', weight: '29%' },
+      { label: 'Continuous Improvement for Existing Solutions', weight: '25%' },
+      { label: 'Accelerate Workload Migration & Modernization', weight: '20%' },
+    ],
+    facts: { questions: '65', time: '180 min', passing: '750 / 1000', cost: '$300' },
+    evergreenValue:
+      'Even if you never sit the exam, you develop the way a senior architect thinks — designing across whole organizations, weighing real trade-offs, and improving systems that are already running. That judgment is the most durable, highest-leverage skill in cloud.',
   },
 ]
 

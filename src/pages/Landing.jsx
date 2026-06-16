@@ -77,11 +77,11 @@ const FAQ_ITEMS = [
   },
   {
     question: 'Which certifications do you cover?',
-    answer: "We cover the AWS foundational and associate certifications: Cloud Practitioner (CLF-C02), AI Practitioner (AIF-C01), Solutions Architect Associate (SAA-C03), Developer Associate (DVA-C02), and Machine Learning Engineer Associate (MLA-C01). One subscription gives you access to all of them.",
+    answer: "We cover the AWS foundational, associate, and professional certifications: Cloud Practitioner (CLF-C02), AI Practitioner (AIF-C01), Solutions Architect Associate (SAA-C03), Developer Associate (DVA-C02), Machine Learning Engineer Associate (MLA-C01), and Solutions Architect Professional (SAP-C02). One subscription gives you access to all of them.",
   },
   {
     question: 'How long does it take to prepare?',
-    answer: "Most people are ready for a foundational exam in 2–4 weeks and an associate exam in 4–8 weeks, studying 30–60 minutes a day. Each program is broken into ~30-minute sessions, so it fits around real life — and you move at your own pace.",
+    answer: "Most people are ready for a foundational exam in 2–4 weeks, an associate exam in 4–8 weeks, and the professional exam in 8–12 weeks, studying 30–60 minutes a day. Each program is broken into ~30-minute sessions, so it fits around real life — and you move at your own pace.",
   },
   {
     question: 'Do I need a coding or technical background?',
@@ -93,7 +93,7 @@ const FAQ_ITEMS = [
   },
 ]
 
-const LEVEL_ORDER = ['Foundational', 'Associate']
+const LEVEL_ORDER = ['Foundational', 'Associate', 'Professional']
 
 function Reveal({ children, className = '', delay = 0, as: Tag = 'div', style, ...props }) {
   const ref = useRef(null)
@@ -277,7 +277,7 @@ function Landing() {
           <Reveal className="text-center mb-12">
             <p className="text-[0.8125rem] font-bold text-[#00A884] uppercase tracking-[0.08em] mb-3">PROGRAMS</p>
             <h2 className="text-[clamp(1.75rem,4vw,2.5rem)] font-extrabold text-[#0A2540] tracking-tight mb-3">
-              Five complete AWS programs
+              {PROGRAMS.length} complete AWS programs
             </h2>
             <p className="text-gray-500 text-base max-w-[42rem] mx-auto">
               From your first day in the cloud to designing production systems. Each program is a full curriculum — pick where you are and go deep. One subscription unlocks them all.
@@ -501,7 +501,7 @@ function Landing() {
               <div className="text-[2.75rem] font-extrabold text-[#00D4AA] mb-1.5 tracking-tight">$19.99</div>
               <p className="text-white/65 text-sm mb-6">Per month · Billed monthly</p>
               <ul className="list-none p-0 mb-6 text-left space-y-2 flex-1">
-                {['All 5 programs', 'Every study session & practice exam', 'Teach to Learn', 'Cancel anytime'].map((item, i) => (
+                {[`All ${PROGRAMS.length} programs`, 'Every study session & practice exam', 'Teach to Learn', 'Cancel anytime'].map((item, i) => (
                   <li key={i} className="text-white/85 flex items-center gap-2 text-[0.9rem]">
                     <Check size={16} className="text-[#00D4AA] shrink-0" strokeWidth={3} /> {item}
                   </li>
