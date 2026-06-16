@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Ticket, GraduationCap, Video, Flag, Users, StickyNote } from 'lucide-react'
+import { Ticket, GraduationCap, Video, Flag, Users, StickyNote, Palette, Image } from 'lucide-react'
 import useAuthStore from '../stores/authStore'
 import { getExamTypes } from '../services/adminService'
 import DashboardHeader from '../components/layout/DashboardHeader'
@@ -10,6 +10,8 @@ import CommunityVideoReview from '../components/admin/CommunityVideoReview'
 import VideoReportsManager from '../components/admin/VideoReportsManager'
 import UsersManager from '../components/admin/UsersManager'
 import AdminNotesManager from '../components/admin/AdminNotesManager'
+import BrandGuidelinesManager from '../components/admin/BrandGuidelinesManager'
+import BrandAssetsManager from '../components/admin/BrandAssetsManager'
 import './AdminPage.css'
 
 const TABS = [
@@ -19,6 +21,8 @@ const TABS = [
   { id: 'community-videos', label: 'Community Videos', Icon: Video },
   { id: 'video-reports', label: 'Video Reports', Icon: Flag },
   { id: 'notes', label: 'Notes', Icon: StickyNote },
+  { id: 'brand-guidelines', label: 'Brand Guidelines', Icon: Palette },
+  { id: 'brand-assets', label: 'Brand Assets', Icon: Image },
 ]
 
 export default function AdminPage() {
@@ -91,7 +95,7 @@ export default function AdminPage() {
       <div className="admin-shell">
         <header className="admin-pagehead">
           <h1 className="admin-title">Admin</h1>
-          <p className="admin-subtitle">Manage promo codes and exam types</p>
+          <p className="admin-subtitle">Manage users, content, and brand assets</p>
         </header>
 
         <nav className="admin-tabs" role="tablist">
@@ -135,6 +139,14 @@ export default function AdminPage() {
 
           {activeTab === 'notes' && (
             <AdminNotesManager />
+          )}
+
+          {activeTab === 'brand-guidelines' && (
+            <BrandGuidelinesManager />
+          )}
+
+          {activeTab === 'brand-assets' && (
+            <BrandAssetsManager />
           )}
         </main>
       </div>
