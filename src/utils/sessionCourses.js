@@ -8,6 +8,7 @@ import clfC02Course from '../data/clfC02Course'
 import saaC03Course from '../data/saaC03Course'
 import dvaC02Course from '../data/dvaC02Course'
 import mlaC01Course from '../data/mlaC01Course'
+import sapC02Course from '../data/sapC02Course'
 
 const SESSION_COURSES = [
   { match: ['aif', 'ai-practitioner'], course: aifC01Course },
@@ -15,6 +16,7 @@ const SESSION_COURSES = [
   { match: ['saa', 'solutions-architect-associate'], course: saaC03Course },
   { match: ['dva', 'developer-associate'], course: dvaC02Course },
   { match: ['mla', 'machine-learning-engineer-associate'], course: mlaC01Course },
+  { match: ['sap', 'solutions-architect-professional'], course: sapC02Course },
 ]
 
 export function getSessionCourse(slug) {

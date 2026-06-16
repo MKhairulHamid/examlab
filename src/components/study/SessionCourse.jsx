@@ -1131,7 +1131,57 @@ function EndpointSelectorWidget() {
   )
 }
 
+// ── SAP D1 (Session 1): VPC connectivity primitive selector ───────────────────
+function ConnectivitySelectorWidget() {
+  return (
+    <ScenarioSorter
+      title="Pick the Connectivity Primitive"
+      intro="Peering, Transit Gateway, PrivateLink, and hybrid links each solve a different connectivity problem at scale. Match each requirement to the right primitive — the card confirms instantly."
+      cats={[
+        { id: 'peer', label: 'VPC Peering', color: '#2563eb', desc: 'One-to-one, non-transitive; a few VPCs' },
+        { id: 'tgw', label: 'Transit Gateway', color: '#7c3aed', desc: 'Hub for many VPCs/accounts + hybrid; transitive' },
+        { id: 'pl', label: 'PrivateLink', color: '#0891b2', desc: 'Share ONE service; no broad network access' },
+        { id: 'hybrid', label: 'Direct Connect / VPN', color: '#d97706', desc: 'On-premises to AWS connectivity' },
+      ]}
+      items={[
+        { t: 'Two VPCs need full IP connectivity and you want the simplest, lowest-cost option', a: 'peer', why: 'A single one-to-one link between two VPCs is exactly VPC peering — cheapest when transitive routing is not needed.' },
+        { t: 'Dozens of VPCs across many accounts plus a VPN must all interconnect with transitive routing through one hub', a: 'tgw', why: 'A central hub providing transitive routing across many VPCs and hybrid links is Transit Gateway.' },
+        { t: 'Expose a single internal API to many consumer VPCs without granting access to the rest of the VPC', a: 'pl', why: 'Sharing one service with no broader network connectivity is PrivateLink (interface endpoint).' },
+        { t: 'Connect an on-premises data center to AWS over a dedicated, private, consistent-bandwidth link', a: 'hybrid', why: 'A dedicated private link to on-premises is Direct Connect (a VPN is the internet-based alternative).' },
+        { t: 'A shared-services hub must route between all spoke VPCs and the on-premises connection centrally', a: 'tgw', why: 'Centralized routing among many spokes and hybrid links is the Transit Gateway hub pattern.' },
+        { t: 'Provide encrypted on-premises connectivity within minutes over the public internet', a: 'hybrid', why: 'Quick encrypted connectivity over the internet is a Site-to-Site VPN (the hybrid category).' },
+      ]}
+    />
+  )
+}
+
+// ── SAP D2 (Session 9) / D4 (Session 17): application integration selector ─────
+function IntegrationSelectorWidget() {
+  return (
+    <ScenarioSorter
+      title="Choose the Integration Service"
+      intro="Decoupling keeps a failure local — but SQS, SNS, EventBridge, and Step Functions each fit a different interaction. Match each need to the right primitive."
+      cats={[
+        { id: 'sqs', label: 'Amazon SQS', color: '#2563eb', desc: 'Buffer / durable queue; pull; one consumer group' },
+        { id: 'sns', label: 'Amazon SNS', color: '#7c3aed', desc: 'Pub/sub fan-out; push to many subscribers' },
+        { id: 'eb', label: 'EventBridge', color: '#0891b2', desc: 'Event bus; route by content rules; SaaS/AWS events' },
+        { id: 'sfn', label: 'Step Functions', color: '#d97706', desc: 'Stateful multi-step workflow orchestration' },
+      ]}
+      items={[
+        { t: 'Buffer unpredictable bursts of work so a slower consumer fleet never loses messages', a: 'sqs', why: 'Durable buffering for one consumer group at its own pace is Amazon SQS.' },
+        { t: 'One order event must notify inventory, billing, and email services in parallel', a: 'sns', why: 'Fan-out of a single event to many independent subscribers is Amazon SNS.' },
+        { t: 'Route events to different targets based on their content, integrating a SaaS provider', a: 'eb', why: 'Content-based routing and SaaS/AWS event integration is Amazon EventBridge.' },
+        { t: 'Coordinate a multi-step approval workflow with branching, retries, and saved state', a: 'sfn', why: 'Stateful orchestration with branching and retries is AWS Step Functions.' },
+        { t: 'Smooth a write spike so downstream processing is not overwhelmed, with a dead-letter queue for failures', a: 'sqs', why: 'Buffering with a DLQ for repeated failures is the SQS pattern.' },
+        { t: 'Trigger many independent microservices the instant a single domain event is published', a: 'sns', why: 'Immediate parallel notification of many subscribers from one publish is SNS fan-out.' },
+      ]}
+    />
+  )
+}
+
 const INTERACTIVE_WIDGETS = {
+  'connectivity-selector': ConnectivitySelectorWidget,
+  'integration-selector': IntegrationSelectorWidget,
   'precision-recall': PrecisionRecallWidget,
   'endpoint-selector': EndpointSelectorWidget,
   'inference-parameters': InferenceParametersWidget,
