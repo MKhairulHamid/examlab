@@ -112,7 +112,7 @@ function ExamDetail() {
         .from('exam_attempts')
         .select(`
           *,
-          question_sets (
+          question_sets!inner (
             name,
             exam_type_id
           )
@@ -426,7 +426,7 @@ function ExamDetail() {
                   <div className="rounded-xl border border-[#00D4AA]/30 bg-[#00D4AA]/[0.06] p-5 sm:p-6">
                     <h3 className="text-[#0A2540] font-bold text-lg mb-1.5">Credential earned 🎉</h3>
                     <p className="text-gray-600 text-sm mb-4">
-                      Your {program.shortName} Proficiency credential is live with a public verification link.
+                      Your {program.shortName} Readiness credential is live with a public verification link.
                     </p>
                     <Button variant="primary" onClick={() => navigate(buildVerifyPath(certificate.programCode, certificate.credentialCode))} className="gap-2">
                       View / share credential <ArrowRight className="w-4 h-4" />

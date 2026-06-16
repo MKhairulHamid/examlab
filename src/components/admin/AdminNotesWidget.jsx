@@ -30,7 +30,7 @@ function pageTitle(path) {
 }
 
 export default function AdminNotesWidget() {
-  const { user } = useAuthStore()
+  const { user, profile } = useAuthStore()
   const location = useLocation()
 
   const [isAdmin, setIsAdmin] = useState(false)
@@ -46,11 +46,16 @@ export default function AdminNotesWidget() {
   const drawerRef = useRef(null)
   const path = location.pathname
 
-  // Check admin once per session
+  // Check admin once per session — only ping the admin API for users
+  // whose profile is flagged as admin, so regular users never hit the
+  // endpoint (which would 403 and log a console error).
   useEffect(() => {
-    if (!user) return
+    if (!user || !profile?.is_admin) {
+      setIsAdmin(false)
+      return
+    }
     pingAdmin().then(setIsAdmin)
-  }, [user])
+  }, [user, profile?.is_admin])
 
   // Load notes whenever drawer opens or path changes while open
   useEffect(() => {

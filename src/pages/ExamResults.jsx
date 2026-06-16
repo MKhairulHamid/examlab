@@ -418,7 +418,7 @@ function ExamResults() {
               borderRadius: '0.75rem', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap'
             }}>
               <div style={{ flex: 1, minWidth: 180 }}>
-                <div style={{ color: 'white', fontWeight: 700 }}>🎓 You earned your Proficiency credential!</div>
+                <div style={{ color: 'white', fontWeight: 700 }}>🎓 You earned your Readiness credential!</div>
                 <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.875rem' }}>
                   Credential ID {earnedCert.credentialCode}
                 </div>
@@ -439,7 +439,7 @@ function ExamResults() {
               <div style={{ flex: 1, minWidth: 180 }}>
                 <div style={{ color: 'white', fontWeight: 700 }}>One step left to earn your credential</div>
                 <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.875rem' }}>
-                  You passed the final exam — finish all study sessions to unlock your Proficiency credential.
+                  You passed the final exam — finish all study sessions to unlock your Readiness credential.
                 </div>
               </div>
               <Button variant="primary" onClick={() => navigate(`/exam/${slug}/study`)}>

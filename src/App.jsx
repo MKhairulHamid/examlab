@@ -1,6 +1,5 @@
-import React, { lazy, Suspense } from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { useEffect } from 'react'
+import React, { lazy, Suspense, useEffect } from 'react'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import useAuthStore from './stores/authStore'
 import useSyncStore from './stores/syncStore'
 import InstallPrompt from './components/pwa/InstallPrompt'
@@ -49,6 +48,12 @@ function ProtectedRoute({ children }) {
   return children
 }
 
+function ScrollToTop() {
+  const { pathname } = useLocation()
+  useEffect(() => { window.scrollTo(0, 0) }, [pathname])
+  return null
+}
+
 function App() {
   const { loading: authLoading } = useAuthStore()
   const initializeAuth = useAuthStore(state => state.initialize)
@@ -82,6 +87,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <OfflineBanner />
       <InstallPrompt />
       <UpdatePrompt />

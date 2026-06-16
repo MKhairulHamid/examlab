@@ -44,7 +44,7 @@ export function HowToEarn({
     },
     {
       icon: Award,
-      title: 'Earn your Proficiency credential',
+      title: 'Earn your Readiness credential',
       detail: 'issued automatically with a public verification link',
       done: issued,
       cta: null,

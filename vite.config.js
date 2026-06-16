@@ -60,11 +60,11 @@ function prerenderVerifyPages() {
       const indexPath = path.resolve(outDir, 'index.html')
       if (!fs.existsSync(indexPath)) return
       const baseHtml = fs.readFileSync(indexPath, 'utf8')
-      const desc = 'A verified Proficiency credential from Cloud Exam Lab — earned by completing the study program and passing the final mock exam.'
+      const desc = 'A verified Readiness credential from Cloud Exam Lab — earned by completing the study program and passing the final mock exam.'
       const image = `${SITE}/og/credential.png`
 
       for (const { slug, name } of VERIFY_PROGRAMS) {
-        const title = `${name} · Proficiency — Cloud Exam Lab`
+        const title = `${name} · Readiness — Cloud Exam Lab`
         const url = `${SITE}/verify/${slug}`
         const tags = [
           `<meta property="og:type" content="website" />`,

@@ -401,7 +401,7 @@ function ProgramLanding() {
               Finish strong with a shareable credential
             </h2>
             <p className="text-gray-500 text-base max-w-[42rem] mx-auto">
-              Complete the program and pass the final mock exam to earn your {program.shortName} Proficiency credential — with a public verification link you can add to LinkedIn and your résumé.
+              Complete the program and pass the final mock exam to earn your {program.shortName} Readiness credential — with a public verification link you can add to LinkedIn and your résumé.
             </p>
           </Reveal>
           <div className="grid gap-8 items-start max-w-[60rem] mx-auto" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))' }}>

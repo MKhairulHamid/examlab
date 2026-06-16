@@ -64,7 +64,7 @@ function linkedInAddUrl(cert, verifyUrl) {
   const issued = cert.issuedAt ? new Date(cert.issuedAt) : null
   const params = new URLSearchParams({
     startTask: 'CERTIFICATION_NAME',
-    name: `${cert.programName} Proficiency`,
+    name: `${cert.programName} Readiness`,
     organizationName: 'Cloud Exam Lab',
     certUrl: verifyUrl,
     certId: cert.credentialCode,
@@ -119,11 +119,11 @@ function VerifyCertificate() {
 
   useDocumentMeta({
     title: cert
-      ? `${cert.recipientName} — ${cert.programName} Proficiency | Cloud Exam Lab`
+      ? `${cert.recipientName} — ${cert.programName} Readiness | Cloud Exam Lab`
       : 'Verify credential | Cloud Exam Lab',
     description: cert
       ? `Verified Cloud Exam Lab credential: ${cert.recipientName} demonstrated proficiency in ${cert.programName} by completing the study program and passing the final mock exam (${cert.percentageScore}%).`
-      : 'Verify a Cloud Exam Lab Proficiency credential.',
+      : 'Verify a Cloud Exam Lab Readiness credential.',
     url: verifyUrl,
   })
 
@@ -255,7 +255,7 @@ function VerifyCertificate() {
                   Prepare for AWS certifications with Cloud Exam Lab
                 </h2>
                 <p className="text-gray-500 text-base max-w-[40rem] mx-auto">
-                  Structured study sessions, realistic practice exams, and an earnable Proficiency credential for every program.
+                  Structured study sessions, realistic practice exams, and an earnable Readiness credential for every program.
                 </p>
               </div>
               <div className="grid gap-5" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))' }}>
