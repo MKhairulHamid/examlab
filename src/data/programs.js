@@ -222,7 +222,7 @@ export const PROGRAMS = [
       { label: 'Continuous Improvement for Existing Solutions', weight: '25%' },
       { label: 'Accelerate Workload Migration & Modernization', weight: '20%' },
     ],
-    facts: { questions: '65', time: '180 min', passing: '750 / 1000', cost: '$300' },
+    facts: { questions: '75', time: '180 min', passing: '750 / 1000', cost: '$300' },
     evergreenValue:
       'Even if you never sit the exam, you develop the way a senior architect thinks — designing across whole organizations, weighing real trade-offs, and improving systems that are already running. That judgment is the most durable, highest-leverage skill in cloud.',
   },
