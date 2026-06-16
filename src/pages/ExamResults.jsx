@@ -7,6 +7,11 @@ import supabase from '../services/supabase'
 import DashboardHeader from '../components/layout/DashboardHeader'
 import AnswerReview from '../components/AnswerReview'
 import { isOrderingQuestion, getTypeLabel } from '../utils/questionTypes'
+import { Modal, Button } from '../design-system'
+import CertificateCard from '../components/certificate/CertificateCard'
+import certificateService from '../services/certificateService'
+import { getProgram } from '../data/programs'
+import { getSessionCourse } from '../utils/sessionCourses'
 
 function ExamResults() {
   const { slug } = useParams()
@@ -20,6 +25,9 @@ function ExamResults() {
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(true)
   const [questions, setQuestions] = useState([])
+  const [earnedCert, setEarnedCert] = useState(null)
+  const [showCelebrate, setShowCelebrate] = useState(false)
+  const [needStudy, setNeedStudy] = useState(false)
 
   useEffect(() => {
     const loadResultData = async () => {
@@ -67,8 +75,27 @@ function ExamResults() {
           }
 
           setResult(examResult)
-
           setLoading(false)
+
+          // Credential: if this was the program's final exam and the learner
+          // passed, try to issue the Proficiency credential. The RPC enforces
+          // study completeness too — if that's the only thing missing, prompt it.
+          if (examAttempt.passed && questionSet?.is_final_exam) {
+            const program = getProgram(slug)
+            const course = getSessionCourse(slug)
+            if (program && course) {
+              const { certificate, error } = await certificateService.issue(
+                program.code,
+                course.sessions.length
+              )
+              if (certificate) {
+                setEarnedCert({ ...certificate, program })
+                setShowCelebrate(true)
+              } else if (error && /study not complete/i.test(error)) {
+                setNeedStudy(true)
+              }
+            }
+          }
         } catch (error) {
           console.error('Error loading result:', error)
           setLoading(false)
@@ -77,7 +104,7 @@ function ExamResults() {
     }
     
     loadResultData()
-  }, [resultId, user, loadQuestionSet, navigate])
+  }, [resultId, user, loadQuestionSet, navigate, slug])
 
   if (loading) {
     return (
@@ -383,6 +410,44 @@ function ExamResults() {
             </div>
           )}
 
+          {/* Credential earned — inline confirmation */}
+          {earnedCert && (
+            <div style={{
+              marginTop: '2rem', padding: '1rem 1.25rem', textAlign: 'left',
+              background: 'rgba(0,212,170,0.12)', border: '1px solid rgba(0,212,170,0.35)',
+              borderRadius: '0.75rem', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap'
+            }}>
+              <div style={{ flex: 1, minWidth: 180 }}>
+                <div style={{ color: 'white', fontWeight: 700 }}>🎓 You earned your Proficiency credential!</div>
+                <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.875rem' }}>
+                  Credential ID {earnedCert.credentialCode}
+                </div>
+              </div>
+              <Button variant="primary" onClick={() => navigate(`/verify/${earnedCert.credentialCode}`)}>
+                View / share credential
+              </Button>
+            </div>
+          )}
+
+          {/* Passed the final exam but study isn't finished yet */}
+          {needStudy && !earnedCert && (
+            <div style={{
+              marginTop: '2rem', padding: '1rem 1.25rem', textAlign: 'left',
+              background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.35)',
+              borderRadius: '0.75rem', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap'
+            }}>
+              <div style={{ flex: 1, minWidth: 180 }}>
+                <div style={{ color: 'white', fontWeight: 700 }}>One step left to earn your credential</div>
+                <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.875rem' }}>
+                  You passed the final exam — finish all study sessions to unlock your Proficiency credential.
+                </div>
+              </div>
+              <Button variant="primary" onClick={() => navigate(`/exam/${slug}/study`)}>
+                Finish study sessions
+              </Button>
+            </div>
+          )}
+
           {/* Action Buttons */}
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '2rem', flexWrap: 'wrap' }}>
             <button
@@ -542,6 +607,34 @@ function ExamResults() {
         </div>
       </div>
 
+      {/* Credential celebration */}
+      {earnedCert && (
+        <Modal isOpen={showCelebrate} onClose={() => setShowCelebrate(false)} maxWidth="max-w-xl">
+          <div className="p-5 sm:p-6">
+            <div className="text-center mb-5">
+              <div className="text-3xl mb-2">🎓</div>
+              <h2 className="text-xl font-extrabold text-[#0A2540]">Credential earned!</h2>
+              <p className="text-gray-500 text-sm mt-1">
+                You completed the program and passed the final exam.
+              </p>
+            </div>
+            <CertificateCard
+              program={earnedCert.program || { name: earnedCert.programName, code: earnedCert.programCode }}
+              state="earned"
+              name={earnedCert.recipientName}
+              score={earnedCert.percentageScore}
+              credentialCode={earnedCert.credentialCode}
+              issuedAt={earnedCert.issuedAt}
+            />
+            <div className="flex justify-center gap-3 mt-5">
+              <Button variant="secondary" onClick={() => setShowCelebrate(false)}>Close</Button>
+              <Button variant="primary" onClick={() => navigate(`/verify/${earnedCert.credentialCode}`)}>
+                View / share credential
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </>
   )
 }

@@ -6,6 +6,9 @@ import usePurchaseStore from '../stores/purchaseStore'
 import DashboardHeader from '../components/layout/DashboardHeader'
 import EnrollmentModal from '../components/enrollment/EnrollmentModal'
 import streakService from '../services/streakService'
+import certificateService from '../services/certificateService'
+import CertificateCard from '../components/certificate/CertificateCard'
+import { getProgram } from '../data/programs'
 import supabase from '../services/supabase'
 import { Button, Card, Badge, Container, SectionHeader } from '../design-system'
 import {
@@ -33,6 +36,7 @@ function Dashboard() {
   const [examDates, setExamDates] = useState([])
   const [showExamDateModal, setShowExamDateModal] = useState(false)
   const [selectedExamForDate, setSelectedExamForDate] = useState(null)
+  const [certificates, setCertificates] = useState([])
   const allExamsRef = useRef(null)
 
   const userName = profile?.full_name || user?.email?.split('@')[0] || 'Student'
@@ -46,6 +50,7 @@ function Dashboard() {
       initializeStreak()
       loadExamResults()
       loadExamDates()
+      certificateService.listMine().then(setCertificates)
     }
   }, [user])
 
@@ -457,6 +462,37 @@ function Dashboard() {
     )
   }
 
+  // ── Your Credentials ──────────────────────────────────────────────
+  const renderCredentials = () => {
+    if (!certificates || certificates.length === 0) return null
+    return (
+      <section className="py-8 bg-white">
+        <Container>
+          <SectionHeader label="Earned" title="Your Credentials" className="mb-6" />
+          <div className="grid gap-6" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 360px), 1fr))' }}>
+            {certificates.map((c) => (
+              <div key={c.credentialCode}>
+                <CertificateCard
+                  program={getProgram(c.programCode) || { name: c.programName, code: c.programCode }}
+                  state="earned"
+                  name={c.recipientName}
+                  score={c.percentageScore}
+                  credentialCode={c.credentialCode}
+                  issuedAt={c.issuedAt}
+                />
+                <div className="mt-3">
+                  <Button variant="primary" size="sm" onClick={() => navigate(`/verify/${c.credentialCode}`)}>
+                    View / share credential
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Container>
+      </section>
+    )
+  }
+
   // ── Practice Exams ────────────────────────────────────────────────
   const renderAllExams = () => {
     if (exams.length === 0) return null
@@ -591,6 +627,7 @@ function Dashboard() {
         {renderAifProgress()}
         {renderExamCountdown()}
         {renderProgressRow()}
+        {renderCredentials()}
         {renderAllExams()}
 
       </div>

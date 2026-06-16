@@ -15,6 +15,7 @@ const createMockClient = () => {
 
   return {
     auth: mockAuth,
+    rpc: async () => ({ data: null, error: { message: 'Supabase not configured' } }),
     from: () => ({
       select: () => ({
         eq: () => ({

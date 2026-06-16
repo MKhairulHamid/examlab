@@ -21,6 +21,7 @@ const AdminPage = lazy(() => import('./pages/AdminPage'))
 const AwsAiPractitioner = lazy(() => import('./pages/AwsAiPractitioner'))
 const RedeemPromo = lazy(() => import('./pages/RedeemPromo'))
 const ProgramLanding = lazy(() => import('./pages/ProgramLanding'))
+const VerifyCertificate = lazy(() => import('./pages/VerifyCertificate'))
 
 // Protected Route wrapper — by the time this renders, auth loading is already done
 function ProtectedRoute({ children }) {
@@ -101,6 +102,9 @@ function App() {
         <Route path="/reset-password" element={<ResetPassword />} />
         {/* Public so logged-out visitors land here; sign-in happens in-page. */}
         <Route path="/redeem" element={<RedeemPromo />} />
+        {/* Public credential verification — must be declared before /:code so the
+            literal "verify" segment isn't swallowed by the program-code route. */}
+        <Route path="/verify/:credentialCode" element={<VerifyCertificate />} />
 
         {/* Protected routes */}
         <Route

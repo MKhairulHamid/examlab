@@ -82,7 +82,7 @@ export const useExamStore = create((set, get) => ({
 
       const { data, error } = await supabase
         .from('question_sets')
-        .select('id, exam_type_id, name, description, set_number, question_count, price_cents, is_free_sample, is_active, created_at, updated_at, version_number')
+        .select('id, exam_type_id, name, description, set_number, question_count, price_cents, is_free_sample, is_final_exam, is_active, created_at, updated_at, version_number')
         .eq('exam_type_id', examTypeId)
         .eq('is_active', true)
         .order('set_number', { ascending: true })

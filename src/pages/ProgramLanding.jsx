@@ -9,6 +9,8 @@ import useAuthStore from '../stores/authStore'
 import AuthModal from '../components/auth/AuthModal'
 import { Button } from '../design-system'
 import { PROGRAMS, getProgram } from '../data/programs'
+import CertificateCard from '../components/certificate/CertificateCard'
+import HowToEarn from '../components/certificate/HowToEarn'
 
 function Reveal({ children, className = '', delay = 0, as: Tag = 'div', style, ...props }) {
   const ref = useRef(null)
@@ -387,6 +389,34 @@ function ProgramLanding() {
               <span className="inline-flex items-center gap-1.5"><RefreshCw size={15} style={{ color }} /> Cancel anytime</span>
             </div>
           </Reveal>
+        </div>
+      </section>
+
+      {/* THE CREDENTIAL YOU'LL EARN */}
+      <section className="py-20 px-6 bg-white">
+        <div className="max-w-[72rem] mx-auto">
+          <Reveal className="text-center mb-12">
+            <p className="text-[0.8125rem] font-bold uppercase tracking-[0.08em] mb-3" style={{ color }}>THE CREDENTIAL YOU'LL EARN</p>
+            <h2 className="text-[clamp(1.75rem,4vw,2.5rem)] font-extrabold text-[#0A2540] tracking-tight mb-3">
+              Finish strong with a shareable credential
+            </h2>
+            <p className="text-gray-500 text-base max-w-[42rem] mx-auto">
+              Complete the program and pass the final mock exam to earn your {program.shortName} Proficiency credential — with a public verification link you can add to LinkedIn and your résumé.
+            </p>
+          </Reveal>
+          <div className="grid gap-8 items-start max-w-[60rem] mx-auto" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))' }}>
+            <Reveal>
+              <CertificateCard program={program} state="preview" />
+            </Reveal>
+            <Reveal delay={120}>
+              <HowToEarn program={program} mode="static" />
+              <div className="mt-4">
+                <Button variant="primary" onClick={openSignup} className="gap-2">
+                  Start free to earn it <ArrowRight size={16} />
+                </Button>
+              </div>
+            </Reveal>
+          </div>
         </div>
       </section>
 

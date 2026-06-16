@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react'
+import React, { useEffect, useState, useMemo, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import useExamStore from '../stores/examStore'
 import useAuthStore from '../stores/authStore'
@@ -9,7 +9,11 @@ import { Button } from '../design-system'
 import supabase from '../services/supabase'
 import studyProgressService from '../services/studyProgressService'
 import progressService from '../services/progressService'
+import certificateService from '../services/certificateService'
+import CertificateCard from '../components/certificate/CertificateCard'
+import HowToEarn from '../components/certificate/HowToEarn'
 import { getSessionCourse } from '../utils/sessionCourses'
+import { getProgram } from '../data/programs'
 import { getOfficialResourceUrl } from '../utils/officialResources'
 import {
   FileText, Clock, Target, BookOpen, ExternalLink, Lock, BarChart2,
@@ -20,7 +24,7 @@ function ExamDetail() {
   const { slug } = useParams()
   const navigate = useNavigate()
   const { getExamBySlug, fetchQuestionSets, questionSets } = useExamStore()
-  const { user } = useAuthStore()
+  const { user, profile } = useAuthStore()
   const { isSubscribed, fetchSubscription, fetchPromoAccess, hasExamAccess } = usePurchaseStore()
   const [exam, setExam] = useState(null)
   const [showPurchaseModal, setShowPurchaseModal] = useState(false)
@@ -28,6 +32,8 @@ function ExamDetail() {
   const [loadingQuestionSets, setLoadingQuestionSets] = useState(true)
   const [completedSessions, setCompletedSessions] = useState([])
   const [inProgressExam, setInProgressExam] = useState(null)
+  const [certificate, setCertificate] = useState(null)
+  const issueAttempted = useRef(false)
 
   // Session-based study course for this exam (null for exams without one).
   const course = useMemo(() => getSessionCourse(slug), [slug])
@@ -227,6 +233,41 @@ function ExamDetail() {
     return { title: 'You\'re ready to sit the real exam', sub: `Best practice score: ${best}%`, label: 'Take another practice exam', onClick: startPractice }
   }, [course, studyStats, practiceStats, passThreshold])
 
+  // ── Proficiency credential ──────────────────────────────────────────────
+  // Earned by completing all study sessions AND passing the program's final
+  // mock exam. Only programs with a guided session course can earn it.
+  const program = useMemo(() => (exam ? getProgram(exam.slug) : null), [exam])
+  const finalExamSet = useMemo(() => questionSets.find(s => s.is_final_exam), [questionSets])
+  const examPassedFinal = useMemo(() => {
+    if (!finalExamSet) return false
+    return examResults.some(r => r.passed && r.questionSetId === finalExamSet.id)
+  }, [examResults, finalExamSet])
+  const studyComplete = !!studyStats?.allDone
+  const eligibleForCert = studyComplete && examPassedFinal
+  const recipientName = (profile?.full_name && profile.full_name.trim())
+    || user?.email?.split('@')[0] || ''
+
+  // Load an already-issued certificate for this program.
+  useEffect(() => {
+    if (!user || !program) { setCertificate(null); return }
+    let cancelled = false
+    certificateService.listMine().then(mine => {
+      if (cancelled) return
+      setCertificate(mine.find(c => c.programCode === program.code) || null)
+    })
+    return () => { cancelled = true }
+  }, [user, program])
+
+  // Auto-issue once both gates are met (idempotent server-side; guarded here too).
+  useEffect(() => {
+    if (!eligibleForCert || certificate || issueAttempted.current) return
+    if (!program || !studyStats?.totalSessions) return
+    issueAttempted.current = true
+    certificateService.issue(program.code, studyStats.totalSessions).then(({ certificate: c }) => {
+      if (c) setCertificate(c)
+    })
+  }, [eligibleForCert, certificate, program, studyStats])
+
   if (!exam) {
     return (
       <div className="loading-container">
@@ -365,6 +406,51 @@ function ExamDetail() {
                 </Button>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Earn your Proficiency credential */}
+        {course && user && program && (
+          <div className="mt-6 bg-white/95 rounded-2xl border border-white/20 overflow-hidden p-5 sm:p-6">
+            <div className="grid gap-6 items-start" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))' }}>
+              <CertificateCard
+                program={program}
+                state={certificate ? 'earned' : 'in-progress'}
+                name={certificate ? certificate.recipientName : recipientName}
+                score={certificate?.percentageScore}
+                credentialCode={certificate?.credentialCode}
+                issuedAt={certificate?.issuedAt}
+              />
+              <div>
+                {certificate ? (
+                  <div className="rounded-xl border border-[#00D4AA]/30 bg-[#00D4AA]/[0.06] p-5 sm:p-6">
+                    <h3 className="text-[#0A2540] font-bold text-lg mb-1.5">Credential earned 🎉</h3>
+                    <p className="text-gray-600 text-sm mb-4">
+                      Your {program.shortName} Proficiency credential is live with a public verification link.
+                    </p>
+                    <Button variant="primary" onClick={() => navigate(`/verify/${certificate.credentialCode}`)} className="gap-2">
+                      View / share credential <ArrowRight className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <HowToEarn
+                    program={program}
+                    mode="live"
+                    studyDone={studyStats.totalDone}
+                    studyTotal={studyStats.totalSessions}
+                    examPassed={examPassedFinal}
+                    onStudy={startStudy}
+                    onExam={() => {
+                      const target = finalExamSet && (finalExamSet.is_free_sample || hasAccess)
+                        ? finalExamSet
+                        : practiceTarget
+                      if (target) navigate(`/exam/${slug}/take?set=${target.id}`)
+                      else setShowPurchaseModal(true)
+                    }}
+                  />
+                )}
+              </div>
+            </div>
           </div>
         )}
 
