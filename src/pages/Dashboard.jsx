@@ -660,8 +660,8 @@ function Dashboard() {
           </Container>
         </section>
 
-        {/* Tab navigation — Instagram profile-bar style */}
-        <div className="sticky top-14 z-40 bg-white border-t border-b border-gray-200">
+        {/* Tab navigation — desktop: Instagram profile-bar style (top, centered) */}
+        <div className="hidden sm:block sticky top-14 z-40 bg-white border-t border-b border-gray-200">
           <Container>
             <nav className="flex justify-center" role="tablist" aria-label="Dashboard sections">
               {TABS.map(({ id, label, Icon }) => {
@@ -674,14 +674,14 @@ function Dashboard() {
                     aria-label={label}
                     title={label}
                     onClick={() => setActiveTab(id)}
-                    className={`relative flex flex-1 sm:flex-none items-center justify-center gap-1.5 px-4 sm:px-9 py-3 sm:py-3.5 -mt-px border-t-2 transition-colors ${
+                    className={`relative flex items-center justify-center gap-1.5 px-9 py-3.5 -mt-px border-t-2 transition-colors ${
                       active
                         ? 'border-[#0A2540] text-[#0A2540]'
                         : 'border-transparent text-gray-400 hover:text-gray-600'
                     }`}
                   >
-                    <Icon className="w-6 h-6 sm:w-4 sm:h-4 shrink-0" strokeWidth={active ? 2.6 : 2} />
-                    <span className="hidden sm:inline text-[0.6875rem] font-semibold uppercase tracking-[0.08em]">{label}</span>
+                    <Icon className="w-4 h-4 shrink-0" strokeWidth={active ? 2.6 : 2} />
+                    <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.08em]">{label}</span>
                   </button>
                 )
               })}
@@ -706,6 +706,36 @@ function Dashboard() {
       </div>
 
       {renderFooter()}
+
+      {/* Mobile spacer so the fixed bottom bar never covers footer content */}
+      <div className="h-16 sm:hidden" aria-hidden="true" />
+
+      {/* Tab navigation — mobile: Instagram app-style fixed bottom bar */}
+      <nav
+        className="sm:hidden fixed bottom-0 inset-x-0 z-50 bg-white border-t border-gray-200 flex justify-around"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+        role="tablist"
+        aria-label="Dashboard sections"
+      >
+        {TABS.map(({ id, label, Icon }) => {
+          const active = activeTab === id
+          return (
+            <button
+              key={id}
+              role="tab"
+              aria-selected={active}
+              aria-label={label}
+              onClick={() => setActiveTab(id)}
+              className={`flex flex-1 flex-col items-center justify-center gap-0.5 py-2 transition-colors ${
+                active ? 'text-[#0A2540]' : 'text-gray-400'
+              }`}
+            >
+              <Icon className="w-6 h-6 shrink-0" strokeWidth={active ? 2.6 : 2} />
+              <span className="text-[0.625rem] font-semibold">{label}</span>
+            </button>
+          )
+        })}
+      </nav>
 
       <EnrollmentModal
         isOpen={showEnrollmentModal}
