@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import useAuthStore from '../stores/authStore'
 import useExamStore from '../stores/examStore'
 import usePurchaseStore from '../stores/purchaseStore'
@@ -14,6 +14,7 @@ import { Button, Card, Badge, Container, SectionHeader } from '../design-system'
 import {
   BookOpen, ClipboardList, CheckCircle2, CalendarDays, BarChart2,
   Flame, BrainCircuit, Sparkles, Target, ShieldCheck, Lock,
+  LayoutGrid, Award,
 } from 'lucide-react'
 import aifC01Course from '../data/aifC01Course'
 
@@ -25,9 +26,25 @@ const DOMAIN_META = [
   { id: 'd5', label: 'Security, Compliance & Governance', weight: '14%', color: '#EF4444', Icon: Lock },
 ]
 
+const TABS = [
+  { id: 'overview',    label: 'Overview',    Icon: LayoutGrid },
+  { id: 'study',       label: 'Study',       Icon: BookOpen },
+  { id: 'practice',    label: 'Practice',    Icon: ClipboardList },
+  { id: 'progress',    label: 'Progress',    Icon: BarChart2 },
+  { id: 'credentials', label: 'Credentials', Icon: Award },
+]
+
 function Dashboard() {
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const { user, profile } = useAuthStore()
+
+  const tabParam = searchParams.get('tab')
+  const activeTab = TABS.some(t => t.id === tabParam) ? tabParam : 'overview'
+  const setActiveTab = (id) => {
+    setSearchParams(id === 'overview' ? {} : { tab: id })
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
   const { exams, fetchExams } = useExamStore()
   const { isSubscribed, fetchSubscription, fetchEnrollments, fetchPromoAccess, hasExamAccess } = usePurchaseStore()
   const [showEnrollmentModal, setShowEnrollmentModal] = useState(false)
@@ -167,9 +184,9 @@ function Dashboard() {
       ...(upcoming > 0 ? [{ label: 'Upcoming', value: upcoming, Icon: CalendarDays, color: '#3b82f6' }] : []),
     ]
     return (
-      <div className="relative z-10 -mt-8">
+      <div className="pt-6">
         <Container>
-          <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${stats.length}, minmax(0, 1fr))` }}>
+          <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${Math.min(stats.length, 5)}, minmax(0, 1fr))` }}>
             {stats.map((s, i) => (
               <Card key={i} className="p-4 text-center">
                 <div className="flex justify-center mb-1.5">
@@ -464,7 +481,27 @@ function Dashboard() {
 
   // ── Your Credentials ──────────────────────────────────────────────
   const renderCredentials = () => {
-    if (!certificates || certificates.length === 0) return null
+    if (!certificates || certificates.length === 0) {
+      return (
+        <section className="py-8 bg-white">
+          <Container>
+            <SectionHeader label="Earned" title="Your Credentials" className="mb-6" />
+            <Card className="p-10 text-center">
+              <Award className="w-12 h-12 mx-auto mb-4 text-gray-200" />
+              <p className="text-base font-bold text-[#0A2540]">No credentials yet</p>
+              <p className="text-sm text-gray-500 mt-1 max-w-sm mx-auto">
+                Pass a practice exam to earn a shareable completion credential. It'll show up here.
+              </p>
+              <div className="mt-5">
+                <Button variant="primary" size="sm" onClick={() => setActiveTab('practice')}>
+                  Go to Practice Exams
+                </Button>
+              </div>
+            </Card>
+          </Container>
+        </section>
+      )
+    }
     return (
       <section className="py-8 bg-white">
         <Container>
@@ -623,12 +660,46 @@ function Dashboard() {
           </Container>
         </section>
 
-        {renderQuickStats()}
-        {renderAifProgress()}
-        {renderExamCountdown()}
-        {renderProgressRow()}
-        {renderCredentials()}
-        {renderAllExams()}
+        {/* Tab navigation */}
+        <div className="sticky top-14 z-40 bg-white border-b border-gray-200 shadow-sm">
+          <Container>
+            <nav className="flex gap-1 overflow-x-auto no-scrollbar" role="tablist" aria-label="Dashboard sections">
+              {TABS.map(({ id, label, Icon }) => {
+                const active = activeTab === id
+                return (
+                  <button
+                    key={id}
+                    role="tab"
+                    aria-selected={active}
+                    onClick={() => setActiveTab(id)}
+                    className={`flex items-center gap-2 px-4 py-3.5 text-sm font-semibold whitespace-nowrap border-b-2 -mb-px transition-colors ${
+                      active
+                        ? 'border-[#00D4AA] text-[#0A2540]'
+                        : 'border-transparent text-gray-500 hover:text-[#0A2540] hover:border-gray-200'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4 shrink-0" style={active ? { color: '#00D4AA' } : undefined} />
+                    {label}
+                  </button>
+                )
+              })}
+            </nav>
+          </Container>
+        </div>
+
+        {/* Tab panels */}
+        <div className="min-h-[40vh]">
+          {activeTab === 'overview' && (
+            <>
+              {renderQuickStats()}
+              {renderExamCountdown()}
+            </>
+          )}
+          {activeTab === 'study' && renderAifProgress()}
+          {activeTab === 'practice' && renderAllExams()}
+          {activeTab === 'progress' && renderProgressRow()}
+          {activeTab === 'credentials' && renderCredentials()}
+        </div>
 
       </div>
 
