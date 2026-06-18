@@ -7,6 +7,7 @@ import OfflineBanner from './components/pwa/OfflineBanner'
 import UpdatePrompt from './components/pwa/UpdatePrompt'
 import ErrorBoundary from './components/pwa/ErrorBoundary'
 import AdminNotesWidget from './components/admin/AdminNotesWidget'
+import BottomNav from './components/layout/BottomNav'
 
 const Landing = lazy(() => import('./pages/Landing'))
 const Dashboard = lazy(() => import('./pages/Dashboard'))
@@ -188,6 +189,7 @@ function App() {
       </Routes>
       </Suspense>
       </ErrorBoundary>
+      <BottomNav />
     </BrowserRouter>
   )
 }
