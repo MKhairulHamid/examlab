@@ -660,10 +660,10 @@ function Dashboard() {
           </Container>
         </section>
 
-        {/* Tab navigation */}
-        <div className="sticky top-14 z-40 bg-white border-b border-gray-200 shadow-sm">
+        {/* Tab navigation — Instagram profile-bar style */}
+        <div className="sticky top-14 z-40 bg-white border-t border-b border-gray-200">
           <Container>
-            <nav className="flex gap-1 overflow-x-auto no-scrollbar" role="tablist" aria-label="Dashboard sections">
+            <nav className="flex justify-center" role="tablist" aria-label="Dashboard sections">
               {TABS.map(({ id, label, Icon }) => {
                 const active = activeTab === id
                 return (
@@ -671,15 +671,17 @@ function Dashboard() {
                     key={id}
                     role="tab"
                     aria-selected={active}
+                    aria-label={label}
+                    title={label}
                     onClick={() => setActiveTab(id)}
-                    className={`flex items-center gap-2 px-4 py-3.5 text-sm font-semibold whitespace-nowrap border-b-2 -mb-px transition-colors ${
+                    className={`relative flex flex-1 sm:flex-none items-center justify-center gap-1.5 px-4 sm:px-9 py-3 sm:py-3.5 -mt-px border-t-2 transition-colors ${
                       active
-                        ? 'border-[#00D4AA] text-[#0A2540]'
-                        : 'border-transparent text-gray-500 hover:text-[#0A2540] hover:border-gray-200'
+                        ? 'border-[#0A2540] text-[#0A2540]'
+                        : 'border-transparent text-gray-400 hover:text-gray-600'
                     }`}
                   >
-                    <Icon className="w-4 h-4 shrink-0" style={active ? { color: '#00D4AA' } : undefined} />
-                    {label}
+                    <Icon className="w-6 h-6 sm:w-4 sm:h-4 shrink-0" strokeWidth={active ? 2.6 : 2} />
+                    <span className="hidden sm:inline text-[0.6875rem] font-semibold uppercase tracking-[0.08em]">{label}</span>
                   </button>
                 )
               })}
