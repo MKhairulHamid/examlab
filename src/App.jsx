@@ -21,6 +21,8 @@ const AwsAiPractitioner = lazy(() => import('./pages/AwsAiPractitioner'))
 const RedeemPromo = lazy(() => import('./pages/RedeemPromo'))
 const ProgramLanding = lazy(() => import('./pages/ProgramLanding'))
 const VerifyCertificate = lazy(() => import('./pages/VerifyCertificate'))
+const Blog = lazy(() => import('./pages/Blog'))
+const BlogPost = lazy(() => import('./pages/BlogPost'))
 
 // Protected Route wrapper — by the time this renders, auth loading is already done
 function ProtectedRoute({ children }) {
@@ -113,6 +115,10 @@ function App() {
             prerendered OG card (see vite.config.js). Declared before /:code so the
             literal "verify" segment isn't swallowed by the program-code route. */}
         <Route path="/verify/:programSlug" element={<VerifyCertificate />} />
+        {/* Articles / blog — public. Declared before /:code so the literal "blog"
+            segment isn't swallowed by the program-code route. */}
+        <Route path="/blog" element={<Blog />} />
+        <Route path="/blog/:slug" element={<BlogPost />} />
 
         {/* Protected routes */}
         <Route

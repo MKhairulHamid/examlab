@@ -11,6 +11,7 @@ import useAuthStore from '../stores/authStore'
 import AuthModal from '../components/auth/AuthModal'
 import { Button } from '../design-system'
 import { PROGRAMS } from '../data/programs'
+import SocialLinks from '../components/layout/SocialLinks'
 
 const LEARNING_FEATURES = [
   {
@@ -626,9 +627,10 @@ function Landing() {
                 </span>
                 <h3 className="text-white font-bold text-base m-0">Cloud Exam Lab</h3>
               </div>
-              <p className="text-white/60 text-sm leading-relaxed">
+              <p className="text-white/60 text-sm leading-relaxed mb-4">
                 Learn AWS the way it sticks — structured study sessions, the Teach to Learn method, and exam-realistic practice across every program.
               </p>
+              <SocialLinks />
             </div>
             <div>
               <h3 className="text-white font-bold mb-3.5 text-sm">Programs</h3>
@@ -656,6 +658,7 @@ function Landing() {
               <h3 className="text-white font-bold mb-3.5 text-sm">Support & Legal</h3>
               <ul className="list-none p-0 m-0">
                 {[
+                  { label: 'Articles & Guides', href: '/blog' },
                   { label: 'Contact Support', href: 'mailto:cloudexamlab@gmail.com' },
                   { label: 'Privacy Policy', href: '#' },
                   { label: 'Terms of Service', href: '#' },

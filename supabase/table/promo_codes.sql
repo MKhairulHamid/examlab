@@ -5,9 +5,12 @@
 create table if not exists public.promo_codes (
   id uuid not null default extensions.uuid_generate_v4 (),
   code text not null,
-  exam_type_id uuid not null,
+  -- Null when all_programs = true (the code unlocks every exam).
+  exam_type_id uuid,
   target_group text not null,
-  duration_days integer not null,
+  duration_days integer not null,        -- access length AFTER redeeming
+  redeem_by timestamptz,                 -- deadline to redeem (null = no deadline)
+  all_programs boolean not null default false,
   max_uses integer not null default 1,
   used_count integer not null default 0,
   is_active boolean not null default true,
@@ -16,7 +19,12 @@ create table if not exists public.promo_codes (
   constraint promo_codes_code_key unique (code),
   constraint promo_codes_exam_type_id_fkey foreign key (exam_type_id) references public.exam_types (id) on delete cascade,
   constraint promo_codes_duration_days_check check (duration_days in (1, 3, 7, 30)),
-  constraint promo_codes_max_uses_check check (max_uses >= 1)
+  constraint promo_codes_max_uses_check check (max_uses >= 1),
+  -- Exactly one of (specific exam) / (all programs).
+  constraint promo_codes_target_check check (
+    (all_programs = true and exam_type_id is null)
+    or (all_programs = false and exam_type_id is not null)
+  )
 ) TABLESPACE pg_default;
 
 create index if not exists idx_promo_codes_code on public.promo_codes using btree (code);

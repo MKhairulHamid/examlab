@@ -285,7 +285,7 @@ Deno.serve(async (req) => {
       case 'getPromoCodes': {
         const { data, error } = await supabase
           .from('promo_codes')
-          .select('id, code, exam_type_id, target_group, duration_days, max_uses, used_count, is_active, created_at, exam_types ( name, slug )')
+          .select('id, code, exam_type_id, target_group, duration_days, redeem_by, all_programs, max_uses, used_count, is_active, created_at, exam_types ( name, slug )')
           .order('created_at', { ascending: false })
 
         if (error) return jsonResponse({ error: error.message }, 500)
@@ -293,17 +293,31 @@ Deno.serve(async (req) => {
       }
 
       case 'createPromoCode': {
-        const { exam_type_id, target_group, duration_days, max_uses } = body
+        const { exam_type_id, target_group, duration_days, max_uses, all_programs, redeem_window_days } = body
+        const allPrograms = all_programs === true
 
-        if (!exam_type_id || !target_group) {
-          return jsonResponse({ error: 'exam_type_id and target_group are required.' }, 400)
+        if (!target_group) {
+          return jsonResponse({ error: 'target_group is required.' }, 400)
+        }
+        // The code must target either a specific exam OR all programs, not both/neither.
+        if (allPrograms && exam_type_id) {
+          return jsonResponse({ error: 'Provide exam_type_id or all_programs, not both.' }, 400)
+        }
+        if (!allPrograms && !exam_type_id) {
+          return jsonResponse({ error: 'exam_type_id is required unless all_programs is true.' }, 400)
         }
         if (![1, 3, 7, 30].includes(Number(duration_days))) {
           return jsonResponse({ error: 'duration_days must be one of 1, 3, 7, 30.' }, 400)
         }
+        if (![1, 3, 7, 14, 30].includes(Number(redeem_window_days))) {
+          return jsonResponse({ error: 'redeem_window_days must be one of 1, 3, 7, 14, 30.' }, 400)
+        }
         if (!Number.isInteger(Number(max_uses)) || Number(max_uses) < 1) {
           return jsonResponse({ error: 'max_uses must be a positive integer.' }, 400)
         }
+
+        // Deadline after which the code can no longer be redeemed.
+        const redeemBy = new Date(Date.now() + Number(redeem_window_days) * 86400000).toISOString()
 
         // Generate a unique code, retrying on the rare collision.
         let inserted = null
@@ -314,12 +328,14 @@ Deno.serve(async (req) => {
             .from('promo_codes')
             .insert({
               code,
-              exam_type_id,
+              exam_type_id: allPrograms ? null : exam_type_id,
+              all_programs: allPrograms,
               target_group,
               duration_days: Number(duration_days),
+              redeem_by: redeemBy,
               max_uses: Number(max_uses),
             })
-            .select('id, code, exam_type_id, target_group, duration_days, max_uses, used_count, is_active, created_at, exam_types ( name, slug )')
+            .select('id, code, exam_type_id, target_group, duration_days, redeem_by, all_programs, max_uses, used_count, is_active, created_at, exam_types ( name, slug )')
             .single()
 
           if (!error) { inserted = data; break }
@@ -345,7 +361,7 @@ Deno.serve(async (req) => {
           .from('promo_codes')
           .update({ is_active })
           .eq('id', id)
-          .select('id, code, exam_type_id, target_group, duration_days, max_uses, used_count, is_active, created_at, exam_types ( name, slug )')
+          .select('id, code, exam_type_id, target_group, duration_days, redeem_by, all_programs, max_uses, used_count, is_active, created_at, exam_types ( name, slug )')
           .single()
 
         if (error) return jsonResponse({ error: error.message }, 500)

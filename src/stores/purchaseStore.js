@@ -14,6 +14,8 @@ const usePurchaseStore = create((set, get) => ({
   enrolledExamIds: [],
   // exam_type_ids the user has active (non-expired) promo access to
   promoAccessExamIds: [],
+  // true if the user has an active all-programs promo redemption (unlocks every exam)
+  promoFullAccess: false,
   loading: false,
   error: null,
   checkoutLoading: false,
@@ -99,7 +101,7 @@ const usePurchaseStore = create((set, get) => ({
     try {
       const { data, error } = await supabase
         .from('promo_redemptions')
-        .select('exam_type_id')
+        .select('exam_type_id, all_programs')
         .eq('user_id', userId)
         .gt('expires_at', new Date().toISOString())
 
@@ -107,8 +109,10 @@ const usePurchaseStore = create((set, get) => ({
         console.error('Error fetching promo access:', error)
         return
       }
-      const ids = [...new Set((data || []).map((r) => r.exam_type_id))]
-      set({ promoAccessExamIds: ids })
+      const rows = data || []
+      const ids = [...new Set(rows.filter((r) => r.exam_type_id).map((r) => r.exam_type_id))]
+      const fullAccess = rows.some((r) => r.all_programs)
+      set({ promoAccessExamIds: ids, promoFullAccess: fullAccess })
     } catch (error) {
       console.error('Error fetching promo access:', error)
     }
@@ -126,8 +130,8 @@ const usePurchaseStore = create((set, get) => ({
    * redeemed promo code unlocks only its specific exam for the duration.
    */
   hasExamAccess: (examTypeId) => {
-    const { isSubscribed, promoAccessExamIds } = get()
-    if (isSubscribed) return true
+    const { isSubscribed, promoFullAccess, promoAccessExamIds } = get()
+    if (isSubscribed || promoFullAccess) return true
     return !!examTypeId && promoAccessExamIds.includes(examTypeId)
   },
 

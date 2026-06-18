@@ -91,8 +91,123 @@ function prerenderVerifyPages() {
   }
 }
 
+// Articles meta — mirror of src/data/articles.js (slug/title/description/date only),
+// kept here so the prerender runs without importing JSX-flavoured app source.
+// KEEP IN SYNC with src/data/articles.js when articles are added or renamed.
+const ARTICLES_META = [
+  { slug: 'welcome-to-cloud-exam-lab', title: 'Welcome to Cloud Exam Lab: Learn Cloud the Way It Sticks', description: 'What Cloud Exam Lab is, who it is for, and how our structured study sessions and exam-realistic practice help you actually pass your AWS certification.', date: '2026-01-15' },
+  { slug: 'teach-to-learn-method', title: 'The Teach-to-Learn Method: Why Explaining Beats Re-Reading', description: 'The Feynman-inspired Teach to Learn technique is built into every Cloud Exam Lab session. Here is why explaining a concept aloud beats re-reading it five times.', date: '2026-02-03' },
+  { slug: 'how-structured-study-sessions-work', title: 'How Structured Study Sessions Work on Cloud Exam Lab', description: 'A look inside the session model: focused concepts, active recall, spaced checkpoints, and progress tracking that keeps you moving toward exam-ready.', date: '2026-02-24' },
+  { slug: 'exam-realistic-practice', title: 'Exam-Realistic Practice: How Our Mock Exams Mirror the Real Test', description: 'Timed, full-length, scenario-based mock exams that match the real AWS blueprint — so exam day feels like a rehearsal you have already done.', date: '2026-03-18' },
+  { slug: 'choosing-your-aws-certification-path', title: 'Choosing Your AWS Path: From Cloud Practitioner to Professional', description: 'CLF-C02, the Associate tier, and the Professional level explained — how to pick the right AWS certification for where you are in your career.', date: '2026-04-09' },
+  { slug: 'study-plan-zero-to-certified', title: 'From Zero to Certified: A Realistic Study Plan You Can Keep', description: 'A week-by-week study plan using Cloud Exam Lab — built around short daily sessions, spaced review, and mock exams instead of last-minute cramming.', date: '2026-05-06' },
+  { slug: 'free-access-and-promo-codes', title: 'Free Access and Promo Codes: Try a Program Without Paying', description: 'How to unlock a Cloud Exam Lab program for free with a promo code — what the code does, how to redeem it, and how long your access lasts.', date: '2026-06-02' },
+]
+
+// Program landing URLs for the sitemap (the /:code route uses the uppercase code).
+const PROGRAM_CODES = ['CLF-C02', 'AIF-C01', 'SAA-C03', 'DVA-C02', 'MLA-C01', 'SAP-C02']
+
+// Prerender the blog index and one HTML file per article, each with crawler-facing
+// <title>, meta description, canonical, OG/Twitter tags, and JSON-LD Article schema.
+// Also writes sitemap.xml and robots.txt. Same rationale as prerenderVerifyPages:
+// GitHub Pages serves a static SPA with no SSR, so non-JS crawlers need real tags
+// baked into the HTML they fetch. Humans get the same file and boot the live SPA.
+function prerenderArticlesAndSeo() {
+  let outDir = 'dist'
+  const esc = (s) => String(s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+  return {
+    name: 'prerender-articles-and-seo',
+    apply: 'build',
+    configResolved(config) {
+      outDir = path.resolve(config.root, config.build.outDir)
+    },
+    closeBundle() {
+      const indexPath = path.resolve(outDir, 'index.html')
+      if (!fs.existsSync(indexPath)) return
+      const baseHtml = fs.readFileSync(indexPath, 'utf8')
+      const image = `${SITE}/og/credential.png`
+      const publisher = {
+        '@type': 'Organization',
+        name: 'Cloud Exam Lab',
+        url: SITE,
+        logo: `${SITE}/logo-cloud-exam-lab.jpg`,
+      }
+
+      const writePage = (relDir, title, description, url, headExtra) => {
+        const tags = [
+          `<meta name="description" content="${esc(description)}" />`,
+          `<link rel="canonical" href="${url}" />`,
+          `<meta property="og:type" content="${headExtra.ogType || 'website'}" />`,
+          `<meta property="og:title" content="${esc(title)}" />`,
+          `<meta property="og:description" content="${esc(description)}" />`,
+          `<meta property="og:url" content="${url}" />`,
+          `<meta property="og:image" content="${image}" />`,
+          `<meta name="twitter:card" content="summary_large_image" />`,
+          `<meta name="twitter:title" content="${esc(title)}" />`,
+          `<meta name="twitter:description" content="${esc(description)}" />`,
+          `<meta name="twitter:image" content="${image}" />`,
+          headExtra.jsonLd ? `<script type="application/ld+json">${JSON.stringify(headExtra.jsonLd)}</script>` : '',
+        ].filter(Boolean).join('\n    ')
+
+        const html = baseHtml
+          .replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(title)}</title>`)
+          .replace('</head>', `    ${tags}\n  </head>`)
+
+        const dir = path.resolve(outDir, relDir)
+        fs.mkdirSync(dir, { recursive: true })
+        fs.writeFileSync(path.resolve(dir, 'index.html'), html)
+      }
+
+      // Blog index.
+      writePage('blog',
+        'Articles & Guides — Cloud Exam Lab',
+        'Guides on passing your AWS certification: the Teach to Learn method, structured study sessions, exam-realistic practice, and choosing your certification path.',
+        `${SITE}/blog`,
+        { ogType: 'website', jsonLd: {
+          '@context': 'https://schema.org', '@type': 'Blog',
+          name: 'Cloud Exam Lab Articles', url: `${SITE}/blog`, publisher,
+        } })
+
+      // One file per article with Article JSON-LD.
+      for (const a of ARTICLES_META) {
+        const title = `${a.title} — Cloud Exam Lab`
+        const url = `${SITE}/blog/${a.slug}`
+        writePage(`blog/${a.slug}`, title, a.description, url, {
+          ogType: 'article',
+          jsonLd: {
+            '@context': 'https://schema.org', '@type': 'Article',
+            headline: a.title, description: a.description,
+            datePublished: a.date, dateModified: a.date,
+            author: { '@type': 'Organization', name: 'Cloud Exam Lab' },
+            publisher, image, mainEntityOfPage: url, url,
+          },
+        })
+      }
+      console.log(`[prerender] wrote /blog + ${ARTICLES_META.length} article pages`)
+
+      // sitemap.xml
+      const urls = [
+        `${SITE}/`, `${SITE}/blog`, `${SITE}/redeem`,
+        ...PROGRAM_CODES.map((c) => `${SITE}/${c}`),
+        ...ARTICLES_META.map((a) => `${SITE}/blog/${a.slug}`),
+      ]
+      const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n` +
+        `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
+        urls.map((u) => `  <url><loc>${u}</loc></url>`).join('\n') +
+        `\n</urlset>\n`
+      fs.writeFileSync(path.resolve(outDir, 'sitemap.xml'), sitemap)
+
+      // robots.txt
+      fs.writeFileSync(path.resolve(outDir, 'robots.txt'),
+        `User-agent: *\nAllow: /\n\nSitemap: ${SITE}/sitemap.xml\n`)
+      console.log('[seo] wrote sitemap.xml + robots.txt')
+    },
+  }
+}
+
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(), serviceWorkerVersion(), prerenderVerifyPages()],
+  plugins: [react(), serviceWorkerVersion(), prerenderVerifyPages(), prerenderArticlesAndSeo()],
   base: '/',
 })

@@ -1,38 +1,37 @@
--- Per-user redemption records for promo_codes. Also the source of truth for the
--- frontend per-exam access gate (active row = expires_at > now()).
--- Applied via migration create_promo_codes.
+-- Promo codes: add a redemption deadline (redeem_by) and an all-programs flag.
+-- redeem_by = the moment after which a code can no longer be redeemed (distinct
+-- from duration_days, which is the access length AFTER redeeming).
+-- all_programs = true unlocks every exam instead of one specific exam_type_id.
 
-create table if not exists public.promo_redemptions (
-  id uuid not null default extensions.uuid_generate_v4 (),
-  promo_code_id uuid not null,
-  user_id uuid not null,
-  -- Null for all-programs redemptions (which grant access to every exam).
-  exam_type_id uuid,
-  all_programs boolean not null default false,
-  redeemed_at timestamp with time zone not null default timezone ('utc'::text, now()),
-  expires_at timestamp with time zone not null,
-  constraint promo_redemptions_pkey primary key (id),
-  constraint promo_redemptions_unique unique (promo_code_id, user_id),
-  constraint promo_redemptions_code_fkey foreign key (promo_code_id) references public.promo_codes (id) on delete cascade,
-  constraint promo_redemptions_user_fkey foreign key (user_id) references auth.users (id) on delete cascade,
-  constraint promo_redemptions_exam_fkey foreign key (exam_type_id) references public.exam_types (id) on delete cascade
-) TABLESPACE pg_default;
+-- ── promo_codes ──────────────────────────────────────────────────────────────
+alter table public.promo_codes
+  add column if not exists redeem_by timestamptz,
+  add column if not exists all_programs boolean not null default false;
 
-create index if not exists idx_promo_redemptions_user on public.promo_redemptions using btree (user_id);
-create index if not exists idx_promo_redemptions_user_exam on public.promo_redemptions using btree (user_id, exam_type_id);
+-- exam_type_id becomes optional: null when all_programs = true.
+alter table public.promo_codes alter column exam_type_id drop not null;
 
--- RLS: users may read only their own redemptions (used by the frontend access gate).
-alter table public.promo_redemptions enable row level security;
+-- Exactly one of (specific exam) / (all programs).
+alter table public.promo_codes drop constraint if exists promo_codes_target_check;
+alter table public.promo_codes add constraint promo_codes_target_check
+  check ((all_programs = true and exam_type_id is null)
+      or (all_programs = false and exam_type_id is not null));
 
-create policy "Users can read their own redemptions"
-  on public.promo_redemptions
-  for select
-  using (auth.uid() = user_id);
+-- Backfill existing codes: redeemable for 3 days from their creation date.
+update public.promo_codes
+  set redeem_by = created_at + interval '3 days'
+  where redeem_by is null;
 
+-- ── promo_redemptions ────────────────────────────────────────────────────────
+alter table public.promo_redemptions
+  add column if not exists all_programs boolean not null default false;
 
--- Atomic redemption. Called by an authenticated user via RPC with their JWT.
--- SECURITY DEFINER so it can lock the promo row and write the redemption while
--- the caller has no direct table privileges. Returns the unlocked exam + expiry.
+-- exam_type_id is null for all-programs redemptions.
+alter table public.promo_redemptions alter column exam_type_id drop not null;
+
+-- ── redeem_promo_code() ──────────────────────────────────────────────────────
+-- Adds: redemption-window enforcement and all-programs branch. Single-exam path
+-- is otherwise unchanged.
 create or replace function public.redeem_promo_code (p_code text)
 returns jsonb
 language plpgsql
@@ -82,11 +81,8 @@ begin
     end if;
     select slug, name into v_exam_slug, v_exam_name from public.exam_types where id = v_promo.exam_type_id;
     return jsonb_build_object(
-      'success', true,
-      'alreadyRedeemed', true,
-      'exam_type_id', v_promo.exam_type_id,
-      'exam_slug', v_exam_slug,
-      'exam_name', v_exam_name,
+      'success', true, 'alreadyRedeemed', true,
+      'exam_type_id', v_promo.exam_type_id, 'exam_slug', v_exam_slug, 'exam_name', v_exam_name,
       'error', 'You have already redeemed this code.'
     );
   end if;
@@ -129,19 +125,14 @@ begin
   insert into public.promo_redemptions (promo_code_id, user_id, exam_type_id, expires_at)
   values (v_promo.id, v_user, v_promo.exam_type_id, v_expires);
 
-  update public.promo_codes
-  set used_count = used_count + 1
-  where id = v_promo.id;
+  update public.promo_codes set used_count = used_count + 1 where id = v_promo.id;
 
   select slug, name into v_exam_slug, v_exam_name from public.exam_types where id = v_promo.exam_type_id;
 
   return jsonb_build_object(
     'success', true,
-    'exam_type_id', v_promo.exam_type_id,
-    'exam_slug', v_exam_slug,
-    'exam_name', v_exam_name,
-    'expires_at', v_expires,
-    'duration_days', v_promo.duration_days
+    'exam_type_id', v_promo.exam_type_id, 'exam_slug', v_exam_slug, 'exam_name', v_exam_name,
+    'expires_at', v_expires, 'duration_days', v_promo.duration_days
   );
 end;
 $$;

@@ -2,10 +2,14 @@ import React, { useState, useEffect } from 'react'
 import { Copy, Check, MessageCircle, X } from 'lucide-react'
 import { getPromoCodes, createPromoCode, updatePromoCode } from '../../services/adminService'
 
+// Sentinel chosen in the exam <select> to make a code that unlocks every program.
+const ALL_PROGRAMS = '__ALL__'
+
 const EMPTY_FORM = {
   exam_type_id: '',
   target_group: '',
   duration_days: '7',
+  redeem_window_days: '3',
   max_uses: '10',
 }
 
@@ -17,8 +21,36 @@ const DURATION_OPTIONS = [
   { value: '30', label: '1 month' },
 ]
 
+// How long the code stays redeemable (the redemption window / deadline).
+const REDEEM_WINDOW_OPTIONS = [
+  { value: '1', label: '1 day' },
+  { value: '3', label: '3 days' },
+  { value: '7', label: '1 week' },
+  { value: '14', label: '2 weeks' },
+  { value: '30', label: '1 month' },
+]
+
 function durationLabel(days) {
   return DURATION_OPTIONS.find(o => Number(o.value) === Number(days))?.label || `${days} days`
+}
+
+// Human-readable redeem-by deadline, e.g. "18 Jun 2026, 14:30".
+function formatDeadline(iso) {
+  if (!iso) return null
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return null
+  return d.toLocaleString(undefined, {
+    day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+  })
+}
+
+function isWindowClosed(promo) {
+  return promo.redeem_by ? new Date(promo.redeem_by).getTime() < Date.now() : false
+}
+
+// The display name of what a code unlocks (a specific exam, or every program).
+function promoExamName(promo) {
+  return promo.all_programs ? 'All programs' : (promo.exam_types?.name || '—')
 }
 
 // ── WhatsApp message templates ─────────────────────────────────────────────────
@@ -94,11 +126,14 @@ const MESSAGE_TEMPLATES = [
 ]
 
 function promoContext(promo) {
+  const deadline = formatDeadline(promo.redeem_by)
   return {
-    examName: promo.exam_types?.name || 'the exam',
+    examName: promo.all_programs ? 'all our certifications' : (promo.exam_types?.name || 'the exam'),
     length: durationLabel(promo.duration_days),
     code: promo.code,
     redeemUrl: `${window.location.origin}/redeem`,
+    // A ready-to-paste line reminding the recipient of the redeem-by deadline.
+    deadlineLine: deadline ? `\n\n⏳ Heads up — redeem before *${deadline}*. After that the code expires.` : '',
   }
 }
 
@@ -151,12 +186,16 @@ export default function PromoCodeManager({ examTypes }) {
       return
     }
 
+    const allPrograms = form.exam_type_id === ALL_PROGRAMS
+
     setSaving(true)
     try {
       const result = await createPromoCode({
-        exam_type_id: form.exam_type_id,
+        exam_type_id: allPrograms ? null : form.exam_type_id,
+        all_programs: allPrograms,
         target_group: form.target_group.trim(),
         duration_days: Number(form.duration_days),
+        redeem_window_days: Number(form.redeem_window_days),
         max_uses: Number(form.max_uses),
       })
       setSuccess(`Code "${result.data.code}" created.`)
@@ -201,9 +240,13 @@ export default function PromoCodeManager({ examTypes }) {
   }
 
   const activeTemplate = MESSAGE_TEMPLATES.find(t => t.id === templateId)
-  const previewMessage = sharePromo && activeTemplate
-    ? activeTemplate.build(promoContext(sharePromo))
-    : ''
+  // Build the chosen template, then append the redeem-by reminder so every
+  // message reflects the deadline regardless of which template is picked.
+  const previewMessage = (() => {
+    if (!sharePromo || !activeTemplate) return ''
+    const ctx = promoContext(sharePromo)
+    return activeTemplate.build(ctx) + ctx.deadlineLine
+  })()
 
   function sendWhatsApp() {
     window.open(`https://wa.me/?text=${encodeURIComponent(previewMessage)}`, '_blank', 'noopener,noreferrer')
@@ -224,8 +267,9 @@ export default function PromoCodeManager({ examTypes }) {
     <div className="admin-section">
       <h2 className="admin-section-title">Promo Codes</h2>
       <p className="admin-note" style={{ marginBottom: '1.5rem' }}>
-        Create a shareable code that unlocks one exam for a limited time, capped by a number of users.
-        Share it to a WhatsApp group and friends redeem it after signing in.
+        Create a shareable code that unlocks one exam — or every program — for a limited time, capped by a
+        number of users. "Redeem within" sets how long the code stays redeemable; "Access length" is how long
+        access lasts once redeemed. Share it to a WhatsApp group and friends redeem it after signing in.
       </p>
 
       {/* ── Create form ── */}
@@ -235,6 +279,7 @@ export default function PromoCodeManager({ examTypes }) {
             <label>Exam to unlock *</label>
             <select name="exam_type_id" value={form.exam_type_id} onChange={handleChange} required>
               <option value="">— choose exam —</option>
+              <option value={ALL_PROGRAMS}>★ All programs (every exam)</option>
               {examTypes.map(et => (
                 <option key={et.id} value={et.id}>{et.name}</option>
               ))}
@@ -256,6 +301,15 @@ export default function PromoCodeManager({ examTypes }) {
             <label>Access length *</label>
             <select name="duration_days" value={form.duration_days} onChange={handleChange} required>
               {DURATION_OPTIONS.map(o => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="admin-field">
+            <label>Redeem within *</label>
+            <select name="redeem_window_days" value={form.redeem_window_days} onChange={handleChange} required>
+              {REDEEM_WINDOW_OPTIONS.map(o => (
                 <option key={o.value} value={o.value}>{o.label}</option>
               ))}
             </select>
@@ -313,7 +367,7 @@ export default function PromoCodeManager({ examTypes }) {
                         ? <Check size={15} className="admin-promo-copyicon is-copied" />
                         : <Copy size={15} className="admin-promo-copyicon" />}
                     </button>
-                    <div className="admin-promo-exam">{promo.exam_types?.name || '—'}</div>
+                    <div className="admin-promo-exam">{promoExamName(promo)}</div>
                   </div>
                   <span className={`admin-pill ${promo.is_active ? 'admin-pill--on' : 'admin-pill--off'}`}>
                     {promo.is_active ? 'Active' : 'Inactive'}
@@ -322,7 +376,18 @@ export default function PromoCodeManager({ examTypes }) {
 
                 <div className="admin-promo-meta">
                   <span className="admin-chip">{promo.target_group}</span>
-                  <span className="admin-chip">{durationLabel(promo.duration_days)}</span>
+                  <span className="admin-chip">{durationLabel(promo.duration_days)} access</span>
+                  {promo.redeem_by && (
+                    <span
+                      className="admin-chip"
+                      title={isWindowClosed(promo) ? 'Redemption window has closed' : 'Last moment to redeem'}
+                      style={isWindowClosed(promo)
+                        ? { background: 'rgba(239,68,68,0.15)', color: '#ef4444' }
+                        : undefined}
+                    >
+                      {isWindowClosed(promo) ? 'Window closed' : `Redeem by ${formatDeadline(promo.redeem_by)}`}
+                    </span>
+                  )}
                 </div>
 
                 {/* Usage */}
