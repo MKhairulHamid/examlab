@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AIP-C01 Exam Guide — CloudExamLab Wiki</title>
+  <style>
+    :root {
+      --sidebar-w: 255px;
+      --sidebar-bg: #0f172a;
+      --sidebar-text: #94a3b8;
+      --sidebar-active-text: #38bdf8;
+      --sidebar-active-bg: rgba(56,189,248,0.08);
+      --sidebar-hover: #1e293b;
+      --accent: #2563eb;
+      --accent-light: #eff6ff;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --heading: #0f172a;
+      --code-bg: #1e293b;
+      --code-text: #e2e8f0;
+      --stripe: #f8fafc;
+      --warn-bg: #fef2f2;
+      --warn-border: #ef4444;
+      --tip-bg: #f0fdf4;
+      --tip-border: #22c55e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--text);
+      line-height: 1.65;
+      background: #fff;
+    }
+
+    /* ── Sidebar ── */
+    #sidebar {
+      position: fixed; top: 0; left: 0;
+      width: var(--sidebar-w); height: 100vh;
+      background: var(--sidebar-bg);
+      overflow-y: auto; z-index: 100;
+      display: flex; flex-direction: column;
+    }
+    #sidebar::-webkit-scrollbar { width: 4px; }
+    #sidebar::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+    .sb-header {
+      padding: 20px 16px 14px;
+      border-bottom: 1px solid #1e293b;
+    }
+    .sb-logo { font-size: 13px; font-weight: 700; color: #f1f5f9; letter-spacing: .06em; text-transform: uppercase; }
+    .sb-sub  { font-size: 11px; color: var(--sidebar-text); margin-top: 2px; }
+    .sb-group { padding: 10px 0 2px; }
+    .sb-group-label {
+      font-size: 10px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: #475569;
+      padding: 0 16px; margin-bottom: 3px;
+    }
+    .sb-item {
+      display: block; padding: 6px 16px;
+      font-size: 12.5px; color: var(--sidebar-text);
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: background .12s, color .12s;
+    }
+    .sb-item:hover { background: var(--sidebar-hover); color: #f1f5f9; }
+    .sb-item.active { color: var(--sidebar-active-text); border-left-color: var(--sidebar-active-text); background: var(--sidebar-active-bg); }
+    .sb-item.ext { color: #60a5fa; }
+    .sb-item.ext::after { content: ' ↗'; font-size: 10px; }
+
+    /* ── Main ── */
+    #main {
+      margin-left: var(--sidebar-w);
+      padding: 48px 64px 96px;
+      max-width: calc(var(--sidebar-w) + 880px);
+    }
+
+    /* ── Section ── */
+    .section { padding-top: 52px; border-top: 1px solid var(--border); margin-top: 28px; }
+    .section:first-of-type { border-top: none; margin-top: 0; padding-top: 0; }
+
+    /* ── Typography ── */
+    h1 { font-size: 27px; font-weight: 700; color: var(--heading); margin-bottom: 10px; }
+    h2 { font-size: 19px; font-weight: 700; color: var(--heading); margin-top: 38px; margin-bottom: 14px; }
+    h3 { font-size: 15px; font-weight: 600; color: var(--heading); margin-top: 24px; margin-bottom: 8px; }
+    p  { margin-bottom: 12px; }
+    a  { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ul, ol { padding-left: 22px; margin-bottom: 12px; }
+    li { margin-bottom: 4px; }
+    hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+    .section-meta { font-size: 14px; color: var(--text-muted); margin-bottom: 26px; margin-top: -4px; }
+
+    /* ── Chip label ── */
+    .chip {
+      display: inline-block; padding: 2px 9px; border-radius: 4px;
+      font-size: 10px; font-weight: 700; letter-spacing: .05em;
+      text-transform: uppercase; margin-bottom: 6px;
+    }
+    .chip-platform  { background: #eff6ff; color: #1d4ed8; }
+    .chip-technical { background: #f0fdf4; color: #15803d; }
+    .chip-reference { background: #fdf4ff; color: #7e22ce; }
+    .chip-exam      { background: #fff7ed; color: #c2410c; }
+
+    /* ── Tables ── */
+    .tw { overflow-x: auto; margin: 16px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    th {
+      background: #f1f5f9; padding: 7px 12px;
+      text-align: left; font-size: 11px; font-weight: 700;
+      color: var(--text-muted); border-bottom: 2px solid var(--border);
+      white-space: nowrap;
+    }
+    td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:nth-child(even) td { background: var(--stripe); }
+
+    /* ── Code ── */
+    code {
+      font-family: 'SF Mono','Fira Code','Cascadia Code',Consolas,monospace;
+      font-size: 12px; background: #f1f5f9; color: #be185d;
+      padding: 2px 5px; border-radius: 3px;
+    }
+
+    /* ── Callouts ── */
+    .callout {
+      padding: 12px 16px; border-radius: 6px;
+      margin: 14px 0; font-size: 13.5px;
+    }
+    .callout-note    { background: var(--accent-light); border-left: 4px solid var(--accent); }
+    .callout-warning { background: var(--warn-bg);      border-left: 4px solid var(--warn-border); }
+    .callout-tip     { background: var(--tip-bg);       border-left: 4px solid var(--tip-border); }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 10px;
+      font-size: 11px; font-weight: 600;
+    }
+    .badge-green  { background: #dcfce7; color: #15803d; }
+    .badge-yellow { background: #fef3c7; color: #b45309; }
+    .badge-gray   { background: #f1f5f9; color: #475569; }
+    .badge-blue   { background: #dbeafe; color: #1d4ed8; }
+    .badge-orange { background: #ffedd5; color: #c2410c; }
+
+    /* ── Numbered steps ── */
+    .steps { counter-reset: step; list-style: none; padding: 0; margin-bottom: 14px; }
+    .steps li {
+      counter-increment: step;
+      padding: 7px 0 7px 36px; position: relative;
+      border-left: 2px solid var(--border); margin-left: 11px;
+    }
+    .steps li::before {
+      content: counter(step);
+      position: absolute; left: -11px; top: 7px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--accent); color: #fff;
+      font-size: 10px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── Page title ── */
+    .page-title { margin-bottom: 36px; }
+    .page-title h1 { font-size: 30px; margin-bottom: 8px; }
+    .page-title p  { font-size: 15px; color: var(--text-muted); margin: 0; }
+
+    /* ── Domain bar ── */
+    .domain-bar { display: flex; gap: 6px; flex-wrap: wrap; margin: 18px 0 8px; }
+    .domain-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 12px; border-radius: 20px;
+      font-size: 12px; font-weight: 600;
+      border: 1px solid var(--border); background: #f8fafc;
+    }
+    .domain-pill .pct {
+      background: var(--accent); color: #fff;
+      border-radius: 10px; padding: 1px 6px;
+      font-size: 10px; font-weight: 700;
+    }
+
+    /* ── Highlight row ── */
+    .hl td { background: #eff6ff !important; font-weight: 600; }
+
+    /* ── Jump-to-top ── */
+    #top-btn {
+      position: fixed; bottom: 28px; right: 28px;
+      background: var(--accent); color: #fff;
+      border: none; border-radius: 50%; width: 38px; height: 38px;
+      font-size: 18px; cursor: pointer; display: none;
+      align-items: center; justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+      transition: opacity .2s;
+    }
+    #top-btn:hover { background: #1d4ed8; }
+  </style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<nav id="sidebar">
+  <div class="sb-header">
+    <div class="sb-logo">CloudExamLab</div>
+    <div class="sb-sub">Exam Guide Series</div>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">On this page</div>
+    <a class="sb-item active" href="#overview">Overview</a>
+    <a class="sb-item" href="#structure">Exam Structure</a>
+    <a class="sb-item" href="#domains">Content Domains</a>
+    <a class="sb-item" href="#domain1">D1 — FM Integration &amp; Data</a>
+    <a class="sb-item" href="#domain2">D2 — Implementation</a>
+    <a class="sb-item" href="#domain3">D3 — Safety &amp; Governance</a>
+    <a class="sb-item" href="#domain4">D4 — Efficiency &amp; Optimization</a>
+    <a class="sb-item" href="#domain5">D5 — Testing &amp; Troubleshooting</a>
+    <a class="sb-item" href="#candidate-prep">Helping Candidates</a>
+    <a class="sb-item" href="#simulation">Simulation Design</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Wiki</div>
+    <a class="sb-item ext" href="index.html">Developer Wiki</a>
+    <a class="sb-item ext" href="new-program-playbook.html">New Program Playbook</a>
+    <a class="sb-item ext" href="exam-authoring-standard.html">Exam &amp; Question Authoring</a>
+    <a class="sb-item ext" href="aws-certification-roadmap.html">AWS Cert Roadmap</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Official</div>
+    <a class="sb-item ext" href="https://docs.aws.amazon.com/aws-certification/latest/ai-professional-01/ai-professional-01.html">AWS Exam Guide ↗</a>
+  </div>
+</nav>
+
+<!-- ══ MAIN ══ -->
+<main id="main">
+
+  <!-- OVERVIEW -->
+  <div class="page-title" id="overview">
+    <h1>AWS Certified Generative AI Developer – Professional (AIP-C01)</h1>
+    <p>Everything we need to know about this exam — structure, domains, candidate prep strategy, and simulation design.</p>
+  </div>
+
+  <h2>What This Exam Is</h2>
+  <p>The AWS Certified Generative AI Developer – Professional (AIP-C01) validates the ability to integrate foundation models (FMs) into applications and business workflows and run them in production on AWS. It is AWS's most advanced AI engineering credential — the engineering counterpart to the foundational AI Practitioner (AIF-C01). Where AIF tests AI literacy, AIP tests production GenAI build skill: RAG, agents, safety, governance, cost, and operations.</p>
+  <ul>
+    <li><strong>Target candidate:</strong> A GenAI developer with 2+ years building production applications on AWS or open source, general AI/ML or data-engineering experience, and 1+ year hands-on implementing GenAI solutions.</li>
+    <li><strong>Validated abilities:</strong> Design RAG/vector-store/knowledge-base architectures; integrate FMs into apps and workflows; apply prompt engineering and management; build agentic AI; optimize for cost, performance, and business value; implement security, governance, and responsible AI; troubleshoot, monitor, and evaluate FMs.</li>
+    <li><strong>Out of scope for the candidate:</strong> Model development and training, advanced ML techniques, and data/feature engineering — this is an <em>integration and operations</em> exam, not a model-training exam.</li>
+  </ul>
+
+  <!-- STRUCTURE -->
+  <div class="section" id="structure">
+    <span class="chip chip-exam">Exam Format</span>
+    <h1>Question Format &amp; Scoring</h1>
+    <p class="section-meta">Exact parameters from the official exam guide — use these verbatim in the simulation design.</p>
+
+    <h2>Question Types</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>Multiple choice</td><td>One correct answer from four options (three distractors)</td></tr>
+        <tr><td>Multiple response</td><td>Two or more correct answers from five or more options; must select all correct responses for credit</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Scoring Model</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Setting</th><th>Value</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Total questions on exam</td><td>75</td><td>65 scored + 10 unscored pretest (unidentified)</td></tr>
+        <tr><td>Duration</td><td>180 minutes</td><td>Professional-level — exact match to real exam</td></tr>
+        <tr><td>Passing score</td><td>750 / 1,000</td><td>Display as % equivalent: 75%</td></tr>
+        <tr><td>Scoring</td><td>Compensatory</td><td>No per-domain minimums — total score only</td></tr>
+        <tr><td>Result</td><td>Pass / Fail</td><td>Scaled scoring equalizes difficulty across exam forms</td></tr>
+        <tr><td>Cost</td><td>$300 USD</td><td>Professional-tier price</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Out-of-Scope Tasks (Do NOT Test)</h2>
+    <p>The official exam guide places these job tasks out of scope for the candidate. Questions should not require them:</p>
+    <ul>
+      <li>Model development and training (building or pre-training foundation models)</li>
+      <li>Advanced ML techniques (custom architectures, novel training methods)</li>
+      <li>Data engineering and feature engineering as a discipline</li>
+    </ul>
+    <div class="callout callout-tip"><strong>Exam tip:</strong> AIP-C01 tests how to <em>integrate, secure, operate, and optimize</em> foundation models — not how to build them. If a question is really about training a model from scratch or designing a novel architecture, it is out of scope.</div>
+  </div>
+
+  <!-- DOMAIN OVERVIEW -->
+  <div class="section" id="domains">
+    <span class="chip chip-platform">Domains</span>
+    <h1>Domain Breakdown</h1>
+    <p class="section-meta">Five domains. D1 (FM Integration, Data &amp; Compliance) is the heaviest at 31% and is the foundation — RAG, vector stores, model selection, and prompt governance.</p>
+
+    <div class="domain-bar">
+      <span class="domain-pill">D1 — FM Integration &amp; Data <span class="pct">31%</span></span>
+      <span class="domain-pill">D2 — Implementation <span class="pct">26%</span></span>
+      <span class="domain-pill">D3 — Safety &amp; Governance <span class="pct">20%</span></span>
+      <span class="domain-pill">D4 — Efficiency &amp; Optimization <span class="pct">12%</span></span>
+      <span class="domain-pill">D5 — Testing &amp; Troubleshooting <span class="pct">11%</span></span>
+    </div>
+
+    <div class="tw"><table>
+      <thead><tr><th>Domain</th><th>Weight</th><th>Task statements</th></tr></thead>
+      <tbody>
+        <tr><td>D1 — Foundation Model Integration, Data Management &amp; Compliance</td><td>31%</td><td>1.1 Analyze requirements &amp; design · 1.2 Select &amp; configure FMs · 1.3 Data validation &amp; pipelines · 1.4 Vector stores · 1.5 Retrieval mechanisms · 1.6 Prompt engineering &amp; governance</td></tr>
+        <tr><td>D2 — Implementation &amp; Integration</td><td>26%</td><td>2.1 Agentic AI &amp; tools · 2.2 Model deployment · 2.3 Enterprise integration · 2.4 FM API integrations · 2.5 App integration patterns &amp; dev tools</td></tr>
+        <tr><td>D3 — AI Safety, Security &amp; Governance</td><td>20%</td><td>3.1 Input/output safety · 3.2 Data security &amp; privacy · 3.3 Governance &amp; compliance · 3.4 Responsible AI</td></tr>
+        <tr><td>D4 — Operational Efficiency &amp; Optimization</td><td>12%</td><td>4.1 Cost optimization · 4.2 Performance · 4.3 Monitoring</td></tr>
+        <tr><td>D5 — Testing, Validation &amp; Troubleshooting</td><td>11%</td><td>5.1 Evaluation systems · 5.2 Troubleshooting</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <!-- DOMAIN 1 -->
+  <div class="section" id="domain1">
+    <span class="chip chip-platform">Domain 1 · 31%</span>
+    <h1>Foundation Model Integration, Data Management &amp; Compliance</h1>
+    <p class="section-meta">The largest and most foundational domain. Designing GenAI solutions, choosing and customizing models, building data pipelines, and the full RAG stack — vector stores, retrieval, and prompt governance.</p>
+
+    <h2>Task 1.1 — Analyze requirements and design GenAI solutions</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Creating architectural designs aligned to business needs and constraints (FM choice, integration patterns, deployment strategies)</li>
+      <li>Building proof-of-concept implementations on Amazon Bedrock to validate feasibility, performance, and value before full build-out</li>
+      <li>Standardizing components with the AWS Well-Architected Framework and its Generative AI Lens</li>
+    </ul>
+
+    <h2>Task 1.2 — Select and configure FMs</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Choosing FMs on benchmarks, capability, and limitation analysis for the use case</li>
+      <li>Designing abstraction patterns for dynamic model selection/provider switching without code changes (Lambda, API Gateway, AppConfig)</li>
+      <li>Building resilient systems (Bedrock Cross-Region Inference, circuit breakers, graceful degradation)</li>
+      <li>Deploying customized FMs and managing lifecycle (SageMaker AI, LoRA/adapters, Model Registry, rollback)</li>
+    </ul>
+
+    <h2>Task 1.3 — Implement data validation and processing pipelines for FM consumption</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Building data validation workflows (AWS Glue Data Quality, SageMaker Data Wrangler, Lambda, CloudWatch metrics)</li>
+      <li>Processing multimodal data — text, image, audio, tabular (Bedrock multimodal, SageMaker Processing, Amazon Transcribe)</li>
+      <li>Formatting input to model-specific requirements (JSON for Bedrock, structured payloads for SageMaker endpoints, conversation formatting)</li>
+      <li>Enhancing input quality (Bedrock reformatting, Comprehend entity extraction, Lambda normalization)</li>
+    </ul>
+
+    <h2>Task 1.4 — Design and implement vector store solutions</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Designing vector database architectures (Bedrock Knowledge Bases, OpenSearch with Neural plugin, Aurora/RDS, DynamoDB)</li>
+      <li>Building metadata frameworks for precision and filtering (timestamps, authorship, domain tags, S3 metadata)</li>
+      <li>Scaling search (OpenSearch sharding, multi-index, hierarchical indexing)</li>
+      <li>Keeping stores current (incremental updates, change detection, scheduled refresh, synchronization)</li>
+    </ul>
+
+    <h2>Task 1.5 — Design retrieval mechanisms for FM augmentation</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Document chunking (Bedrock chunking, fixed-size, hierarchical, semantic)</li>
+      <li>Selecting/configuring embedding models (Amazon Titan embeddings, dimensionality, domain fit, batch generation)</li>
+      <li>Deploying vector search (OpenSearch, Aurora pgvector, Bedrock Knowledge Bases)</li>
+      <li>Improving relevance (hybrid keyword+vector search, Bedrock reranker models)</li>
+      <li>Advanced query handling (expansion, decomposition, transformation) and consistent access (function calling, MCP)</li>
+    </ul>
+
+    <h2>Task 1.6 — Implement prompt engineering strategies and governance</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Instruction frameworks controlling behavior (Bedrock Prompt Management, Guardrails, output templates)</li>
+      <li>Prompt management/governance (parameterized templates, versioning, approval workflows, S3 repositories, CloudTrail/CloudWatch auditing)</li>
+      <li>Prompt quality assurance and regression testing (Lambda, Step Functions, CloudWatch)</li>
+      <li>Advanced techniques (chain-of-thought, structured I/O, feedback loops) and Bedrock Prompt Flows for multi-step logic</li>
+    </ul>
+  </div>
+
+  <!-- DOMAIN 2 -->
+  <div class="section" id="domain2">
+    <span class="chip chip-technical">Domain 2 · 26%</span>
+    <h1>Implementation and Integration</h1>
+    <p class="section-meta">The build domain. Agentic AI and tool use, model deployment strategies, enterprise and API integration, and the application patterns and developer tools that turn FMs into shipped features.</p>
+
+    <h2>Task 2.1 — Implement agentic AI solutions and tool integrations</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Building autonomous systems with memory/state (Strands Agents, AWS Agent Squad, MCP for agent-tool interactions)</li>
+      <li>Structured reasoning (ReAct, chain-of-thought via Step Functions) and safeguarded workflows (stopping conditions, timeouts, IAM boundaries, circuit breakers)</li>
+      <li>Multi-model coordination, human-in-the-loop review, and tool integration with error handling and parameter validation</li>
+      <li>Model extension via MCP servers (Lambda for lightweight, ECS for complex tools)</li>
+    </ul>
+
+    <h2>Task 2.2 — Implement model deployment strategies</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Deploying FMs by need (Lambda on-demand, Bedrock provisioned throughput, SageMaker endpoints for hybrid)</li>
+      <li>Addressing LLM-specific deployment challenges (memory, GPU utilization, token throughput, container patterns)</li>
+      <li>Optimizing deployment (right-sized models, smaller task-specific models, API-based model cascading)</li>
+    </ul>
+
+    <h2>Task 2.3 — Design and implement enterprise integration architectures</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Connecting FMs to existing systems (API integrations, event-driven loose coupling via EventBridge, data sync)</li>
+      <li>Secure access (identity federation, RBAC, least-privilege FM access)</li>
+      <li>Cross-environment compliance (Outposts, Wavelength) and CI/CD + GenAI gateway architectures (CodePipeline, CodeBuild, centralized abstraction, observability)</li>
+    </ul>
+
+    <h2>Task 2.4 — Implement FM API integrations</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Flexible interaction (Bedrock APIs, SDKs + SQS for async, API Gateway with request validation)</li>
+      <li>Real-time interaction (Bedrock streaming APIs, WebSockets/SSE, chunked transfer encoding)</li>
+      <li>Resilience (exponential backoff, rate limiting, fallback, X-Ray observability) and intelligent model routing (static and Step Functions content-based)</li>
+    </ul>
+
+    <h2>Task 2.5 — Implement application integration patterns and development tools</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>FM API interfaces (API Gateway streaming, token-limit and retry handling)</li>
+      <li>Accessible interfaces (Amplify UI components, OpenAPI specs, Prompt Flows no-code builders)</li>
+      <li>Business system enhancements (Lambda, Step Functions document processing, Bedrock Data Automation)</li>
+      <li>Developer productivity and troubleshooting (Amazon Q Developer, CloudWatch Logs Insights, X-Ray)</li>
+    </ul>
+  </div>
+
+  <!-- DOMAIN 3 -->
+  <div class="section" id="domain3">
+    <span class="chip chip-reference">Domain 3 · 20%</span>
+    <h1>AI Safety, Security &amp; Governance</h1>
+    <p class="section-meta">Keeping GenAI safe, private, compliant, and responsible — input/output safety controls, data security and privacy, governance and audit, and responsible-AI principles.</p>
+
+    <h2>Task 3.1 — Implement input and output safety controls</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Content safety on inputs and outputs (Bedrock Guardrails, custom moderation workflows, toxicity detection)</li>
+      <li>Hallucination reduction (Knowledge Base grounding, confidence scoring, JSON Schema structured outputs)</li>
+      <li>Defense-in-depth (Comprehend pre-processing, model guardrails, Lambda post-processing, API Gateway filtering)</li>
+      <li>Threat detection (prompt-injection and jailbreak detection, input sanitization, safety classifiers, adversarial testing)</li>
+    </ul>
+
+    <h2>Task 3.2 — Implement data security and privacy controls</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Protected environments (VPC endpoints, IAM secure-access patterns, Lake Formation, CloudWatch monitoring)</li>
+      <li>Privacy preservation (Comprehend &amp; Macie PII detection, Bedrock data-privacy features, Guardrails output filtering, S3 retention)</li>
+      <li>Privacy-focused systems (data masking, anonymization while maintaining utility)</li>
+    </ul>
+
+    <h2>Task 3.3 — Implement AI governance and compliance mechanisms</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Compliance frameworks (SageMaker model cards, Glue data lineage, metadata tagging, decision logs)</li>
+      <li>Data source tracking and traceability (Glue Data Catalog, source attribution, CloudTrail audit logging)</li>
+      <li>Organizational governance and continuous monitoring (misuse/drift/policy-violation detection, bias-drift monitoring, token-level redaction, output policy filters)</li>
+    </ul>
+
+    <h2>Task 3.4 — Implement responsible AI principles</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Transparency (reasoning displays, confidence metrics, evidence/source attribution, Bedrock agent tracing)</li>
+      <li>Fairness evaluation (CloudWatch fairness metrics, A/B testing via Prompt Management/Flows, LLM-as-a-judge model evaluations)</li>
+      <li>Policy-compliant systems (Guardrails by policy, model cards documenting limitations, Lambda automated compliance checks)</li>
+    </ul>
+  </div>
+
+  <!-- DOMAIN 4 -->
+  <div class="section" id="domain4">
+    <span class="chip chip-exam">Domain 4 · 12%</span>
+    <h1>Operational Efficiency &amp; Optimization for GenAI Applications</h1>
+    <p class="section-meta">Making GenAI affordable and fast at scale — token and cost efficiency, application performance and latency, and GenAI-specific monitoring and observability.</p>
+
+    <h2>Task 4.1 — Implement cost optimization and resource efficiency strategies</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Token efficiency (estimation/tracking, context-window optimization, prompt compression, response limiting)</li>
+      <li>Cost-effective model selection (cost-capability tradeoff, tiered usage by complexity, price-to-performance)</li>
+      <li>Throughput (batching, capacity planning, auto-scaling, provisioned-throughput optimization)</li>
+      <li>Intelligent caching (semantic caching, prompt caching, deterministic request hashing, edge caching)</li>
+    </ul>
+
+    <h2>Task 4.2 — Optimize application performance</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Latency-cost tradeoffs (pre-computation, latency-optimized Bedrock models, parallel requests, response streaming)</li>
+      <li>Retrieval performance (index optimization, query preprocessing, hybrid search with custom scoring)</li>
+      <li>Throughput and parameter tuning (batch inference, concurrency, temperature and top-k/top-p selection, A/B testing)</li>
+    </ul>
+
+    <h2>Task 4.3 — Implement monitoring systems for GenAI applications</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Holistic observability (operational metrics, FM interaction tracing, business-impact dashboards)</li>
+      <li>GenAI-specific monitoring (CloudWatch token usage, hallucination/response-quality tracking, Bedrock Model Invocation Logs, cost anomaly detection)</li>
+      <li>Tool and vector-store operational monitoring, and FM-specific troubleshooting frameworks (golden datasets, output diffing, reasoning-path tracing)</li>
+    </ul>
+  </div>
+
+  <!-- DOMAIN 5 -->
+  <div class="section" id="domain5">
+    <span class="chip chip-platform">Domain 5 · 11%</span>
+    <h1>Testing, Validation &amp; Troubleshooting</h1>
+    <p class="section-meta">Proving and repairing GenAI quality — evaluation frameworks beyond traditional ML metrics, and systematic troubleshooting of FM applications.</p>
+
+    <h2>Task 5.1 — Implement evaluation systems for GenAI</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Quality assessment beyond traditional ML (relevance, factual accuracy, consistency, fluency)</li>
+      <li>Systematic evaluation (Bedrock Model Evaluations, A/B and canary testing, cost-performance analysis)</li>
+      <li>User-centered and QA processes (feedback/rating interfaces, regression testing, automated quality gates)</li>
+      <li>RAG evaluation, LLM-as-a-Judge, retrieval-quality testing, agent-performance frameworks (Bedrock Agent evaluations), deployment validation</li>
+    </ul>
+
+    <h2>Task 5.2 — Troubleshoot GenAI applications</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Content-handling issues (context-window overflow, dynamic chunking, truncation analysis)</li>
+      <li>FM integration issues (error logging, request validation, response analysis)</li>
+      <li>Prompt troubleshooting (testing frameworks, version comparison, systematic refinement)</li>
+      <li>Retrieval issues (relevance analysis, embedding-quality diagnostics, drift monitoring, chunking remediation) and prompt-maintenance observability (CloudWatch Logs, X-Ray, schema validation)</li>
+    </ul>
+  </div>
+
+  <!-- CANDIDATE PREP -->
+  <div class="section" id="candidate-prep">
+    <span class="chip chip-platform">Candidate Prep</span>
+    <h1>How We Help AIP-C01 Candidates</h1>
+    <p class="section-meta">Who takes this exam, where they struggle, and how to build a study path that gets them to 750+.</p>
+
+    <h2>Who Takes This Exam</h2>
+    <ul>
+      <li><strong>GenAI / AI engineers</strong> already building with Amazon Bedrock who want to validate production-grade skill.</li>
+      <li><strong>Developers and solutions architects</strong> moving from "calling a model API" to designing RAG, agents, and governed AI platforms.</li>
+      <li><strong>ML engineers</strong> shifting from training models to integrating foundation models into applications.</li>
+    </ul>
+
+    <h2>What Candidates Struggle With</h2>
+    <ul>
+      <li><strong>RAG vs. fine-tuning</strong> — knowing that grounding in private, changing data with citations is RAG, while fine-tuning teaches style/behavior, not fresh facts.</li>
+      <li><strong>The full RAG stack</strong> — separating the storage half (vector store, metadata, sync) from the retrieval half (chunking, embeddings, hybrid search, reranking) and knowing which lever fixes which symptom.</li>
+      <li><strong>Agents vs. Prompt Flows vs. a single prompt</strong> — when a task needs autonomous tool use, when deterministic branching suffices, and when better prompting is enough.</li>
+      <li><strong>Guardrails vs. prompt instructions</strong> — that safety policy must be enforced at the platform level, independent of (and resilient to) prompt changes and prompt injection.</li>
+      <li><strong>GenAI-specific operations</strong> — token cost, semantic/prompt caching, latency-cost tradeoffs, and monitoring metrics (hallucination rate, token bursts) that have no traditional-ML equivalent.</li>
+      <li><strong>GenAI-specific evaluation</strong> — LLM-as-a-Judge, RAG evaluation, and golden datasets rather than accuracy/F1 alone.</li>
+    </ul>
+
+    <h2>Recommended Study Path</h2>
+    <ol class="steps">
+      <li><strong>Domain 1 — FM integration &amp; the RAG stack first.</strong> Highest weight (31%) and the foundation everything else builds on. Master archetype selection, the vector-store/retrieval split, and prompt governance.</li>
+      <li><strong>Domain 2 — Implementation &amp; integration.</strong> Agents, deployment, API patterns, and enterprise integration. Builds directly on D1's foundations.</li>
+      <li><strong>Domain 3 — Safety, security &amp; governance.</strong> Guardrails, PII protection, prompt-injection defense, and responsible AI — heavily interconnected with D1 and D2.</li>
+      <li><strong>Domains 4 &amp; 5 — Operations and evaluation last.</strong> Smaller (12% + 11%) and best learned once the build skills are solid: cost/performance/monitoring, then evaluation and troubleshooting.</li>
+    </ol>
+
+    <h2>AI Explanation Quality for This Exam</h2>
+    <p>AIP-C01 questions are scenario-based and often have two plausible options. Every explanation must say WHY the chosen answer wins on the specific requirement and WHY each distractor falls short. Common patterns to cover:</p>
+    <ul>
+      <li>For RAG-vs-fine-tuning questions: explain that the requirement (current facts, citations, private data) points to RAG, and that fine-tuning teaches behavior not fresh facts.</li>
+      <li>For retrieval-symptom questions: tie the symptom to the lever — "misses exact terms" → hybrid search; "related but not best-ranked" → reranking; "context cut off" → chunking.</li>
+      <li>For safety questions: explain that platform Guardrails enforce policy regardless of prompt, where prompt instructions can be bypassed by injection.</li>
+      <li>For cost/latency questions: explain which technique each option optimizes (semantic caching avoids invocations; smaller/tiered models cut token cost; streaming improves perceived latency).</li>
+    </ul>
+  </div>
+
+  <!-- SIMULATION DESIGN -->
+  <div class="section" id="simulation">
+    <span class="chip chip-exam">Simulation Design</span>
+    <h1>How to Formulate the Exam Simulation</h1>
+    <p class="section-meta">Parameters for building practice sets that match the real AIP-C01 exam. See the <a href="exam-authoring-standard.html">Exam &amp; Question Authoring Standard</a> for question-writing rules.</p>
+
+    <h2>Question Set Structure</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Setting</th><th>Value</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Total questions per simulation</td><td>65</td><td>Match the scored count of the real exam (real exam adds 10 unscored)</td></tr>
+        <tr><td>Duration</td><td>180 minutes</td><td>Professional-level — exact match to real exam</td></tr>
+        <tr><td>Passing threshold</td><td>750 / 1,000</td><td>Display as % equivalent: 75%</td></tr>
+        <tr><td>Scoring</td><td>Compensatory</td><td>No domain minimums — total score only</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Domain Distribution per Set</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Domain</th><th>Weight</th><th>Qs in 65-Q set</th></tr></thead>
+      <tbody>
+        <tr><td>D1 — FM Integration, Data &amp; Compliance</td><td>31%</td><td>20</td></tr>
+        <tr><td>D2 — Implementation &amp; Integration</td><td>26%</td><td>17</td></tr>
+        <tr><td>D3 — AI Safety, Security &amp; Governance</td><td>20%</td><td>13</td></tr>
+        <tr><td>D4 — Operational Efficiency &amp; Optimization</td><td>12%</td><td>8</td></tr>
+        <tr><td>D5 — Testing, Validation &amp; Troubleshooting</td><td>11%</td><td>7</td></tr>
+        <tr class="hl"><td><strong>Total</strong></td><td><strong>100%</strong></td><td><strong>65</strong></td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Three Simulation Angles</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Set</th><th>Angle</th><th>Style</th></tr></thead>
+      <tbody>
+        <tr><td>Sim 1 — Foundational</td><td>Know the services and concepts</td><td>"Which AWS service/feature does X?" · "Which technique addresses Y?"</td></tr>
+        <tr><td>Sim 2 — Architectural</td><td>Apply knowledge to a business problem</td><td>"A company needs X and Y — which architecture/design fits?"</td></tr>
+        <tr><td>Sim 3 — Comparative</td><td>Distinguish similar options &amp; trade-offs</td><td>"Key difference between X and Y?" · "MOST/LEAST appropriate for Z?"</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Question Type Mix</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Type</th><th>Suggested % of set</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Multiple choice (1-of-4)</td><td>~75%</td><td><span class="badge badge-green">All sets</span> — Free + Sim 1 are 100% MC</td></tr>
+        <tr><td>Multiple response (select N of 5–6)</td><td>~25%</td><td><span class="badge badge-green">Sim 2 &amp; Sim 3</span> — must select all correct for credit</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Question Writing Rules (AIP-C01 specific)</h2>
+    <ul>
+      <li><strong>Scenario-based stems</strong> — "A company is building a RAG assistant that…" Never "What is an embedding?"</li>
+      <li><strong>Integration and operations, not model training</strong> — never ask candidates to design a novel architecture or pre-train a model.</li>
+      <li><strong>Make the requirement the crux</strong> — the deciding detail (citations needed, data changes hourly, must isolate tenants, lowest token cost) should select the answer.</li>
+      <li><strong>Symptom → lever framing</strong> — many D1/D5 questions reduce to matching a retrieval/prompt symptom to the correct fix.</li>
+      <li><strong>Two-plausible-options for Sim 3</strong> — comparative questions where both options work but one fits the stated constraint better.</li>
+    </ul>
+
+    <h2>Distractor Quality Guidelines</h2>
+    <ul>
+      <li>Use real GenAI confusions: RAG vs. fine-tuning; agents vs. Prompt Flows; Guardrails vs. prompt instructions; hybrid search vs. reranking vs. chunking.</li>
+      <li>For safety questions: include a distractor that puts the rule in the prompt instead of platform Guardrails (plausible but bypassable).</li>
+      <li>For cost questions: make each distractor optimize a real but wrong dimension (bigger model, more retries, no caching).</li>
+      <li>Every question carries a full <code>ai_cache</code> explanation payload — overview, per-option reasons, concept guide, and official links.</li>
+    </ul>
+  </div>
+
+</main>
+
+<button id="top-btn" title="Back to top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<script>
+  const topBtn = document.getElementById('top-btn');
+  window.addEventListener('scroll', () => {
+    topBtn.style.display = window.scrollY > 400 ? 'flex' : 'none';
+  });
+</script>
+</body>
+</html>

@@ -6,7 +6,7 @@
 // the Supabase exam_types/question_sets rows. Exam facts below are the official
 // AWS numbers at time of writing.
 
-import { Cloud, BrainCircuit, Layers, Code2, Cpu, Network } from 'lucide-react'
+import { Cloud, BrainCircuit, Layers, Code2, Cpu, Network, Sparkles } from 'lucide-react'
 
 export const PROGRAMS = [
   {
@@ -225,6 +225,43 @@ export const PROGRAMS = [
     facts: { questions: '75', time: '180 min', passing: '750 / 1000', cost: '$300' },
     evergreenValue:
       'Even if you never sit the exam, you develop the way a senior architect thinks — designing across whole organizations, weighing real trade-offs, and improving systems that are already running. That judgment is the most durable, highest-leverage skill in cloud.',
+  },
+  {
+    code: 'AIP-C01',
+    slug: 'aip-c01',
+    name: 'AWS Certified Generative AI Developer – Professional',
+    shortName: 'GenAI Developer Pro',
+    level: 'Professional',
+    Icon: Sparkles,
+    color: '#DB2777',
+    tagline: 'Build production generative AI on AWS — RAG, agents, and foundation models done right.',
+    heroLead: 'Build generative AI',
+    heroAccent: 'that survives production.',
+    blurb:
+      'AIP-C01 is AWS’s most advanced AI engineering credential. It teaches you to integrate foundation models into real applications — designing RAG and vector stores, building agentic workflows, securing and governing AI, and optimizing it for cost, performance, and quality in production.',
+    whyTopic:
+      'Almost anyone can call a model API and get a demo working. The hard, valuable skill is everything around the model: grounding answers in private data without hallucination, giving the model tools and memory to act, keeping it safe and compliant, and making it fast and affordable at scale. This program trains exactly that engineering — the difference between a flashy prototype and a generative AI system a business can actually depend on.',
+    learnOutcomes: [
+      'Designing RAG systems: vector stores, chunking, embeddings, hybrid search, and reranking that ground answers in your own data',
+      'Building agentic AI — tool use, multi-step reasoning, memory, and orchestration with Bedrock Agents, Strands, and Step Functions',
+      'Securing and governing GenAI: Guardrails, PII protection, prompt-injection defense, responsible AI, and auditability',
+      'Optimizing for cost and performance: token efficiency, caching, model selection, and latency tuning',
+      'Evaluating, testing, and troubleshooting foundation-model applications the way production demands',
+    ],
+    careerBenefit:
+      'Generative AI Developer Professional is the most advanced AI engineering certification on AWS and one of the highest-signal credentials in the market. It is built for the AI engineer, applied-AI, and GenAI platform roles that are among the fastest-growing and best-paid in tech.',
+    roles: ['AI / GenAI engineers', 'Applied AI developers', 'ML engineers building with FMs', 'Solutions architects on AI platforms'],
+    sessions: 19,
+    domains: [
+      { label: 'FM Integration, Data & Compliance', weight: '31%' },
+      { label: 'Implementation & Integration', weight: '26%' },
+      { label: 'AI Safety, Security & Governance', weight: '20%' },
+      { label: 'Operational Efficiency & Optimization', weight: '12%' },
+      { label: 'Testing, Validation & Troubleshooting', weight: '11%' },
+    ],
+    facts: { questions: '75', time: '180 min', passing: '750 / 1000', cost: '$300' },
+    evergreenValue:
+      'Even if you never sit the exam, you learn how production generative AI is actually engineered — grounding, agents, safety, and cost control. That is the practical, in-demand skill behind every serious GenAI product, whatever your job title.',
   },
 ]
 
