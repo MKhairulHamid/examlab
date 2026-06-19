@@ -257,14 +257,14 @@ function Dashboard() {
     return (
       <div className="pt-6">
         <Container>
-          <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${Math.min(stats.length, 5)}, minmax(0, 1fr))` }}>
+          <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(104px, 1fr))' }}>
             {stats.map((s, i) => (
-              <Card key={i} className="p-4 text-center">
+              <Card key={i} className="p-3 text-center min-w-0">
                 <div className="flex justify-center mb-1.5">
                   <s.Icon className="w-5 h-5" style={{ color: s.color }} />
                 </div>
                 <p className="text-2xl font-mono font-bold text-[#0A2540] leading-none">{s.value}</p>
-                <p className="text-xs text-gray-500 mt-1 font-medium">{s.label}</p>
+                <p className="text-xs text-gray-500 mt-1 font-medium leading-tight break-words">{s.label}</p>
               </Card>
             ))}
           </div>
