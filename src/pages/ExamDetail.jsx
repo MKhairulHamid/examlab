@@ -13,6 +13,7 @@ import certificateService, { buildVerifyPath } from '../services/certificateServ
 import CertificateCard from '../components/certificate/CertificateCard'
 import HowToEarn from '../components/certificate/HowToEarn'
 import { getSessionCourse } from '../utils/sessionCourses'
+import BackLink from '../components/layout/BackLink'
 import { getProgram } from '../data/programs'
 import { getOfficialResourceUrl } from '../utils/officialResources'
 import {
@@ -281,9 +282,7 @@ function ExamDetail() {
       <div className="max-w-6xl mx-auto px-4 py-4 sm:p-6">
 
         {/* Back button */}
-        <button onClick={() => navigate('/dashboard')} className="back-button mb-4 sm:mb-6">
-          ← Back to Dashboard
-        </button>
+        <BackLink to="/dashboard" label="Dashboard" tone="dark" className="mb-4 sm:mb-6" />
 
         {/* Resume an unfinished practice exam */}
         {inProgressExam && (

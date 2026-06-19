@@ -6,25 +6,22 @@ import usePurchaseStore from '../stores/purchaseStore'
 import DashboardHeader from '../components/layout/DashboardHeader'
 import EnrollmentModal from '../components/enrollment/EnrollmentModal'
 import streakService from '../services/streakService'
+import progressService from '../services/progressService'
 import certificateService, { buildVerifyPath } from '../services/certificateService'
 import CertificateCard from '../components/certificate/CertificateCard'
-import { getProgram } from '../data/programs'
+import { PROGRAMS, getProgram, getProgramBySlug } from '../data/programs'
+import { getSessionCourse } from '../utils/sessionCourses'
 import supabase from '../services/supabase'
 import { Button, Card, Badge, Container, SectionHeader } from '../design-system'
 import {
   BookOpen, ClipboardList, CheckCircle2, CalendarDays, BarChart2,
-  Flame, BrainCircuit, Sparkles, Target, ShieldCheck, Lock,
-  LayoutGrid, Award,
+  Flame, LayoutGrid, Award, PlayCircle, ArrowRight, Rocket, GraduationCap,
 } from 'lucide-react'
-import aifC01Course from '../data/aifC01Course'
 
-const DOMAIN_META = [
-  { id: 'd1', label: 'Fundamentals of AI & ML',          weight: '20%', color: '#0EA5E9', Icon: BrainCircuit },
-  { id: 'd2', label: 'Fundamentals of Generative AI',     weight: '24%', color: '#8B5CF6', Icon: Sparkles },
-  { id: 'd3', label: 'Applications of Foundation Models', weight: '28%', color: '#00D4AA', Icon: Target },
-  { id: 'd4', label: 'Guidelines for Responsible AI',     weight: '14%', color: '#F59E0B', Icon: ShieldCheck },
-  { id: 'd5', label: 'Security, Compliance & Governance', weight: '14%', color: '#EF4444', Icon: Lock },
-]
+// Every session-based program slug we ship a course for. Used to detect a
+// returning learner who has local study progress but no formal enrollment yet.
+const KNOWN_COURSE_SLUGS = ['aif-c01', 'clf-c02', 'saa-c03', 'dva-c02', 'mla-c01', 'sap-c02']
+const DOMAIN_PALETTE = ['#0EA5E9', '#8B5CF6', '#00D4AA', '#F59E0B', '#EF4444', '#6366F1']
 
 const TABS = [
   { id: 'overview',    label: 'Overview',    Icon: LayoutGrid },
@@ -46,8 +43,12 @@ function Dashboard() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
   const { exams, fetchExams } = useExamStore()
-  const { isSubscribed, fetchSubscription, fetchEnrollments, fetchPromoAccess, hasExamAccess } = usePurchaseStore()
+  const {
+    isSubscribed, fetchSubscription, fetchEnrollments, fetchPromoAccess, hasExamAccess,
+    enrolledExamIds, promoAccessExamIds, promoFullAccess,
+  } = usePurchaseStore()
   const [showEnrollmentModal, setShowEnrollmentModal] = useState(false)
+  const [resumeExam, setResumeExam] = useState(null)
   const [streakStats, setStreakStats] = useState(null)
   const [examResults, setExamResults] = useState([])
   const [examDates, setExamDates] = useState([])
@@ -147,29 +148,99 @@ function Dashboard() {
     return () => { document.removeEventListener('visibilitychange', onVisibility); window.removeEventListener('focus', onFocus) }
   }, [user])
 
-  // ── AIF-C01 course progress ───────────────────────────────────────
-  const aifProgress = useMemo(() => {
+  // ── Adaptive home: which program to feature ───────────────────────
+  // A returning learner may have local study progress before any formal
+  // enrollment — detect that so the home stays progress-forward, not empty.
+  const progressedSlug = useMemo(() => {
+    for (const slug of KNOWN_COURSE_SLUGS) {
+      try {
+        const raw = localStorage.getItem(`course-progress-${slug}`)
+        if (raw && JSON.parse(raw).length > 0) return slug
+      } catch { /* ignore */ }
+    }
+    return null
+  }, [])
+
+  // The exam to surface: an enrolled / promo-unlocked program first, else a
+  // program the learner has already started studying. Subscribed-but-unpicked
+  // and brand-new users resolve to null → first-timer path-chooser.
+  const featuredExam = useMemo(() => {
+    if (!exams.length) return null
+    const accessibleIds = [...(enrolledExamIds || []), ...(promoAccessExamIds || [])]
+    let exam = exams.find(e => accessibleIds.includes(e.id))
+    if (!exam && progressedSlug) exam = exams.find(e => e.slug === progressedSlug)
+    return exam || null
+  }, [exams, enrolledExamIds, promoAccessExamIds, progressedSlug])
+
+  const featuredProgram = useMemo(
+    () => (featuredExam ? getProgramBySlug(featuredExam.slug) : null),
+    [featuredExam],
+  )
+
+  const featuredCourse = useMemo(
+    () => (featuredExam ? getSessionCourse(featuredExam.slug) : null),
+    [featuredExam],
+  )
+
+  const isFirstTimer = !featuredProgram
+
+  // ── Featured course progress (program-aware) ──────────────────────
+  const courseProgress = useMemo(() => {
+    if (!featuredCourse) return null
     let completedIds = []
     try {
-      const raw = localStorage.getItem(`course-progress-${aifC01Course.slug}`)
+      const raw = localStorage.getItem(`course-progress-${featuredCourse.slug}`)
       if (raw) completedIds = JSON.parse(raw)
     } catch { /* ignore */ }
 
-    const total = aifC01Course.sessions.length
+    const sessions = featuredCourse.sessions || []
+    const total = sessions.length
     const done = completedIds.length
     const pct = total > 0 ? Math.round((done / total) * 100) : 0
 
-    const byDomain = DOMAIN_META.map(d => {
-      const domainSessions = aifC01Course.sessions.filter(s => s.domain === d.id)
-      const domainDone = domainSessions.filter(s => completedIds.includes(s.id)).length
-      return { ...d, total: domainSessions.length, done: domainDone }
+    const modules = (featuredCourse.modules || []).filter(m => m.id !== 'exam')
+    const byDomain = modules.map((m, i) => {
+      const domainSessions = sessions.filter(s => s.domain === m.id)
+      return {
+        id: m.id,
+        label: m.label.replace(/^Domain\s*\d+\s*·\s*/, ''),
+        weight: m.weight,
+        color: DOMAIN_PALETTE[i % DOMAIN_PALETTE.length],
+        total: domainSessions.length,
+        done: domainSessions.filter(s => completedIds.includes(s.id)).length,
+      }
     })
 
-    const nextSession = aifC01Course.sessions.find(s => !completedIds.includes(s.id))
-    const aifExam = exams.find(ex => `${ex.slug || ''} ${ex.name || ''}`.toLowerCase().includes('aif'))
+    const nextSession = sessions.find(s => !completedIds.includes(s.id))
+    return { total, done, pct, byDomain, nextSession, studySlug: featuredExam?.slug || null, completedIds }
+  }, [featuredCourse, featuredExam])
 
-    return { total, done, pct, byDomain, nextSession, studySlug: aifExam?.slug || null, completedIds }
-  }, [exams])
+  // ── Resume: most recent in-progress practice exam ─────────────────
+  useEffect(() => {
+    if (!user) { setResumeExam(null); return }
+    let cancelled = false
+    ;(async () => {
+      try {
+        const all = await progressService.getAllProgress(user.id)
+        const active = (all || []).find(p => p.status === 'in_progress')
+        if (!active) { if (!cancelled) setResumeExam(null); return }
+        const { data } = await supabase
+          .from('question_sets')
+          .select('name, exam_types(slug, name)')
+          .eq('id', active.questionSetId).single()
+        if (cancelled || !data?.exam_types?.slug) return
+        const answered = Object.keys(active.answers || {}).filter(k => active.answers[k]?.length).length
+        setResumeExam({
+          slug: data.exam_types.slug,
+          setId: active.questionSetId,
+          setName: data.name,
+          examName: data.exam_types.name,
+          answered,
+        })
+      } catch { if (!cancelled) setResumeExam(null) }
+    })()
+    return () => { cancelled = true }
+  }, [user])
 
   // ── Quick Stats ───────────────────────────────────────────────────
   const renderQuickStats = () => {
@@ -177,9 +248,9 @@ function Dashboard() {
     const streak = streakStats?.currentStreak || 0
     const upcoming = examDates.filter(d => calculateDaysUntil(d.exam_date) >= 0).length
     const stats = [
-      { label: 'Day Streak',       value: streak,                Icon: Flame,         color: '#f59e0b' },
-      { label: 'Sessions Done',    value: aifProgress.done,      Icon: BookOpen,      color: '#00D4AA' },
-      { label: 'Practice Exams',   value: examResults.length,    Icon: ClipboardList, color: '#6366f1' },
+      { label: 'Day Streak',       value: streak,                       Icon: Flame,         color: '#f59e0b' },
+      { label: 'Sessions Done',    value: courseProgress?.done || 0,    Icon: BookOpen,      color: '#00D4AA' },
+      { label: 'Practice Exams',   value: examResults.length,           Icon: ClipboardList, color: '#6366f1' },
       { label: 'Passed',           value: passed,                Icon: CheckCircle2,  color: '#10b981' },
       ...(upcoming > 0 ? [{ label: 'Upcoming', value: upcoming, Icon: CalendarDays, color: '#3b82f6' }] : []),
     ]
@@ -192,7 +263,7 @@ function Dashboard() {
                 <div className="flex justify-center mb-1.5">
                   <s.Icon className="w-5 h-5" style={{ color: s.color }} />
                 </div>
-                <p className="text-2xl font-bold text-[#0A2540] leading-none">{s.value}</p>
+                <p className="text-2xl font-mono font-bold text-[#0A2540] leading-none">{s.value}</p>
                 <p className="text-xs text-gray-500 mt-1 font-medium">{s.label}</p>
               </Card>
             ))}
@@ -202,9 +273,12 @@ function Dashboard() {
     )
   }
 
-  // ── AIF-C01 Progress Panel ────────────────────────────────────────
-  const renderAifProgress = () => {
-    const { done, total, pct, byDomain, nextSession, studySlug } = aifProgress
+  // ── Featured course progress panel (program-aware) ────────────────
+  const renderCourseProgress = () => {
+    if (!featuredCourse || !courseProgress) return renderPickProgram()
+    const { done, total, pct, byDomain, nextSession, studySlug } = courseProgress
+    const eyebrow = featuredProgram?.code || featuredCourse.code || 'Preparation'
+    const title = featuredProgram?.name || featuredCourse.title
     return (
       <section className="py-8">
         <Container>
@@ -214,11 +288,11 @@ function Dashboard() {
             {/* Header row */}
             <div className="px-6 pt-6 pb-4 flex flex-wrap items-start justify-between gap-4 border-b border-white/[0.08]">
               <div>
-                <p className="text-[0.6875rem] font-bold text-[#00D4AA] uppercase tracking-[0.08em] mb-1">AIF-C01 Preparation</p>
-                <h2 className="text-lg font-bold text-white mb-0.5">AWS AI Practitioner</h2>
+                <p className="text-[0.6875rem] font-display font-bold text-[#00D4AA] uppercase tracking-[0.08em] mb-1">{eyebrow} Preparation</p>
+                <h2 className="text-lg font-display font-bold text-white mb-0.5">{title}</h2>
                 <p className="text-white/50 text-sm">
                   {done === 0
-                    ? '16 study sessions · 5 exam domains · 65 practice questions'
+                    ? `${total} study sessions · ${byDomain.length} exam domains`
                     : pct === 100
                     ? 'All sessions complete — ready to take the practice exam!'
                     : `${done} of ${total} sessions complete`}
@@ -227,7 +301,7 @@ function Dashboard() {
               {studySlug && (
                 <button
                   onClick={() => navigate(`/exam/${studySlug}/study`)}
-                  className="px-4 py-2.5 rounded-xl font-bold text-sm text-white inline-flex items-center gap-2 shrink-0"
+                  className="px-4 py-2.5 rounded-xl font-display font-bold text-sm text-white inline-flex items-center gap-2 shrink-0"
                   style={{ background: done === 0 ? 'var(--gradient-teal)' : pct === 100 ? 'rgba(255,255,255,0.1)' : 'var(--gradient-teal)', border: pct === 100 ? '1px solid rgba(255,255,255,0.2)' : 'none', boxShadow: pct < 100 ? '0 4px 14px rgba(0,212,170,0.3)' : 'none' }}
                 >
                   {done === 0 ? 'Start Studying' : pct === 100 ? 'Review Course' : 'Continue →'}
@@ -240,7 +314,7 @@ function Dashboard() {
               <div className="px-6 py-4 border-b border-white/[0.08]">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-semibold text-white/60">Overall Progress</span>
-                  <span className="text-xs font-bold text-[#00D4AA] tabular-nums">{pct}%</span>
+                  <span className="text-xs font-mono font-bold text-[#00D4AA]">{pct}%</span>
                 </div>
                 <div className="h-2 bg-white/10 rounded-full overflow-hidden">
                   <div className="h-full rounded-full transition-all duration-500"
@@ -256,22 +330,22 @@ function Dashboard() {
 
             {/* Domain breakdown */}
             <div className="px-6 py-5">
-              <p className="text-[0.6875rem] font-bold text-white/35 uppercase tracking-[0.07em] mb-4">Exam Domains</p>
+              <p className="text-[0.6875rem] font-display font-bold text-white/35 uppercase tracking-[0.07em] mb-4">Exam Domains</p>
               <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 260px), 1fr))' }}>
-                {byDomain.map((d) => {
+                {byDomain.map((d, i) => {
                   const dPct = d.total > 0 ? Math.round((d.done / d.total) * 100) : 0
                   return (
                     <div key={d.id} className="bg-white/[0.04] rounded-xl p-3.5 border border-white/[0.07]">
                       <div className="flex items-center gap-2.5 mb-2.5">
-                        <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
-                             style={{ background: `${d.color}18` }}>
-                          <d.Icon size={15} style={{ color: d.color }} strokeWidth={2.2} />
+                        <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 font-mono font-bold text-[0.8rem]"
+                             style={{ background: `${d.color}18`, color: d.color }}>
+                          {i + 1}
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-[0.78rem] font-semibold text-white/85 leading-tight truncate">{d.label}</p>
                           <p className="text-[0.65rem] text-white/35 font-medium">{d.weight} of exam · {d.total} sessions</p>
                         </div>
-                        <span className="text-[0.7rem] font-bold tabular-nums shrink-0" style={{ color: d.color }}>
+                        <span className="text-[0.7rem] font-mono font-bold shrink-0" style={{ color: d.color }}>
                           {d.done}/{d.total}
                         </span>
                       </div>
@@ -284,6 +358,159 @@ function Dashboard() {
                 })}
               </div>
             </div>
+          </div>
+        </Container>
+      </section>
+    )
+  }
+
+  // ── First-timer: path-chooser ─────────────────────────────────────
+  // No empty dashboard — the screen's only job is to get the learner to pick
+  // a certification and start free.
+  const renderPathChooser = () => {
+    const progs = PROGRAMS || []
+    return (
+      <section className="py-8">
+        <Container>
+          <div className="text-center max-w-xl mx-auto mb-7">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-display font-bold text-[#00D4AA] bg-[#00D4AA]/10 border border-[#00D4AA]/20 mb-3 uppercase tracking-widest">
+              <Rocket className="w-3.5 h-3.5" /> Get started
+            </span>
+            <h2 className="text-xl sm:text-2xl font-display font-bold text-[#0A2540] mb-2">Pick your certification to start free</h2>
+            <p className="text-gray-500 text-sm">
+              Choose a path below. Every program opens with free study sessions and sample questions — no commitment to begin.
+            </p>
+          </div>
+          <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 290px), 1fr))' }}>
+            {progs.map((p) => {
+              const exam = exams.find(e => e.slug === p.slug)
+              const go = () => navigate(exam ? `/exam/${p.slug}` : `/${p.code}`)
+              return (
+                <Card key={p.code} interactive className="p-5 flex flex-col" onClick={go}>
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${p.color}14` }}>
+                      <p.Icon className="w-5 h-5" style={{ color: p.color }} strokeWidth={2.2} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[0.6875rem] font-display font-bold uppercase tracking-wide" style={{ color: p.color }}>{p.level}</p>
+                      <h3 className="text-sm font-display font-bold text-[#0A2540] leading-snug">{p.shortName}</h3>
+                      <p className="text-[0.65rem] font-mono text-gray-400 mt-0.5">{p.code}</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-500 mb-4 leading-relaxed line-clamp-2 flex-1">{p.tagline}</p>
+                  <div className="flex items-center gap-3 mb-4 text-[0.7rem] font-mono text-gray-400">
+                    <span>{p.facts?.questions} Qs</span><span>·</span>
+                    <span>{p.facts?.time}</span><span>·</span>
+                    <span>{p.sessions} sessions</span>
+                  </div>
+                  <Button variant="primary" size="sm" className="w-full" onClick={(e) => { e.stopPropagation(); go() }}>
+                    Start free <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </Card>
+              )
+            })}
+          </div>
+        </Container>
+      </section>
+    )
+  }
+
+  // Compact "choose a program" prompt for the Study tab when no program is featured.
+  const renderPickProgram = () => (
+    <section className="py-8">
+      <Container>
+        <Card className="p-10 text-center max-w-lg mx-auto">
+          <GraduationCap className="w-12 h-12 mx-auto mb-4 text-gray-200" />
+          <p className="text-base font-display font-bold text-[#0A2540]">No program selected yet</p>
+          <p className="text-sm text-gray-500 mt-1 max-w-sm mx-auto">
+            Pick a certification to unlock its study sessions and track your progress here.
+          </p>
+          <div className="mt-5">
+            <Button variant="primary" size="sm" onClick={() => setActiveTab('practice')}>
+              Browse certifications
+            </Button>
+          </div>
+        </Card>
+      </Container>
+    </section>
+  )
+
+  // ── Returning learner: continue + readiness ───────────────────────
+  // Reduces time-to-resume to one tap.
+  const renderContinue = () => {
+    if (!featuredProgram) return null
+    const cp = courseProgress
+    const bestScore = examResults
+      .filter(r => r.examSlug === featuredExam?.slug)
+      .reduce((m, r) => Math.max(m, r.percentageScore || 0), 0)
+
+    // Pick the single most useful next action.
+    let action
+    if (resumeExam) {
+      action = {
+        kicker: 'Resume practice exam',
+        title: resumeExam.setName || resumeExam.examName,
+        meta: resumeExam.answered > 0 ? `${resumeExam.answered} answered — pick up where you stopped` : 'Continue your in-progress attempt',
+        cta: 'Resume exam',
+        onClick: () => navigate(`/exam/${resumeExam.slug}/take?set=${resumeExam.setId}`),
+      }
+    } else if (cp?.nextSession) {
+      action = {
+        kicker: cp.done === 0 ? 'Start studying' : 'Continue studying',
+        title: `Session ${cp.nextSession.number} — ${cp.nextSession.title}`,
+        meta: `${cp.done} of ${cp.total} sessions complete`,
+        cta: cp.done === 0 ? 'Start session' : 'Continue',
+        onClick: () => navigate(`/exam/${cp.studySlug}/study`),
+      }
+    } else {
+      action = {
+        kicker: 'Course complete',
+        title: 'Lock in your score with a practice exam',
+        meta: 'All study sessions done',
+        cta: 'Take a practice exam',
+        onClick: () => navigate(`/exam/${featuredExam?.slug}`),
+      }
+    }
+
+    return (
+      <section className="pt-6">
+        <Container>
+          <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))' }}>
+            {/* Continue card (primary, spans wider) */}
+            <div className="sm:col-span-2 rounded-2xl p-5 sm:p-6 flex items-center gap-5 flex-wrap"
+                 style={{ background: 'linear-gradient(135deg, #0A2540 0%, #1A3B5C 100%)', boxShadow: '0 4px 24px rgba(0,0,0,0.12)' }}>
+              <div className="w-12 h-12 rounded-xl bg-[#00D4AA]/15 flex items-center justify-center shrink-0">
+                <PlayCircle className="w-6 h-6 text-[#00D4AA]" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[0.6875rem] font-display font-bold text-[#00D4AA] uppercase tracking-[0.08em] mb-1">{action.kicker}</p>
+                <p className="text-base font-display font-bold text-white leading-snug truncate">{action.title}</p>
+                <p className="text-xs text-white/50 mt-0.5">{action.meta}</p>
+              </div>
+              <button
+                onClick={action.onClick}
+                className="px-5 py-2.5 rounded-xl font-display font-bold text-sm text-[#0A2540] inline-flex items-center gap-2 shrink-0"
+                style={{ background: 'var(--gradient-teal)', boxShadow: '0 4px 14px rgba(0,212,170,0.3)' }}
+              >
+                {action.cta} <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Readiness card */}
+            <Card className="p-5 flex flex-col justify-center">
+              <p className="text-[0.6875rem] font-display font-bold text-[#00D4AA] uppercase tracking-[0.08em] mb-3">Readiness</p>
+              <div className="flex items-center justify-around gap-4">
+                <div className="text-center">
+                  <p className="text-3xl font-mono font-bold text-[#0A2540] leading-none">{cp?.pct ?? 0}%</p>
+                  <p className="text-[0.7rem] text-gray-500 mt-1 font-medium">Study progress</p>
+                </div>
+                <div className="w-px h-10 bg-gray-100" />
+                <div className="text-center">
+                  <p className="text-3xl font-mono font-bold leading-none" style={{ color: bestScore >= 70 ? '#10b981' : '#0A2540' }}>{bestScore}%</p>
+                  <p className="text-[0.7rem] text-gray-500 mt-1 font-medium">Best practice</p>
+                </div>
+              </div>
+            </Card>
           </div>
         </Container>
       </section>
@@ -536,7 +763,7 @@ function Dashboard() {
     return (
       <section ref={allExamsRef} className="py-8 bg-white">
         <Container>
-          <SectionHeader label="AIF-C01 Practice" title="Practice Exams" className="mb-2" />
+          <SectionHeader label={featuredProgram ? `${featuredProgram.code} & more` : 'All certifications'} title="Practice Exams" className="mb-2" />
           <p className="text-gray-500 text-sm mb-6">
             {isSubscribed
               ? 'Full access active. Start a timed practice set anytime.'
@@ -547,7 +774,7 @@ function Dashboard() {
             <div className="mb-6 rounded-xl p-4 flex items-center gap-4 flex-wrap"
                  style={{ background: 'linear-gradient(135deg, #0A2540, #1A3B5C)', border: '1px solid rgba(0,212,170,0.25)' }}>
               <div className="flex-1 min-w-0">
-                <p className="text-white font-bold text-sm">Unlock all 65 AIF-C01 questions</p>
+                <p className="text-white font-display font-bold text-sm">Unlock every practice question</p>
                 <p className="text-white/60 text-xs mt-0.5">Get full access to all practice sets and study sessions. Plans from $8.25/month.</p>
               </div>
               <Button variant="primary" size="sm" onClick={() => setShowEnrollmentModal(true)}>
@@ -632,18 +859,20 @@ function Dashboard() {
           <Container className="relative z-10">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold text-[#00D4AA] bg-[#00D4AA]/10 border border-[#00D4AA]/20 mb-4 uppercase tracking-widest">
-                  AIF-C01 Prep
+                <span className="inline-block px-3 py-1 rounded-full text-xs font-display font-bold text-[#00D4AA] bg-[#00D4AA]/10 border border-[#00D4AA]/20 mb-4 uppercase tracking-widest">
+                  {isFirstTimer ? 'Get certified' : `${featuredProgram.code} Prep`}
                 </span>
-                <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2 leading-tight">
-                  Welcome back, {userName}
+                <h1 className="text-2xl sm:text-3xl font-display font-bold text-white mb-2 leading-tight">
+                  {isFirstTimer ? `Welcome, ${userName}` : `Welcome back, ${userName}`}
                 </h1>
                 <p className="text-white/60 text-sm sm:text-base max-w-md">
-                  {aifProgress.pct === 0
-                    ? 'Start your AIF-C01 journey — 16 study sessions covering every exam domain.'
-                    : aifProgress.pct === 100
+                  {isFirstTimer
+                    ? 'Pick a certification below and start studying free — your progress will live right here.'
+                    : (courseProgress?.pct ?? 0) === 0
+                    ? `Start your ${featuredProgram.code} journey — ${courseProgress?.total ?? ''} study sessions covering every exam domain.`
+                    : (courseProgress?.pct ?? 0) === 100
                     ? 'All study sessions complete. Keep practicing to lock in your score!'
-                    : `${aifProgress.pct}% through your study sessions — keep the momentum going.`}
+                    : `${courseProgress.pct}% through your study sessions — keep the momentum going.`}
                 </p>
               </div>
               {!isSubscribed ? (
@@ -660,10 +889,10 @@ function Dashboard() {
           </Container>
         </section>
 
-        {/* Tab navigation — desktop: Instagram profile-bar style (top, centered) */}
-        <div className="hidden sm:block sticky top-14 z-40 bg-white border-t border-b border-gray-200">
+        {/* Tab navigation — desktop: expanding-pill rail (top, centered) */}
+        <div className="hidden sm:block sticky top-14 z-40 bg-white border-b border-gray-200">
           <Container>
-            <nav className="flex justify-center" role="tablist" aria-label="Dashboard sections">
+            <nav className="flex justify-center gap-2 py-2.5" role="tablist" aria-label="Dashboard sections">
               {TABS.map(({ id, label, Icon }) => {
                 const active = activeTab === id
                 return (
@@ -674,14 +903,14 @@ function Dashboard() {
                     aria-label={label}
                     title={label}
                     onClick={() => setActiveTab(id)}
-                    className={`relative flex items-center justify-center gap-1.5 px-9 py-3.5 -mt-px border-t-2 transition-colors ${
+                    className={`relative flex items-center justify-center gap-2 px-5 py-2 rounded-full transition-all duration-300 ease-out ${
                       active
-                        ? 'border-[#0A2540] text-[#0A2540]'
-                        : 'border-transparent text-gray-400 hover:text-gray-600'
+                        ? 'bg-[#0A2540] text-white shadow-sm'
+                        : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'
                     }`}
                   >
                     <Icon className="w-4 h-4 shrink-0" strokeWidth={active ? 2.6 : 2} />
-                    <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.08em]">{label}</span>
+                    <span className="font-display text-[0.78rem] font-bold tracking-[0.02em]">{label}</span>
                   </button>
                 )
               })}
@@ -689,15 +918,20 @@ function Dashboard() {
           </Container>
         </div>
 
-        {/* Tab panels */}
+        {/* Tab panels — Home adapts to user state (progressive disclosure) */}
         <div className="min-h-[40vh]">
           {activeTab === 'overview' && (
-            <>
-              {renderQuickStats()}
-              {renderExamCountdown()}
-            </>
+            isFirstTimer ? (
+              renderPathChooser()
+            ) : (
+              <>
+                {renderContinue()}
+                {renderQuickStats()}
+                {renderExamCountdown()}
+              </>
+            )
           )}
-          {activeTab === 'study' && renderAifProgress()}
+          {activeTab === 'study' && renderCourseProgress()}
           {activeTab === 'practice' && renderAllExams()}
           {activeTab === 'progress' && renderProgressRow()}
           {activeTab === 'credentials' && renderCredentials()}

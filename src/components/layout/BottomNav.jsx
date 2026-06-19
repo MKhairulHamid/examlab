@@ -54,8 +54,8 @@ function BottomNav() {
       <div className="h-16 sm:hidden" aria-hidden="true" />
 
       <nav
-        className="sm:hidden fixed bottom-0 inset-x-0 z-50 bg-white border-t border-gray-200 flex justify-around"
-        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+        className="sm:hidden fixed bottom-0 inset-x-0 z-50 bg-white border-t border-gray-200 flex items-center gap-1 px-2 py-2"
+        style={{ paddingBottom: 'calc(0.5rem + env(safe-area-inset-bottom))' }}
         role="navigation"
         aria-label="Primary"
       >
@@ -67,12 +67,20 @@ function BottomNav() {
               onClick={() => go(id)}
               aria-label={label}
               aria-current={active ? 'page' : undefined}
-              className={`flex flex-1 flex-col items-center justify-center gap-0.5 py-2 transition-colors ${
-                active ? 'text-[#0A2540]' : 'text-gray-400'
+              className={`flex items-center justify-center h-11 rounded-full overflow-hidden transition-all duration-300 ease-out ${
+                active
+                  ? 'flex-1 gap-2 px-3 bg-[#0A2540]/[0.06] text-[#0A2540]'
+                  : 'flex-none w-11 text-gray-400 hover:text-gray-600'
               }`}
             >
-              <Icon className="w-6 h-6 shrink-0" strokeWidth={active ? 2.6 : 2} />
-              <span className="text-[0.625rem] font-semibold">{label}</span>
+              <Icon className="w-[1.35rem] h-[1.35rem] shrink-0" strokeWidth={active ? 2.6 : 2} />
+              <span
+                className={`font-display font-bold text-[0.8125rem] whitespace-nowrap transition-all duration-300 ${
+                  active ? 'max-w-[7rem] opacity-100' : 'max-w-0 opacity-0'
+                }`}
+              >
+                {label}
+              </span>
             </button>
           )
         })}

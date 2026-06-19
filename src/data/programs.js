@@ -233,7 +233,17 @@ export const PROGRAMS_BY_CODE = PROGRAMS.reduce((acc, p) => {
   return acc
 }, {})
 
+export const PROGRAMS_BY_SLUG = PROGRAMS.reduce((acc, p) => {
+  acc[p.slug.toLowerCase()] = p
+  return acc
+}, {})
+
 export function getProgram(code) {
   if (!code) return null
   return PROGRAMS_BY_CODE[code.toUpperCase()] || null
+}
+
+export function getProgramBySlug(slug) {
+  if (!slug) return null
+  return PROGRAMS_BY_SLUG[slug.toLowerCase()] || null
 }

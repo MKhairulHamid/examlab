@@ -6,6 +6,7 @@ import usePurchaseStore from '../stores/purchaseStore'
 import useExamStore from '../stores/examStore'
 import EnrollmentModal from '../components/enrollment/EnrollmentModal'
 import DashboardHeader from '../components/layout/DashboardHeader'
+import BackLink from '../components/layout/BackLink'
 import { getSessionCourse } from '../utils/sessionCourses'
 
 // Data Structure for Content Domain 1
@@ -765,26 +766,9 @@ function LegacyStudyMaterial({ hasAccess = true, onSubscribe }) {
         <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #0A2540 0%, #1A3B5C 100%)' }}>
             <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '1.5rem' }}>
                 {/* Header */}
-                <button
-                    onClick={() => navigate(`/exam/${slug}`)}
-                    style={{
-                        padding: '0.75rem 1.25rem',
-                        background: 'rgba(255,255,255,0.1)',
-                        backdropFilter: 'blur(16px)',
-                        color: 'white',
-                        border: '1px solid rgba(255,255,255,0.2)',
-                        borderRadius: '0.75rem',
-                        fontWeight: '600',
-                        cursor: 'pointer',
-                        marginBottom: '1.5rem',
-                        transition: 'all 0.2s',
-                        fontSize: '0.9375rem'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-                >
-                    ← Back to Exam Details
-                </button>
+                <div style={{ marginBottom: '1.5rem' }}>
+                    <BackLink to={`/exam/${slug}`} label="Exam details" tone="dark" />
+                </div>
 
                 {/* Title Section */}
                 <div style={{

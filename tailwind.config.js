@@ -25,6 +25,16 @@ export default {
           '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Inter',
           'Roboto', '"Helvetica Neue"', 'Arial', 'sans-serif',
         ],
+        // Display/UI face — headings, nav, buttons, card titles.
+        display: [
+          '"Plus Jakarta Sans"', '-apple-system', 'BlinkMacSystemFont',
+          '"Segoe UI"', 'Inter', 'Roboto', 'sans-serif',
+        ],
+        // Numeric/code face — scores, counters, countdowns.
+        mono: [
+          '"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo',
+          'Consolas', 'monospace',
+        ],
       },
       boxShadow: {
         card:      '0 1px 4px 0 rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04)',

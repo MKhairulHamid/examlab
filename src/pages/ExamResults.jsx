@@ -12,6 +12,7 @@ import CertificateCard from '../components/certificate/CertificateCard'
 import certificateService, { buildVerifyPath } from '../services/certificateService'
 import { getProgram } from '../data/programs'
 import { getSessionCourse } from '../utils/sessionCourses'
+import BackLink from '../components/layout/BackLink'
 
 function ExamResults() {
   const { slug } = useParams()
@@ -245,6 +246,9 @@ function ExamResults() {
         padding: 'clamp(1rem, 3vw, 2rem) 0'
       }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 clamp(0.75rem, 3vw, 1.5rem)' }}>
+        <div style={{ marginBottom: '1rem' }}>
+          <BackLink to="/dashboard" label="Dashboard" tone="dark" />
+        </div>
         {/* Results Header */}
         <div style={{
           background: 'rgba(255,255,255,0.1)',
