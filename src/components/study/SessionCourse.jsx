@@ -2141,7 +2141,7 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
   )
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f1f5f9', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ height: '100dvh', overflow: 'hidden', background: '#f1f5f9', display: 'flex', flexDirection: 'column' }}>
       {/* ── Top navbar ─────────────────────────────────────────────────────── */}
       <nav style={{
         background: NAVY, borderBottom: `3px solid ${TEAL}`,
