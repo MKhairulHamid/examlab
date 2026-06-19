@@ -5,7 +5,7 @@ import {
   ShieldCheck, Sparkles, Lock, Zap, RefreshCw,
   BookOpen, Target, BarChart3, Users,
   BadgeCheck, GraduationCap, Calendar, Gift, Lightbulb,
-  Mic, Repeat, FileCheck,
+  Mic, Repeat, FileCheck, Mail,
 } from 'lucide-react'
 import useAuthStore from '../stores/authStore'
 import AuthModal from '../components/auth/AuthModal'
@@ -578,6 +578,17 @@ function Landing() {
               </Reveal>
             ))}
           </div>
+
+          <Reveal className="mt-10 text-center">
+            <p className="text-gray-500 text-[0.9375rem] mb-4">Still have a question? We&apos;re happy to help.</p>
+            <a
+              href="mailto:cloudexamlab@gmail.com"
+              className="inline-flex items-center gap-2 bg-[#0A2540] hover:bg-[#0d2d4a] text-white font-semibold px-6 py-3 rounded-xl no-underline transition-colors duration-200"
+            >
+              <Mail size={17} strokeWidth={2.2} />
+              Email us
+            </a>
+          </Reveal>
         </div>
       </section>
 

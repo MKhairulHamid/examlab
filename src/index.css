@@ -96,7 +96,7 @@ footer { width: 100%; box-sizing: border-box; }
   transition-delay: var(--reveal-delay, 0ms);
   will-change: opacity, transform;
 }
-.reveal.is-visible { opacity: 1; transform: translateY(0); }
+.reveal.is-visible { opacity: 1; transform: translateY(0); will-change: auto; }
 @media (prefers-reduced-motion: reduce) {
   .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
   .hero-bg-1, .hero-bg-2, .aurora-blob { animation: none !important; }
@@ -122,7 +122,7 @@ footer { width: 100%; box-sizing: border-box; }
 }
 
 /* Drifting aurora glow for dark sections */
-.aurora-blob { position: absolute; border-radius: 9999px; filter: blur(72px); animation: auroraDrift 16s ease-in-out infinite; pointer-events: none; }
+.aurora-blob { position: absolute; border-radius: 9999px; filter: blur(72px); animation: auroraDrift 16s ease-in-out infinite; pointer-events: none; will-change: transform; }
 
 /* Marquee track for trust strip */
 .marquee-track { display: flex; width: max-content; animation: marquee 32s linear infinite; }

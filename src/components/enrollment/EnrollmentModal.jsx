@@ -166,7 +166,7 @@ const EnrollmentModal = ({ isOpen, onClose }) => {
             Subscribe to Cloud Exam Lab
           </h2>
           <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: 'clamp(0.8125rem, 2.5vw, 1rem)' }}>
-            Unlimited access to all practice questions \u2022 Study at your own pace \u2022 Cancel anytime
+            Unlimited access to all practice questions &bull; Study at your own pace &bull; Cancel anytime
           </p>
         </div>
 
