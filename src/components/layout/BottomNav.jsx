@@ -16,7 +16,7 @@ const ITEMS = [
 // Where the logged-in bottom nav should appear. Hidden during an exam attempt
 // and on every public / marketing route.
 function showOnPath(pathname) {
-  if (pathname.startsWith('/exam/') && pathname.endsWith('/take')) return false
+  if (pathname.startsWith('/exam/') && (pathname.endsWith('/take') || pathname.endsWith('/study'))) return false
   return (
     pathname === '/dashboard' ||
     pathname.startsWith('/exam/') ||
@@ -37,9 +37,9 @@ function BottomNav() {
 
   const isActive = (id) => {
     if (onDashboard) return id === tab
-    if (id === 'study' && location.pathname.includes('/study')) return true
+    if (id === 'study' && location.pathname.endsWith('/study')) return true
     if (id === 'progress' && location.pathname.includes('/results')) return true
-    if (id === 'practice' && location.pathname.startsWith('/exam/')) return true
+    if (id === 'practice' && location.pathname.startsWith('/exam/') && !location.pathname.endsWith('/study')) return true
     return false
   }
 

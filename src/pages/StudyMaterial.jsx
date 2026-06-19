@@ -687,7 +687,7 @@ function StudyMaterial() {
 
     return (
         <>
-            <DashboardHeader />
+            {!sessionCourse && <DashboardHeader />}
             {sessionCourse ? (
                 <SessionCourse
                     course={sessionCourse}

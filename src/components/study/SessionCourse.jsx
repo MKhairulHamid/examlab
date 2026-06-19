@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import useAuthStore from '../../stores/authStore'
 import studyProgressService from '../../services/studyProgressService'
 import TeachToLearn from './TeachToLearn'
@@ -1917,7 +1918,8 @@ function LessonBody({ session, cleared, onClear }) {
 // ─── Main component ───────────────────────────────────────────────────────────
 
 function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
-  const { user, profile } = useAuthStore()
+  const navigate = useNavigate()
+  const { user, profile, logout } = useAuthStore()
   const userId = user?.id
   const submitterName = profile?.full_name || user?.email?.split('@')[0] || 'Anonymous learner'
   const storageKey        = `course-progress-${course.slug}`
@@ -1925,6 +1927,8 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
   const [completedIds, setCompletedIds] = useState([])
   // clearedCheckpoints: { [sessionId]: number[] } — which afterSection indices are cleared
   const [clearedCheckpoints, setClearedCheckpoints] = useState({})
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const userMenuRef = useRef(null)
 
   // Lazy-initialise to the first incomplete session from localStorage so that
   // "Continue" from the dashboard lands on the right session immediately,
@@ -1996,6 +2000,20 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
     })
     return () => { cancelled = true }
   }, [userId, course.slug, storageKey, checkpointsKey])
+
+  useEffect(() => {
+    if (!userMenuOpen) return
+    const onClick = (e) => { if (userMenuRef.current && !userMenuRef.current.contains(e.target)) setUserMenuOpen(false) }
+    const onKey = (e) => { if (e.key === 'Escape') setUserMenuOpen(false) }
+    document.addEventListener('mousedown', onClick)
+    document.addEventListener('keydown', onKey)
+    return () => { document.removeEventListener('mousedown', onClick); document.removeEventListener('keydown', onKey) }
+  }, [userMenuOpen])
+
+  const handleLogout = async () => {
+    await logout()
+    navigate('/')
+  }
 
   const toggleComplete = (id) => {
     setCompletedIds(prev => {
@@ -2180,7 +2198,7 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
           </div>
         </div>
 
-        {/* Right: progress pill */}
+        {/* Right: progress pill + user menu */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
           <div style={{
             display: 'flex', alignItems: 'center', gap: '0.35rem',
@@ -2191,6 +2209,74 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
               <div style={{ height: '100%', width: `${pct}%`, background: TEAL, transition: 'width 0.4s ease' }} />
             </div>
             <span style={{ color: TEAL, fontSize: '0.75rem', fontWeight: 700 }}>{pct}%</span>
+          </div>
+
+          {/* User avatar + dropdown */}
+          <div style={{ position: 'relative' }} ref={userMenuRef}>
+            <button
+              onClick={() => setUserMenuOpen(o => !o)}
+              aria-haspopup="menu"
+              aria-expanded={userMenuOpen}
+              style={{
+                width: '32px', height: '32px', borderRadius: '50%',
+                background: TEAL, color: NAVY, border: 'none',
+                fontWeight: 700, fontSize: '0.875rem', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                flexShrink: 0,
+              }}
+            >
+              {(profile?.full_name || user?.email || 'U').charAt(0).toUpperCase()}
+            </button>
+
+            {userMenuOpen && (
+              <div
+                role="menu"
+                style={{
+                  position: 'absolute', right: 0, top: 'calc(100% + 8px)',
+                  width: '200px', background: 'white', borderRadius: '0.75rem',
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.18)', border: '1px solid #e2e8f0',
+                  overflow: 'hidden', zIndex: 300,
+                }}
+              >
+                <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid #f1f5f9' }}>
+                  <p style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 700, color: NAVY, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {profile?.full_name || user?.email?.split('@')[0] || 'Student'}
+                  </p>
+                  <p style={{ margin: '0.15rem 0 0', fontSize: '0.6875rem', color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {user?.email}
+                  </p>
+                </div>
+                <button
+                  role="menuitem"
+                  onClick={() => { setUserMenuOpen(false); navigate('/dashboard') }}
+                  style={{
+                    width: '100%', textAlign: 'left', padding: '0.625rem 1rem',
+                    background: 'none', border: 'none', fontSize: '0.875rem',
+                    color: '#374151', cursor: 'pointer', fontWeight: 500,
+                    display: 'flex', alignItems: 'center', gap: '0.5rem',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                >
+                  ⬡ Dashboard
+                </button>
+                <div style={{ height: '1px', background: '#f1f5f9' }} />
+                <button
+                  role="menuitem"
+                  onClick={handleLogout}
+                  style={{
+                    width: '100%', textAlign: 'left', padding: '0.625rem 1rem',
+                    background: 'none', border: 'none', fontSize: '0.875rem',
+                    color: '#ef4444', cursor: 'pointer', fontWeight: 600,
+                    display: 'flex', alignItems: 'center', gap: '0.5rem',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#fef2f2'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                >
+                  → Log out
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </nav>
