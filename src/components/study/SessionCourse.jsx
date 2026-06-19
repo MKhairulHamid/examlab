@@ -1180,7 +1180,158 @@ function IntegrationSelectorWidget() {
   )
 }
 
+// ── AIP D1 (Session 2): foundation-model challenge → right move ───────────────
+function ModelSelectorWidget() {
+  return (
+    <ScenarioSorter
+      title="Match the FM Challenge to the Right Move"
+      intro="Selecting and operating foundation models is a set of distinct decisions. Tag each requirement with the technique that solves it — the card confirms instantly."
+      cats={[
+        { id: 'abstraction', label: 'Switching abstraction', color: '#2563eb', desc: 'Lambda + AppConfig — change models without code changes' },
+        { id: 'xregion', label: 'Cross-Region Inference', color: '#16a34a', desc: 'Resilience and availability across Regions' },
+        { id: 'lora', label: 'LoRA customization', color: '#7c3aed', desc: 'Cheap, reversible adaptation + Model Registry' },
+        { id: 'cascade', label: 'Right-size / cascade', color: '#d97706', desc: 'Smaller models for cost on simple queries' },
+      ]}
+      items={[
+        { t: 'A/B test a cheaper model and switch providers with no application redeploy', a: 'abstraction', why: 'An abstraction layer (Lambda + AppConfig) makes model choice a config change, not a deploy.' },
+        { t: 'Keep serving when the primary model is throttled or unavailable in the Region', a: 'xregion', why: 'Bedrock Cross-Region Inference routes around regional unavailability and throttling.' },
+        { t: 'Teach the model your house style cheaply, with instant rollback if it underperforms', a: 'lora', why: 'Parameter-efficient LoRA is cheap and easy to swap; the Model Registry versions and reverts it.' },
+        { t: 'Cut cost on a flood of simple queries without hurting hard ones', a: 'cascade', why: 'Right-size / cascade sends simple queries to a small cheap model and escalates only complex ones.' },
+        { t: 'Promote a new fine-tuned version only after approval, and revert on a bad deploy', a: 'lora', why: 'SageMaker Model Registry gates promotion and supports rollback to the last approved version.' },
+        { t: 'Automatically route around a model that has limited regional availability', a: 'xregion', why: 'Cross-Region Inference handles models with limited regional availability.' },
+      ]}
+    />
+  )
+}
+
+// ── AIP D1 (Session 4): pick the vector store ─────────────────────────────────
+function VectorStoreSelectorWidget() {
+  return (
+    <ScenarioSorter
+      title="Pick the Vector Store"
+      intro="AWS offers a spectrum from fully managed RAG to self-built. Match each requirement to the best-fit store — the card confirms instantly."
+      cats={[
+        { id: 'kb', label: 'Bedrock Knowledge Bases', color: '#16a34a', desc: 'Managed end-to-end RAG, minimal ops' },
+        { id: 'os', label: 'OpenSearch Service', color: '#2563eb', desc: 'Hybrid keyword+vector at scale, sharding' },
+        { id: 'aurora', label: 'Aurora pgvector', color: '#d97706', desc: 'Vectors beside relational data' },
+        { id: 'dynamo', label: 'DynamoDB', color: '#7c3aed', desc: 'Serverless KV scale + Streams' },
+      ]}
+      items={[
+        { t: 'Fastest managed RAG — ingestion, embedding, retrieval, citations — with minimal operations', a: 'kb', why: 'Bedrock Knowledge Bases manages the whole RAG vector pipeline.' },
+        { t: 'Hybrid keyword + semantic search across millions of vectors with sharding', a: 'os', why: 'OpenSearch provides native hybrid search and horizontal sharding at scale.' },
+        { t: 'Store embeddings alongside existing transactional relational data', a: 'aurora', why: 'Aurora with the pgvector extension keeps vectors next to relational data.' },
+        { t: 'Serverless key-value scale for embeddings and metadata at very high request rates', a: 'dynamo', why: 'DynamoDB gives serverless KV scale for embeddings/metadata.' },
+        { t: 'Re-sync the managed store automatically as source S3 documents change, no DB to run', a: 'kb', why: 'Knowledge Bases re-syncs from the source with no database to operate.' },
+        { t: 'Use change streams to trigger incremental re-embedding at massive scale', a: 'dynamo', why: 'DynamoDB Streams enable event-driven incremental re-embedding.' },
+      ]}
+    />
+  )
+}
+
+// ── AIP D1 (Session 5): retrieval symptom → fix ───────────────────────────────
+function HybridSearchWidget() {
+  return (
+    <ScenarioSorter
+      title="Match the Retrieval Symptom to the Fix"
+      intro="RAG relevance problems each have a specific lever. Tag each symptom with the fix — the card confirms instantly."
+      cats={[
+        { id: 'hybrid', label: 'Hybrid search', color: '#2563eb', desc: 'Keyword + vector — exact terms AND meaning' },
+        { id: 'rerank', label: 'Reranking', color: '#16a34a', desc: 'Reorder top-K by true relevance' },
+        { id: 'chunk', label: 'Chunking', color: '#d97706', desc: 'Split size / structure' },
+        { id: 'query', label: 'Query transformation', color: '#7c3aed', desc: 'Expand / decompose / rewrite' },
+      ]}
+      items={[
+        { t: 'Pasted error codes that appear verbatim in the docs are not retrieved', a: 'hybrid', why: 'Pure vectors miss exact tokens; hybrid adds lexical keyword matching.' },
+        { t: 'Retrieved passages are on-topic but the single best one ranks below weaker ones', a: 'rerank', why: 'A reranker reorders the top-K so the best passage reaches the model first.' },
+        { t: 'Long documents get cut off mid-section and context is diluted', a: 'chunk', why: 'Chunk size/structure controls how documents are split and retrieved.' },
+        { t: 'Conversational, multi-part questions retrieve poorly as written', a: 'query', why: 'Query transformation/decomposition rewrites questions into retrieval-friendly form.' },
+        { t: 'Exact product part numbers are missed even though they exist in the corpus', a: 'hybrid', why: 'Exact identifiers need lexical matching alongside semantic similarity.' },
+        { t: 'After broad retrieval you must surface the most relevant 3 of 50 candidates first', a: 'rerank', why: 'Two-stage retrieve-then-rerank surfaces the best candidates precisely.' },
+      ]}
+    />
+  )
+}
+
+// ── AIP D1 (Session 6): prompt need → governance mechanism ────────────────────
+function PromptGovernanceWidget() {
+  return (
+    <ScenarioSorter
+      title="Match the Prompt Need to the Mechanism"
+      intro="Prompts are production assets. Tag each need with the AWS mechanism that addresses it — the card confirms instantly."
+      cats={[
+        { id: 'guardrails', label: 'Bedrock Guardrails', color: '#dc2626', desc: 'Platform safety policy, prompt-independent' },
+        { id: 'mgmt', label: 'Prompt Management', color: '#2563eb', desc: 'Versioned templates + approval workflow' },
+        { id: 'flows', label: 'Prompt Flows', color: '#7c3aed', desc: 'Multi-step / branching composition' },
+        { id: 'regression', label: 'Regression testing', color: '#16a34a', desc: 'Quality gate before promotion' },
+      ]}
+      items={[
+        { t: 'Guarantee the assistant never returns PII or discusses competitors, regardless of prompt', a: 'guardrails', why: 'Guardrails enforce policy at the platform level, independent of the prompt.' },
+        { t: 'Stop hardcoding prompts in code; version them with an approval workflow', a: 'mgmt', why: 'Bedrock Prompt Management provides versioned, parameterized templates with approvals.' },
+        { t: 'Catch that a prompt change or model upgrade regressed output before production', a: 'regression', why: 'An automated regression suite gates promotion and detects quality drops.' },
+        { t: 'Compose a multi-step task with conditional branching on the model response', a: 'flows', why: 'Bedrock Prompt Flows compose sequential chains and conditional branching.' },
+        { t: 'Centralize parameterized templates so every app uses the approved version', a: 'mgmt', why: 'Prompt Management is the central, governed source of truth for templates.' },
+        { t: 'Enforce denied topics even if a user tries to override the system prompt', a: 'guardrails', why: 'Platform Guardrails hold against prompt injection and overrides.' },
+      ]}
+    />
+  )
+}
+
+// ── AIP D2 (Session 7): agent risk → safeguard ────────────────────────────────
+function AgentLoopWidget() {
+  return (
+    <ScenarioSorter
+      title="Bound the Agent — Match the Risk to the Safeguard"
+      intro="Autonomy is powerful and dangerous. Tag each agent risk with the control that bounds it — the card confirms instantly."
+      cats={[
+        { id: 'stop', label: 'Stopping condition', color: '#2563eb', desc: 'Cap reasoning/tool steps' },
+        { id: 'timeout', label: 'Timeout', color: '#0891b2', desc: 'Per-call / per-step deadline' },
+        { id: 'iam', label: 'IAM boundary', color: '#7c3aed', desc: 'Least-privilege tool/resource scope' },
+        { id: 'breaker', label: 'Circuit breaker', color: '#d97706', desc: 'Stop hammering a failing tool' },
+        { id: 'human', label: 'Human-in-the-loop', color: '#16a34a', desc: 'Approval before high-impact actions' },
+      ]}
+      items={[
+        { t: 'The agent sometimes loops indefinitely and never finishes', a: 'stop', why: 'A stopping condition (max steps) guarantees the loop terminates.' },
+        { t: 'A hung tool call stalls the whole agent', a: 'timeout', why: 'Per-call timeouts stop a hung tool from stalling the loop.' },
+        { t: 'A confused agent could reach resources beyond its intended tools', a: 'iam', why: 'A least-privilege IAM role limits exactly what the agent can reach.' },
+        { t: 'A repeatedly failing tool keeps getting hammered with retries', a: 'breaker', why: 'A circuit breaker stops calling a failing tool and fails over or escalates.' },
+        { t: 'Issuing a refund above a threshold must be confirmed before it executes', a: 'human', why: 'A human-in-the-loop approval gate guards high-impact actions.' },
+        { t: 'Cap the number of reason-act cycles so the loop always ends', a: 'stop', why: 'Bounding the step count is the stopping condition.' },
+      ]}
+    />
+  )
+}
+
+// ── AIP D3 (Session 12): control → defense-in-depth layer ─────────────────────
+function SafetyLayersWidget() {
+  return (
+    <ScenarioSorter
+      title="Place Each Control in the Defense-in-Depth Stack"
+      intro="Robust GenAI safety layers independent controls. Tag each control with the layer it belongs to — the card confirms instantly."
+      cats={[
+        { id: 'pre', label: 'Pre-processing (input)', color: '#2563eb', desc: 'Screen/sanitize before the model' },
+        { id: 'model', label: 'Model guardrails', color: '#dc2626', desc: 'Bedrock Guardrails on prompt + response' },
+        { id: 'post', label: 'Post-processing (output)', color: '#16a34a', desc: 'Validate output before returning' },
+        { id: 'api', label: 'API-layer filter', color: '#7c3aed', desc: 'Final gate at API Gateway' },
+      ]}
+      items={[
+        { t: 'Screen and sanitize user input before it reaches the model', a: 'pre', why: 'Pre-processing (e.g. Comprehend, filters) is the first layer, before the model.' },
+        { t: 'Block denied topics and toxic content on both prompt and response at the platform', a: 'model', why: 'Bedrock Guardrails enforce content/topic policy at the model layer.' },
+        { t: 'Validate the model output structure and content before returning it', a: 'post', why: 'Post-processing (Lambda) validates output as a later layer.' },
+        { t: 'Apply a final response filter at the API boundary', a: 'api', why: 'API Gateway response filtering is the last gate.' },
+        { t: 'Detect and redact PII in the incoming text before the prompt is built', a: 'pre', why: 'PII detection/redaction on input is a pre-processing control.' },
+        { t: 'Enforce JSON Schema and fact-check the generated answer after generation', a: 'post', why: 'Structured-output enforcement and fact-checking happen in post-processing.' },
+      ]}
+    />
+  )
+}
+
 const INTERACTIVE_WIDGETS = {
+  'model-selector': ModelSelectorWidget,
+  'vector-store-selector': VectorStoreSelectorWidget,
+  'hybrid-search': HybridSearchWidget,
+  'prompt-governance': PromptGovernanceWidget,
+  'agent-loop': AgentLoopWidget,
+  'safety-layers': SafetyLayersWidget,
   'connectivity-selector': ConnectivitySelectorWidget,
   'integration-selector': IntegrationSelectorWidget,
   'precision-recall': PrecisionRecallWidget,
