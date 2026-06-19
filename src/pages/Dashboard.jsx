@@ -16,7 +16,7 @@ import supabase from '../services/supabase'
 import { Button, Card, Badge, Container, SectionHeader } from '../design-system'
 import {
   BookOpen, ClipboardList, CheckCircle2, CalendarDays, BarChart2,
-  Flame, LayoutGrid, Award, PlayCircle, ArrowRight, Rocket, GraduationCap,
+  Flame, LayoutGrid, Award, PlayCircle, ArrowRight, Rocket, GraduationCap, Lock,
 } from 'lucide-react'
 
 // Every session-based program slug we ship a course for. Used to detect a
@@ -57,7 +57,8 @@ function Dashboard() {
   const [selectedExamForDate, setSelectedExamForDate] = useState(null)
   const [certificates, setCertificates] = useState([])
   const [studyProgress, setStudyProgress] = useState([]) // [{courseSlug, completedSessions, updatedAt}] from the DB
-  const allExamsRef = useRef(null)
+  const [practiceSets, setPracticeSets] = useState([])   // exam simulations for the focused exam
+  const [loadingSets, setLoadingSets] = useState(false)
   const autoFocusedRef = useRef(false)
 
   const userName = profile?.full_name || user?.email?.split('@')[0] || 'Student'
@@ -270,6 +271,30 @@ function Dashboard() {
     [examResults, focusedSlug],
   )
 
+  // Exam simulations (question sets) for the focused exam — drives the Practice tab.
+  useEffect(() => {
+    if (!featuredExam) { setPracticeSets([]); return }
+    let cancelled = false
+    setLoadingSets(true)
+    ;(async () => {
+      try {
+        const { data, error } = await supabase
+          .from('question_sets')
+          .select('id, name, description, set_number, question_count, price_cents, is_free_sample, is_final_exam')
+          .eq('exam_type_id', featuredExam.id)
+          .eq('is_active', true)
+          .order('set_number', { ascending: true })
+        if (error) throw error
+        if (!cancelled) setPracticeSets(data || [])
+      } catch {
+        if (!cancelled) setPracticeSets([])
+      } finally {
+        if (!cancelled) setLoadingSets(false)
+      }
+    })()
+    return () => { cancelled = true }
+  }, [featuredExam])
+
   // ── Resume: most recent in-progress practice exam ─────────────────
   useEffect(() => {
     if (!user) { setResumeExam(null); return }
@@ -481,7 +506,7 @@ function Dashboard() {
             Pick a certification to unlock its study sessions and track your progress here.
           </p>
           <div className="mt-5">
-            <Button variant="primary" size="sm" onClick={() => setActiveTab('practice')}>
+            <Button variant="primary" size="sm" onClick={() => setActiveTab('overview')}>
               Browse certifications
             </Button>
           </div>
@@ -567,6 +592,52 @@ function Dashboard() {
               </div>
             </Card>
           </div>
+        </Container>
+      </section>
+    )
+  }
+
+  // ── Exam Info (focused exam) ──────────────────────────────────────
+  // The "what is this exam" reference lives on the home, next to progress.
+  const renderExamInfo = () => {
+    if (!featuredExam) return null
+    const facts = featuredProgram?.facts
+    const stats = [
+      { label: 'Questions', value: featuredExam.total_questions || facts?.questions || '—' },
+      { label: 'Duration',  value: featuredExam.duration_minutes ? `${featuredExam.duration_minutes} min` : (facts?.time || '—') },
+      { label: 'Passing',   value: featuredExam.passing_score ? `${featuredExam.passing_score}${featuredExam.max_score ? `/${featuredExam.max_score}` : ''}` : '—' },
+      { label: 'Level',     value: featuredProgram?.level || '—' },
+    ]
+    return (
+      <section className="py-6">
+        <Container>
+          <Card className="p-6">
+            <div className="flex items-start gap-4 mb-4">
+              <span className="text-3xl shrink-0 leading-none">{featuredExam.icon || '📚'}</span>
+              <div className="min-w-0">
+                <p className="text-[0.6875rem] font-bold text-[#00D4AA] uppercase tracking-wide mb-0.5">
+                  {featuredExam.provider}{featuredProgram?.code ? ` · ${featuredProgram.code}` : ''}
+                </p>
+                <h3 className="text-base font-display font-bold text-[#0A2540] leading-snug">{featuredExam.name}</h3>
+              </div>
+            </div>
+            {featuredExam.description && (
+              <p className="text-sm text-gray-500 leading-relaxed mb-5">{featuredExam.description}</p>
+            )}
+            <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))' }}>
+              {stats.map((s, i) => (
+                <div key={i} className="rounded-xl bg-gray-50 border border-gray-100 p-3 text-center">
+                  <p className="text-sm font-bold text-[#0A2540] break-words">{s.value}</p>
+                  <p className="text-[0.7rem] text-gray-500 mt-0.5">{s.label}</p>
+                </div>
+              ))}
+            </div>
+            <div className="mt-5">
+              <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate(`/exam/${featuredExam.slug}`)}>
+                View full exam details <ArrowRight className="w-4 h-4" />
+              </Button>
+            </div>
+          </Card>
         </Container>
       </section>
     )
@@ -877,8 +948,8 @@ function Dashboard() {
                   Pass a practice exam to earn a shareable completion credential. It'll show up here.
                 </p>
                 <div className="mt-5">
-                  <Button variant="primary" size="sm" onClick={() => setActiveTab('practice')}>
-                    Go to Practice Exams
+                  <Button variant="primary" size="sm" onClick={() => setActiveTab('overview')}>
+                    Pick a certification
                   </Button>
                 </div>
               </Card>
@@ -889,71 +960,31 @@ function Dashboard() {
     )
   }
 
-  // ── Practice Exams ────────────────────────────────────────────────
-  // Leads with the focused cert; other certifications follow so the learner can
-  // still browse without leaving the tab.
-  const renderExamCard = (exam) => {
-    const scheduled = examDates.find(d => d.exam_type_id === exam.id)
+  // ── Practice (exam simulations for the focused exam) ──────────────
+  // Scoped to the focused exam only — a list of its timed, exam-style
+  // simulations. The "what is this exam" info lives on the Overview tab.
+  const renderPractice = () => {
+    if (!featuredExam) return renderPickProgram()
+    const hasAccess = isSubscribed || hasExamAccess(featuredExam.id)
     return (
-      <Card key={exam.id} interactive className="p-5" onClick={() => navigate(`/exam/${exam.slug}`)}>
-        <div className="flex items-start gap-3 mb-3">
-          <span className="text-2xl shrink-0">{exam.icon || '📚'}</span>
-          <div className="flex-1 min-w-0">
-            <p className="text-[0.6875rem] font-bold text-[#00D4AA] uppercase tracking-wide mb-0.5">{exam.provider}</p>
-            <h3 className="text-sm font-bold text-[#0A2540] leading-snug">{exam.name}</h3>
-          </div>
-        </div>
-        <p className="text-xs text-gray-500 mb-3 leading-relaxed line-clamp-2">
-          {exam.description?.slice(0, 90)}{(exam.description?.length || 0) > 90 ? '…' : ''}
-        </p>
-        <div className="flex items-center gap-3 mb-4 text-xs text-gray-400">
-          <span>{exam.total_questions || '—'} questions</span>
-          <span>·</span>
-          <span>{exam.duration_minutes || '—'} min</span>
-          {scheduled && (
-            <>
-              <span>·</span>
-              <span className="text-blue-500 font-medium">
-                Exam {new Date(scheduled.exam_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-              </span>
-            </>
-          )}
-        </div>
-        <div className="flex gap-2">
-          <Button variant="primary" size="sm" className="flex-1"
-                  onClick={e => { e.stopPropagation(); navigate(`/exam/${exam.slug}`) }}>
-            {(isSubscribed || hasExamAccess(exam.id)) ? 'Start Practicing' : 'Try Free'}
-          </Button>
-          <Button variant="outline" size="sm"
-                  onClick={e => { e.stopPropagation(); setSelectedExamForDate(exam); setShowExamDateModal(true) }}
-                  title={`${scheduled ? 'Update' : 'Set'} exam date`}>
-            <CalendarDays className="w-4 h-4" />
-          </Button>
-        </div>
-      </Card>
-    )
-  }
-
-  const renderAllExams = () => {
-    if (exams.length === 0) return null
-    const focused = featuredExam ? exams.filter(e => e.id === featuredExam.id) : []
-    const others = featuredExam ? exams.filter(e => e.id !== featuredExam.id) : exams
-    const gridStyle = { gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))' }
-    return (
-      <section ref={allExamsRef} className="py-8 bg-white">
+      <section className="py-8 bg-white">
         <Container>
-          <SectionHeader label={featuredProgram ? featuredProgram.code : 'All certifications'} title="Practice Exams" className="mb-2" />
+          <SectionHeader
+            label={featuredProgram?.code || featuredExam.provider}
+            title="Exam Simulations"
+            className="mb-2"
+          />
           <p className="text-gray-500 text-sm mb-6">
-            {isSubscribed
-              ? 'Full access active. Start a timed practice set anytime.'
-              : 'Try 10 free questions. Subscribe for full access to all question sets.'}
+            {hasAccess
+              ? 'Full access active. Start a timed, exam-style simulation anytime.'
+              : 'Try the free sample set. Subscribe to unlock every simulation.'}
           </p>
 
-          {!isSubscribed && (
+          {!hasAccess && (
             <div className="mb-6 rounded-xl p-4 flex items-center gap-4 flex-wrap"
                  style={{ background: 'linear-gradient(135deg, #0A2540, #1A3B5C)', border: '1px solid rgba(0,212,170,0.25)' }}>
               <div className="flex-1 min-w-0">
-                <p className="text-white font-display font-bold text-sm">Unlock every practice question</p>
+                <p className="text-white font-display font-bold text-sm">Unlock every {featuredProgram?.code || ''} simulation</p>
                 <p className="text-white/60 text-xs mt-0.5">Get full access to all practice sets and study sessions. Plans from $8.25/month.</p>
               </div>
               <Button variant="primary" size="sm" onClick={() => setShowEnrollmentModal(true)}>
@@ -962,23 +993,65 @@ function Dashboard() {
             </div>
           )}
 
-          {focused.length > 0 && (
-            <div className="grid gap-4 mb-8" style={gridStyle}>
-              {focused.map(renderExamCard)}
+          {loadingSets ? (
+            <div className="flex justify-center py-16">
+              <div className="h-8 w-8 rounded-full border-2 border-gray-200 border-b-transparent animate-spin" />
             </div>
-          )}
-
-          {others.length > 0 && (
-            <>
-              {focused.length > 0 && (
-                <p className="text-[0.6875rem] font-display font-bold text-gray-400 uppercase tracking-[0.08em] mb-4">
-                  Explore other certifications
-                </p>
-              )}
-              <div className="grid gap-4" style={gridStyle}>
-                {others.map(renderExamCard)}
-              </div>
-            </>
+          ) : practiceSets.length === 0 ? (
+            <Card className="p-10 text-center">
+              <ClipboardList className="w-12 h-12 mx-auto mb-4 text-gray-200" />
+              <p className="text-base font-bold text-[#0A2540]">No simulations available yet</p>
+              <p className="text-sm text-gray-500 mt-1 max-w-sm mx-auto">
+                Exam simulations for {featuredExam.name} are coming soon.
+              </p>
+            </Card>
+          ) : (
+            <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 320px), 1fr))' }}>
+              {practiceSets.map(set => {
+                const isFree = set.is_free_sample || set.price_cents === 0
+                const locked = !isFree && !hasAccess
+                const scheduled = examDates.find(d => d.exam_type_id === featuredExam.id)
+                return (
+                  <Card key={set.id} className="p-5 flex flex-col" style={{ opacity: locked ? 0.85 : 1 }}>
+                    <div className="flex items-start justify-between gap-3 mb-2">
+                      <h3 className="text-sm font-bold text-[#0A2540] leading-snug">{set.name}</h3>
+                      {isFree ? (
+                        <span className="shrink-0 text-[0.625rem] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-[#00D4AA]/10 text-[#00A884]">Free</span>
+                      ) : hasAccess ? (
+                        <span className="shrink-0 text-[0.625rem] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-[#00D4AA]/10 text-[#00A884]">Included</span>
+                      ) : (
+                        <span className="shrink-0 inline-flex items-center gap-1 text-[0.625rem] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-gray-100 text-gray-500"><Lock className="w-3 h-3" /> Locked</span>
+                      )}
+                    </div>
+                    {set.description && (
+                      <p className="text-xs text-gray-500 mb-3 leading-relaxed line-clamp-2 flex-1">{set.description}</p>
+                    )}
+                    <div className="flex items-center gap-3 mb-4 text-xs text-gray-400 flex-wrap">
+                      <span className="inline-flex items-center gap-1.5"><ClipboardList className="w-3.5 h-3.5 opacity-60" />{set.question_count || '—'} questions</span>
+                      <span>·</span>
+                      <span>Set {set.set_number}</span>
+                      {set.is_final_exam && (<><span>·</span><span className="text-[#00D4AA] font-semibold">Final exam</span></>)}
+                    </div>
+                    {(isFree || hasAccess) ? (
+                      <Button variant="primary" size="sm" className="w-full gap-1.5"
+                              onClick={() => navigate(`/exam/${featuredExam.slug}/take?set=${set.id}`)}>
+                        Start simulation <ArrowRight className="w-4 h-4" />
+                      </Button>
+                    ) : (
+                      <Button variant="outline" size="sm" className="w-full gap-1.5"
+                              onClick={() => setShowEnrollmentModal(true)}>
+                        <Lock className="w-4 h-4" /> Subscribe to unlock
+                      </Button>
+                    )}
+                    {scheduled && (
+                      <p className="text-[0.7rem] text-blue-500 font-medium text-center mt-2.5">
+                        Exam scheduled {new Date(scheduled.exam_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      </p>
+                    )}
+                  </Card>
+                )
+              })}
+            </div>
           )}
         </Container>
       </section>
@@ -1081,12 +1154,13 @@ function Dashboard() {
               <>
                 {renderContinue()}
                 {renderQuickStats()}
+                {renderExamInfo()}
                 {renderExamCountdown()}
               </>
             )
           )}
           {activeTab === 'study' && renderCourseProgress()}
-          {activeTab === 'practice' && renderAllExams()}
+          {activeTab === 'practice' && renderPractice()}
           {activeTab === 'progress' && renderProgressRow()}
           {activeTab === 'credentials' && renderCredentials()}
         </div>

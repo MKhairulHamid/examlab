@@ -1,37 +1,100 @@
 /**
  * Study Streak Service
- * Manages user's study streak with local storage and database sync
+ *
+ * Records the days a learner is active and derives their streak from that set
+ * of days — the list of study dates is the single source of truth. Current and
+ * longest streaks are always *computed* from those dates (never mutated
+ * incrementally), so the numbers stay correct even after days off, across
+ * devices, or if the page sits open past midnight.
+ *
+ * Persistence: localStorage for instant reads + Supabase (`study_streaks`) for
+ * cross-device sync. The two are merged on init so offline activity is never
+ * lost.
  */
 
 import { supabase } from './supabase'
 
 const STREAK_STORAGE_KEY = 'exam_prep_streak'
 const SYNC_INTERVAL = 5 * 60 * 1000 // 5 minutes
+const DAY_MS = 24 * 60 * 60 * 1000
+const DEFAULT_DAILY_GOAL = 20
+
+// ── Date helpers ────────────────────────────────────────────────────
+// A "day" is a UTC calendar date string (YYYY-MM-DD) so a study day is stable
+// regardless of the exact time of day it was recorded.
+function dayKey(date = new Date()) {
+  return new Date(date).toISOString().split('T')[0]
+}
+
+function dayNumber(key) {
+  // Whole days since the epoch — lets us test "are these two dates adjacent?".
+  return Math.floor(new Date(`${key}T00:00:00Z`).getTime() / DAY_MS)
+}
+
+/**
+ * Derive current + longest streak from a set of study-day keys.
+ *
+ * - longestStreak: the longest run of consecutive calendar days, ever.
+ * - currentStreak: the run ending today, or yesterday (a one-day grace so the
+ *   streak doesn't read 0 first thing in the morning before today's activity).
+ *   Any older gap means the current streak is 0.
+ */
+function computeStreaks(studyDates = []) {
+  const days = [...new Set(studyDates)].map(dayNumber).sort((a, b) => a - b)
+  if (days.length === 0) return { currentStreak: 0, longestStreak: 0 }
+
+  let longest = 1
+  let run = 1
+  for (let i = 1; i < days.length; i++) {
+    run = days[i] - days[i - 1] === 1 ? run + 1 : 1
+    if (run > longest) longest = run
+  }
+
+  const today = dayNumber(dayKey())
+  const last = days[days.length - 1]
+  let current = 0
+  if (last === today || last === today - 1) {
+    current = 1
+    for (let i = days.length - 1; i > 0; i--) {
+      if (days[i] - days[i - 1] === 1) current += 1
+      else break
+    }
+  }
+
+  return { currentStreak: current, longestStreak: longest }
+}
 
 class StreakService {
   constructor() {
     this.syncTimer = null
   }
 
-  /**
-   * Get streak data from local storage
-   */
+  getDefaultStreak() {
+    return {
+      currentStreak: 0,
+      longestStreak: 0,
+      totalStudyDays: 0,
+      lastActivityDate: null,
+      studyDates: [],
+      dailyGoalQuestions: DEFAULT_DAILY_GOAL,
+      questionsToday: 0,
+      lastSynced: null,
+    }
+  }
+
   getLocalStreak() {
     try {
       const stored = localStorage.getItem(STREAK_STORAGE_KEY)
-      if (!stored) {
-        return this.getDefaultStreak()
-      }
-      return JSON.parse(stored)
+      if (!stored) return this.getDefaultStreak()
+      const parsed = JSON.parse(stored)
+      // Defend against partially-shaped legacy payloads.
+      return { ...this.getDefaultStreak(), ...parsed, studyDates: parsed.studyDates || [] }
     } catch (error) {
       console.error('Error reading local streak:', error)
       return this.getDefaultStreak()
     }
   }
 
-  /**
-   * Save streak data to local storage
-   */
   saveLocalStreak(streakData) {
     try {
       localStorage.setItem(STREAK_STORAGE_KEY, JSON.stringify(streakData))
@@ -41,24 +104,26 @@ class StreakService {
   }
 
   /**
-   * Get default streak object
+   * Build a normalized streak record from a set of study dates. Recomputes the
+   * derived streak numbers so callers never have to keep them in sync by hand.
    */
-  getDefaultStreak() {
+  buildStreak(studyDates, { dailyGoalQuestions, lastActivityDate, questionsToday } = {}) {
+    const dates = [...new Set(studyDates)].sort()
+    const { currentStreak, longestStreak } = computeStreaks(dates)
+    const today = dayKey()
     return {
-      currentStreak: 0,
-      longestStreak: 0,
-      totalStudyDays: 0,
-      lastActivityDate: null,
-      studyDates: [],
-      dailyGoalQuestions: 20,
-      questionsToday: 0,
-      lastSynced: null
+      currentStreak,
+      longestStreak,
+      totalStudyDays: dates.length,
+      lastActivityDate: lastActivityDate || (dates.length ? dates[dates.length - 1] : null),
+      studyDates: dates,
+      dailyGoalQuestions: dailyGoalQuestions || DEFAULT_DAILY_GOAL,
+      questionsToday: lastActivityDate === today ? (questionsToday || 0) : 0,
+      lastSynced: new Date().toISOString(),
     }
   }
 
-  /**
-   * Fetch streak from database
-   */
+  // ── Database ──────────────────────────────────────────────────────
   async fetchStreakFromDB(userId) {
     try {
       const { data, error } = await supabase
@@ -68,37 +133,29 @@ class StreakService {
         .single()
 
       if (error) {
-        // PGRST116 = no rows returned (normal case for new users)
-        if (error.code === 'PGRST116') {
-          return this.getDefaultStreak()
-        }
-        
-        // 42P01 = table doesn't exist, PGRST106 = table not found, 406 = Not Acceptable
+        if (error.code === 'PGRST116') return this.getDefaultStreak() // no row yet
+        // Table missing / not exposed — signal "DB unavailable" so we stay local-only.
         if (error.code === '42P01' || error.code === 'PGRST106' || error.message?.includes('406')) {
           console.warn('Study streaks table not available yet. Using local storage only.')
           return null
         }
-        
         console.error('Error fetching streak from DB:', error)
         return null
       }
 
-      if (!data) {
-        return this.getDefaultStreak()
-      }
+      if (!data) return this.getDefaultStreak()
 
       return {
-        currentStreak: data.current_streak,
-        longestStreak: data.longest_streak,
-        totalStudyDays: data.total_study_days,
-        lastActivityDate: data.last_activity_date,
+        currentStreak: data.current_streak || 0,
+        longestStreak: data.longest_streak || 0,
+        totalStudyDays: data.total_study_days || 0,
+        lastActivityDate: data.last_activity_date || null,
         studyDates: data.study_days_json?.dates || [],
-        dailyGoalQuestions: data.daily_goal_questions,
-        questionsToday: this.getQuestionsToday(),
-        lastSynced: new Date().toISOString()
+        dailyGoalQuestions: data.daily_goal_questions || DEFAULT_DAILY_GOAL,
+        questionsToday: 0,
+        lastSynced: new Date().toISOString(),
       }
     } catch (error) {
-      // Catch network or other errors
       if (error.message?.includes('406') || error.message?.includes('Not Acceptable')) {
         console.warn('Study streaks feature not available. Using local storage only.')
         return null
@@ -108,9 +165,6 @@ class StreakService {
     }
   }
 
-  /**
-   * Update streak in database
-   */
   async updateStreakInDB(userId, streakData) {
     try {
       const { error } = await supabase
@@ -123,246 +177,148 @@ class StreakService {
           last_activity_date: streakData.lastActivityDate,
           study_days_json: { dates: streakData.studyDates },
           daily_goal_questions: streakData.dailyGoalQuestions,
-          updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'user_id',
-          ignoreDuplicates: false
-        })
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id', ignoreDuplicates: false })
 
       if (error) {
-        // Silently fail if table doesn't exist
-        if (error.code === '42P01' || error.code === 'PGRST106' || error.message?.includes('406')) {
-          return false
-        }
+        if (error.code === '42P01' || error.code === 'PGRST106' || error.message?.includes('406')) return false
         console.error('Error updating streak in DB:', error)
         return false
       }
-
       return true
     } catch (error) {
-      // Silently fail if table doesn't exist
-      if (error.message?.includes('406') || error.message?.includes('Not Acceptable')) {
-        return false
-      }
+      if (error.message?.includes('406') || error.message?.includes('Not Acceptable')) return false
       console.error('Error in updateStreakInDB:', error)
       return false
     }
   }
 
+  // ── Public API ────────────────────────────────────────────────────
   /**
-   * Record activity and update streak
-   * Now tracks if user answered at least 1 question per day
+   * Record that the user was active today. Adds today to the study-day set,
+   * tallies questions toward the daily goal, recomputes the streak, and syncs.
    */
   async recordActivity(userId, questionsCompleted = 1) {
-    const today = new Date().toISOString().split('T')[0]
-    const streak = this.getLocalStreak()
+    const today = dayKey()
+    const prev = this.getLocalStreak()
 
-    // Initialize questionsToday if undefined
-    if (typeof streak.questionsToday !== 'number') {
-      streak.questionsToday = 0
-    }
+    const questionsToday = prev.lastActivityDate === today
+      ? (prev.questionsToday || 0) + questionsCompleted
+      : questionsCompleted
 
-    // Update questions today
-    if (streak.lastActivityDate === today) {
-      streak.questionsToday += questionsCompleted
-      // Already counted today, no need to update streak
-      this.saveLocalStreak(streak)
-      return streak
-    }
+    const streak = this.buildStreak([...prev.studyDates, today], {
+      dailyGoalQuestions: prev.dailyGoalQuestions,
+      lastActivityDate: today,
+      questionsToday,
+    })
+    // Never let a recompute lower a previously-achieved best.
+    streak.longestStreak = Math.max(streak.longestStreak, prev.longestStreak || 0)
 
-    // New day - update questions count
-    streak.questionsToday = questionsCompleted
-
-    // Calculate streak
-    const yesterday = new Date()
-    yesterday.setDate(yesterday.getDate() - 1)
-    const yesterdayStr = yesterday.toISOString().split('T')[0]
-
-    if (streak.lastActivityDate === yesterdayStr) {
-      // Continue streak - answered yesterday and now today
-      streak.currentStreak += 1
-      streak.lastActivityDate = today
-      if (!streak.studyDates.includes(today)) {
-        streak.studyDates.push(today)
-      }
-    } else if (!streak.lastActivityDate || streak.lastActivityDate < yesterdayStr) {
-      // Streak broken or first time - start new streak
-      streak.currentStreak = 1
-      streak.lastActivityDate = today
-      if (!streak.studyDates.includes(today)) {
-        streak.studyDates.push(today)
-      }
-    }
-
-    // Update longest streak
-    if (streak.currentStreak > streak.longestStreak) {
-      streak.longestStreak = streak.currentStreak
-    }
-
-    // Update total study days
-    streak.totalStudyDays = streak.studyDates.length
-
-    // Save locally
     this.saveLocalStreak(streak)
-
-    // Sync to database
-    if (userId) {
-      await this.syncToDatabase(userId)
-    }
-
+    if (userId) await this.updateStreakInDB(userId, streak)
     return streak
   }
 
   /**
-   * Sync local streak to database
+   * Merge local + DB records (union of study days) so neither source loses
+   * activity, then persist the reconciled result both places.
    */
+  async initializeStreak(userId) {
+    const local = this.getLocalStreak()
+    if (!userId) return local
+
+    const remote = await this.fetchStreakFromDB(userId)
+    if (!remote) {
+      // DB unavailable — keep local, best-effort sync.
+      await this.updateStreakInDB(userId, local)
+      return local
+    }
+
+    const today = dayKey()
+    const lastActivityDate = [local.lastActivityDate, remote.lastActivityDate]
+      .filter(Boolean).sort().pop() || null
+    const questionsToday = Math.max(
+      local.lastActivityDate === today ? (local.questionsToday || 0) : 0,
+      remote.lastActivityDate === today ? (remote.questionsToday || 0) : 0,
+    )
+
+    const merged = this.buildStreak([...local.studyDates, ...remote.studyDates], {
+      dailyGoalQuestions: remote.dailyGoalQuestions || local.dailyGoalQuestions,
+      lastActivityDate,
+      questionsToday,
+    })
+    merged.longestStreak = Math.max(merged.longestStreak, local.longestStreak || 0, remote.longestStreak || 0)
+
+    this.saveLocalStreak(merged)
+    await this.updateStreakInDB(userId, merged)
+    return merged
+  }
+
   async syncToDatabase(userId) {
     if (!userId) return false
-
     const streak = this.getLocalStreak()
     const success = await this.updateStreakInDB(userId, streak)
-
     if (success) {
       streak.lastSynced = new Date().toISOString()
       this.saveLocalStreak(streak)
     }
-
     return success
   }
 
   /**
-   * Initialize streak for user
+   * Read-only stats for the UI. Recomputes the streak from stored study days so
+   * the value is correct on every read (e.g. it drops to 0 once the grace day
+   * passes), and persists any correction so local + DB don't drift.
    */
-  async initializeStreak(userId) {
-    if (!userId) return this.getLocalStreak()
+  getStreakStats() {
+    const stored = this.getLocalStreak()
+    const today = dayKey()
+    const { currentStreak, longestStreak } = computeStreaks(stored.studyDates)
+    const bestStreak = Math.max(longestStreak, stored.longestStreak || 0)
+    const questionsToday = stored.lastActivityDate === today ? (stored.questionsToday || 0) : 0
 
-    // Try to fetch from database
-    const dbStreak = await this.fetchStreakFromDB(userId)
-    
-    if (dbStreak) {
-      // Use database data
-      this.saveLocalStreak(dbStreak)
-      return dbStreak
+    if (stored.currentStreak !== currentStreak ||
+        stored.longestStreak !== bestStreak ||
+        stored.questionsToday !== questionsToday) {
+      this.saveLocalStreak({ ...stored, currentStreak, longestStreak: bestStreak, questionsToday })
     }
 
-    // Use local or default
-    const localStreak = this.getLocalStreak()
-    
-    // Sync to database
-    await this.updateStreakInDB(userId, localStreak)
-    
-    return localStreak
+    return {
+      currentStreak,
+      longestStreak: bestStreak,
+      totalStudyDays: stored.studyDates.length,
+      questionsToday,
+      dailyGoal: stored.dailyGoalQuestions || DEFAULT_DAILY_GOAL,
+      studyDates: stored.studyDates.slice(-30),
+    }
   }
 
-  /**
-   * Get questions completed today from local storage
-   */
   getQuestionsToday() {
-    const today = new Date().toISOString().split('T')[0]
     const streak = this.getLocalStreak()
-    
-    if (streak.lastActivityDate === today) {
-      return streak.questionsToday || 0
-    }
-    
-    return 0
+    return streak.lastActivityDate === dayKey() ? (streak.questionsToday || 0) : 0
   }
 
-  /**
-   * Check if streak needs to be checked/updated
-   */
-  checkStreakExpiry() {
+  async updateDailyGoal(userId, newGoal) {
     const streak = this.getLocalStreak()
-    const today = new Date().toISOString().split('T')[0]
-    
-    if (!streak.lastActivityDate) return streak
-
-    const lastDate = new Date(streak.lastActivityDate)
-    const currentDate = new Date(today)
-    const daysDiff = Math.floor((currentDate - lastDate) / (1000 * 60 * 60 * 24))
-
-    let needsSave = false
-
-    // If it's a new day (not today), reset questionsToday
-    if (streak.lastActivityDate !== today) {
-      streak.questionsToday = 0
-      needsSave = true
-    }
-
-    // If more than 1 day has passed, reset streak
-    if (daysDiff > 1) {
-      streak.currentStreak = 0
-      needsSave = true
-    }
-
-    // Save if changes were made
-    if (needsSave) {
-      this.saveLocalStreak(streak)
-    }
-
+    streak.dailyGoalQuestions = newGoal
+    this.saveLocalStreak(streak)
+    if (userId) await this.syncToDatabase(userId)
     return streak
   }
 
-  /**
-   * Start auto-sync
-   */
+  // ── Auto-sync ─────────────────────────────────────────────────────
   startAutoSync(userId) {
-    if (this.syncTimer) {
-      clearInterval(this.syncTimer)
-    }
-
-    this.syncTimer = setInterval(() => {
-      this.syncToDatabase(userId)
-    }, SYNC_INTERVAL)
+    if (this.syncTimer) clearInterval(this.syncTimer)
+    this.syncTimer = setInterval(() => this.syncToDatabase(userId), SYNC_INTERVAL)
   }
 
-  /**
-   * Stop auto-sync
-   */
   stopAutoSync() {
     if (this.syncTimer) {
       clearInterval(this.syncTimer)
       this.syncTimer = null
     }
   }
-
-  /**
-   * Get streak statistics
-   */
-  getStreakStats() {
-    const streak = this.getLocalStreak()
-    const today = new Date().toISOString().split('T')[0]
-    
-    // Check if streak needs updating
-    const updatedStreak = this.checkStreakExpiry()
-    
-    return {
-      currentStreak: updatedStreak.currentStreak,
-      longestStreak: updatedStreak.longestStreak,
-      totalStudyDays: updatedStreak.totalStudyDays,
-      questionsToday: updatedStreak.lastActivityDate === today ? (updatedStreak.questionsToday || 0) : 0,
-      dailyGoal: updatedStreak.dailyGoalQuestions,
-      studyDates: updatedStreak.studyDates.slice(-14) // Last 14 days
-    }
-  }
-
-  /**
-   * Update daily goal
-   */
-  async updateDailyGoal(userId, newGoal) {
-    const streak = this.getLocalStreak()
-    streak.dailyGoalQuestions = newGoal
-    this.saveLocalStreak(streak)
-
-    if (userId) {
-      await this.syncToDatabase(userId)
-    }
-
-    return streak
-  }
 }
 
-// Export singleton instance
 export const streakService = new StreakService()
 export default streakService
-
