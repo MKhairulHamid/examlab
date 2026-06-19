@@ -70,7 +70,16 @@ function App() {
       navigator.serviceWorker.register('/sw.js').catch(() => {})
     }
 
+    // Once the app has run stably for a few seconds, clear the chunk-reload
+    // guard so a future deploy can auto-heal again. A genuinely broken build
+    // reloads within milliseconds (see ErrorBoundary), long before this fires,
+    // so the loop guard stays intact in that case.
+    const clearGuard = setTimeout(() => {
+      try { sessionStorage.removeItem('cel-chunk-reloaded') } catch { /* ignore */ }
+    }, 4000)
+
     return () => {
+      clearTimeout(clearGuard)
       if (unsubscribe) unsubscribe()
     }
   }, [initializeAuth, initializeSync])

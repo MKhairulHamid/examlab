@@ -7,6 +7,7 @@ import DashboardHeader from '../components/layout/DashboardHeader'
 import EnrollmentModal from '../components/enrollment/EnrollmentModal'
 import streakService from '../services/streakService'
 import progressService from '../services/progressService'
+import studyProgressService from '../services/studyProgressService'
 import certificateService, { buildVerifyPath } from '../services/certificateService'
 import CertificateCard from '../components/certificate/CertificateCard'
 import { PROGRAMS, getProgram, getProgramBySlug } from '../data/programs'
@@ -16,6 +17,7 @@ import { Button, Card, Badge, Container, SectionHeader } from '../design-system'
 import {
   BookOpen, ClipboardList, CheckCircle2, CalendarDays, BarChart2,
   Flame, LayoutGrid, Award, PlayCircle, ArrowRight, Rocket, GraduationCap,
+  ArrowLeftRight, Check,
 } from 'lucide-react'
 
 // Every session-based program slug we ship a course for. Used to detect a
@@ -34,7 +36,7 @@ const TABS = [
 function Dashboard() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
-  const { user, profile } = useAuthStore()
+  const { user, profile, updateProfile } = useAuthStore()
 
   const tabParam = searchParams.get('tab')
   const activeTab = TABS.some(t => t.id === tabParam) ? tabParam : 'overview'
@@ -55,7 +57,10 @@ function Dashboard() {
   const [showExamDateModal, setShowExamDateModal] = useState(false)
   const [selectedExamForDate, setSelectedExamForDate] = useState(null)
   const [certificates, setCertificates] = useState([])
+  const [studyProgress, setStudyProgress] = useState([]) // [{courseSlug, completedSessions, updatedAt}] from the DB
+  const [focusChooserOpen, setFocusChooserOpen] = useState(false)
   const allExamsRef = useRef(null)
+  const autoFocusedRef = useRef(false)
 
   const userName = profile?.full_name || user?.email?.split('@')[0] || 'Student'
 
@@ -69,6 +74,7 @@ function Dashboard() {
       loadExamResults()
       loadExamDates()
       certificateService.listMine().then(setCertificates)
+      studyProgressService.loadAll(user.id).then(setStudyProgress)
     }
   }, [user])
 
@@ -148,29 +154,76 @@ function Dashboard() {
     return () => { document.removeEventListener('visibilitychange', onVisibility); window.removeEventListener('focus', onFocus) }
   }, [user])
 
-  // ── Adaptive home: which program to feature ───────────────────────
-  // A returning learner may have local study progress before any formal
-  // enrollment — detect that so the home stays progress-forward, not empty.
-  const progressedSlug = useMemo(() => {
-    for (const slug of KNOWN_COURSE_SLUGS) {
-      try {
-        const raw = localStorage.getItem(`course-progress-${slug}`)
-        if (raw && JSON.parse(raw).length > 0) return slug
-      } catch { /* ignore */ }
-    }
-    return null
-  }, [])
+  // ── Focused certification (one per user, derived from activity) ────
+  // The home centres on a single cert the learner is focused on. We persist
+  // that choice on the profile (focused_course_slug) so it follows them across
+  // devices, and derive sensible candidates from real server-side activity:
+  // enrolled/promo access, study progress, and completed practice attempts.
+  const examSlugSet = useMemo(() => new Set(exams.map(e => e.slug)), [exams])
 
-  // The exam to surface: an enrolled / promo-unlocked program first, else a
-  // program the learner has already started studying. Subscribed-but-unpicked
-  // and brand-new users resolve to null → first-timer path-chooser.
-  const featuredExam = useMemo(() => {
-    if (!exams.length) return null
+  // Most-recent activity timestamp per course — orders the chooser + picks the
+  // auto-default when there's only one.
+  const activityBySlug = useMemo(() => {
+    const m = {}
+    const bump = (slug, ts) => {
+      if (!slug) return
+      const t = ts ? new Date(ts).getTime() : 0
+      if (!m[slug] || t > m[slug]) m[slug] = t
+    }
+    studyProgress.forEach(sp => { if (sp.completedSessions.length > 0) bump(sp.courseSlug, sp.updatedAt) })
+    examResults.forEach(r => bump(r.examSlug, r.completedAt))
     const accessibleIds = [...(enrolledExamIds || []), ...(promoAccessExamIds || [])]
-    let exam = exams.find(e => accessibleIds.includes(e.id))
-    if (!exam && progressedSlug) exam = exams.find(e => e.slug === progressedSlug)
-    return exam || null
-  }, [exams, enrolledExamIds, promoAccessExamIds, progressedSlug])
+    exams.forEach(e => { if (accessibleIds.includes(e.id) && !(e.slug in m)) m[e.slug] = 0 })
+    return m
+  }, [studyProgress, examResults, enrolledExamIds, promoAccessExamIds, exams])
+
+  // Certs the learner has actually touched — only those we ship a course for.
+  const candidateSlugs = useMemo(() => (
+    Object.keys(activityBySlug)
+      .filter(s => KNOWN_COURSE_SLUGS.includes(s) && examSlugSet.has(s))
+      .sort((a, b) => (activityBySlug[b] || 0) - (activityBySlug[a] || 0))
+  ), [activityBySlug, examSlugSet])
+
+  // An explicit, still-valid saved focus always wins.
+  const savedFocus = useMemo(() => {
+    const slug = profile?.focused_course_slug
+    return slug && KNOWN_COURSE_SLUGS.includes(slug) && examSlugSet.has(slug) ? slug : null
+  }, [profile?.focused_course_slug, examSlugSet])
+
+  // Resolve the focus: saved choice → the only candidate → none.
+  const focusedSlug = useMemo(() => {
+    if (savedFocus) return savedFocus
+    if (candidateSlugs.length === 1) return candidateSlugs[0]
+    return null
+  }, [savedFocus, candidateSlugs])
+
+  // Activity in 2+ certs with no saved choice → we must ask which one.
+  const needsFocusChoice = !savedFocus && candidateSlugs.length > 1
+  // No saved focus, no activity at all → genuine first-timer.
+  const isFirstTimer = !focusedSlug && !needsFocusChoice
+
+  // Persist the auto-adopted focus when there's exactly one candidate, so the
+  // choice is durable (and the "switch" affordance has something to toggle).
+  useEffect(() => {
+    if (!user || !profile || autoFocusedRef.current) return
+    if (!savedFocus && candidateSlugs.length === 1) {
+      autoFocusedRef.current = true
+      updateProfile({ focused_course_slug: candidateSlugs[0] })
+    }
+  }, [user, profile, savedFocus, candidateSlugs, updateProfile])
+
+  // Change focus (chooser / switch). Persists to the profile.
+  const chooseFocus = async (slug) => {
+    setFocusChooserOpen(false)
+    if (!slug || slug === profile?.focused_course_slug) return
+    autoFocusedRef.current = true
+    await updateProfile({ focused_course_slug: slug })
+  }
+
+  const featuredExam = useMemo(
+    () => (focusedSlug && exams.length ? exams.find(e => e.slug === focusedSlug) || null : null),
+    [focusedSlug, exams],
+  )
 
   const featuredProgram = useMemo(
     () => (featuredExam ? getProgramBySlug(featuredExam.slug) : null),
@@ -182,16 +235,22 @@ function Dashboard() {
     [featuredExam],
   )
 
-  const isFirstTimer = !featuredProgram
+  // Completed session IDs for a course — DB first (cross-device), localStorage
+  // as an instant-paint fallback before the DB load resolves.
+  const completedIdsFor = (slug) => {
+    const fromDb = studyProgress.find(sp => sp.courseSlug === slug)
+    if (fromDb) return fromDb.completedSessions
+    try {
+      const raw = localStorage.getItem(`course-progress-${slug}`)
+      if (raw) return JSON.parse(raw)
+    } catch { /* ignore */ }
+    return []
+  }
 
   // ── Featured course progress (program-aware) ──────────────────────
   const courseProgress = useMemo(() => {
     if (!featuredCourse) return null
-    let completedIds = []
-    try {
-      const raw = localStorage.getItem(`course-progress-${featuredCourse.slug}`)
-      if (raw) completedIds = JSON.parse(raw)
-    } catch { /* ignore */ }
+    const completedIds = completedIdsFor(featuredCourse.slug)
 
     const sessions = featuredCourse.sessions || []
     const total = sessions.length
@@ -213,7 +272,7 @@ function Dashboard() {
 
     const nextSession = sessions.find(s => !completedIds.includes(s.id))
     return { total, done, pct, byDomain, nextSession, studySlug: featuredExam?.slug || null, completedIds }
-  }, [featuredCourse, featuredExam])
+  }, [featuredCourse, featuredExam, studyProgress])
 
   // ── Resume: most recent in-progress practice exam ─────────────────
   useEffect(() => {
@@ -431,6 +490,81 @@ function Dashboard() {
             </Button>
           </div>
         </Card>
+      </Container>
+    </section>
+  )
+
+  // ── Focus chooser ─────────────────────────────────────────────────
+  // One selectable card per certification the learner has activity in.
+  const renderFocusOption = (slug, { current = false } = {}) => {
+    const program = getProgramBySlug(slug)
+    const course = getSessionCourse(slug)
+    const exam = exams.find(e => e.slug === slug)
+    const completed = completedIdsFor(slug)
+    const total = course?.sessions?.length || 0
+    const done = completed.length
+    const pct = total > 0 ? Math.round((done / total) * 100) : 0
+    const attempts = examResults.filter(r => r.examSlug === slug).length
+    const name = program?.name || exam?.name || slug
+    const code = program?.code || slug.toUpperCase()
+    const color = program?.color || '#00D4AA'
+    const Icon = program?.Icon
+    return (
+      <button
+        key={slug}
+        onClick={() => chooseFocus(slug)}
+        disabled={current}
+        className={`text-left rounded-2xl border p-5 transition-all w-full flex flex-col ${
+          current
+            ? 'border-[#00D4AA] bg-[#00D4AA]/5 cursor-default'
+            : 'border-gray-200 bg-white hover:border-[#00D4AA]/60 hover:shadow-md'
+        }`}
+      >
+        <div className="flex items-start gap-3 mb-3">
+          <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${color}14` }}>
+            {Icon ? <Icon className="w-5 h-5" style={{ color }} strokeWidth={2.2} /> : <GraduationCap className="w-5 h-5" style={{ color }} />}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <p className="text-[0.6875rem] font-display font-bold uppercase tracking-wide" style={{ color }}>{program?.level || 'Certification'}</p>
+              {current && (
+                <span className="inline-flex items-center gap-1 text-[0.625rem] font-bold text-[#00D4AA]">
+                  <Check className="w-3 h-3" /> Current
+                </span>
+              )}
+            </div>
+            <h3 className="text-sm font-display font-bold text-[#0A2540] leading-snug">{name}</h3>
+            <p className="text-[0.65rem] font-mono text-gray-400 mt-0.5">{code}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 text-[0.7rem] font-medium text-gray-500 mb-3">
+          <span>{done}/{total} sessions</span>
+          {attempts > 0 && (<><span>·</span><span>{attempts} practice {attempts === 1 ? 'exam' : 'exams'}</span></>)}
+        </div>
+        <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden mt-auto">
+          <div className="h-full rounded-full" style={{ width: `${pct}%`, background: color }} />
+        </div>
+      </button>
+    )
+  }
+
+  // Full-section chooser shown on Home/Study when activity is split across
+  // certs and the learner hasn't picked a focus yet.
+  const renderFocusChooser = () => (
+    <section className="py-8">
+      <Container>
+        <div className="text-center max-w-xl mx-auto mb-7">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-display font-bold text-[#00D4AA] bg-[#00D4AA]/10 border border-[#00D4AA]/20 mb-3 uppercase tracking-widest">
+            <ArrowLeftRight className="w-3.5 h-3.5" /> Your focus
+          </span>
+          <h2 className="text-xl sm:text-2xl font-display font-bold text-[#0A2540] mb-2">Which certification are you focusing on?</h2>
+          <p className="text-gray-500 text-sm">
+            You've made progress in a few. Pick the one to make your home base — your progress in the others stays saved, and you can switch anytime.
+          </p>
+        </div>
+        <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 290px), 1fr))' }}>
+          {candidateSlugs.map(slug => renderFocusOption(slug, { current: slug === savedFocus }))}
+        </div>
       </Container>
     </section>
   )
@@ -860,20 +994,30 @@ function Dashboard() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <span className="inline-block px-3 py-1 rounded-full text-xs font-display font-bold text-[#00D4AA] bg-[#00D4AA]/10 border border-[#00D4AA]/20 mb-4 uppercase tracking-widest">
-                  {isFirstTimer ? 'Get certified' : `${featuredProgram.code} Prep`}
+                  {featuredProgram ? `${featuredProgram.code} Prep` : needsFocusChoice ? 'Choose your focus' : 'Get certified'}
                 </span>
                 <h1 className="text-2xl sm:text-3xl font-display font-bold text-white mb-2 leading-tight">
-                  {isFirstTimer ? `Welcome, ${userName}` : `Welcome back, ${userName}`}
+                  {featuredProgram ? `Welcome back, ${userName}` : `Welcome, ${userName}`}
                 </h1>
                 <p className="text-white/60 text-sm sm:text-base max-w-md">
-                  {isFirstTimer
-                    ? 'Pick a certification below and start studying free — your progress will live right here.'
+                  {!featuredProgram
+                    ? (needsFocusChoice
+                      ? "You've started more than one certification — pick the one you're focusing on to tailor your home."
+                      : 'Pick a certification below and start studying free — your progress will live right here.')
                     : (courseProgress?.pct ?? 0) === 0
                     ? `Start your ${featuredProgram.code} journey — ${courseProgress?.total ?? ''} study sessions covering every exam domain.`
                     : (courseProgress?.pct ?? 0) === 100
                     ? 'All study sessions complete. Keep practicing to lock in your score!'
                     : `${courseProgress.pct}% through your study sessions — keep the momentum going.`}
                 </p>
+                {featuredProgram && candidateSlugs.length > 1 && (
+                  <button
+                    onClick={() => setFocusChooserOpen(true)}
+                    className="mt-3 inline-flex items-center gap-1.5 text-xs font-display font-bold text-white/70 hover:text-white bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 rounded-full px-3 py-1.5 transition-colors"
+                  >
+                    <ArrowLeftRight className="w-3.5 h-3.5" /> Switch focus
+                  </button>
+                )}
               </div>
               {!isSubscribed ? (
                 <Button variant="primary" size="lg" className="shrink-0 shadow-teal"
@@ -921,7 +1065,9 @@ function Dashboard() {
         {/* Tab panels — Home adapts to user state (progressive disclosure) */}
         <div className="min-h-[40vh]">
           {activeTab === 'overview' && (
-            isFirstTimer ? (
+            needsFocusChoice ? (
+              renderFocusChooser()
+            ) : isFirstTimer ? (
               renderPathChooser()
             ) : (
               <>
@@ -931,7 +1077,7 @@ function Dashboard() {
               </>
             )
           )}
-          {activeTab === 'study' && renderCourseProgress()}
+          {activeTab === 'study' && (needsFocusChoice ? renderFocusChooser() : renderCourseProgress())}
           {activeTab === 'practice' && renderAllExams()}
           {activeTab === 'progress' && renderProgressRow()}
           {activeTab === 'credentials' && renderCredentials()}
@@ -945,6 +1091,26 @@ function Dashboard() {
         isOpen={showEnrollmentModal}
         onClose={() => setShowEnrollmentModal(false)}
       />
+
+      {focusChooserOpen && (
+        <div className="modal-overlay" onClick={() => setFocusChooserOpen(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '640px' }}>
+            <button className="modal-close" onClick={() => setFocusChooserOpen(false)}>×</button>
+            <div className="modal-header">
+              <h2 className="modal-title">Switch focus</h2>
+              <p className="modal-description">Choose the certification you want front and centre. Your progress in the others stays saved.</p>
+            </div>
+            <div className="grid gap-3 mt-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 240px), 1fr))' }}>
+              {candidateSlugs.map(slug => renderFocusOption(slug, { current: slug === (savedFocus || focusedSlug) }))}
+            </div>
+            <div className="mt-5 text-center">
+              <Button variant="outline" size="sm" onClick={() => { setFocusChooserOpen(false); setActiveTab('practice') }}>
+                Browse all certifications
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showExamDateModal && selectedExamForDate && (
         <div className="modal-overlay" onClick={() => setShowExamDateModal(false)}>

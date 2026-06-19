@@ -43,6 +43,33 @@ export const studyProgressService = {
   },
 
   /**
+   * Fetch every course the user has any study progress in. Powers the adaptive
+   * dashboard's "which certifications has this learner actually started" check —
+   * server-side so it's correct on a fresh install / new device.
+   * Returns [{ courseSlug, completedSessions, updatedAt }] ordered most-recent first.
+   */
+  async loadAll(userId) {
+    if (!userId) return []
+    try {
+      const { data, error } = await supabase
+        .from('study_course_progress')
+        .select('course_slug, completed_sessions, updated_at')
+        .eq('user_id', userId)
+        .order('updated_at', { ascending: false })
+
+      if (error) throw error
+      return (data || []).map(r => ({
+        courseSlug: r.course_slug,
+        completedSessions: Array.isArray(r.completed_sessions) ? r.completed_sessions : [],
+        updatedAt: r.updated_at,
+      }))
+    } catch (error) {
+      console.error('Error loading all study progress:', error)
+      return []
+    }
+  },
+
+  /**
    * Upsert the user's progress for a course (one row per user + course).
    */
   async save(userId, courseSlug, { completedSessions, clearedCheckpoints }) {
