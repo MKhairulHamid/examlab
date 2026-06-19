@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SOA-C03 Exam Guide — CloudExamLab Wiki</title>
+  <style>
+    :root {
+      --sidebar-w: 255px;
+      --sidebar-bg: #0f172a;
+      --sidebar-text: #94a3b8;
+      --sidebar-active-text: #38bdf8;
+      --sidebar-active-bg: rgba(56,189,248,0.08);
+      --sidebar-hover: #1e293b;
+      --accent: #2563eb;
+      --accent-light: #eff6ff;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --heading: #0f172a;
+      --code-bg: #1e293b;
+      --code-text: #e2e8f0;
+      --stripe: #f8fafc;
+      --warn-bg: #fef2f2;
+      --warn-border: #ef4444;
+      --tip-bg: #f0fdf4;
+      --tip-border: #22c55e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--text);
+      line-height: 1.65;
+      background: #fff;
+    }
+
+    /* ── Sidebar ── */
+    #sidebar {
+      position: fixed; top: 0; left: 0;
+      width: var(--sidebar-w); height: 100vh;
+      background: var(--sidebar-bg);
+      overflow-y: auto; z-index: 100;
+      display: flex; flex-direction: column;
+    }
+    #sidebar::-webkit-scrollbar { width: 4px; }
+    #sidebar::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+    .sb-header {
+      padding: 20px 16px 14px;
+      border-bottom: 1px solid #1e293b;
+    }
+    .sb-logo { font-size: 13px; font-weight: 700; color: #f1f5f9; letter-spacing: .06em; text-transform: uppercase; }
+    .sb-sub  { font-size: 11px; color: var(--sidebar-text); margin-top: 2px; }
+    .sb-group { padding: 10px 0 2px; }
+    .sb-group-label {
+      font-size: 10px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: #475569;
+      padding: 0 16px; margin-bottom: 3px;
+    }
+    .sb-item {
+      display: block; padding: 6px 16px;
+      font-size: 12.5px; color: var(--sidebar-text);
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: background .12s, color .12s;
+    }
+    .sb-item:hover { background: var(--sidebar-hover); color: #f1f5f9; }
+    .sb-item.active { color: var(--sidebar-active-text); border-left-color: var(--sidebar-active-text); background: var(--sidebar-active-bg); }
+    .sb-item.ext { color: #60a5fa; }
+    .sb-item.ext::after { content: ' ↗'; font-size: 10px; }
+
+    /* ── Main ── */
+    #main {
+      margin-left: var(--sidebar-w);
+      padding: 48px 64px 96px;
+      max-width: calc(var(--sidebar-w) + 880px);
+    }
+
+    /* ── Section ── */
+    .section { padding-top: 52px; border-top: 1px solid var(--border); margin-top: 28px; }
+    .section:first-of-type { border-top: none; margin-top: 0; padding-top: 0; }
+
+    /* ── Typography ── */
+    h1 { font-size: 27px; font-weight: 700; color: var(--heading); margin-bottom: 10px; }
+    h2 { font-size: 19px; font-weight: 700; color: var(--heading); margin-top: 38px; margin-bottom: 14px; }
+    h3 { font-size: 15px; font-weight: 600; color: var(--heading); margin-top: 24px; margin-bottom: 8px; }
+    p  { margin-bottom: 12px; }
+    a  { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ul, ol { padding-left: 22px; margin-bottom: 12px; }
+    li { margin-bottom: 4px; }
+    hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+    .section-meta { font-size: 14px; color: var(--text-muted); margin-bottom: 26px; margin-top: -4px; }
+
+    /* ── Chip label ── */
+    .chip {
+      display: inline-block; padding: 2px 9px; border-radius: 4px;
+      font-size: 10px; font-weight: 700; letter-spacing: .05em;
+      text-transform: uppercase; margin-bottom: 6px;
+    }
+    .chip-platform  { background: #eff6ff; color: #1d4ed8; }
+    .chip-technical { background: #f0fdf4; color: #15803d; }
+    .chip-reference { background: #fdf4ff; color: #7e22ce; }
+    .chip-exam      { background: #fff7ed; color: #c2410c; }
+
+    /* ── Tables ── */
+    .tw { overflow-x: auto; margin: 16px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    th {
+      background: #f1f5f9; padding: 7px 12px;
+      text-align: left; font-size: 11px; font-weight: 700;
+      color: var(--text-muted); border-bottom: 2px solid var(--border);
+      white-space: nowrap;
+    }
+    td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:nth-child(even) td { background: var(--stripe); }
+
+    /* ── Code ── */
+    code {
+      font-family: 'SF Mono','Fira Code','Cascadia Code',Consolas,monospace;
+      font-size: 12px; background: #f1f5f9; color: #be185d;
+      padding: 2px 5px; border-radius: 3px;
+    }
+
+    /* ── Callouts ── */
+    .callout {
+      padding: 12px 16px; border-radius: 6px;
+      margin: 14px 0; font-size: 13.5px;
+    }
+    .callout-note    { background: var(--accent-light); border-left: 4px solid var(--accent); }
+    .callout-warning { background: var(--warn-bg);      border-left: 4px solid var(--warn-border); }
+    .callout-tip     { background: var(--tip-bg);       border-left: 4px solid var(--tip-border); }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 10px;
+      font-size: 11px; font-weight: 600;
+    }
+    .badge-green  { background: #dcfce7; color: #15803d; }
+    .badge-yellow { background: #fef3c7; color: #b45309; }
+    .badge-gray   { background: #f1f5f9; color: #475569; }
+    .badge-blue   { background: #dbeafe; color: #1d4ed8; }
+    .badge-orange { background: #ffedd5; color: #c2410c; }
+
+    /* ── Numbered steps ── */
+    .steps { counter-reset: step; list-style: none; padding: 0; margin-bottom: 14px; }
+    .steps li {
+      counter-increment: step;
+      padding: 7px 0 7px 36px; position: relative;
+      border-left: 2px solid var(--border); margin-left: 11px;
+    }
+    .steps li::before {
+      content: counter(step);
+      position: absolute; left: -11px; top: 7px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--accent); color: #fff;
+      font-size: 10px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── Page title ── */
+    .page-title { margin-bottom: 36px; }
+    .page-title h1 { font-size: 30px; margin-bottom: 8px; }
+    .page-title p  { font-size: 15px; color: var(--text-muted); margin: 0; }
+
+    /* ── Domain bar ── */
+    .domain-bar { display: flex; gap: 6px; flex-wrap: wrap; margin: 18px 0 8px; }
+    .domain-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 12px; border-radius: 20px;
+      font-size: 12px; font-weight: 600;
+      border: 1px solid var(--border); background: #f8fafc;
+    }
+    .domain-pill .pct {
+      background: var(--accent); color: #fff;
+      border-radius: 10px; padding: 1px 6px;
+      font-size: 10px; font-weight: 700;
+    }
+
+    /* ── Highlight row ── */
+    .hl td { background: #eff6ff !important; font-weight: 600; }
+
+    /* ── Jump-to-top ── */
+    #top-btn {
+      position: fixed; bottom: 28px; right: 28px;
+      background: var(--accent); color: #fff;
+      border: none; border-radius: 50%; width: 38px; height: 38px;
+      font-size: 18px; cursor: pointer; display: none;
+      align-items: center; justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+      transition: opacity .2s;
+    }
+    #top-btn:hover { background: #1d4ed8; }
+  </style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<nav id="sidebar">
+  <div class="sb-header">
+    <div class="sb-logo">CloudExamLab</div>
+    <div class="sb-sub">Exam Guide Series</div>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">On this page</div>
+    <a class="sb-item active" href="#overview">Overview</a>
+    <a class="sb-item" href="#structure">Exam Structure</a>
+    <a class="sb-item" href="#domains">Content Domains</a>
+    <a class="sb-item" href="#domain1">D1 — Monitoring &amp; Performance</a>
+    <a class="sb-item" href="#domain2">D2 — Reliability &amp; Continuity</a>
+    <a class="sb-item" href="#domain3">D3 — Deployment &amp; Automation</a>
+    <a class="sb-item" href="#domain4">D4 — Security &amp; Compliance</a>
+    <a class="sb-item" href="#domain5">D5 — Networking &amp; Delivery</a>
+    <a class="sb-item" href="#candidate-prep">Helping Candidates</a>
+    <a class="sb-item" href="#simulation">Simulation Design</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Wiki</div>
+    <a class="sb-item ext" href="index.html">Developer Wiki</a>
+    <a class="sb-item ext" href="new-program-playbook.html">New Program Playbook</a>
+    <a class="sb-item ext" href="exam-authoring-standard.html">Exam &amp; Question Authoring</a>
+    <a class="sb-item ext" href="aws-certification-roadmap.html">AWS Cert Roadmap</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Official</div>
+    <a class="sb-item ext" href="https://docs.aws.amazon.com/aws-certification/latest/sysops-administrator-associate-03/sysops-administrator-associate-03.html">AWS Exam Guide ↗</a>
+  </div>
+</nav>
+
+<!-- ══ MAIN ══ -->
+<main id="main">
+
+  <!-- OVERVIEW -->
+  <div class="page-title" id="overview">
+    <h1>AWS Certified CloudOps Engineer – Associate (SOA-C03)</h1>
+    <p>Everything we need to know about this exam — structure, domains, candidate prep strategy, and simulation design.</p>
+  </div>
+
+  <h2>What This Exam Is</h2>
+  <p>The AWS Certified CloudOps Engineer – Associate (SOA-C03) validates the ability to deploy, manage, and operate workloads on AWS. It is the operations-focused associate certification — the successor to the SysOps Administrator – Associate (SOA-C02) — and the only AWS associate exam built around the day-to-day work of running, monitoring, securing, and troubleshooting systems already in production.</p>
+  <ul>
+    <li><strong>Target audience:</strong> CloudOps engineers, systems administrators, and operations staff who deploy, manage, and operate AWS workloads.</li>
+    <li><strong>Prerequisite experience:</strong> About 1 year of hands-on AWS experience in deployment, management, troubleshooting, networking, and security — plus 1 year in a related operations role.</li>
+    <li><strong>Why candidates take it:</strong> To validate operational competence on AWS, qualify for CloudOps/SysOps/SRE/DevOps roles, and build toward the DevOps Engineer – Professional certification.</li>
+  </ul>
+  <div class="callout callout-note"><strong>Name change:</strong> SOA-C03 renames the credential from "SysOps Administrator – Associate" to "CloudOps Engineer – Associate." The exam code, domains, and operational focus are continuous with the prior version; the new title reflects the modern CloudOps role.</div>
+
+  <!-- STRUCTURE -->
+  <div class="section" id="structure">
+    <span class="chip chip-exam">Exam Format</span>
+    <h1>Question Format &amp; Scoring</h1>
+    <p class="section-meta">Exact parameters from the official exam guide — use these verbatim in the simulation design.</p>
+
+    <h2>Question Types</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>Multiple choice</td><td>One correct answer from four options (three distractors)</td></tr>
+        <tr><td>Multiple response</td><td>Two or more correct answers from five or more options</td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout callout-note">SOA-C03 uses only multiple-choice and multiple-response question types. Unlike the prior SOA-C02 version, it does <strong>not</strong> include hands-on exam labs — scoring is entirely from the question pool.</div>
+
+    <h2>Scoring Model</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Setting</th><th>Value</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Total questions on exam</td><td>65</td><td>50 scored + 15 unscored pretest (unidentified)</td></tr>
+        <tr><td>Duration</td><td>130 minutes</td><td>Associate-level standard</td></tr>
+        <tr><td>Passing score</td><td>720 / 1,000</td><td>Display as % equivalent: 72%</td></tr>
+        <tr><td>Scoring</td><td>Compensatory</td><td>No per-domain minimums — total score only</td></tr>
+        <tr><td>Result</td><td>Pass / Fail</td><td>Scaled scoring equalizes difficulty across exam forms</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Out-of-Scope Job Tasks (Do NOT Test)</h2>
+    <p>The official exam guide explicitly excludes these. SOA-C03 is an operations exam — it tests running and maintaining systems, not designing or building them. Any question that requires the following is out of scope — cut it.</p>
+    <ul>
+      <li>Designing distributed architectures</li>
+      <li>Designing CI/CD pipelines</li>
+      <li>Designing hybrid and multi-VPC networking</li>
+      <li>Developing software</li>
+      <li>Defining security, compliance, and governance requirements</li>
+      <li>Developing ransomware defense strategies</li>
+      <li>Assessing and planning resource capacity</li>
+      <li>Analyzing costs and total cost of ownership</li>
+      <li>Managing billing and invoicing</li>
+    </ul>
+    <div class="callout callout-tip"><strong>Exam tip:</strong> SOA-C03 tests <em>operation and remediation</em>, not design. The distinction is consistent: a candidate is asked to configure, monitor, troubleshoot, and fix — not to architect from a blank page. If a question reads "design a new multi-Region architecture," it belongs on SAA/SAP, not here. If it reads "an existing system is failing — identify and remediate," it is on target.</div>
+  </div>
+
+  <!-- DOMAIN OVERVIEW -->
+  <div class="section" id="domains">
+    <span class="chip chip-platform">Domains</span>
+    <h1>Domain Breakdown</h1>
+    <p class="section-meta">Five domains. The top three — Monitoring, Reliability, and Deployment — are tied at 22% each and together make up two-thirds of the exam.</p>
+
+    <div class="domain-bar">
+      <span class="domain-pill">D1 — Monitoring &amp; Performance <span class="pct">22%</span></span>
+      <span class="domain-pill">D2 — Reliability &amp; Continuity <span class="pct">22%</span></span>
+      <span class="domain-pill">D3 — Deployment &amp; Automation <span class="pct">22%</span></span>
+      <span class="domain-pill">D4 — Security &amp; Compliance <span class="pct">16%</span></span>
+      <span class="domain-pill">D5 — Networking &amp; Delivery <span class="pct">18%</span></span>
+    </div>
+
+    <div class="tw"><table>
+      <thead><tr><th>Domain</th><th>Weight</th><th>Task statements</th></tr></thead>
+      <tbody>
+        <tr><td>D1 — Monitoring, Logging, Analysis, Remediation &amp; Performance Optimization</td><td>22%</td><td>1.1 Metrics, alarms &amp; filters · 1.2 Identify &amp; remediate issues · 1.3 Performance optimization</td></tr>
+        <tr><td>D2 — Reliability and Business Continuity</td><td>22%</td><td>2.1 Scalability &amp; elasticity · 2.2 HA &amp; resilient environments · 2.3 Backup &amp; restore</td></tr>
+        <tr><td>D3 — Deployment, Provisioning, and Automation</td><td>22%</td><td>3.1 Provision &amp; maintain resources · 3.2 Automate management of existing resources</td></tr>
+        <tr><td>D4 — Security and Compliance</td><td>16%</td><td>4.1 Security &amp; compliance tools/policies · 4.2 Protect data &amp; infrastructure</td></tr>
+        <tr><td>D5 — Networking and Content Delivery</td><td>18%</td><td>5.1 Networking features &amp; connectivity · 5.2 Domains, DNS &amp; content delivery · 5.3 Troubleshoot connectivity</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <!-- DOMAIN 1 -->
+  <div class="section" id="domain1">
+    <span class="chip chip-platform">Domain 1 · 22%</span>
+    <h1>Monitoring, Logging, Analysis, Remediation, and Performance Optimization</h1>
+    <p class="section-meta">The observability domain. Covers CloudWatch metrics/alarms/dashboards, log collection, event-driven and automated remediation, and tuning compute, storage, and database performance.</p>
+
+    <h2>Task 1.1 — Implement metrics, alarms, and filters by using AWS monitoring and logging services</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Configuring AWS monitoring and logging (e.g. Amazon CloudWatch, AWS CloudTrail, Amazon Managed Service for Prometheus)</li>
+      <li>Configuring and managing the CloudWatch agent to collect metrics and logs from EC2 instances, Amazon ECS clusters, or Amazon EKS clusters</li>
+      <li>Configuring, identifying, and troubleshooting CloudWatch alarms that invoke AWS services directly or through Amazon EventBridge (e.g. composite alarms and their invokable actions)</li>
+      <li>Creating and managing customizable, shareable CloudWatch dashboards across multiple accounts and Regions</li>
+      <li>Configuring AWS services to send notifications to Amazon SNS, and invoking alarms that notify SNS</li>
+    </ul>
+
+    <h2>Task 1.2 — Identify and remediate issues by using monitoring and availability metrics</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Analyzing performance metrics and automating remediation (e.g. CloudWatch, AWS User Notifications, AWS Lambda, AWS Systems Manager, CloudTrail, auto scaling)</li>
+      <li>Using EventBridge to route, enrich, and deliver events, and troubleshooting event bus rules</li>
+      <li>Creating or running custom and predefined Systems Manager Automation runbooks (e.g. via AWS SDKs or custom scripts) to automate tasks</li>
+    </ul>
+
+    <h2>Task 1.3 — Implement performance optimization strategies for compute, storage, and database resources</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Optimizing compute resources and remediating performance problems using performance metrics, resource tags, and AWS tools</li>
+      <li>Analyzing Amazon EBS performance metrics, troubleshooting issues, and optimizing volume types to improve performance and reduce cost</li>
+      <li>Implementing and optimizing Amazon S3 performance strategies (e.g. AWS DataSync, S3 Transfer Acceleration, multipart uploads, S3 Lifecycle policies)</li>
+      <li>Evaluating and selecting shared storage solutions (e.g. Amazon EFS, Amazon FSx) and optimizing them (e.g. EFS lifecycle policies)</li>
+      <li>Monitoring Amazon RDS metrics (e.g. RDS Performance Insights, CloudWatch alarms) and modifying configurations for efficiency (e.g. Performance Insights proactive recommendations, RDS Proxy)</li>
+      <li>Implementing, monitoring, and optimizing EC2 instances and associated storage and networking (e.g. EC2 placement groups)</li>
+    </ul>
+  </div>
+
+  <!-- DOMAIN 2 -->
+  <div class="section" id="domain2">
+    <span class="chip chip-technical">Domain 2 · 22%</span>
+    <h1>Reliability and Business Continuity</h1>
+    <p class="section-meta">The "keep it running, and recover when it doesn't" domain. Covers scaling and elasticity, high availability and fault tolerance, and backup, restore, and disaster recovery.</p>
+
+    <h2>Task 2.1 — Implement scalability and elasticity</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Configuring and managing scaling mechanisms in compute environments (e.g. EC2 Auto Scaling)</li>
+      <li>Implementing caching to enhance dynamic scalability (e.g. Amazon CloudFront, Amazon ElastiCache)</li>
+      <li>Configuring and managing scaling in AWS managed databases (e.g. Amazon RDS, Amazon DynamoDB)</li>
+    </ul>
+
+    <h2>Task 2.2 — Implement highly available and resilient environments</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Configuring and troubleshooting Elastic Load Balancing (ELB) and Amazon Route 53 health checks</li>
+      <li>Configuring fault-tolerant systems (e.g. Multi-AZ deployments)</li>
+    </ul>
+
+    <h2>Task 2.3 — Implement backup and restore strategies</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Automating snapshots and backups for AWS resources (e.g. EC2 instances, RDS DB instances, EBS volumes, S3 buckets, DynamoDB tables) using AWS Backup</li>
+      <li>Restoring databases by various methods (e.g. point-in-time restore) to meet RTO, RPO, and cost requirements</li>
+      <li>Implementing versioning for storage services (e.g. Amazon S3, Amazon FSx)</li>
+      <li>Following disaster recovery procedures</li>
+    </ul>
+  </div>
+
+  <!-- DOMAIN 3 -->
+  <div class="section" id="domain3">
+    <span class="chip chip-reference">Domain 3 · 22%</span>
+    <h1>Deployment, Provisioning, and Automation</h1>
+    <p class="section-meta">The infrastructure-as-code and automation domain. Covers AMIs and images, CloudFormation/CDK, multi-account and multi-Region provisioning, deployment strategies, and automating the management of existing resources.</p>
+
+    <h2>Task 3.1 — Provision and maintain cloud resources</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Creating and managing AMIs and container images (e.g. EC2 Image Builder)</li>
+      <li>Creating and managing stacks of resources with AWS CloudFormation and the AWS CDK</li>
+      <li>Identifying and remediating deployment issues (e.g. subnet sizing, CloudFormation errors, permissions issues)</li>
+      <li>Provisioning and sharing resources across multiple Regions and accounts (e.g. AWS RAM, CloudFormation StackSets)</li>
+      <li>Implementing deployment strategies and services</li>
+      <li>Using and managing third-party tools to automate resource deployment (e.g. Terraform, Git)</li>
+    </ul>
+
+    <h2>Task 3.2 — Automate the management of existing resources</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Using AWS services to automate operational processes (e.g. AWS Systems Manager — State Manager, Patch Manager, Maintenance Windows)</li>
+      <li>Implementing event-driven automation (e.g. AWS Lambda, Amazon S3 Event Notifications)</li>
+    </ul>
+  </div>
+
+  <!-- DOMAIN 4 -->
+  <div class="section" id="domain4">
+    <span class="chip chip-exam">Domain 4 · 16%</span>
+    <h1>Security and Compliance</h1>
+    <p class="section-meta">The operational security domain. Covers IAM and access troubleshooting, multi-account security, compliance enforcement, and protecting data with encryption, secrets management, and the AWS security service suite.</p>
+
+    <h2>Task 4.1 — Implement and manage security and compliance tools and policies</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Implementing IAM features (e.g. password policies, MFA, roles, federated identity, resource policies, policy conditions)</li>
+      <li>Troubleshooting and auditing access issues (e.g. AWS CloudTrail, IAM Access Analyzer, IAM policy simulator)</li>
+      <li>Implementing multi-account strategies securely (e.g. AWS Organizations, SCPs)</li>
+      <li>Implementing remediation based on AWS Trusted Advisor security checks</li>
+      <li>Enforcing compliance requirements (e.g. Region and service selections)</li>
+    </ul>
+
+    <h2>Task 4.2 — Implement strategies to protect data and infrastructure</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Implementing and enforcing a data classification scheme</li>
+      <li>Implementing, configuring, and troubleshooting encryption at rest (e.g. AWS KMS)</li>
+      <li>Implementing, configuring, and troubleshooting encryption in transit (e.g. AWS Certificate Manager)</li>
+      <li>Securely storing secrets using AWS services (e.g. AWS Secrets Manager, Systems Manager Parameter Store)</li>
+      <li>Configuring reports and remediating findings from AWS services (e.g. AWS Security Hub, Amazon GuardDuty, AWS Config, Amazon Inspector)</li>
+    </ul>
+  </div>
+
+  <!-- DOMAIN 5 -->
+  <div class="section" id="domain5">
+    <span class="chip chip-platform">Domain 5 · 18%</span>
+    <h1>Networking and Content Delivery</h1>
+    <p class="section-meta">The networking operations domain. Covers VPC configuration and connectivity, DNS and content delivery, and — heavily — troubleshooting connectivity using logs and network monitoring.</p>
+
+    <h2>Task 5.1 — Implement and optimize networking features and connectivity</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Configuring a VPC (e.g. subnets, route tables, network ACLs, security groups, NAT gateways, internet gateway, egress-only internet gateway)</li>
+      <li>Configuring private networking connectivity (e.g. VPC peering, VPC endpoints, AWS PrivateLink, Transit Gateway)</li>
+      <li>Auditing AWS network protection services in a single account (e.g. Route 53 Resolver DNS Firewall, AWS WAF, AWS Shield, AWS Network Firewall)</li>
+      <li>Optimizing the cost of network architectures (e.g. NAT gateway placement, VPC endpoints, data transfer)</li>
+    </ul>
+
+    <h2>Task 5.2 — Configure domains, DNS services, and content delivery</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Configuring DNS (e.g. Route 53 Resolver)</li>
+      <li>Implementing Route 53 routing policies, configurations, and query logging</li>
+      <li>Configuring content and service distribution (e.g. Amazon CloudFront, AWS Global Accelerator)</li>
+    </ul>
+
+    <h2>Task 5.3 — Troubleshoot network connectivity issues</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Troubleshooting VPC configurations (e.g. subnets, route tables, network ACLs, security groups, transit gateways, NAT gateways)</li>
+      <li>Collecting and interpreting networking logs (e.g. VPC flow logs, ELB access logs, AWS WAF web ACL logs, CloudFront logs, container logs)</li>
+      <li>Identifying and remediating CloudFront caching issues</li>
+      <li>Identifying and troubleshooting hybrid connectivity and private connectivity issues</li>
+      <li>Configuring and analyzing Amazon CloudWatch network monitoring services (e.g. Internet Monitor, Network Monitor)</li>
+    </ul>
+  </div>
+
+  <!-- CANDIDATE PREP -->
+  <div class="section" id="candidate-prep">
+    <span class="chip chip-platform">Candidate Prep</span>
+    <h1>How We Help SOA-C03 Candidates</h1>
+    <p class="section-meta">Who takes this exam, where they struggle, and how to build a study path that gets them to 720+.</p>
+
+    <h2>Who Takes This Exam</h2>
+    <ul>
+      <li><strong>Operations engineers and sysadmins</strong> — professionals running production AWS workloads who want to validate operational competence.</li>
+      <li><strong>Cloud / DevOps / SRE engineers</strong> — practitioners who deploy and maintain systems and need a recognized operations credential.</li>
+      <li><strong>Associate-level progressors</strong> — candidates who hold or are pursuing SAA and want the operations counterpart, often on the path to DevOps Professional.</li>
+    </ul>
+
+    <h2>What Candidates Struggle With</h2>
+    <ul>
+      <li><strong>CloudWatch depth</strong> — metric vs. alarm vs. composite alarm; the CloudWatch agent for custom metrics (memory, disk) that the hypervisor does not expose; metric filters on logs vs. Logs Insights queries.</li>
+      <li><strong>Remediation automation</strong> — wiring CloudWatch alarm → EventBridge → SSM Automation runbook or Lambda. Candidates know the pieces but not how they connect.</li>
+      <li><strong>EBS volume types</strong> — gp3 vs. gp2 vs. io2 vs. st1/sc1; baseline vs. burst IOPS; when throughput-optimized beats provisioned IOPS.</li>
+      <li><strong>Backup &amp; DR math</strong> — matching RTO/RPO to the right strategy (backup &amp; restore vs. pilot light vs. warm standby vs. multi-site) and to point-in-time restore.</li>
+      <li><strong>CloudFormation operations</strong> — stack failure and rollback behavior, drift, StackSets across accounts/Regions, and reading deployment errors (subnet sizing, IAM permissions).</li>
+      <li><strong>VPC troubleshooting</strong> — security groups (stateful) vs. network ACLs (stateless); route table and NAT gateway problems; reading VPC flow logs to find the broken hop.</li>
+      <li><strong>Route 53 routing policies</strong> — simple vs. weighted vs. latency vs. failover vs. geolocation vs. multivalue, and how health checks drive failover.</li>
+    </ul>
+
+    <h2>Recommended Study Path</h2>
+    <ol class="steps">
+      <li><strong>Domain 1 — Monitoring first.</strong> Tied for highest weight (22%) and foundational to everything else — you cannot remediate what you cannot observe. Master CloudWatch, the agent, alarms, and the alarm→EventBridge→automation chain.</li>
+      <li><strong>Domain 2 — Reliability.</strong> Scaling, Multi-AZ, ELB/Route 53 health checks, and AWS Backup with RTO/RPO. Operationally adjacent to D1 and 22% of the exam.</li>
+      <li><strong>Domain 3 — Deployment &amp; automation.</strong> CloudFormation/CDK, StackSets, Image Builder, and Systems Manager. 22% — heavy on reading errors and knowing what each automation tool does.</li>
+      <li><strong>Domain 5 — Networking.</strong> 18%, and the troubleshooting task (5.3) is dense. Drill SG vs. NACL, route tables, and reading flow logs.</li>
+      <li><strong>Domain 4 — Security last.</strong> Smallest domain (16%) and largely reinforced by the others. IAM troubleshooting, KMS, Secrets Manager, and the GuardDuty/Security Hub/Config/Inspector quartet.</li>
+    </ol>
+
+    <h2>AI Explanation Quality for This Exam</h2>
+    <p>SOA-C03 questions are operational and scenario-driven. Every wrong answer needs an explanation that says WHY the distractor is wrong in an operations context — not just "this is not correct." Common patterns to cover:</p>
+    <ul>
+      <li>For monitoring questions: explain why a given metric or tool does (or does not) surface the symptom (e.g. "the hypervisor cannot see in-guest memory — you need the CloudWatch agent, not a default EC2 metric").</li>
+      <li>For troubleshooting questions: explain the exact failure mechanism (e.g. "a security group denies by default and is stateful, so the return traffic is allowed automatically — the block is the NACL's missing ephemeral-port rule").</li>
+      <li>For remediation questions: explain which automation primitive fits (e.g. "an SSM Automation runbook can take the remediation action directly; EventBridge only routes the event to it").</li>
+    </ul>
+  </div>
+
+  <!-- SIMULATION DESIGN -->
+  <div class="section" id="simulation">
+    <span class="chip chip-exam">Simulation Design</span>
+    <h1>How to Formulate the Exam Simulation</h1>
+    <p class="section-meta">Parameters for building practice sets that match the real SOA-C03 exam. See the <a href="exam-authoring-standard.html">Exam &amp; Question Authoring Standard</a> for question-writing rules.</p>
+
+    <h2>Question Set Structure</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Setting</th><th>Value</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Total questions per simulation</td><td>65</td><td>Match real exam — 50 scored + 15 unscored (unannounced)</td></tr>
+        <tr><td>Duration</td><td>130 minutes</td><td>Associate-level standard</td></tr>
+        <tr><td>Passing threshold</td><td>720 / 1,000</td><td>Display as % equivalent: 72%</td></tr>
+        <tr><td>Scoring</td><td>Compensatory</td><td>No domain minimums — total score only</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Domain Distribution per Set</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Domain</th><th>Weight</th><th>Qs in 65-Q set</th><th>Qs in 50-Q scored set</th></tr></thead>
+      <tbody>
+        <tr><td>D1 — Monitoring &amp; Performance</td><td>22%</td><td>14</td><td>11</td></tr>
+        <tr><td>D2 — Reliability &amp; Continuity</td><td>22%</td><td>14</td><td>11</td></tr>
+        <tr><td>D3 — Deployment &amp; Automation</td><td>22%</td><td>14</td><td>11</td></tr>
+        <tr><td>D4 — Security &amp; Compliance</td><td>16%</td><td>11</td><td>8</td></tr>
+        <tr><td>D5 — Networking &amp; Delivery</td><td>18%</td><td>12</td><td>9</td></tr>
+        <tr class="hl"><td><strong>Total</strong></td><td><strong>100%</strong></td><td><strong>65</strong></td><td><strong>50</strong></td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Question Type Mix</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Type</th><th>Suggested % of set</th><th>Implementation priority</th></tr></thead>
+      <tbody>
+        <tr><td>Multiple choice (1-of-4)</td><td>~75%</td><td><span class="badge badge-green">High — launch with this</span></td></tr>
+        <tr><td>Multiple response (select N)</td><td>~25%</td><td><span class="badge badge-green">High — common on exam</span></td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout callout-note">Per the build playbook: Free sample and Sim 1 (Foundational) are 100% multiple choice; Sim 2 (Architectural) and Sim 3 (Comparative) carry ~25% multiple response.</div>
+
+    <h2>Question Writing Rules (SOA-C03 specific)</h2>
+    <ul>
+      <li><strong>Operational scenario stems</strong> — "A CloudOps engineer notices…", "An application is returning 5xx errors…", "Backups must meet a 1-hour RPO…" Never "What is Amazon CloudWatch?"</li>
+      <li><strong>Operate and remediate, do not design</strong> — frame around an existing system that needs monitoring, fixing, scaling, or recovering, not a greenfield design.</li>
+      <li><strong>Troubleshooting framing</strong> — many D1/D5 questions present a symptom and ask for the cause or the fix. Engineer the scenario so the diagnostic reasoning is the crux.</li>
+      <li><strong>Tool disambiguation</strong> — force exact choices among operationally similar tools (SSM Automation vs. Lambda; metric filter vs. Logs Insights; security group vs. NACL; gp3 vs. io2).</li>
+      <li><strong>RTO/RPO and cost trade-offs</strong> — for D2, anchor questions in concrete recovery objectives and let cost break the tie between strategies that both meet the objective.</li>
+    </ul>
+
+    <h2>Distractor Quality Guidelines</h2>
+    <ul>
+      <li>Use real operational confusions as distractors: CloudWatch agent vs. default metrics; composite vs. metric alarm; AWS Backup vs. manual snapshots; gp3 vs. provisioned IOPS; weighted vs. latency routing.</li>
+      <li>For troubleshooting questions: make one distractor a plausible-but-wrong layer (e.g. blame the security group when the real fault is the route table or NACL).</li>
+      <li>For remediation questions: make each distractor a real service that almost fits but is the wrong automation primitive for the trigger described.</li>
+    </ul>
+
+    <h2>AI Explanation Template</h2>
+    <p>Each question requires an explanation covering:</p>
+    <ul>
+      <li>Why the correct answer is right — with a brief operational reason</li>
+      <li>Why each distractor is wrong — one sentence per option, naming the specific reason</li>
+      <li>Concept link — which domain/task statement this tests (e.g. "D1 · Task 1.2 — Identify and remediate issues")</li>
+      <li>Service context — if a service appears, one line on what it does and what distinguishes it from the similar services it is commonly confused with</li>
+    </ul>
+  </div>
+
+</main>
+
+<button id="top-btn" title="Back to top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<script>
+  const topBtn = document.getElementById('top-btn');
+  window.addEventListener('scroll', () => {
+    topBtn.style.display = window.scrollY > 400 ? 'flex' : 'none';
+  });
+</script>
+</body>
+</html>

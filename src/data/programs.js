@@ -6,7 +6,7 @@
 // the Supabase exam_types/question_sets rows. Exam facts below are the official
 // AWS numbers at time of writing.
 
-import { Cloud, BrainCircuit, Layers, Code2, Cpu, Network, Sparkles } from 'lucide-react'
+import { Cloud, BrainCircuit, Layers, Code2, Cpu, Network, Sparkles, Activity } from 'lucide-react'
 
 export const PROGRAMS = [
   {
@@ -189,6 +189,43 @@ export const PROGRAMS = [
     facts: { questions: '65', time: '130 min', passing: '720 / 1000', cost: '$150' },
     evergreenValue:
       'Even if you never take the exam, you learn how real ML systems are built and operated — the production skills that separate a working prototype from something a business can depend on.',
+  },
+  {
+    code: 'SOA-C03',
+    slug: 'soa-c03',
+    name: 'AWS Certified CloudOps Engineer – Associate',
+    shortName: 'CloudOps Engineer',
+    level: 'Associate',
+    Icon: Activity,
+    color: '#0891B2',
+    tagline: 'Deploy, monitor, secure, and keep real AWS workloads running in production.',
+    heroLead: 'Operate the cloud —',
+    heroAccent: 'and fix it when it breaks.',
+    blurb:
+      'SOA-C03 is AWS’s operations certification — the new CloudOps Engineer credential that succeeds SysOps Administrator. It teaches you to run systems that already exist: monitoring and remediation, scaling and recovery, automated provisioning, security operations, and networking troubleshooting.',
+    whyTopic:
+      'Building a system is one skill; keeping it healthy at 3 a.m. is another. The operations gap is real — companies are full of people who can launch infrastructure but few who can read a metric, trace a failure to the right layer, and remediate it without guesswork. This program trains the operator’s mindset: observe, diagnose, automate, recover. It is the difference between hoping the system stays up and knowing how to keep it up.',
+    learnOutcomes: [
+      'Monitoring and observability with CloudWatch — metrics, the agent, alarms, dashboards, and log analysis',
+      'Automated remediation: wiring alarms to EventBridge, Systems Manager runbooks, and Lambda',
+      'Reliability operations — Auto Scaling, Multi-AZ, ELB and Route 53 health checks, and AWS Backup with real RTO/RPO targets',
+      'Provisioning and automation with CloudFormation, StackSets, Image Builder, and Systems Manager',
+      'Security and networking operations — IAM and KMS troubleshooting, and diagnosing VPC connectivity from flow logs',
+    ],
+    careerBenefit:
+      'CloudOps Engineer Associate is the credential employers look for in cloud operations, support, and SRE roles, and the natural operations counterpart to Solutions Architect. It is a recognized step toward the DevOps Engineer – Professional certification and proves you can be trusted with production.',
+    roles: ['Cloud operations engineers', 'Systems administrators', 'Site reliability engineers', 'Cloud support & DevOps engineers'],
+    sessions: 16,
+    domains: [
+      { label: 'Monitoring, Logging & Performance', weight: '22%' },
+      { label: 'Reliability & Business Continuity', weight: '22%' },
+      { label: 'Deployment, Provisioning & Automation', weight: '22%' },
+      { label: 'Security & Compliance', weight: '16%' },
+      { label: 'Networking & Content Delivery', weight: '18%' },
+    ],
+    facts: { questions: '65', time: '130 min', passing: '720 / 1000', cost: '$150' },
+    evergreenValue:
+      'Even if you never sit the exam, you learn how production cloud systems are actually operated — how to observe them, automate their upkeep, and recover them under pressure. That operational judgment is what makes any engineer someone a team can rely on.',
   },
   {
     code: 'SAP-C02',
