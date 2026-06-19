@@ -17,7 +17,6 @@ import { Button, Card, Badge, Container, SectionHeader } from '../design-system'
 import {
   BookOpen, ClipboardList, CheckCircle2, CalendarDays, BarChart2,
   Flame, LayoutGrid, Award, PlayCircle, ArrowRight, Rocket, GraduationCap,
-  ArrowLeftRight, Check,
 } from 'lucide-react'
 
 // Every session-based program slug we ship a course for. Used to detect a
@@ -58,7 +57,6 @@ function Dashboard() {
   const [selectedExamForDate, setSelectedExamForDate] = useState(null)
   const [certificates, setCertificates] = useState([])
   const [studyProgress, setStudyProgress] = useState([]) // [{courseSlug, completedSessions, updatedAt}] from the DB
-  const [focusChooserOpen, setFocusChooserOpen] = useState(false)
   const allExamsRef = useRef(null)
   const autoFocusedRef = useRef(false)
 
@@ -190,35 +188,26 @@ function Dashboard() {
     return slug && KNOWN_COURSE_SLUGS.includes(slug) && examSlugSet.has(slug) ? slug : null
   }, [profile?.focused_course_slug, examSlugSet])
 
-  // Resolve the focus: saved choice → the only candidate → none.
+  // Resolve the focus: saved choice → most-recent activity → none. Switching is
+  // handled entirely from the account menu (DashboardHeader), so the home never
+  // forces a chooser — it just defaults to the learner's latest activity.
   const focusedSlug = useMemo(() => {
     if (savedFocus) return savedFocus
-    if (candidateSlugs.length === 1) return candidateSlugs[0]
-    return null
+    return candidateSlugs[0] || null
   }, [savedFocus, candidateSlugs])
 
-  // Activity in 2+ certs with no saved choice → we must ask which one.
-  const needsFocusChoice = !savedFocus && candidateSlugs.length > 1
   // No saved focus, no activity at all → genuine first-timer.
-  const isFirstTimer = !focusedSlug && !needsFocusChoice
+  const isFirstTimer = !focusedSlug
 
-  // Persist the auto-adopted focus when there's exactly one candidate, so the
-  // choice is durable (and the "switch" affordance has something to toggle).
+  // Persist the auto-adopted focus (most-recent activity) so the choice is
+  // durable across devices and the account-menu switcher reflects it.
   useEffect(() => {
     if (!user || !profile || autoFocusedRef.current) return
-    if (!savedFocus && candidateSlugs.length === 1) {
+    if (!savedFocus && candidateSlugs.length >= 1) {
       autoFocusedRef.current = true
       updateProfile({ focused_course_slug: candidateSlugs[0] })
     }
   }, [user, profile, savedFocus, candidateSlugs, updateProfile])
-
-  // Change focus (chooser / switch). Persists to the profile.
-  const chooseFocus = async (slug) => {
-    setFocusChooserOpen(false)
-    if (!slug || slug === profile?.focused_course_slug) return
-    autoFocusedRef.current = true
-    await updateProfile({ focused_course_slug: slug })
-  }
 
   const featuredExam = useMemo(
     () => (focusedSlug && exams.length ? exams.find(e => e.slug === focusedSlug) || null : null),
@@ -274,6 +263,13 @@ function Dashboard() {
     return { total, done, pct, byDomain, nextSession, studySlug: featuredExam?.slug || null, completedIds }
   }, [featuredCourse, featuredExam, studyProgress])
 
+  // Practice attempts for the focused cert only — every tab scopes its numbers
+  // to the cert currently in focus (switch it from the account menu).
+  const focusedResults = useMemo(
+    () => (focusedSlug ? examResults.filter(r => r.examSlug === focusedSlug) : examResults),
+    [examResults, focusedSlug],
+  )
+
   // ── Resume: most recent in-progress practice exam ─────────────────
   useEffect(() => {
     if (!user) { setResumeExam(null); return }
@@ -303,13 +299,13 @@ function Dashboard() {
 
   // ── Quick Stats ───────────────────────────────────────────────────
   const renderQuickStats = () => {
-    const passed = examResults.filter(r => r.passed).length
+    const passed = focusedResults.filter(r => r.passed).length
     const streak = streakStats?.currentStreak || 0
-    const upcoming = examDates.filter(d => calculateDaysUntil(d.exam_date) >= 0).length
+    const upcoming = examDates.filter(d => (!featuredExam || d.exam_type_id === featuredExam.id) && calculateDaysUntil(d.exam_date) >= 0).length
     const stats = [
       { label: 'Day Streak',       value: streak,                       Icon: Flame,         color: '#f59e0b' },
       { label: 'Sessions Done',    value: courseProgress?.done || 0,    Icon: BookOpen,      color: '#00D4AA' },
-      { label: 'Practice Exams',   value: examResults.length,           Icon: ClipboardList, color: '#6366f1' },
+      { label: 'Practice Exams',   value: focusedResults.length,        Icon: ClipboardList, color: '#6366f1' },
       { label: 'Passed',           value: passed,                Icon: CheckCircle2,  color: '#10b981' },
       ...(upcoming > 0 ? [{ label: 'Upcoming', value: upcoming, Icon: CalendarDays, color: '#3b82f6' }] : []),
     ]
@@ -494,81 +490,6 @@ function Dashboard() {
     </section>
   )
 
-  // ── Focus chooser ─────────────────────────────────────────────────
-  // One selectable card per certification the learner has activity in.
-  const renderFocusOption = (slug, { current = false } = {}) => {
-    const program = getProgramBySlug(slug)
-    const course = getSessionCourse(slug)
-    const exam = exams.find(e => e.slug === slug)
-    const completed = completedIdsFor(slug)
-    const total = course?.sessions?.length || 0
-    const done = completed.length
-    const pct = total > 0 ? Math.round((done / total) * 100) : 0
-    const attempts = examResults.filter(r => r.examSlug === slug).length
-    const name = program?.name || exam?.name || slug
-    const code = program?.code || slug.toUpperCase()
-    const color = program?.color || '#00D4AA'
-    const Icon = program?.Icon
-    return (
-      <button
-        key={slug}
-        onClick={() => chooseFocus(slug)}
-        disabled={current}
-        className={`text-left rounded-2xl border p-5 transition-all w-full flex flex-col ${
-          current
-            ? 'border-[#00D4AA] bg-[#00D4AA]/5 cursor-default'
-            : 'border-gray-200 bg-white hover:border-[#00D4AA]/60 hover:shadow-md'
-        }`}
-      >
-        <div className="flex items-start gap-3 mb-3">
-          <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${color}14` }}>
-            {Icon ? <Icon className="w-5 h-5" style={{ color }} strokeWidth={2.2} /> : <GraduationCap className="w-5 h-5" style={{ color }} />}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <p className="text-[0.6875rem] font-display font-bold uppercase tracking-wide" style={{ color }}>{program?.level || 'Certification'}</p>
-              {current && (
-                <span className="inline-flex items-center gap-1 text-[0.625rem] font-bold text-[#00D4AA]">
-                  <Check className="w-3 h-3" /> Current
-                </span>
-              )}
-            </div>
-            <h3 className="text-sm font-display font-bold text-[#0A2540] leading-snug">{name}</h3>
-            <p className="text-[0.65rem] font-mono text-gray-400 mt-0.5">{code}</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 text-[0.7rem] font-medium text-gray-500 mb-3">
-          <span>{done}/{total} sessions</span>
-          {attempts > 0 && (<><span>·</span><span>{attempts} practice {attempts === 1 ? 'exam' : 'exams'}</span></>)}
-        </div>
-        <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden mt-auto">
-          <div className="h-full rounded-full" style={{ width: `${pct}%`, background: color }} />
-        </div>
-      </button>
-    )
-  }
-
-  // Full-section chooser shown on Home/Study when activity is split across
-  // certs and the learner hasn't picked a focus yet.
-  const renderFocusChooser = () => (
-    <section className="py-8">
-      <Container>
-        <div className="text-center max-w-xl mx-auto mb-7">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-display font-bold text-[#00D4AA] bg-[#00D4AA]/10 border border-[#00D4AA]/20 mb-3 uppercase tracking-widest">
-            <ArrowLeftRight className="w-3.5 h-3.5" /> Your focus
-          </span>
-          <h2 className="text-xl sm:text-2xl font-display font-bold text-[#0A2540] mb-2">Which certification are you focusing on?</h2>
-          <p className="text-gray-500 text-sm">
-            You've made progress in a few. Pick the one to make your home base — your progress in the others stays saved, and you can switch anytime.
-          </p>
-        </div>
-        <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 290px), 1fr))' }}>
-          {candidateSlugs.map(slug => renderFocusOption(slug, { current: slug === savedFocus }))}
-        </div>
-      </Container>
-    </section>
-  )
-
   // ── Returning learner: continue + readiness ───────────────────────
   // Reduces time-to-resume to one tap.
   const renderContinue = () => {
@@ -653,7 +574,7 @@ function Dashboard() {
 
   // ── Exam Countdown ────────────────────────────────────────────────
   const renderExamCountdown = () => {
-    const future = [...examDates.filter(d => calculateDaysUntil(d.exam_date) >= 0)]
+    const future = [...examDates.filter(d => (!featuredExam || d.exam_type_id === featuredExam.id) && calculateDaysUntil(d.exam_date) >= 0)]
       .sort((a, b) => new Date(a.exam_date) - new Date(b.exam_date))
     if (future.length === 0) return null
 
@@ -780,8 +701,10 @@ function Dashboard() {
     const renderRecentResults = () => (
       <Card className="p-6 flex flex-col h-full">
         <p className="text-[0.6875rem] font-bold text-[#00D4AA] uppercase tracking-[0.08em] mb-1">Your Performance</p>
-        <h3 className="text-base font-bold text-[#0A2540] mb-5">Recent Results</h3>
-        {examResults.length === 0 ? (
+        <h3 className="text-base font-bold text-[#0A2540] mb-5">
+          Recent Results{featuredProgram ? ` · ${featuredProgram.code}` : ''}
+        </h3>
+        {focusedResults.length === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center text-center py-8">
             <BarChart2 className="w-10 h-10 mb-3 text-gray-200" />
             <p className="text-sm text-gray-400">No exam results yet</p>
@@ -789,7 +712,7 @@ function Dashboard() {
           </div>
         ) : (
           <div className="flex flex-col gap-2 flex-1">
-            {examResults.slice(0, 5).map((r) => {
+            {focusedResults.slice(0, 5).map((r) => {
               const passColor = r.passed ? '#10b981' : '#ef4444'
               return (
                 <button key={r.id}
@@ -820,8 +743,8 @@ function Dashboard() {
                 </button>
               )
             })}
-            {examResults.length > 5 && (
-              <p className="text-xs text-gray-400 text-center mt-1">+ {examResults.length - 5} more results</p>
+            {focusedResults.length > 5 && (
+              <p className="text-xs text-gray-400 text-center mt-1">+ {focusedResults.length - 5} more results</p>
             )}
           </div>
         )}
@@ -841,63 +764,185 @@ function Dashboard() {
   }
 
   // ── Your Credentials ──────────────────────────────────────────────
+  // Credential for the focused cert leads — shown as a live preview until it's
+  // earned — followed by any other earned credentials.
   const renderCredentials = () => {
-    if (!certificates || certificates.length === 0) {
-      return (
-        <section className="py-8 bg-white">
-          <Container>
-            <SectionHeader label="Earned" title="Your Credentials" className="mb-6" />
-            <Card className="p-10 text-center">
-              <Award className="w-12 h-12 mx-auto mb-4 text-gray-200" />
-              <p className="text-base font-bold text-[#0A2540]">No credentials yet</p>
-              <p className="text-sm text-gray-500 mt-1 max-w-sm mx-auto">
-                Pass a practice exam to earn a shareable completion credential. It'll show up here.
-              </p>
-              <div className="mt-5">
-                <Button variant="primary" size="sm" onClick={() => setActiveTab('practice')}>
-                  Go to Practice Exams
-                </Button>
-              </div>
-            </Card>
-          </Container>
-        </section>
-      )
-    }
+    const focusedCert = featuredProgram
+      ? certificates.find(c => c.programCode === featuredProgram.code)
+      : null
+    const otherCerts = certificates.filter(c => c.credentialCode !== focusedCert?.credentialCode)
+
+    const bestScore = focusedResults.reduce((m, r) => Math.max(m, r.percentageScore || 0), 0)
+    const studyDone = courseProgress?.done || 0
+    const studyTotal = courseProgress?.total || 0
+    const studyComplete = studyTotal > 0 && studyDone >= studyTotal
+
     return (
       <section className="py-8 bg-white">
         <Container>
-          <SectionHeader label="Earned" title="Your Credentials" className="mb-6" />
-          <div className="grid gap-6" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 360px), 1fr))' }}>
-            {certificates.map((c) => (
-              <div key={c.credentialCode}>
+          {/* Focused certification — preview until earned */}
+          {featuredProgram && (
+            <div className="mb-12">
+              <SectionHeader
+                label={focusedCert ? 'Earned' : 'In progress'}
+                title={`Your ${featuredProgram.code} Credential`}
+                className="mb-6"
+              />
+              <div className="grid gap-6 items-start" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 340px), 1fr))' }}>
                 <CertificateCard
-                  program={getProgram(c.programCode) || { name: c.programName, code: c.programCode }}
-                  state="earned"
-                  name={c.recipientName}
-                  score={c.percentageScore}
-                  credentialCode={c.credentialCode}
-                  issuedAt={c.issuedAt}
+                  program={featuredProgram}
+                  state={focusedCert ? 'earned' : 'in-progress'}
+                  name={focusedCert ? focusedCert.recipientName : userName}
+                  score={focusedCert?.percentageScore}
+                  credentialCode={focusedCert?.credentialCode}
+                  issuedAt={focusedCert?.issuedAt}
                 />
-                <div className="mt-3">
-                  <Button variant="primary" size="sm" onClick={() => navigate(buildVerifyPath(c.programCode, c.credentialCode))}>
-                    View / share credential
+                {focusedCert ? (
+                  <div className="rounded-xl border border-[#00D4AA]/30 bg-[#00D4AA]/[0.06] p-5 sm:p-6">
+                    <h3 className="text-[#0A2540] font-bold text-lg mb-1.5">Credential earned 🎉</h3>
+                    <p className="text-gray-600 text-sm mb-4">
+                      Your {featuredProgram.shortName} Readiness credential is live with a public verification link.
+                    </p>
+                    <Button variant="primary" size="sm" className="gap-2"
+                            onClick={() => navigate(buildVerifyPath(focusedCert.programCode, focusedCert.credentialCode))}>
+                      View / share credential <ArrowRight className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="rounded-xl border border-gray-200 bg-gray-50 p-5 sm:p-6">
+                    <h3 className="text-[#0A2540] font-bold text-lg mb-1.5">Earn your {featuredProgram.shortName} credential</h3>
+                    <p className="text-gray-600 text-sm mb-4">
+                      Finish the study program and pass a practice exam to unlock a shareable Certificate of Readiness.
+                    </p>
+                    <div className="flex flex-col gap-2.5 mb-5">
+                      <div className="flex items-center gap-2.5 text-sm">
+                        <CheckCircle2 className="w-4 h-4 shrink-0" style={{ color: studyComplete ? '#10b981' : '#cbd5e1' }} />
+                        <span className={studyComplete ? 'text-gray-700' : 'text-gray-500'}>
+                          Complete all study sessions
+                        </span>
+                        <span className="ml-auto font-mono text-xs text-gray-400">{studyDone}/{studyTotal}</span>
+                      </div>
+                      <div className="flex items-center gap-2.5 text-sm">
+                        <CheckCircle2 className="w-4 h-4 shrink-0" style={{ color: bestScore >= 70 ? '#10b981' : '#cbd5e1' }} />
+                        <span className={bestScore >= 70 ? 'text-gray-700' : 'text-gray-500'}>
+                          Pass a practice exam (70%+)
+                        </span>
+                        <span className="ml-auto font-mono text-xs text-gray-400">{bestScore}%</span>
+                      </div>
+                    </div>
+                    <Button variant="primary" size="sm" className="gap-2"
+                            onClick={() => navigate(studyComplete ? `/exam/${featuredExam.slug}` : `/exam/${featuredExam.slug}/study`)}>
+                      {studyComplete ? 'Take a practice exam' : 'Continue studying'} <ArrowRight className="w-4 h-4" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Other earned credentials */}
+          {otherCerts.length > 0 && (
+            <div>
+              <SectionHeader label="Earned" title={featuredProgram ? 'Other Credentials' : 'Your Credentials'} className="mb-6" />
+              <div className="grid gap-6" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 360px), 1fr))' }}>
+                {otherCerts.map((c) => (
+                  <div key={c.credentialCode}>
+                    <CertificateCard
+                      program={getProgram(c.programCode) || { name: c.programName, code: c.programCode }}
+                      state="earned"
+                      name={c.recipientName}
+                      score={c.percentageScore}
+                      credentialCode={c.credentialCode}
+                      issuedAt={c.issuedAt}
+                    />
+                    <div className="mt-3">
+                      <Button variant="primary" size="sm" onClick={() => navigate(buildVerifyPath(c.programCode, c.credentialCode))}>
+                        View / share credential
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* No focus and nothing earned yet */}
+          {!featuredProgram && otherCerts.length === 0 && (
+            <>
+              <SectionHeader label="Earned" title="Your Credentials" className="mb-6" />
+              <Card className="p-10 text-center">
+                <Award className="w-12 h-12 mx-auto mb-4 text-gray-200" />
+                <p className="text-base font-bold text-[#0A2540]">No credentials yet</p>
+                <p className="text-sm text-gray-500 mt-1 max-w-sm mx-auto">
+                  Pass a practice exam to earn a shareable completion credential. It'll show up here.
+                </p>
+                <div className="mt-5">
+                  <Button variant="primary" size="sm" onClick={() => setActiveTab('practice')}>
+                    Go to Practice Exams
                   </Button>
                 </div>
-              </div>
-            ))}
-          </div>
+              </Card>
+            </>
+          )}
         </Container>
       </section>
     )
   }
 
   // ── Practice Exams ────────────────────────────────────────────────
+  // Leads with the focused cert; other certifications follow so the learner can
+  // still browse without leaving the tab.
+  const renderExamCard = (exam) => {
+    const scheduled = examDates.find(d => d.exam_type_id === exam.id)
+    return (
+      <Card key={exam.id} interactive className="p-5" onClick={() => navigate(`/exam/${exam.slug}`)}>
+        <div className="flex items-start gap-3 mb-3">
+          <span className="text-2xl shrink-0">{exam.icon || '📚'}</span>
+          <div className="flex-1 min-w-0">
+            <p className="text-[0.6875rem] font-bold text-[#00D4AA] uppercase tracking-wide mb-0.5">{exam.provider}</p>
+            <h3 className="text-sm font-bold text-[#0A2540] leading-snug">{exam.name}</h3>
+          </div>
+        </div>
+        <p className="text-xs text-gray-500 mb-3 leading-relaxed line-clamp-2">
+          {exam.description?.slice(0, 90)}{(exam.description?.length || 0) > 90 ? '…' : ''}
+        </p>
+        <div className="flex items-center gap-3 mb-4 text-xs text-gray-400">
+          <span>{exam.total_questions || '—'} questions</span>
+          <span>·</span>
+          <span>{exam.duration_minutes || '—'} min</span>
+          {scheduled && (
+            <>
+              <span>·</span>
+              <span className="text-blue-500 font-medium">
+                Exam {new Date(scheduled.exam_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              </span>
+            </>
+          )}
+        </div>
+        <div className="flex gap-2">
+          <Button variant="primary" size="sm" className="flex-1"
+                  onClick={e => { e.stopPropagation(); navigate(`/exam/${exam.slug}`) }}>
+            {(isSubscribed || hasExamAccess(exam.id)) ? 'Start Practicing' : 'Try Free'}
+          </Button>
+          <Button variant="outline" size="sm"
+                  onClick={e => { e.stopPropagation(); setSelectedExamForDate(exam); setShowExamDateModal(true) }}
+                  title={`${scheduled ? 'Update' : 'Set'} exam date`}>
+            <CalendarDays className="w-4 h-4" />
+          </Button>
+        </div>
+      </Card>
+    )
+  }
+
   const renderAllExams = () => {
     if (exams.length === 0) return null
+    const focused = featuredExam ? exams.filter(e => e.id === featuredExam.id) : []
+    const others = featuredExam ? exams.filter(e => e.id !== featuredExam.id) : exams
+    const gridStyle = { gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))' }
     return (
       <section ref={allExamsRef} className="py-8 bg-white">
         <Container>
-          <SectionHeader label={featuredProgram ? `${featuredProgram.code} & more` : 'All certifications'} title="Practice Exams" className="mb-2" />
+          <SectionHeader label={featuredProgram ? featuredProgram.code : 'All certifications'} title="Practice Exams" className="mb-2" />
           <p className="text-gray-500 text-sm mb-6">
             {isSubscribed
               ? 'Full access active. Start a timed practice set anytime.'
@@ -917,49 +962,24 @@ function Dashboard() {
             </div>
           )}
 
-          <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))' }}>
-            {exams.map(exam => {
-              const scheduled = examDates.find(d => d.exam_type_id === exam.id)
-              return (
-                <Card key={exam.id} interactive className="p-5" onClick={() => navigate(`/exam/${exam.slug}`)}>
-                  <div className="flex items-start gap-3 mb-3">
-                    <span className="text-2xl shrink-0">{exam.icon || '📚'}</span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[0.6875rem] font-bold text-[#00D4AA] uppercase tracking-wide mb-0.5">{exam.provider}</p>
-                      <h3 className="text-sm font-bold text-[#0A2540] leading-snug">{exam.name}</h3>
-                    </div>
-                  </div>
-                  <p className="text-xs text-gray-500 mb-3 leading-relaxed line-clamp-2">
-                    {exam.description?.slice(0, 90)}{(exam.description?.length || 0) > 90 ? '…' : ''}
-                  </p>
-                  <div className="flex items-center gap-3 mb-4 text-xs text-gray-400">
-                    <span>{exam.total_questions || '—'} questions</span>
-                    <span>·</span>
-                    <span>{exam.duration_minutes || '—'} min</span>
-                    {scheduled && (
-                      <>
-                        <span>·</span>
-                        <span className="text-blue-500 font-medium">
-                          Exam {new Date(scheduled.exam_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                        </span>
-                      </>
-                    )}
-                  </div>
-                  <div className="flex gap-2">
-                    <Button variant="primary" size="sm" className="flex-1"
-                            onClick={e => { e.stopPropagation(); navigate(`/exam/${exam.slug}`) }}>
-                      {(isSubscribed || hasExamAccess(exam.id)) ? 'Start Practicing' : 'Try Free'}
-                    </Button>
-                    <Button variant="outline" size="sm"
-                            onClick={e => { e.stopPropagation(); setSelectedExamForDate(exam); setShowExamDateModal(true) }}
-                            title={`${scheduled ? 'Update' : 'Set'} exam date`}>
-                      <CalendarDays className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </Card>
-              )
-            })}
-          </div>
+          {focused.length > 0 && (
+            <div className="grid gap-4 mb-8" style={gridStyle}>
+              {focused.map(renderExamCard)}
+            </div>
+          )}
+
+          {others.length > 0 && (
+            <>
+              {focused.length > 0 && (
+                <p className="text-[0.6875rem] font-display font-bold text-gray-400 uppercase tracking-[0.08em] mb-4">
+                  Explore other certifications
+                </p>
+              )}
+              <div className="grid gap-4" style={gridStyle}>
+                {others.map(renderExamCard)}
+              </div>
+            </>
+          )}
         </Container>
       </section>
     )
@@ -994,30 +1014,20 @@ function Dashboard() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <span className="inline-block px-3 py-1 rounded-full text-xs font-display font-bold text-[#00D4AA] bg-[#00D4AA]/10 border border-[#00D4AA]/20 mb-4 uppercase tracking-widest">
-                  {featuredProgram ? `${featuredProgram.code} Prep` : needsFocusChoice ? 'Choose your focus' : 'Get certified'}
+                  {featuredProgram ? `${featuredProgram.code} Prep` : 'Get certified'}
                 </span>
                 <h1 className="text-2xl sm:text-3xl font-display font-bold text-white mb-2 leading-tight">
                   {featuredProgram ? `Welcome back, ${userName}` : `Welcome, ${userName}`}
                 </h1>
                 <p className="text-white/60 text-sm sm:text-base max-w-md">
                   {!featuredProgram
-                    ? (needsFocusChoice
-                      ? "You've started more than one certification — pick the one you're focusing on to tailor your home."
-                      : 'Pick a certification below and start studying free — your progress will live right here.')
+                    ? 'Pick a certification below and start studying free — your progress will live right here.'
                     : (courseProgress?.pct ?? 0) === 0
                     ? `Start your ${featuredProgram.code} journey — ${courseProgress?.total ?? ''} study sessions covering every exam domain.`
                     : (courseProgress?.pct ?? 0) === 100
                     ? 'All study sessions complete. Keep practicing to lock in your score!'
                     : `${courseProgress.pct}% through your study sessions — keep the momentum going.`}
                 </p>
-                {featuredProgram && candidateSlugs.length > 1 && (
-                  <button
-                    onClick={() => setFocusChooserOpen(true)}
-                    className="mt-3 inline-flex items-center gap-1.5 text-xs font-display font-bold text-white/70 hover:text-white bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 rounded-full px-3 py-1.5 transition-colors"
-                  >
-                    <ArrowLeftRight className="w-3.5 h-3.5" /> Switch focus
-                  </button>
-                )}
               </div>
               {!isSubscribed ? (
                 <Button variant="primary" size="lg" className="shrink-0 shadow-teal"
@@ -1065,9 +1075,7 @@ function Dashboard() {
         {/* Tab panels — Home adapts to user state (progressive disclosure) */}
         <div className="min-h-[40vh]">
           {activeTab === 'overview' && (
-            needsFocusChoice ? (
-              renderFocusChooser()
-            ) : isFirstTimer ? (
+            isFirstTimer ? (
               renderPathChooser()
             ) : (
               <>
@@ -1077,7 +1085,7 @@ function Dashboard() {
               </>
             )
           )}
-          {activeTab === 'study' && (needsFocusChoice ? renderFocusChooser() : renderCourseProgress())}
+          {activeTab === 'study' && renderCourseProgress()}
           {activeTab === 'practice' && renderAllExams()}
           {activeTab === 'progress' && renderProgressRow()}
           {activeTab === 'credentials' && renderCredentials()}
@@ -1091,26 +1099,6 @@ function Dashboard() {
         isOpen={showEnrollmentModal}
         onClose={() => setShowEnrollmentModal(false)}
       />
-
-      {focusChooserOpen && (
-        <div className="modal-overlay" onClick={() => setFocusChooserOpen(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '640px' }}>
-            <button className="modal-close" onClick={() => setFocusChooserOpen(false)}>×</button>
-            <div className="modal-header">
-              <h2 className="modal-title">Switch focus</h2>
-              <p className="modal-description">Choose the certification you want front and centre. Your progress in the others stays saved.</p>
-            </div>
-            <div className="grid gap-3 mt-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 240px), 1fr))' }}>
-              {candidateSlugs.map(slug => renderFocusOption(slug, { current: slug === (savedFocus || focusedSlug) }))}
-            </div>
-            <div className="mt-5 text-center">
-              <Button variant="outline" size="sm" onClick={() => { setFocusChooserOpen(false); setActiveTab('practice') }}>
-                Browse all certifications
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {showExamDateModal && selectedExamForDate && (
         <div className="modal-overlay" onClick={() => setShowExamDateModal(false)}>
