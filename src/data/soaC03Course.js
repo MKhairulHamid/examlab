@@ -1065,6 +1065,1360 @@ const soaC03Course = {
       ],
     },
 
+    // ═══════════════════════════════════════════════════════════════
+    //  DOMAIN 3 — DEPLOYMENT, PROVISIONING, AND AUTOMATION (22%)
+    // ═══════════════════════════════════════════════════════════════
+
+    {
+      id: 'd3-s8',
+      number: 8,
+      module: 'Domain 3 · Deployment, Provisioning & Automation',
+      domain: 'd3',
+      weight: '22%',
+      task: 'Task 3.1',
+      title: 'Infrastructure as Code — AMIs, Image Builder, CloudFormation, and CDK',
+      duration: 30,
+      summary: 'Repeatable provisioning is what separates operations from firefighting. This session covers building golden images with EC2 Image Builder, and defining whole environments declaratively with AWS CloudFormation and the AWS CDK — including how stacks behave when a deployment fails.',
+      objectives: [
+        'Build and maintain consistent AMIs and container images with EC2 Image Builder',
+        'Define infrastructure declaratively with CloudFormation templates (and the CDK that synthesizes them)',
+        'Explain stack creation, update, rollback, drift, and change sets',
+        'Read common CloudFormation deployment errors and know where to look',
+      ],
+      preLearningCheck: {
+        question: 'A team wants every EC2 instance to launch from a hardened, pre-patched image that is rebuilt and tested automatically each month. Which service is purpose-built for this?',
+        options: [
+          'AWS CloudFormation',
+          'EC2 Image Builder',
+          'Amazon Inspector',
+          'AWS Config',
+        ],
+        correct: 1,
+        note: 'EC2 Image Builder automates building, hardening, testing, and distributing AMIs and container images on a schedule — exactly the "golden image pipeline" described.',
+      },
+      sections: [
+        {
+          heading: 'Golden images with EC2 Image Builder',
+          body: 'A golden image is a pre-configured, hardened machine image that instances launch from, so every server starts identical and compliant. EC2 Image Builder automates the whole pipeline: it builds the image from a recipe, applies components (patches, agents, hardening), tests it, and distributes the resulting AMI (or container image) to the Regions and accounts that need it.',
+          bullets: [
+            'A recipe defines the base image plus build and test components; a pipeline runs it on a schedule or on demand.',
+            'Image Builder versions images and can distribute them across Regions/accounts automatically.',
+            'It reduces drift and patching toil — rebuild the image instead of patching every running instance by hand.',
+            'Output can be an AMI for EC2 or a container image for ECS/EKS.',
+          ],
+        },
+        {
+          heading: 'CloudFormation — declarative infrastructure',
+          body: 'AWS CloudFormation provisions resources from a template (JSON or YAML) that declares the desired state. You submit the template, CloudFormation creates a stack, and it figures out the order and dependencies. Because the template is code, environments become repeatable, reviewable, and version-controlled.',
+          bullets: [
+            'A stack is the unit of deployment — all resources in a template are created, updated, and deleted together.',
+            'Parameters make a template reusable across environments; Mappings, Conditions, and Outputs add flexibility.',
+            'Change sets preview what an update will modify before you execute it — avoiding surprise replacements.',
+            'Nested stacks and modules break large templates into reusable pieces.',
+          ],
+          callout: { type: 'note', text: 'CloudFormation is declarative: you describe the end state, not the steps. That is why it can compute dependencies, detect drift, and roll back cleanly.' },
+        },
+        {
+          heading: 'Stack behavior — rollback, drift, deletion policies',
+          body: 'The exam tests what happens when things go wrong or change outside the template. Knowing the default behaviors is the difference between calm and panic during an incident.',
+          bullets: [
+            'On a failed create, CloudFormation rolls the stack back and deletes the resources it created (unless you disable rollback for debugging).',
+            'On a failed update, it rolls back to the last known good state automatically.',
+            'Drift detection reports resources changed outside CloudFormation (someone edited a security group by hand) so you can reconcile.',
+            'DeletionPolicy: Retain or Snapshot protects critical resources (a database) from being destroyed when a stack is deleted.',
+          ],
+          callout: { type: 'tip', text: 'A stuck UPDATE_ROLLBACK_FAILED or a resource that "already exists" error usually means manual changes drifted the stack. Detect drift, then continue the rollback or import the resource.' },
+        },
+        {
+          heading: 'The AWS CDK',
+          body: 'The AWS Cloud Development Kit (CDK) lets you define infrastructure in a general-purpose programming language (TypeScript, Python, Java, etc.). The CDK synthesizes a CloudFormation template under the hood — so you get loops, conditionals, and abstractions while still deploying through CloudFormation\'s reliable engine.',
+          bullets: [
+            'CDK code → synthesized CloudFormation template → deployed as a normal stack.',
+            'Constructs are reusable components that bundle best-practice defaults.',
+            'Choose CDK when teams prefer real code and abstraction; choose raw templates for simple, declarative needs or when no programming runtime is desired.',
+            'Both are first-party AWS IaC; third-party Terraform is covered in the next session.',
+          ],
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 2,
+          question: 'A CloudFormation stack deletion would normally destroy a production RDS database that is part of the template. How do you ensure the database survives a stack deletion?',
+          options: [
+            'Set a DeletionPolicy of Retain (or Snapshot) on the database resource',
+            'Disable rollback on the stack',
+            'Add the database to a second template',
+            'Enable detailed monitoring on the database',
+          ],
+          correct: 0,
+          explainCorrect: 'Correct — a DeletionPolicy of Retain keeps the resource when the stack is deleted (Snapshot keeps a final snapshot), protecting critical data.',
+          elaborativePrompt: 'Why is relying on memory ("we just will not delete the stack") a poor safeguard, and what does DeletionPolicy guarantee that a process cannot?',
+        },
+        {
+          afterSection: 0,
+          question: 'An operations team patches every running EC2 instance individually each month and still finds configuration drift between servers. What change most reduces this toil and drift?',
+          options: [
+            'Take more frequent EBS snapshots',
+            'Build a hardened, patched AMI with EC2 Image Builder and relaunch instances from it',
+            'Increase the instance size',
+            'Disable automatic updates',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — baking patches and hardening into a golden image with Image Builder, then launching from it, replaces per-instance patching and eliminates drift between servers.',
+          elaborativePrompt: 'How does "replace the image" (immutable infrastructure) differ from "patch each server in place", and why does it reduce drift?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself the lifecycle of a CloudFormation stack from submit to a failed update: what CloudFormation does on success, what it does automatically on failure, and how drift detection and DeletionPolicy protect you when reality diverges from the template.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A company deploys all infrastructure with AWS CloudFormation. An engineer manually changed a security group that the stack manages, and now a stack update fails. Which action best identifies what diverged so the team can reconcile it?',
+        options: [
+          'Delete and recreate the entire stack immediately',
+          'Run CloudFormation drift detection to see which resources differ from the template',
+          'Increase the stack timeout and retry',
+          'Disable rollback and ignore the error',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'Drift detection compares the live resources against the template and reports exactly what was changed outside CloudFormation — the precise information needed to reconcile.',
+          perOption: [
+            'Deleting and recreating risks destroying data and does not explain what diverged; it is destructive and uninformed.',
+            'Correct — drift detection pinpoints the manually changed security group (and any other drift) so the team can fix the template or the resource.',
+            'A longer timeout does not address a configuration mismatch; the update will still conflict.',
+            'Disabling rollback hides the failure rather than resolving the underlying drift.',
+          ],
+          link: 'Domain 3 · Task 3.1 — Provision and maintain cloud resources',
+        },
+      },
+      videos: [
+        { videoId: 'KX_AfyrhlgQ', title: 'AWS SysOps Administrator Associate — Full Course to PASS the Exam', channel: 'freeCodeCamp.org', relevance: 'Covers CloudFormation, AMIs, and infrastructure-as-code provisioning in the operations context.' },
+      ],
+      keyTerms: [
+        { term: 'Golden image', def: 'A pre-configured, hardened machine image that instances launch from so every server starts identical and compliant.' },
+        { term: 'EC2 Image Builder', def: 'A service that automates building, hardening, testing, and distributing AMIs and container images on a schedule.' },
+        { term: 'CloudFormation stack', def: 'The unit of deployment in CloudFormation — all resources in a template created, updated, and deleted together.' },
+        { term: 'Drift detection', def: 'A CloudFormation feature that reports resources changed outside the template so you can reconcile them.' },
+        { term: 'DeletionPolicy', def: 'A template attribute (Retain/Snapshot/Delete) controlling whether a resource survives stack deletion.' },
+      ],
+      awsServices: [
+        { name: 'AWS CloudFormation', purpose: 'Provisions and manages AWS resources declaratively from templates as stacks, with rollback, change sets, and drift detection.' },
+        { name: 'EC2 Image Builder', purpose: 'Automates the build, hardening, testing, and distribution of golden AMIs and container images.' },
+        { name: 'AWS CDK', purpose: 'Defines infrastructure in a programming language and synthesizes CloudFormation templates for deployment.' },
+      ],
+      examTips: [
+        'Automated, scheduled hardened-image pipeline → EC2 Image Builder. Declarative environment → CloudFormation.',
+        'Failed create → rollback deletes created resources; failed update → rollback to last good state (defaults).',
+        'Resource changed by hand and update fails → run drift detection, then reconcile.',
+        'Protect a DB from stack deletion → DeletionPolicy: Retain or Snapshot.',
+        'CDK synthesizes CloudFormation — it is real code on top of the same reliable engine.',
+      ],
+    },
+
+    // ─────────────────────────────────────────────────────────────
+    {
+      id: 'd3-s9',
+      number: 9,
+      module: 'Domain 3 · Deployment, Provisioning & Automation',
+      domain: 'd3',
+      weight: '22%',
+      task: 'Task 3.1',
+      title: 'Multi-Account & Multi-Region Provisioning — StackSets, RAM, and Third-Party IaC',
+      duration: 30,
+      summary: 'Real organizations provision across many accounts and Regions and share resources between them. This session covers CloudFormation StackSets for fleet-wide deployment, AWS Resource Access Manager for sharing, deployment strategies, and how third-party tools like Terraform and Git fit alongside AWS-native IaC.',
+      objectives: [
+        'Deploy a single template across many accounts and Regions with CloudFormation StackSets',
+        'Share resources across accounts with AWS Resource Access Manager (AWS RAM)',
+        'Choose appropriate deployment strategies (in-place, blue/green, rolling, canary)',
+        'Place Terraform and Git correctly relative to AWS-native CloudFormation/CDK',
+      ],
+      preLearningCheck: {
+        question: 'A platform team must deploy the same baseline guardrail stack to 50 AWS accounts across 3 Regions and keep them in sync as the template evolves. Which feature does this with the least manual effort?',
+        options: [
+          'Run the template manually in each account',
+          'CloudFormation StackSets',
+          'A single CloudFormation stack in the management account',
+          'AWS Config aggregator',
+        ],
+        correct: 1,
+        note: 'StackSets extend a single template to many target accounts and Regions from one operation, and keep them updated centrally — exactly the fleet-wide deployment described.',
+      },
+      sections: [
+        {
+          heading: 'CloudFormation StackSets',
+          body: 'A StackSet lets you deploy one CloudFormation template to many target accounts and Regions from a single administrative action, and then update or delete those stack instances centrally. It is the answer whenever a question says "the same thing in many accounts/Regions".',
+          bullets: [
+            'Define once, deploy to a list of accounts/Regions (or, with AWS Organizations integration, to whole OUs automatically).',
+            'Automatic deployment to new accounts that join a target OU keeps guardrails consistent as the org grows.',
+            'Operation preferences control rollout (max concurrent accounts, failure tolerance) to limit blast radius.',
+            'Used for landing-zone baselines: IAM roles, Config rules, logging, and security guardrails.',
+          ],
+          callout: { type: 'note', text: 'One template, many accounts/Regions, centrally managed → StackSets. A single account/Region → a normal stack.' },
+        },
+        {
+          heading: 'Sharing resources with AWS RAM',
+          body: 'AWS Resource Access Manager (AWS RAM) lets one account share specific resources with other accounts or an entire organization — without duplicating them. This is how organizations centralize networking and other shared infrastructure.',
+          bullets: [
+            'Common shares: VPC subnets (shared VPC), Transit Gateways, Route 53 Resolver rules, License Manager configurations.',
+            'Sharing avoids running a separate copy in every account and centralizes management.',
+            'RAM shares the resource itself; it is distinct from cross-account IAM roles, which grant access to act in another account.',
+            'Integrates with AWS Organizations so you can share to OUs.',
+          ],
+        },
+        {
+          heading: 'Deployment strategies',
+          body: 'How you roll out a change determines its risk. The exam expects you to match a risk tolerance to a strategy.',
+          table: {
+            headers: ['Strategy', 'How it works', 'Trade-off'],
+            rows: [
+              ['In-place', 'Update the existing instances directly', 'Simplest, but downtime/risk during the update'],
+              ['Rolling', 'Update a batch at a time', 'No full outage; mixed versions briefly run together'],
+              ['Blue/green', 'Stand up a new environment, then shift traffic', 'Fast rollback by shifting back; costs two environments briefly'],
+              ['Canary', 'Send a small % of traffic to the new version first', 'Limits blast radius; needs traffic-shifting and monitoring'],
+            ],
+          },
+          callout: { type: 'tip', text: 'Need instant rollback and zero downtime → blue/green. Need to validate on a small slice before full rollout → canary. CodeDeploy and many AWS services implement these patterns.' },
+        },
+        {
+          heading: 'Terraform, Git, and AWS-native IaC',
+          body: 'The exam acknowledges third-party tooling. Terraform is a popular multi-cloud IaC tool that can provision AWS resources; Git is the version-control backbone for all IaC. You should know where each fits relative to CloudFormation/CDK.',
+          bullets: [
+            'Terraform uses its own state file and HCL language; it is provider-agnostic and common in multi-cloud shops.',
+            'CloudFormation/CDK are AWS-native, deeply integrated (drift detection, StackSets, change sets) and need no external state management.',
+            'Git stores templates/HCL as code, enabling review, history, and CI/CD-driven deployment — the operational backbone for any IaC.',
+            'The choice is often organizational: AWS-only and tight integration → CloudFormation/CDK; multi-cloud or existing Terraform investment → Terraform.',
+          ],
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 1,
+          question: 'A central networking account owns a Transit Gateway that application accounts must use without each creating their own. Which service shares it across accounts?',
+          options: [
+            'AWS Resource Access Manager (AWS RAM)',
+            'CloudFormation StackSets',
+            'Amazon Route 53',
+            'AWS Config',
+          ],
+          correct: 0,
+          explainCorrect: 'Correct — AWS RAM shares specific resources such as Transit Gateways and subnets across accounts, avoiding duplicate infrastructure and centralizing management.',
+          elaborativePrompt: 'How does sharing a resource with RAM differ from granting a cross-account IAM role? What does each one actually let the other account do?',
+        },
+        {
+          afterSection: 2,
+          question: 'A team wants to release a new application version to only 5% of users first, watch error rates, then ramp up if healthy. Which deployment strategy matches?',
+          options: [
+            'In-place update of all instances at once',
+            'Canary deployment',
+            'Deleting the old version before deploying the new one',
+            'A cold backup restore',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — a canary deployment routes a small percentage of traffic to the new version first so problems are caught with limited blast radius before full rollout.',
+          elaborativePrompt: 'Contrast canary with blue/green: both reduce risk, but how do their rollback mechanics and traffic patterns differ?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself how a platform team would roll out a new security-baseline template to every account in an organization, share a central VPC with those accounts, and release an app change with instant rollback — naming the AWS feature for each of the three needs.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A security team must ensure that a standard set of AWS Config rules and IAM roles is deployed identically to all current and future accounts in an AWS Organization, across two Regions, and stays updated centrally. Which approach best meets this requirement?',
+        options: [
+          'Manually run a CloudFormation template in each account when it is created',
+          'Use CloudFormation StackSets with AWS Organizations integration to deploy to the target OUs automatically',
+          'Share the rules with AWS RAM',
+          'Create one CloudFormation stack in the management account only',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'StackSets with Organizations integration deploy a template to many accounts and Regions centrally and automatically include new accounts that join the target OUs — exactly the requirement.',
+          perOption: [
+            'Manual per-account runs do not scale, drift over time, and miss future accounts.',
+            'Correct — StackSets deploy and maintain the same stack across all target accounts/Regions and auto-deploy to new accounts in the OU.',
+            'RAM shares existing resources between accounts; it does not deploy templated Config rules and IAM roles into each account.',
+            'A single stack in the management account does not place the rules and roles into the other 50 accounts.',
+          ],
+          link: 'Domain 3 · Task 3.1 — Provision and share resources across multiple AWS Regions and accounts',
+        },
+      },
+      videos: [
+        { videoId: 'KX_AfyrhlgQ', title: 'AWS SysOps Administrator Associate — Full Course to PASS the Exam', channel: 'freeCodeCamp.org', relevance: 'Covers multi-account provisioning, StackSets, resource sharing, and deployment strategies.' },
+      ],
+      keyTerms: [
+        { term: 'CloudFormation StackSets', def: 'A feature that deploys and manages a single template across many accounts and Regions from one operation.' },
+        { term: 'AWS RAM', def: 'Resource Access Manager — shares specific resources (subnets, Transit Gateways, Resolver rules) across accounts and OUs.' },
+        { term: 'Blue/green deployment', def: 'Releasing to a parallel new environment and shifting traffic, enabling fast rollback by shifting back.' },
+        { term: 'Canary deployment', def: 'Routing a small percentage of traffic to a new version first to validate it before full rollout.' },
+        { term: 'Terraform', def: 'A provider-agnostic third-party IaC tool with its own state file and HCL language, common in multi-cloud environments.' },
+      ],
+      awsServices: [
+        { name: 'AWS CloudFormation StackSets', purpose: 'Deploys one template across many accounts and Regions centrally, with Organizations integration for auto-deployment.' },
+        { name: 'AWS Resource Access Manager', purpose: 'Shares specific resources across accounts and organizations without duplicating them.' },
+        { name: 'AWS CodeDeploy', purpose: 'Automates application deployments using in-place, rolling, blue/green, and canary strategies.' },
+      ],
+      examTips: [
+        'Same template across many accounts/Regions, centrally managed → StackSets (with Organizations for auto-enroll).',
+        'Share an existing resource (subnet, Transit Gateway, Resolver rule) across accounts → AWS RAM.',
+        'Instant rollback + zero downtime → blue/green. Validate on a small slice first → canary.',
+        'RAM shares the resource; cross-account IAM role grants the ability to act. Do not conflate them.',
+        'Terraform = multi-cloud, external state; CloudFormation/CDK = AWS-native, integrated (StackSets, drift, change sets).',
+      ],
+    },
+
+    // ─────────────────────────────────────────────────────────────
+    {
+      id: 'd3-s10',
+      number: 10,
+      module: 'Domain 3 · Deployment, Provisioning & Automation',
+      domain: 'd3',
+      weight: '22%',
+      task: 'Task 3.2',
+      title: 'Automating Existing Resources — Systems Manager and Event-Driven Automation',
+      duration: 30,
+      summary: 'Once resources exist, the job becomes keeping them patched, configured, and self-managing. This session covers the Systems Manager toolbox — Fleet Manager, State Manager, Patch Manager, Maintenance Windows, Run Command, and Parameter Store — and event-driven automation with Lambda and S3 event notifications.',
+      objectives: [
+        'Operate fleets at scale with Systems Manager (Run Command, State Manager, Patch Manager)',
+        'Schedule disruptive operations safely with Maintenance Windows',
+        'Store configuration and secrets references in Parameter Store',
+        'Build event-driven automation with Lambda and S3 Event Notifications',
+      ],
+      preLearningCheck: {
+        question: 'An operations team must apply OS patches to hundreds of EC2 instances on a defined schedule, with compliance reporting, and without SSH access to each box. Which Systems Manager capability fits?',
+        options: [
+          'Patch Manager with a Maintenance Window',
+          'CloudFormation drift detection',
+          'A single Lambda function triggered manually',
+          'EC2 detailed monitoring',
+        ],
+        correct: 0,
+        note: 'Patch Manager automates patching across a fleet with baselines and compliance reporting, and a Maintenance Window schedules it during an approved time — no per-instance SSH required.',
+      },
+      sections: [
+        {
+          heading: 'The Systems Manager toolbox',
+          body: 'AWS Systems Manager (SSM) is the operations Swiss-army knife for managing existing fleets. Its capabilities work through the SSM Agent (preinstalled on most AMIs) and an instance role, so you manage servers without opening SSH or RDP.',
+          table: {
+            headers: ['Capability', 'What it does', 'Use it for'],
+            rows: [
+              ['Run Command', 'Execute commands/scripts across many instances', 'Ad-hoc fleet operations without SSH'],
+              ['State Manager', 'Enforce a desired configuration state continuously', 'Keep agents installed, settings consistent (anti-drift)'],
+              ['Patch Manager', 'Automate OS/app patching with baselines + compliance', 'Scheduled, reported fleet patching'],
+              ['Session Manager', 'Browser/CLI shell with no open inbound ports', 'Secure, audited access without bastions or SSH keys'],
+              ['Fleet Manager', 'Manage servers from a console UI', 'Inventory and remote management at a glance'],
+            ],
+          },
+          callout: { type: 'tip', text: 'Session Manager is the exam\'s preferred answer for "access an instance without opening port 22 / without a bastion host" — it is auditable and needs no inbound rules.' },
+        },
+        {
+          heading: 'Maintenance Windows and Run Command',
+          body: 'Disruptive operations — patching, restarts, deployments — should happen in approved windows, not whenever an alarm fires. A Maintenance Window defines a recurring schedule and the tasks (Run Command documents, Automation runbooks) to execute, with concurrency and error thresholds to bound risk.',
+          bullets: [
+            'Maintenance Windows schedule when automation runs; Run Command/Automation define what runs.',
+            'Concurrency and error-tolerance settings limit how many instances are touched at once and stop on too many failures.',
+            'Targets are chosen by tag or resource group so the right fleet is affected.',
+            'Pair Patch Manager + Maintenance Window for compliant, scheduled patching across the fleet.',
+          ],
+        },
+        {
+          heading: 'Parameter Store for configuration',
+          body: 'Systems Manager Parameter Store provides hierarchical storage for configuration data and secrets references. Applications read parameters at runtime instead of hard-coding values, and SecureString parameters are encrypted with KMS.',
+          bullets: [
+            'Standard parameters are free and ample for most configuration; SecureString encrypts sensitive values with KMS.',
+            'For secrets needing automatic rotation, AWS Secrets Manager is the richer choice (covered in the security domain).',
+            'Parameters can be referenced directly by CloudFormation, ECS task definitions, and Lambda.',
+            'Versioning and hierarchies (/app/prod/db-url) keep configuration organized across environments.',
+          ],
+          callout: { type: 'note', text: 'Parameter Store SecureString vs Secrets Manager: both store secrets encrypted, but Secrets Manager adds built-in automatic rotation. "Needs automatic rotation" → Secrets Manager.' },
+        },
+        {
+          heading: 'Event-driven automation',
+          body: 'Beyond scheduled and ad-hoc operations, the strongest automation reacts to events as they happen. AWS Lambda runs code in response to triggers with no servers to manage; S3 Event Notifications fire when objects are created or deleted.',
+          bullets: [
+            'S3 Event Notifications → Lambda (or SQS/SNS/EventBridge): process an upload, generate a thumbnail, kick off a pipeline.',
+            'EventBridge (from the monitoring domain) routes a much broader set of events to Lambda and other targets.',
+            'Lambda is the glue for custom operational logic that no managed service performs out of the box.',
+            'Event-driven beats polling: you act the instant something happens, paying only when it does.',
+          ],
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 0,
+          question: 'A security policy forbids opening inbound port 22 and prohibits bastion hosts, yet engineers still need shell access to troubleshoot EC2 instances, with full audit logging. Which Systems Manager feature fits?',
+          options: [
+            'Run Command only',
+            'Session Manager',
+            'Patch Manager',
+            'Parameter Store',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — Session Manager provides an audited shell to instances without any open inbound ports or bastion hosts, satisfying both the security and audit requirements.',
+          elaborativePrompt: 'Why is Session Manager more secure than opening SSH even with key pairs? Think about attack surface, key management, and auditability.',
+        },
+        {
+          afterSection: 3,
+          question: 'Every time a user uploads an image to an S3 bucket, a thumbnail must be generated automatically with no servers to manage. Which design fits best?',
+          options: [
+            'Poll the bucket every minute with a cron job on an EC2 instance',
+            'An S3 Event Notification that triggers a Lambda function to generate the thumbnail',
+            'A scheduled Maintenance Window',
+            'A CloudFormation stack update',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — an S3 Event Notification triggering Lambda processes each upload the moment it happens, serverless and pay-per-use, with no polling.',
+          elaborativePrompt: 'Why is event-driven (S3 → Lambda) better than polling the bucket on a schedule, in both latency and cost?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself how you would patch a fleet of 200 instances on the second Sunday of each month, keep an agent installed on every instance continuously, and give engineers audited shell access with no open ports — naming the Systems Manager capability for each requirement.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A CloudOps team must patch 300 EC2 instances monthly during an approved two-hour window, produce patch-compliance reports, and avoid opening SSH on any instance. Which combination meets all requirements with the least custom scripting?',
+        options: [
+          'Write a custom shell script and copy it to each instance over SSH',
+          'Use Systems Manager Patch Manager with patch baselines, scheduled by a Maintenance Window, reporting compliance centrally',
+          'Trigger a Lambda function manually for each instance',
+          'Take an EBS snapshot of each instance and restore it patched',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'Patch Manager automates fleet patching with baselines and built-in compliance reporting; a Maintenance Window confines it to the approved schedule — all through the SSM Agent with no SSH.',
+          perOption: [
+            'Custom SSH scripting is exactly the manual, port-opening toil the requirements forbid and does not produce compliance reporting.',
+            'Correct — Patch Manager plus a Maintenance Window delivers scheduled, reported, agent-based patching across the fleet with no inbound SSH.',
+            'Manually invoking Lambda per instance does not scale to 300 instances and provides no patch baseline or compliance model.',
+            'Snapshot-and-restore is a backup workflow, not a patching mechanism, and does not patch running software cleanly.',
+          ],
+          link: 'Domain 3 · Task 3.2 — Automate the management of existing resources',
+        },
+      },
+      videos: [
+        { videoId: 'KX_AfyrhlgQ', title: 'AWS SysOps Administrator Associate — Full Course to PASS the Exam', channel: 'freeCodeCamp.org', relevance: 'Covers Systems Manager (Run Command, Patch Manager, Session Manager) and event-driven automation.' },
+      ],
+      keyTerms: [
+        { term: 'Systems Manager Run Command', def: 'Executes commands or scripts across many instances at once without SSH.' },
+        { term: 'State Manager', def: 'Continuously enforces a desired configuration state on instances to prevent drift.' },
+        { term: 'Patch Manager', def: 'Automates OS/application patching across a fleet using baselines, with compliance reporting.' },
+        { term: 'Session Manager', def: 'Provides audited shell access to instances with no open inbound ports or bastion hosts.' },
+        { term: 'Parameter Store', def: 'Hierarchical storage for configuration values and SecureString secrets, encrypted with KMS.' },
+      ],
+      awsServices: [
+        { name: 'AWS Systems Manager', purpose: 'Manages fleets at scale: Run Command, State Manager, Patch Manager, Maintenance Windows, Session Manager, and Parameter Store.' },
+        { name: 'AWS Lambda', purpose: 'Runs event-driven code with no servers to manage — the glue for custom operational automation.' },
+        { name: 'Amazon S3 Event Notifications', purpose: 'Fires events on object create/delete to trigger Lambda, SQS, SNS, or EventBridge.' },
+      ],
+      examTips: [
+        'Access an instance with no open port 22 / no bastion → Session Manager (audited, no inbound rules).',
+        'Scheduled, reported fleet patching → Patch Manager + Maintenance Window.',
+        'Keep configuration consistent / anti-drift on a fleet → State Manager.',
+        'SecureString in Parameter Store vs Secrets Manager: need automatic rotation → Secrets Manager.',
+        'React to an upload instantly with no servers → S3 Event Notification → Lambda (not polling).',
+      ],
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    //  DOMAIN 4 — SECURITY AND COMPLIANCE (16%)
+    // ═══════════════════════════════════════════════════════════════
+
+    {
+      id: 'd4-s11',
+      number: 11,
+      module: 'Domain 4 · Security & Compliance',
+      domain: 'd4',
+      weight: '16%',
+      task: 'Task 4.1',
+      title: 'IAM Operations — Access, MFA, Federation, and Troubleshooting',
+      duration: 30,
+      summary: 'Security operations start with identity. This session covers operating IAM day to day — users, roles, MFA, policy evaluation, and multi-account guardrails with Organizations and SCPs — and, crucially for this exam, troubleshooting "why is this access denied?" with Access Analyzer, the policy simulator, and CloudTrail.',
+      objectives: [
+        'Apply IAM features operationally — password policies, MFA, roles, resource policies, and conditions',
+        'Reason through policy evaluation: explicit deny, SCP boundaries, and least privilege',
+        'Troubleshoot access issues with IAM Access Analyzer, the policy simulator, and CloudTrail',
+        'Enforce multi-account guardrails with AWS Organizations and service control policies',
+      ],
+      preLearningCheck: {
+        question: 'A developer has an IAM policy that allows s3:GetObject, yet calls still fail with AccessDenied. The account is in an OU with a service control policy. What is the most likely cause?',
+        options: [
+          'IAM policies always override SCPs, so the SCP is irrelevant',
+          'An SCP (or explicit deny) is blocking the action — an SCP sets the maximum permissions regardless of the IAM allow',
+          'The S3 bucket needs detailed monitoring enabled',
+          'The developer must use the root user',
+        ],
+        correct: 1,
+        note: 'SCPs cap what any identity in the account can do. An IAM allow cannot exceed the SCP boundary, and any explicit deny wins. This is the classic multi-account "allowed but still denied" scenario.',
+      },
+      sections: [
+        {
+          heading: 'Operating IAM',
+          body: 'You built the IAM mental model conceptually; operations is about running it safely. Enforce strong authentication, prefer roles over long-lived keys, and use conditions to tighten access to exactly what is needed.',
+          bullets: [
+            'Enforce an account password policy and require MFA for privileged actions and the root user.',
+            'Prefer IAM roles (temporary STS credentials) for workloads and cross-account access over IAM users with access keys.',
+            'Policy conditions (aws:SourceIp, aws:MultiFactorAuthPresent, aws:PrincipalTag) scope access by context.',
+            'Resource policies (S3 bucket policy, KMS key policy) name who may use a resource — needed for cross-account access.',
+          ],
+        },
+        {
+          heading: 'How a request is actually evaluated',
+          body: 'Most access-denied troubleshooting comes down to knowing the evaluation order. AWS denies by default, then combines all applicable policies. An explicit Deny anywhere always wins.',
+          bullets: [
+            'Default deny → an allow must come from an identity-based or resource-based policy.',
+            'An explicit Deny in ANY policy (identity, resource, SCP, boundary, session) overrides every Allow.',
+            'SCPs and permission boundaries set the maximum permissions — they grant nothing, they only cap.',
+            'Effective permissions = (what an Allow grants) ∩ (SCP) ∩ (permission boundary), minus any explicit Deny.',
+          ],
+          callout: { type: 'tip', text: '"Allowed by IAM but still denied" almost always means an explicit deny, an SCP boundary, a permission boundary, or a resource policy that does not grant the cross-account principal. Check those four.' },
+        },
+        {
+          heading: 'Troubleshooting access',
+          body: 'This exam expects you to diagnose access problems with the right tool, not by trial and error.',
+          table: {
+            headers: ['Tool', 'What it answers', 'Use when'],
+            rows: [
+              ['IAM policy simulator', 'Would this policy allow this action on this resource?', 'Test permissions before/while debugging a denial'],
+              ['IAM Access Analyzer', 'Which resources are shared with external entities?', 'Find unintended public/cross-account access'],
+              ['CloudTrail', 'Who made which API call, when, and what was the result?', 'Investigate what actually happened and why it failed'],
+              ['Last accessed data', 'Which permissions has this identity actually used?', 'Tighten toward least privilege'],
+            ],
+          },
+        },
+        {
+          heading: 'Multi-account guardrails',
+          body: 'At scale, you govern many accounts with AWS Organizations. Service control policies (SCPs) set guardrails that even account administrators cannot exceed — the backbone of preventive security across an organization.',
+          bullets: [
+            'SCPs restrict the maximum permissions for accounts/OUs (e.g. deny use of unapproved Regions, deny disabling CloudTrail).',
+            'SCPs affect IAM principals in member accounts but never the management account and never grant permissions.',
+            'IAM Identity Center provides centralized workforce sign-on and permission sets across accounts.',
+            'Federation lets users sign in with an external identity provider (SAML/OIDC) and assume roles — no per-user IAM users.',
+          ],
+          callout: { type: 'note', text: 'SCP = guardrail (maximum), IAM policy = grant (within the guardrail). To stop every account from using a Region regardless of local admin rights, an SCP is the only control that works.' },
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 2,
+          question: 'A security engineer needs to know whether any S3 bucket or IAM role in the account is unintentionally shared with an external AWS account or the public. Which tool surfaces this directly?',
+          options: [
+            'IAM Access Analyzer',
+            'Amazon CloudWatch',
+            'The IAM policy simulator',
+            'AWS Budgets',
+          ],
+          correct: 0,
+          explainCorrect: 'Correct — IAM Access Analyzer continuously identifies resources (S3 buckets, roles, KMS keys, and more) shared with external entities, flagging unintended external access.',
+          elaborativePrompt: 'Why is Access Analyzer better for finding external sharing than reading each resource policy by hand? What does it analyze that a human review easily misses?',
+        },
+        {
+          afterSection: 3,
+          question: 'A company must guarantee that no IAM user or role in any member account can launch resources outside approved Regions, even if a local admin grants the permission. Which control enforces this?',
+          options: [
+            'A permission boundary on each user',
+            'A service control policy (SCP) on the organizational unit denying non-approved Regions',
+            'A security group rule',
+            'An S3 bucket policy',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — an SCP on the OU caps permissions for every principal in those accounts, so even an admin-granted allow cannot exceed the guardrail.',
+          elaborativePrompt: 'Why can a local account administrator not override an SCP, and how does that make SCPs a preventive (not just detective) control?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself the full evaluation of an API request that has an IAM allow but still returns AccessDenied. Walk through default deny, the role of an explicit deny, how an SCP and a permission boundary cap the result, and which tool you would use to confirm the cause.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'An IAM role has a policy that explicitly allows dynamodb:PutItem, but applications using the role receive AccessDenied. The account belongs to an organizational unit governed by a service control policy. Which step best identifies the cause?',
+        options: [
+          'Add the dynamodb:PutItem permission again to the same policy',
+          'Check whether the SCP (or an explicit deny) restricts DynamoDB for the account, since an SCP caps the role’s effective permissions',
+          'Switch the application to use the root user',
+          'Enable detailed monitoring on the DynamoDB table',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'When an identity policy allows an action but it is still denied, an SCP boundary or an explicit deny is the usual cause — the SCP sets the maximum permissions the role can ever have.',
+          perOption: [
+            'Re-adding an allow that already exists changes nothing; the block is above the identity policy.',
+            'Correct — the SCP (or any explicit deny) caps effective permissions regardless of the IAM allow, so it is the first thing to inspect.',
+            'Using the root user is dangerous and does not diagnose the policy boundary; it also would not apply to the application.',
+            'Detailed monitoring concerns metrics, not authorization, and has no effect on the AccessDenied result.',
+          ],
+          link: 'Domain 4 · Task 4.1 — Implement and manage security and compliance tools and policies',
+        },
+      },
+      videos: [
+        { videoId: 'KX_AfyrhlgQ', title: 'AWS SysOps Administrator Associate — Full Course to PASS the Exam', channel: 'freeCodeCamp.org', relevance: 'Covers IAM operations, policy evaluation, Organizations/SCPs, and access troubleshooting.' },
+      ],
+      keyTerms: [
+        { term: 'Service control policy (SCP)', def: 'An Organizations guardrail that sets the maximum permissions for accounts/OUs; it caps but never grants.' },
+        { term: 'Permission boundary', def: 'An advanced IAM feature that limits the maximum permissions an identity-based policy can grant to a principal.' },
+        { term: 'IAM Access Analyzer', def: 'A service that identifies resources shared with external entities, flagging unintended external access.' },
+        { term: 'IAM policy simulator', def: 'A tool that tests whether a set of policies would allow or deny a specific action on a resource.' },
+        { term: 'Federation', def: 'Signing in with an external identity provider (SAML/OIDC) to assume roles, avoiding per-user IAM users.' },
+      ],
+      awsServices: [
+        { name: 'AWS IAM', purpose: 'Manages identities, policies, MFA, and conditions; the policy simulator and last-accessed data aid least-privilege and troubleshooting.' },
+        { name: 'AWS Organizations', purpose: 'Centrally governs multiple accounts and applies SCP guardrails across OUs.' },
+        { name: 'IAM Access Analyzer', purpose: 'Continuously identifies external and public access to resources to catch unintended sharing.' },
+        { name: 'AWS CloudTrail', purpose: 'Records API calls (who/what/when/result) — the audit trail for investigating access and changes.' },
+      ],
+      examTips: [
+        'Explicit Deny always wins. An IAM allow cannot exceed an SCP or permission-boundary cap.',
+        '"Allowed by IAM but still denied" → check SCP, permission boundary, explicit deny, and resource policy.',
+        'Find unintended external/public sharing → IAM Access Analyzer. Test a permission → policy simulator.',
+        'Investigate what actually happened on an API call → CloudTrail.',
+        'Enforce a rule across all member accounts regardless of local admins → SCP (preventive guardrail).',
+      ],
+    },
+
+    // ─────────────────────────────────────────────────────────────
+    {
+      id: 'd4-s12',
+      number: 12,
+      module: 'Domain 4 · Security & Compliance',
+      domain: 'd4',
+      weight: '16%',
+      task: 'Task 4.1',
+      title: 'Compliance Operations — Trusted Advisor, AWS Config, and Region Controls',
+      duration: 30,
+      summary: 'Compliance is an operational discipline: continuously checking that resources match policy and remediating when they drift. This session covers Trusted Advisor checks, AWS Config rules and conformance packs for continuous compliance, and enforcing requirements like approved Regions and services.',
+      objectives: [
+        'Use AWS Trusted Advisor checks (including security) to find and remediate issues',
+        'Continuously evaluate compliance with AWS Config rules and conformance packs',
+        'Auto-remediate non-compliant resources with Config + SSM Automation',
+        'Enforce compliance requirements such as approved Regions and services',
+      ],
+      preLearningCheck: {
+        question: 'An auditor requires continuous evidence that every EBS volume in the account is encrypted, with automatic flagging the moment a non-compliant volume appears. Which service is designed for this?',
+        options: [
+          'AWS Trusted Advisor run manually each quarter',
+          'AWS Config with a managed rule evaluating EBS encryption',
+          'Amazon CloudWatch dashboards',
+          'AWS Budgets',
+        ],
+        correct: 1,
+        note: 'AWS Config continuously records resource configurations and evaluates them against rules, flagging non-compliance as it happens and keeping a compliance history — exactly what continuous evidence requires.',
+      },
+      sections: [
+        {
+          heading: 'Trusted Advisor — best-practice checks',
+          body: 'AWS Trusted Advisor inspects your account against best practices across five categories: cost optimization, performance, security, fault tolerance, and service limits. It is point-in-time guidance you act on, not a continuous enforcement engine.',
+          bullets: [
+            'Security checks flag issues like open security groups, public S3 buckets, MFA on root, and exposed access keys.',
+            'Service-limit checks warn before you hit quotas that would block scaling.',
+            'The full check set requires a Business or Enterprise Support plan; Basic/Developer get a limited set.',
+            'Trusted Advisor recommends; it does not automatically remediate (that is Config + automation).',
+          ],
+          callout: { type: 'note', text: 'Trusted Advisor = recommendations across cost/performance/security/fault-tolerance/limits. Config = continuous compliance evaluation with history and auto-remediation. The exam separates "advice" from "enforcement".' },
+        },
+        {
+          heading: 'AWS Config — continuous compliance',
+          body: 'AWS Config records the configuration of your resources over time and evaluates them against rules. It answers "is this resource compliant right now, and was it compliant last Tuesday?" — the backbone of continuous compliance and change auditing.',
+          bullets: [
+            'Config rules (AWS-managed or custom) evaluate resources (e.g. "S3 buckets must block public access").',
+            'The configuration timeline shows every change to a resource and when it happened — invaluable for audits and root cause.',
+            'Conformance packs bundle many rules (and remediations) into a deployable compliance framework.',
+            'Config aggregators roll up compliance across many accounts and Regions into one view.',
+          ],
+        },
+        {
+          heading: 'Auto-remediation',
+          body: 'Detection is only half of compliance; the exam rewards closing the loop. AWS Config can attach a remediation action — typically an SSM Automation runbook — that fires when a resource is found non-compliant.',
+          bullets: [
+            'Config rule detects non-compliance → triggers an SSM Automation runbook → resource is corrected automatically.',
+            'Example: a public S3 bucket is detected and a runbook re-enables Block Public Access.',
+            'Remediation can be automatic or require manual approval, depending on risk.',
+            'This is the same detect→act pattern from the monitoring domain, applied to compliance.',
+          ],
+          callout: { type: 'tip', text: 'Continuous compliance with automatic correction → AWS Config rule + SSM Automation remediation. Trusted Advisor cannot remediate on its own.' },
+        },
+        {
+          heading: 'Enforcing Region and service requirements',
+          body: 'Many compliance regimes restrict where data may live and which services may run. The exam expects you to enforce these preventively, not just detect violations after the fact.',
+          bullets: [
+            'Use an SCP to deny actions outside approved Regions or to deny disallowed services org-wide (preventive).',
+            'Use AWS Config rules to detect and report resources in disallowed Regions/services (detective).',
+            'AWS Audit Manager helps collect evidence and map controls to frameworks for audits.',
+            'Combine preventive (SCP) and detective (Config) controls for defense in depth.',
+          ],
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 1,
+          question: 'During an audit you must show the exact moment a security group was changed to allow 0.0.0.0/0 and its full configuration history. Which service provides this timeline?',
+          options: [
+            'AWS Trusted Advisor',
+            'AWS Config configuration timeline',
+            'Amazon QuickSight',
+            'AWS Budgets',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — AWS Config records every configuration change with timestamps, so its configuration timeline shows exactly when the security group was opened and what changed.',
+          elaborativePrompt: 'Why is Config\'s configuration history better evidence for an auditor than a current snapshot of the resource? What does the timeline prove that a point-in-time view cannot?',
+        },
+        {
+          afterSection: 2,
+          question: 'A company wants any S3 bucket that becomes publicly accessible to be automatically locked down again, with minimal custom code. Which approach fits?',
+          options: [
+            'A Trusted Advisor weekly email to the security team',
+            'An AWS Config rule that triggers an SSM Automation remediation to re-enable Block Public Access',
+            'A CloudWatch dashboard showing public buckets',
+            'A manual quarterly review',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — a Config rule detects the public bucket and an attached SSM Automation runbook re-enables Block Public Access automatically, closing the loop with little code.',
+          elaborativePrompt: 'How does pairing Config (detect) with SSM Automation (act) turn a detective control into a self-healing one? When might you require manual approval instead?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself how you would prove to an auditor that all resources stay compliant and self-correct: which service continuously evaluates configuration, how you would auto-remediate a violation, and which control you would add to prevent resources from ever being created in a disallowed Region.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A regulated company must continuously verify that all RDS instances are encrypted and automatically remediate any that are not, while keeping an auditable history of compliance. Which solution meets these requirements?',
+        options: [
+          'Run AWS Trusted Advisor manually each month and email findings',
+          'Use an AWS Config managed rule for RDS encryption with an SSM Automation remediation action, retaining Config’s compliance history',
+          'Create a CloudWatch alarm on RDS CPU utilization',
+          'Enable S3 versioning on the audit bucket',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'AWS Config continuously evaluates the encryption rule, records a compliance timeline for auditors, and can auto-remediate via SSM Automation — covering verification, remediation, and history.',
+          perOption: [
+            'Trusted Advisor is periodic, manual, and cannot remediate or provide a continuous compliance timeline.',
+            'Correct — a Config rule plus SSM Automation remediation delivers continuous evaluation, automatic correction, and an auditable history.',
+            'A CPU alarm measures performance, not encryption compliance, and does nothing to remediate.',
+            'S3 versioning protects objects from overwrite; it does not evaluate or remediate RDS encryption.',
+          ],
+          link: 'Domain 4 · Task 4.1 — Implement remediation and enforce compliance requirements',
+        },
+      },
+      videos: [
+        { videoId: 'KX_AfyrhlgQ', title: 'AWS SysOps Administrator Associate — Full Course to PASS the Exam', channel: 'freeCodeCamp.org', relevance: 'Covers Trusted Advisor, AWS Config rules and remediation, and compliance enforcement.' },
+      ],
+      keyTerms: [
+        { term: 'AWS Trusted Advisor', def: 'A service that checks an account against best practices across cost, performance, security, fault tolerance, and service limits.' },
+        { term: 'AWS Config rule', def: 'A managed or custom evaluation that continuously checks whether resources comply with a desired configuration.' },
+        { term: 'Conformance pack', def: 'A deployable bundle of Config rules and remediations representing a compliance framework.' },
+        { term: 'Config configuration timeline', def: 'A history of every change to a resource over time, used for auditing and root-cause analysis.' },
+        { term: 'Auto-remediation', def: 'A Config remediation action (often an SSM Automation runbook) that corrects a non-compliant resource automatically.' },
+      ],
+      awsServices: [
+        { name: 'AWS Config', purpose: 'Continuously records and evaluates resource configurations against rules, with history, conformance packs, and auto-remediation.' },
+        { name: 'AWS Trusted Advisor', purpose: 'Provides best-practice recommendations across five categories, including security and service limits.' },
+        { name: 'AWS Audit Manager', purpose: 'Collects evidence and maps controls to compliance frameworks to streamline audits.' },
+      ],
+      examTips: [
+        'Trusted Advisor = point-in-time best-practice advice. AWS Config = continuous compliance with history + remediation.',
+        'Need a configuration-change timeline for an auditor → AWS Config.',
+        'Continuous compliance + automatic correction → Config rule + SSM Automation remediation.',
+        'Prevent resource creation in disallowed Regions/services → SCP (preventive). Detect/report it → Config (detective).',
+        'Full Trusted Advisor check set needs Business/Enterprise Support.',
+      ],
+    },
+
+    // ─────────────────────────────────────────────────────────────
+    {
+      id: 'd4-s13',
+      number: 13,
+      module: 'Domain 4 · Security & Compliance',
+      domain: 'd4',
+      weight: '16%',
+      task: 'Task 4.2',
+      title: 'Protecting Data — KMS, ACM, Secrets, and the Detection Services',
+      duration: 30,
+      summary: 'This session covers protecting data and infrastructure operationally: encryption at rest with KMS, encryption in transit with ACM, secure secret storage with Secrets Manager, and the four detection services the exam loves to confuse — GuardDuty, Inspector, Macie, and Security Hub.',
+      objectives: [
+        'Implement and troubleshoot encryption at rest with AWS KMS (keys, policies, rotation)',
+        'Implement encryption in transit with AWS Certificate Manager (ACM)',
+        'Store and rotate secrets securely with AWS Secrets Manager',
+        'Distinguish GuardDuty, Inspector, Macie, and Security Hub and route their findings',
+      ],
+      preLearningCheck: {
+        question: 'A team needs database credentials that rotate automatically every 30 days, are never hard-coded, and are retrieved by the application at runtime. Which service is the best fit?',
+        options: [
+          'Store them in an environment variable on the instance',
+          'AWS Secrets Manager',
+          'A plaintext file in an S3 bucket',
+          'A CloudWatch log group',
+        ],
+        correct: 1,
+        note: 'Secrets Manager stores secrets encrypted with KMS and provides built-in automatic rotation (including native integration with RDS) — exactly the rotation-plus-runtime-retrieval requirement.',
+      },
+      sections: [
+        {
+          heading: 'Encryption at rest with KMS',
+          body: 'AWS Key Management Service (KMS) creates and controls the encryption keys that protect data at rest across AWS services. The exam expects you to understand key types, who can use a key, and common troubleshooting.',
+          bullets: [
+            'Most services integrate with KMS: encrypt an EBS volume, S3 object, RDS database, or snapshot by selecting a KMS key.',
+            'Customer-managed keys give you control over the key policy, rotation, and grants; AWS-managed keys are simpler but less flexible.',
+            'Automatic annual key rotation is available for customer-managed keys; the key policy plus IAM controls who can use the key.',
+            'Troubleshooting "access denied" on encrypted data: the caller usually lacks kms:Decrypt permission on the key, or the key policy does not allow the principal — both the data permission AND the key permission are required.',
+          ],
+          callout: { type: 'tip', text: 'A user can read an S3 object\'s permissions yet still get AccessDenied because they lack kms:Decrypt on the bucket\'s KMS key. Encrypted data needs both resource access and key access.' },
+        },
+        {
+          heading: 'Encryption in transit with ACM',
+          body: 'AWS Certificate Manager (ACM) provisions, manages, and renews SSL/TLS certificates used to encrypt data in transit. ACM certificates are commonly attached to load balancers, CloudFront, and API Gateway.',
+          bullets: [
+            'ACM auto-renews certificates it issues, removing the classic "the cert expired and the site went down" outage.',
+            'Attach an ACM certificate to an ALB/NLB or CloudFront distribution to terminate TLS.',
+            'ACM public certificates are free; private CAs (ACM Private CA) cover internal PKI.',
+            'A common operational fix: an expiring certificate not auto-renewed because DNS validation records were removed — restore validation.',
+          ],
+        },
+        {
+          heading: 'Secrets management',
+          body: 'Hard-coded credentials are a top security failure. AWS provides two encrypted stores; choosing between them is a recurring exam point.',
+          table: {
+            headers: ['Need', 'Use', 'Why'],
+            rows: [
+              ['Secrets with automatic rotation', 'AWS Secrets Manager', 'Built-in rotation (native for RDS), fine-grained access, audit'],
+              ['Simple config + occasional secrets', 'SSM Parameter Store (SecureString)', 'Free standard tier, KMS-encrypted, no built-in rotation'],
+              ['Database/API credentials at runtime', 'AWS Secrets Manager', 'Apps fetch on demand; nothing stored in code'],
+            ],
+          },
+          callout: { type: 'note', text: 'Secrets Manager vs Parameter Store SecureString: both encrypt with KMS. The deciding factor is automatic rotation — if the question stresses rotating credentials, it is Secrets Manager.' },
+        },
+        {
+          heading: 'The detection services — do not confuse them',
+          body: 'Four AWS services find security problems, and the exam routinely tests which one does what. Learn the one-line role of each, then how Security Hub ties them together.',
+          bullets: [
+            'Amazon GuardDuty: intelligent threat detection from logs (VPC flow, DNS, CloudTrail) — finds malicious or anomalous activity (e.g. crypto-mining, compromised credentials).',
+            'Amazon Inspector: automated vulnerability management — scans EC2, container images, and Lambda for CVEs and unintended network exposure.',
+            'Amazon Macie: discovers and classifies sensitive data (PII) in S3 using machine learning.',
+            'AWS Security Hub: aggregates findings from GuardDuty, Inspector, Macie, and Config into one prioritized dashboard and runs security-standard checks.',
+          ],
+          callout: { type: 'tip', text: 'Threat/anomaly in activity → GuardDuty. Software vulnerabilities/CVEs → Inspector. Sensitive data (PII) in S3 → Macie. One pane aggregating all findings → Security Hub.' },
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 0,
+          question: 'A user has s3:GetObject permission on a bucket but receives AccessDenied when downloading objects encrypted with a customer-managed KMS key. What is the most likely fix?',
+          options: [
+            'Make the bucket public',
+            'Grant the user kms:Decrypt on the KMS key (via the key policy/IAM)',
+            'Enable S3 Transfer Acceleration',
+            'Switch the bucket to a different Region',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — reading KMS-encrypted objects requires kms:Decrypt on the key in addition to S3 read permission. Granting the key permission resolves the denial.',
+          elaborativePrompt: 'Why does AWS require both the data permission and the key permission to read encrypted data? What attack does separating them prevent?',
+        },
+        {
+          afterSection: 3,
+          question: 'Security wants to be alerted when an EC2 instance starts communicating with a known cryptocurrency-mining domain — anomalous, threat-like behavior. Which service detects this?',
+          options: [
+            'Amazon Inspector',
+            'Amazon GuardDuty',
+            'Amazon Macie',
+            'AWS Certificate Manager',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — GuardDuty analyzes VPC flow, DNS, and CloudTrail logs to detect malicious or anomalous activity such as communication with mining domains.',
+          elaborativePrompt: 'In one sentence each, distinguish what GuardDuty, Inspector, and Macie would each catch. Why would Inspector miss the mining-domain activity?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself how you would secure a new application end to end: encrypt its database at rest, serve it over TLS without manual cert renewals, store its database password so it rotates automatically, and detect both software vulnerabilities and threat activity — naming the AWS service for each.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'An application stores its database password in plaintext in a configuration file. Security requires that the credential be encrypted, rotated automatically every 30 days, and retrieved by the application at runtime without code changes on each rotation. Which solution meets these requirements?',
+        options: [
+          'Move the password into an environment variable on the instance',
+          'Store the credential in AWS Secrets Manager with automatic rotation enabled and have the app fetch it at runtime',
+          'Put the password in an SSM Parameter Store standard String parameter',
+          'Encrypt the configuration file with KMS and leave the password inside it',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'Secrets Manager encrypts the credential with KMS, rotates it automatically (natively for databases like RDS), and serves it to the application at runtime, so rotation requires no code change.',
+          perOption: [
+            'An environment variable is still effectively a static, unrotated secret on the host — it meets none of the rotation requirements.',
+            'Correct — Secrets Manager provides encryption, built-in automatic rotation, and runtime retrieval, satisfying every requirement.',
+            'A standard String parameter is not encrypted and has no rotation; even SecureString lacks built-in automatic rotation.',
+            'Encrypting the file still leaves a static password inside it with no rotation and manual handling.',
+          ],
+          link: 'Domain 4 · Task 4.2 — Implement strategies to protect data and infrastructure',
+        },
+      },
+      videos: [
+        { videoId: 'KX_AfyrhlgQ', title: 'AWS SysOps Administrator Associate — Full Course to PASS the Exam', channel: 'freeCodeCamp.org', relevance: 'Covers KMS, ACM, Secrets Manager, and the GuardDuty/Inspector/Macie/Security Hub detection suite.' },
+      ],
+      keyTerms: [
+        { term: 'AWS KMS', def: 'Key Management Service — creates and controls encryption keys for data at rest across AWS services.' },
+        { term: 'AWS Certificate Manager (ACM)', def: 'Provisions and auto-renews SSL/TLS certificates for encryption in transit on load balancers, CloudFront, and API Gateway.' },
+        { term: 'AWS Secrets Manager', def: 'Stores secrets encrypted with KMS and rotates them automatically, with runtime retrieval by applications.' },
+        { term: 'Amazon GuardDuty', def: 'Threat detection that analyzes logs to find malicious or anomalous activity.' },
+        { term: 'AWS Security Hub', def: 'Aggregates findings from GuardDuty, Inspector, Macie, and Config into one prioritized view with standard checks.' },
+      ],
+      awsServices: [
+        { name: 'AWS KMS', purpose: 'Manages encryption keys and policies for at-rest encryption; kms:Decrypt is required to read encrypted data.' },
+        { name: 'AWS Secrets Manager', purpose: 'Securely stores and automatically rotates secrets, with native database integration and runtime retrieval.' },
+        { name: 'Amazon GuardDuty / Inspector / Macie', purpose: 'Detect threats (GuardDuty), vulnerabilities (Inspector), and sensitive data (Macie) respectively.' },
+        { name: 'AWS Security Hub', purpose: 'Central aggregation and prioritization of security findings across the detection services and Config.' },
+      ],
+      examTips: [
+        'Encrypted data needs BOTH resource access AND kms:Decrypt on the key. Missing key permission = AccessDenied.',
+        'Auto-renewing TLS certs on ALB/CloudFront → ACM. Secrets with automatic rotation → Secrets Manager.',
+        'GuardDuty = threats/anomalies; Inspector = vulnerabilities/CVEs; Macie = PII in S3; Security Hub = aggregation.',
+        'Parameter Store SecureString vs Secrets Manager: rotation requirement → Secrets Manager.',
+        'Customer-managed KMS keys give you key-policy control and optional annual rotation.',
+      ],
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    //  DOMAIN 5 — NETWORKING AND CONTENT DELIVERY (18%)
+    // ═══════════════════════════════════════════════════════════════
+
+    {
+      id: 'd5-s14',
+      number: 14,
+      module: 'Domain 5 · Networking & Content Delivery',
+      domain: 'd5',
+      weight: '18%',
+      task: 'Task 5.1',
+      title: 'VPC Foundations — Subnets, Routing, Security, and Private Connectivity',
+      duration: 30,
+      summary: 'Networking is where operations gets concrete. This session builds the VPC mental model — subnets, route tables, gateways, and the two firewall layers — then covers private connectivity (endpoints, PrivateLink, peering, Transit Gateway) and how to keep network costs down.',
+      objectives: [
+        'Assemble a VPC from subnets, route tables, internet/NAT gateways, and IGWs',
+        'Distinguish security groups (stateful) from network ACLs (stateless) and apply each',
+        'Choose private connectivity: VPC endpoints, PrivateLink, peering, and Transit Gateway',
+        'Reduce network cost through NAT and endpoint placement and data-transfer awareness',
+      ],
+      preLearningCheck: {
+        question: 'EC2 instances in a private subnet must download OS updates from the internet but must not be reachable from the internet. Which component enables this?',
+        options: [
+          'An internet gateway attached directly to the private subnet',
+          'A NAT gateway in a public subnet, with the private subnet routing 0.0.0.0/0 to it',
+          'A security group rule allowing all inbound traffic',
+          'A VPC peering connection',
+        ],
+        correct: 1,
+        note: 'A NAT gateway lets private instances make outbound connections (e.g. for updates) while blocking unsolicited inbound traffic. It lives in a public subnet; the private subnet routes internet-bound traffic to it.',
+      },
+      sections: [
+        {
+          heading: 'The VPC building blocks',
+          body: 'A VPC is your isolated network in AWS. Inside it, subnets segment the address space per Availability Zone, route tables decide where traffic goes, and gateways connect to the outside world. Whether a subnet is "public" or "private" is defined entirely by its route table.',
+          bullets: [
+            'A public subnet has a route to an internet gateway (IGW); a private subnet does not.',
+            'An internet gateway provides bidirectional internet access for public subnets.',
+            'A NAT gateway gives private subnets outbound-only internet access (it lives in a public subnet).',
+            'An egress-only internet gateway is the IPv6 equivalent of NAT — outbound-only for IPv6.',
+          ],
+          interactive: 'vpc-troubleshooter',
+        },
+        {
+          heading: 'The two firewall layers',
+          body: 'A VPC has two stateless/stateful firewall layers, and telling them apart is one of the most tested distinctions on the exam.',
+          table: {
+            headers: ['', 'Security Group', 'Network ACL'],
+            rows: [
+              ['Level', 'Instance / ENI', 'Subnet'],
+              ['State', 'Stateful (return traffic auto-allowed)', 'Stateless (must allow return explicitly)'],
+              ['Rules', 'Allow only', 'Allow and Deny'],
+              ['Evaluation', 'All rules evaluated', 'Numbered order, first match wins'],
+            ],
+          },
+          callout: { type: 'tip', text: 'Stateful vs stateless is the crux. If outbound works but responses are dropped, suspect a stateless NACL missing an ephemeral-port return rule. To block a specific bad IP, you need a NACL deny — security groups cannot deny.' },
+        },
+        {
+          heading: 'Private connectivity options',
+          body: 'Operations often requires reaching AWS services or other VPCs without traversing the public internet. The exam wants you to match the connectivity need to the right construct.',
+          bullets: [
+            'VPC endpoints (Gateway): private access to S3 and DynamoDB via a route-table entry — no internet, no NAT cost.',
+            'VPC endpoints (Interface / PrivateLink): private access to most AWS services and to SaaS/partner services via an ENI in your subnet.',
+            'VPC peering: one-to-one private connectivity between two VPCs (non-transitive).',
+            'Transit Gateway: a hub that connects many VPCs and on-premises networks at scale (transitive) — the answer when peering would become a mesh.',
+          ],
+          callout: { type: 'note', text: 'Two VPCs → peering. Many VPCs/accounts and on-prem in a hub → Transit Gateway. Private access to S3/DynamoDB → Gateway endpoint. Private access to other AWS/SaaS services → Interface endpoint (PrivateLink).' },
+        },
+        {
+          heading: 'Network cost optimization',
+          body: 'Networking quietly drives cost, and the exam includes a cost-optimization skill for it. The biggest levers are avoiding unnecessary NAT and data-transfer charges.',
+          bullets: [
+            'Gateway VPC endpoints for S3/DynamoDB remove NAT data-processing charges for that traffic — a common savings.',
+            'Keep traffic within an AZ when possible; cross-AZ and cross-Region data transfer costs more.',
+            'A single shared NAT gateway per AZ (rather than per subnet) balances cost and resilience.',
+            'Data transfer OUT to the internet is the priciest direction; caching with CloudFront can reduce it.',
+          ],
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 1,
+          question: 'Outbound requests from an instance succeed, but the responses never arrive, and you confirm the security group allows the traffic. The subnet uses a custom network ACL. What is the most likely cause?',
+          options: [
+            'The security group is stateful and broken',
+            'The network ACL is stateless and is missing an inbound allow rule for the ephemeral return ports',
+            'The instance needs a public IP',
+            'The route table points to a NAT gateway',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — NACLs are stateless, so return traffic on ephemeral ports must be explicitly allowed inbound. A missing ephemeral-range rule drops the responses even when the security group is fine.',
+          elaborativePrompt: 'Explain why a stateful security group never needs an explicit return rule, while a stateless NACL always does. What is the ephemeral port range and why does it matter here?',
+        },
+        {
+          afterSection: 2,
+          question: 'An organization has 30 VPCs across several accounts that all need to communicate, plus an on-premises data center. Managing individual peering connections has become unmanageable. Which service simplifies this?',
+          options: [
+            'More VPC peering connections',
+            'AWS Transit Gateway',
+            'A second internet gateway',
+            'An interface VPC endpoint',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — Transit Gateway is a transitive hub that connects many VPCs and on-premises networks centrally, replacing an unmanageable mesh of peering connections.',
+          elaborativePrompt: 'Why does VPC peering not scale to dozens of VPCs (think about the number of connections and non-transitivity), and how does a hub-and-spoke Transit Gateway solve it?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself how a two-tier app in a VPC routes traffic: how a public-subnet load balancer reaches the internet, how private-subnet instances get OS updates without being internet-reachable, and which firewall layer you would use to block a single malicious IP versus allow app traffic to one instance.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'EC2 instances in a private subnet must retrieve objects from Amazon S3 without traversing the public internet, and the team wants to avoid NAT gateway data-processing charges for this traffic. Which solution best meets both goals?',
+        options: [
+          'Add a NAT gateway and route S3 traffic through it',
+          'Create a Gateway VPC endpoint for S3 and add it to the private subnet’s route table',
+          'Attach an internet gateway to the private subnet',
+          'Set up VPC peering to a public VPC',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'A Gateway VPC endpoint for S3 provides private connectivity via a route-table entry, keeping traffic off the internet and avoiding NAT data-processing costs for S3 access.',
+          perOption: [
+            'Routing S3 traffic through a NAT gateway works but still incurs NAT data-processing charges — the opposite of the cost goal.',
+            'Correct — a Gateway endpoint for S3 gives private, no-internet access and removes NAT charges for that traffic.',
+            'Attaching an IGW to the private subnet would make it public and expose the instances — violating the private requirement.',
+            'Peering to a public VPC does not provide private S3 access and adds needless complexity and cost.',
+          ],
+          link: 'Domain 5 · Task 5.1 — Implement and optimize networking features and connectivity',
+        },
+      },
+      videos: [
+        { videoId: 'KX_AfyrhlgQ', title: 'AWS SysOps Administrator Associate — Full Course to PASS the Exam', channel: 'freeCodeCamp.org', relevance: 'Covers VPC subnets, routing, gateways, security groups vs NACLs, and private connectivity.' },
+      ],
+      keyTerms: [
+        { term: 'NAT gateway', def: 'A managed gateway giving private-subnet instances outbound-only internet access; lives in a public subnet.' },
+        { term: 'Security group', def: 'A stateful, allow-only firewall at the instance/ENI level; return traffic is automatically permitted.' },
+        { term: 'Network ACL', def: 'A stateless, allow-and-deny firewall at the subnet level; return traffic must be allowed explicitly.' },
+        { term: 'Gateway VPC endpoint', def: 'A route-table-based private connection to S3 or DynamoDB that avoids the internet and NAT charges.' },
+        { term: 'Transit Gateway', def: 'A transitive hub connecting many VPCs and on-premises networks, replacing a peering mesh at scale.' },
+      ],
+      awsServices: [
+        { name: 'Amazon VPC', purpose: 'Your isolated virtual network — subnets, route tables, gateways, and the two firewall layers.' },
+        { name: 'AWS Transit Gateway', purpose: 'Hub that interconnects many VPCs and on-premises networks at scale with transitive routing.' },
+        { name: 'AWS PrivateLink / VPC endpoints', purpose: 'Private connectivity to AWS and SaaS services without traversing the internet.' },
+      ],
+      examTips: [
+        'Public vs private subnet is defined by the route table (route to IGW = public).',
+        'Private outbound to internet → NAT gateway. Never attach an IGW to a private subnet.',
+        'Security group = stateful, allow-only, instance level. NACL = stateless, allow+deny, subnet level.',
+        'Block a specific bad IP → NACL deny (security groups cannot deny).',
+        'S3/DynamoDB private + cheap → Gateway endpoint. Many VPCs + on-prem hub → Transit Gateway. Two VPCs → peering.',
+      ],
+    },
+
+    // ─────────────────────────────────────────────────────────────
+    {
+      id: 'd5-s15',
+      number: 15,
+      module: 'Domain 5 · Networking & Content Delivery',
+      domain: 'd5',
+      weight: '18%',
+      task: 'Task 5.2',
+      title: 'DNS, Content Delivery, and Network Protection — Route 53, CloudFront, and the Edge',
+      duration: 30,
+      summary: 'This session covers steering and accelerating traffic at the edge: Route 53 routing policies and query logging, content distribution with CloudFront and Global Accelerator, and the network protection services — WAF, Shield, Network Firewall, and DNS Firewall.',
+      objectives: [
+        'Configure Route 53 DNS and choose the right routing policy for a goal',
+        'Enable Route 53 query logging and understand resolver behavior',
+        'Distribute and accelerate content with CloudFront and Global Accelerator',
+        'Apply the network protection services (WAF, Shield, Network Firewall, DNS Firewall)',
+      ],
+      preLearningCheck: {
+        question: 'A company wants users automatically directed to the AWS Region that gives them the lowest network latency. Which Route 53 routing policy fits?',
+        options: [
+          'Simple routing',
+          'Latency-based routing',
+          'Weighted routing',
+          'Failover routing',
+        ],
+        correct: 1,
+        note: 'Latency-based routing sends each user to the Region that provides the lowest latency for them. Weighted splits by ratio; failover is active-passive; simple returns a fixed record.',
+      },
+      sections: [
+        {
+          heading: 'Route 53 routing policies',
+          body: 'Route 53 is AWS\'s DNS service, and its routing policies are heavily tested. Each policy answers a different traffic-steering goal; match the goal to the policy.',
+          table: {
+            headers: ['Policy', 'Steers by', 'Use for'],
+            rows: [
+              ['Simple', 'One record, no logic', 'A single resource'],
+              ['Weighted', 'Percentage split across records', 'A/B testing, gradual migration'],
+              ['Latency-based', 'Lowest latency Region for the user', 'Global apps optimizing performance'],
+              ['Failover', 'Primary while healthy, else secondary', 'Active-passive HA/DR'],
+              ['Geolocation', 'User’s geographic location', 'Content localization, data-sovereignty routing'],
+              ['Multivalue answer', 'Several healthy records returned', 'Simple client-side load spreading with health checks'],
+            ],
+          },
+          callout: { type: 'tip', text: 'Latency vs geolocation is a classic trap: latency optimizes for speed (nearest in network terms), geolocation routes by where the user physically is (for compliance/localization). Read which goal the question states.' },
+        },
+        {
+          heading: 'Resolver and query logging',
+          body: 'Beyond public DNS, Route 53 Resolver handles DNS resolution inside and across your VPCs and to on-premises networks, and query logging gives you visibility into DNS activity for security and troubleshooting.',
+          bullets: [
+            'Route 53 Resolver endpoints enable hybrid DNS — inbound (on-prem → AWS) and outbound (AWS → on-prem) resolution.',
+            'Resolver query logging records the DNS queries from your VPCs — useful for detecting exfiltration and debugging resolution.',
+            'Private hosted zones serve DNS records only within associated VPCs.',
+            'Health checks on records drive failover routing decisions.',
+          ],
+        },
+        {
+          heading: 'CloudFront and Global Accelerator',
+          body: 'Two services use the AWS edge network, but for different traffic. The exam expects you to pick correctly between them.',
+          bullets: [
+            'Amazon CloudFront: a CDN that caches HTTP(S) content at edge locations near users — best for websites, APIs, and static/streaming content; reduces latency and origin load.',
+            'AWS Global Accelerator: routes TCP/UDP traffic over the AWS backbone to the optimal endpoint, providing static anycast IPs and fast regional failover — best for non-HTTP or whole-application acceleration.',
+            'CloudFront caches; Global Accelerator does not cache — it accelerates and routes.',
+            'CloudFront integrates with WAF and Shield at the edge for protection.',
+          ],
+          callout: { type: 'note', text: 'Cacheable web content → CloudFront. Non-HTTP (gaming, IoT, VoIP) or need static anycast IPs and instant regional failover → Global Accelerator.' },
+        },
+        {
+          heading: 'Network protection services',
+          body: 'The exam asks you to audit and apply AWS\'s layered network protections. Know what each defends against.',
+          bullets: [
+            'AWS WAF: filters HTTP(S) requests by rules (SQL injection, XSS, rate limiting, geo-block) on CloudFront, ALB, or API Gateway.',
+            'AWS Shield: DDoS protection — Standard is automatic and free; Advanced adds enhanced mitigation, cost protection, and a response team.',
+            'AWS Network Firewall: stateful network/protocol filtering for an entire VPC (IDS/IPS-style rules).',
+            'Route 53 Resolver DNS Firewall: blocks DNS queries to malicious or disallowed domains from your VPCs.',
+          ],
+          callout: { type: 'tip', text: 'Layer 7 web exploits → WAF. DDoS → Shield. VPC-wide stateful traffic filtering → Network Firewall. Malicious domain lookups → DNS Firewall. Match the threat to the layer.' },
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 0,
+          question: 'A company must keep European users’ requests served only from EU Regions to satisfy data-residency rules, regardless of latency. Which Route 53 routing policy enforces this?',
+          options: [
+            'Latency-based routing',
+            'Geolocation routing',
+            'Weighted routing',
+            'Simple routing',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — geolocation routing directs users based on their physical location, so EU users can be pinned to EU Regions for data residency even if another Region were lower-latency.',
+          elaborativePrompt: 'Why would latency-based routing be the wrong choice for a data-residency requirement, even though it also sends users to a nearby Region most of the time?',
+        },
+        {
+          afterSection: 3,
+          question: 'A public web application is being hit by SQL-injection attempts and needs request filtering at the edge in front of CloudFront. Which service fits?',
+          options: [
+            'AWS Shield Standard only',
+            'AWS WAF with managed rules',
+            'AWS Network Firewall',
+            'Route 53 DNS Firewall',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — AWS WAF filters HTTP(S) requests with rules (including managed rule groups for SQL injection and XSS) and attaches to CloudFront, ALB, and API Gateway.',
+          elaborativePrompt: 'Distinguish what WAF, Shield, and Network Firewall each defend against. Why is WAF, not Shield, the answer for SQL injection?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself how you would deliver a global web app: which service caches content near users, which routing policy sends users to the lowest-latency Region, and which protections you would layer at the edge for web exploits and DDoS — naming each service and what it defends against.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A media company serves a global audience streaming video and static assets over HTTPS. They want lower latency, reduced origin load, and protection against common web exploits. Which combination best meets these goals?',
+        options: [
+          'AWS Global Accelerator with AWS Network Firewall',
+          'Amazon CloudFront for content delivery with AWS WAF attached for request filtering',
+          'Route 53 weighted routing with AWS Shield Standard only',
+          'A single larger origin server in one Region',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'CloudFront caches HTTPS content at the edge to cut latency and origin load, and AWS WAF attached to the distribution filters common web exploits — directly matching all three goals.',
+          perOption: [
+            'Global Accelerator does not cache content (so it does not reduce origin load for static assets), and Network Firewall is VPC-level, not edge web filtering.',
+            'Correct — CloudFront delivers and caches the content globally while WAF provides edge protection against web exploits.',
+            'Weighted routing does not cache or reduce latency by proximity, and Shield Standard addresses DDoS, not web exploits like injection.',
+            'A single larger origin removes the CDN benefit, keeps latency high for distant users, and adds no exploit protection.',
+          ],
+          link: 'Domain 5 · Task 5.2 — Configure domains, DNS services, and content delivery',
+        },
+      },
+      videos: [
+        { videoId: 'KX_AfyrhlgQ', title: 'AWS SysOps Administrator Associate — Full Course to PASS the Exam', channel: 'freeCodeCamp.org', relevance: 'Covers Route 53 routing policies, CloudFront, Global Accelerator, and the network protection services.' },
+      ],
+      keyTerms: [
+        { term: 'Latency-based routing', def: 'A Route 53 policy that sends each user to the Region giving them the lowest network latency.' },
+        { term: 'Geolocation routing', def: 'A Route 53 policy that routes users by physical location, used for localization and data residency.' },
+        { term: 'Amazon CloudFront', def: 'A CDN that caches HTTP(S) content at edge locations to reduce latency and origin load.' },
+        { term: 'AWS Global Accelerator', def: 'Routes TCP/UDP traffic over the AWS backbone with static anycast IPs and fast regional failover; does not cache.' },
+        { term: 'AWS WAF', def: 'A web application firewall that filters HTTP(S) requests by rules on CloudFront, ALB, and API Gateway.' },
+      ],
+      awsServices: [
+        { name: 'Amazon Route 53', purpose: 'DNS with routing policies (simple, weighted, latency, failover, geolocation, multivalue), Resolver, and query logging.' },
+        { name: 'Amazon CloudFront', purpose: 'Edge CDN that caches and accelerates HTTP(S) content and integrates with WAF and Shield.' },
+        { name: 'AWS WAF / Shield / Network Firewall / DNS Firewall', purpose: 'Layered protection: web exploits, DDoS, VPC traffic filtering, and malicious domain blocking.' },
+      ],
+      examTips: [
+        'Lowest latency → latency-based routing. Route by physical location/compliance → geolocation. A/B or migration → weighted.',
+        'Cacheable HTTP(S) content → CloudFront. Non-HTTP or static anycast IPs + fast failover → Global Accelerator.',
+        'Web exploits (SQLi/XSS/rate limit) → WAF. DDoS → Shield (Advanced for big targets).',
+        'VPC-wide stateful filtering → Network Firewall. Block malicious domain lookups → Route 53 DNS Firewall.',
+        'Route 53 Resolver query logging helps detect DNS-based exfiltration and debug resolution.',
+      ],
+    },
+
+    // ─────────────────────────────────────────────────────────────
+    {
+      id: 'd5-s16',
+      number: 16,
+      module: 'Domain 5 · Networking & Content Delivery',
+      domain: 'd5',
+      weight: '18%',
+      task: 'Task 5.3',
+      title: 'Network Troubleshooting — Flow Logs, CloudFront Caching, and Hybrid Connectivity',
+      duration: 30,
+      summary: 'The exam\'s densest troubleshooting task. This session is a systematic method for diagnosing connectivity failures using VPC flow logs and the other network logs, fixing CloudFront caching problems, and resolving hybrid (VPN/Direct Connect) connectivity issues — plus the CloudWatch network monitoring tools.',
+      objectives: [
+        'Diagnose VPC connectivity failures systematically across SG, NACL, route table, and gateways',
+        'Read VPC flow logs and the ELB/WAF/CloudFront logs to locate the broken hop',
+        'Identify and remediate CloudFront caching issues (stale content, low hit ratio)',
+        'Troubleshoot hybrid connectivity over VPN and Direct Connect',
+      ],
+      preLearningCheck: {
+        question: 'You are debugging why traffic to an EC2 instance is failing and want to see whether packets are being ACCEPTed or REJECTed at the network interface, including the source, destination, and port. Which tool shows this?',
+        options: [
+          'CloudFront access logs',
+          'VPC flow logs',
+          'AWS Cost Explorer',
+          'S3 server access logs',
+        ],
+        correct: 1,
+        note: 'VPC flow logs capture metadata for IP traffic at the VPC, subnet, or ENI level — including the accept/reject action — which is the first place to look when diagnosing whether traffic is reaching and being allowed at an interface.',
+      },
+      sections: [
+        {
+          heading: 'A systematic troubleshooting method',
+          body: 'Random guessing wastes time on the exam and in real incidents. Diagnose connectivity by walking the path the packet takes and checking each layer in order. The first layer that blocks the packet is your fault.',
+          bullets: [
+            'Is there a route? Check the route table for a path to the destination (IGW, NAT, peering, TGW, endpoint).',
+            'Does the subnet firewall allow it? Check the network ACL (stateless — both directions, including ephemeral return ports).',
+            'Does the instance firewall allow it? Check the security group (stateful — inbound rule for the port).',
+            'Is the target healthy and listening? Check the app, the health check, and that it binds the right port.',
+            'For public access: does the instance have a public IP / is it behind a public load balancer?',
+          ],
+          callout: { type: 'tip', text: 'Memorize the order: route table → NACL → security group → target health. Most "cannot connect" questions resolve at one of these four, and the wording usually hints which.' },
+        },
+        {
+          heading: 'Reading the network logs',
+          body: 'Each log source answers a different question. Knowing which log to pull is half the battle.',
+          table: {
+            headers: ['Log', 'Answers', 'Use when'],
+            rows: [
+              ['VPC flow logs', 'Was IP traffic accepted or rejected at the ENI/subnet/VPC?', 'Diagnose whether traffic reached and was allowed'],
+              ['ELB access logs', 'What requests hit the load balancer and how did it respond?', 'Investigate 4xx/5xx and backend health at the LB'],
+              ['CloudFront logs', 'What did the edge serve, and was it a cache hit or miss?', 'Diagnose caching behavior and edge errors'],
+              ['WAF web ACL logs', 'Which requests were allowed or blocked by which rule?', 'Confirm whether WAF is blocking legitimate traffic'],
+            ],
+          },
+          callout: { type: 'note', text: 'A REJECT in VPC flow logs points at a security group or NACL block; an ACCEPT means the packet was allowed at the network layer, so look higher (the app, health check, or load balancer).' },
+        },
+        {
+          heading: 'CloudFront caching issues',
+          body: 'CloudFront problems usually present as either "users see stale content" or "the cache is not helping (low hit ratio)." Both have well-known causes and fixes.',
+          bullets: [
+            'Stale content after a deploy → create an invalidation for the changed paths, or use versioned object names so new content has a new URL.',
+            'Low cache hit ratio → check the TTL (Cache-Control headers / cache policy) and whether you are forwarding unnecessary headers, cookies, or query strings that fragment the cache.',
+            'Personalized or cookie-varying responses cache poorly — cache only what is truly cacheable.',
+            'Confirm cache hits/misses in CloudFront logs (the x-edge-result-type field).',
+          ],
+        },
+        {
+          heading: 'Hybrid connectivity and network monitoring',
+          body: 'Connecting AWS to on-premises adds VPN and Direct Connect, each with its own failure modes, plus CloudWatch tools that watch network health.',
+          bullets: [
+            'Site-to-Site VPN runs over the internet (encrypted); troubleshoot tunnels, BGP/routing, and the customer gateway config.',
+            'AWS Direct Connect is a dedicated private connection; troubleshoot the physical link, virtual interfaces (VIFs), and BGP; many designs add a VPN as encrypted backup.',
+            'Reachability Analyzer tests whether a path exists between two resources and pinpoints the blocking component — a powerful static troubleshooting tool.',
+            'CloudWatch Internet Monitor and Network Monitor surface internet-path and network performance/health for proactive detection.',
+          ],
+          callout: { type: 'tip', text: 'For "does a path exist and what is blocking it" without sending real traffic, VPC Reachability Analyzer is the exam answer — it evaluates SGs, NACLs, route tables, and gateways for you.' },
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 1,
+          question: 'VPC flow logs show ACCEPT for traffic reaching an EC2 instance on port 443, yet users still get connection errors. Where should you look next?',
+          options: [
+            'The security group, because the traffic must be blocked there',
+            'The application/health check on the instance, since the network layer already allowed the packet',
+            'The network ACL outbound rules only',
+            'The Route 53 routing policy',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — an ACCEPT means the packet passed the network controls, so the fault is higher up: the application may not be listening, may be unhealthy, or the health check is failing. Look at the target, not the firewalls.',
+          elaborativePrompt: 'How does the accept/reject field in flow logs let you split a problem into "network layer" vs "application layer" quickly? What would a REJECT have told you instead?',
+        },
+        {
+          afterSection: 2,
+          question: 'After deploying a new version of a website, some users still see the old assets served through CloudFront. What is the most direct fix?',
+          options: [
+            'Disable CloudFront entirely',
+            'Create a CloudFront invalidation for the changed paths (or use versioned file names)',
+            'Lower the origin server’s CPU',
+            'Switch to Global Accelerator',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — cached old objects are served until they expire; invalidating the changed paths (or versioning the file names) forces CloudFront to fetch and serve the new content.',
+          elaborativePrompt: 'Why does versioning object names (e.g. app.v2.js) avoid the stale-cache problem more cleanly than repeated invalidations at scale?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself your step-by-step method for a "users cannot reach the application" ticket: the order in which you check route table, NACL, security group, and target health, which log you pull at each step, and how an ACCEPT versus REJECT in VPC flow logs redirects your investigation.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'Users report they cannot connect to a web server in a public subnet. The security group allows inbound 443, the instance is healthy, and the application is listening. VPC flow logs show REJECT for the inbound HTTPS traffic. Which component is the most likely cause?',
+        options: [
+          'The application is misconfigured',
+          'A network ACL on the subnet is denying the inbound traffic (or its ephemeral return ports)',
+          'The CloudFront cache is stale',
+          'The RDS database is down',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'A REJECT in flow logs with a correctly configured security group and a healthy, listening app points to the other network-layer control — a network ACL denying the traffic at the subnet boundary.',
+          perOption: [
+            'The app is confirmed healthy and listening, and a REJECT happens at the network layer before traffic reaches the app — so the application is not the cause.',
+            'Correct — with the SG allowing the port and the app healthy, a flow-log REJECT indicates the stateless network ACL is blocking the inbound (or its ephemeral return) traffic.',
+            'CloudFront caching would not cause a flow-log REJECT on the instance, and the scenario is direct access, not a stale-cache symptom.',
+            'An RDS outage would not produce a REJECT on inbound HTTPS to the web server at the network layer.',
+          ],
+          link: 'Domain 5 · Task 5.3 — Troubleshoot network connectivity issues',
+        },
+      },
+      videos: [
+        { videoId: 'KX_AfyrhlgQ', title: 'AWS SysOps Administrator Associate — Full Course to PASS the Exam', channel: 'freeCodeCamp.org', relevance: 'Covers VPC flow logs, network troubleshooting, CloudFront caching, and hybrid connectivity.' },
+      ],
+      keyTerms: [
+        { term: 'VPC flow logs', def: 'Logs of IP traffic metadata (including accept/reject) at the VPC, subnet, or ENI level for connectivity diagnosis.' },
+        { term: 'CloudFront invalidation', def: 'A request to remove cached objects so CloudFront fetches fresh content from the origin.' },
+        { term: 'Cache hit ratio', def: 'The fraction of requests served from the CloudFront cache; low ratios often mean over-forwarded headers/cookies or short TTLs.' },
+        { term: 'AWS Direct Connect', def: 'A dedicated private network connection from on-premises to AWS, often backed up by a VPN.' },
+        { term: 'Reachability Analyzer', def: 'A tool that statically tests whether a network path exists between two resources and identifies the blocking component.' },
+      ],
+      awsServices: [
+        { name: 'VPC Flow Logs', purpose: 'Capture accept/reject metadata for IP traffic to diagnose whether traffic reached and was allowed at each layer.' },
+        { name: 'Amazon CloudFront', purpose: 'Edge CDN whose logs and invalidations are central to diagnosing caching and stale-content issues.' },
+        { name: 'VPC Reachability Analyzer', purpose: 'Statically evaluates connectivity between resources, checking SGs, NACLs, route tables, and gateways.' },
+        { name: 'CloudWatch Internet/Network Monitor', purpose: 'Monitor internet-path and network performance and health for proactive detection.' },
+      ],
+      examTips: [
+        'Troubleshoot in order: route table → NACL → security group → target health. First blocker wins.',
+        'VPC flow log REJECT → SG or NACL block. ACCEPT → look higher (app, health check, load balancer).',
+        'Stale CloudFront content → invalidate changed paths or version object names. Low hit ratio → fix TTL/forwarded headers.',
+        'Path exists? What is blocking it? without real traffic → VPC Reachability Analyzer.',
+        'Match the log to the question: flow logs (network), ELB logs (LB requests), CloudFront logs (cache), WAF logs (rule blocks).',
+      ],
+    },
+
   ],
 }
 

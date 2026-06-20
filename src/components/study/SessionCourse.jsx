@@ -1325,6 +1325,102 @@ function SafetyLayersWidget() {
   )
 }
 
+// ── SOA D1 (Sessions 1-2): build the automated-remediation chain ──────────────
+function AlarmRoutingWidget() {
+  return (
+    <ScenarioSorter
+      title="Build the Remediation Chain — Detect, Route, Act, Notify"
+      intro="Event-driven remediation is four jobs done by four kinds of service. Tag each statement with the stage of the chain it performs — the card confirms instantly."
+      cats={[
+        { id: 'detect', label: 'Detect', color: '#2563eb', desc: 'CloudWatch alarm / Config / GuardDuty' },
+        { id: 'route', label: 'Route', color: '#7c3aed', desc: 'EventBridge rule matches + forwards' },
+        { id: 'act', label: 'Act', color: '#dc2626', desc: 'SSM Automation runbook / Lambda' },
+        { id: 'notify', label: 'Notify', color: '#16a34a', desc: 'SNS / User Notifications to humans' },
+      ]}
+      items={[
+        { t: 'A CloudWatch alarm enters ALARM when CPU stays above 90% for 10 minutes', a: 'detect', why: 'A CloudWatch alarm is the detection stage — it observes a metric crossing a threshold.' },
+        { t: 'A rule matches the event JSON and forwards it to the right target', a: 'route', why: 'EventBridge rules match an event pattern and route the event to one or more targets.' },
+        { t: 'A predefined runbook removes the offending security-group rule with no custom code', a: 'act', why: 'An SSM Automation runbook performs the remediation action — the act stage.' },
+        { t: 'An email and a chat message tell the on-call engineer what happened', a: 'notify', why: 'SNS (or AWS User Notifications) fans out the alert to people — the notify stage.' },
+        { t: 'AWS Config flags a resource as non-compliant', a: 'detect', why: 'Config evaluates configuration compliance — another detection source that can start the chain.' },
+        { t: 'Custom code runs arbitrary logic that no managed runbook can express', a: 'act', why: 'Lambda is the act stage when the fix needs custom logic beyond a runbook.' },
+      ]}
+    />
+  )
+}
+
+// ── SOA D2 (Session 5): choose the EC2 Auto Scaling policy ─────────────────────
+function ScalingPolicyWidget() {
+  return (
+    <ScenarioSorter
+      title="Pick the Auto Scaling Policy"
+      intro="Each scaling policy answers a different question about WHEN to scale. Match each requirement to the policy that fits it best — the card confirms instantly."
+      cats={[
+        { id: 'target', label: 'Target tracking', color: '#2563eb', desc: 'Hold one metric at a target value' },
+        { id: 'step', label: 'Step scaling', color: '#d97706', desc: 'Bigger breach → bigger adjustment' },
+        { id: 'sched', label: 'Scheduled', color: '#16a34a', desc: 'Known time-based demand' },
+        { id: 'pred', label: 'Predictive', color: '#7c3aed', desc: 'ML forecast pre-scales recurring load' },
+      ]}
+      items={[
+        { t: 'Keep average CPU across the group near 50%, adjusting automatically', a: 'target', why: 'One metric, one desired value → target tracking, the simplest common choice.' },
+        { t: 'Add capacity every weekday at 8:45 a.m. before the office logs in', a: 'sched', why: 'Demand tied to known clock times → scheduled scaling.' },
+        { t: 'React more aggressively the further CPU climbs above the threshold', a: 'step', why: 'Different responses to different breach sizes → step scaling.' },
+        { t: 'Pre-provision capacity using a forecast of the recurring daily traffic curve', a: 'pred', why: 'ML-forecast-driven pre-scaling of recurring patterns → predictive scaling.' },
+        { t: 'Maintain a set request count per target without tuning step thresholds', a: 'target', why: 'Holding a single metric at a target (e.g. ALBRequestCountPerTarget) → target tracking.' },
+        { t: 'Scale up for a marketing event at a date and time you already know', a: 'sched', why: 'A one-off but known time window → scheduled scaling.' },
+      ]}
+    />
+  )
+}
+
+// ── SOA D2 (Session 7): match the recovery tool to the failure mode ───────────
+function BackupStrategyWidget() {
+  return (
+    <ScenarioSorter
+      title="Match the Recovery Tool to the Problem"
+      intro="Different failures need different recovery tools — the right answer depends on what broke. Tag each scenario with the tool that fixes it — the card confirms instantly."
+      cats={[
+        { id: 'pitr', label: 'Point-in-time restore', color: '#2563eb', desc: 'Recover a DB to a precise second' },
+        { id: 'ver', label: 'S3 versioning', color: '#16a34a', desc: 'Undo object overwrite / delete' },
+        { id: 'backup', label: 'AWS Backup', color: '#d97706', desc: 'Central, multi-service, scheduled' },
+        { id: 'vault', label: 'Vault Lock', color: '#7c3aed', desc: 'Immutable WORM retention' },
+      ]}
+      items={[
+        { t: 'A bad migration corrupted the database at 02:14; restore to 02:13 with minimal loss', a: 'pitr', why: 'Recovering an RDS database to an exact second uses point-in-time restore.' },
+        { t: 'A user accidentally overwrote an important object in S3 and needs the prior copy', a: 'ver', why: 'S3 versioning keeps prior versions so an accidental overwrite or delete can be undone.' },
+        { t: 'Schedule and enforce backups for EC2, RDS, DynamoDB, and EFS from one place', a: 'backup', why: 'Centralized, multi-service, policy-driven backups are exactly what AWS Backup provides.' },
+        { t: 'Guarantee backups cannot be deleted early, even by an admin, for compliance', a: 'vault', why: 'Backup Vault Lock enforces immutable WORM retention against early deletion.' },
+        { t: 'Apply one retention plan automatically to every resource carrying a given tag', a: 'backup', why: 'Tag-based assignment of a backup plan is an AWS Backup capability.' },
+        { t: 'Protect against ransomware deleting your backups before recovery', a: 'vault', why: 'Immutable Vault Lock retention stops backups being destroyed — ransomware protection.' },
+      ]}
+    />
+  )
+}
+
+// ── SOA D5 (Session 14): find the broken VPC layer ────────────────────────────
+function VpcTroubleshooterWidget() {
+  return (
+    <ScenarioSorter
+      title="Find the Broken Network Layer"
+      intro="When VPC traffic fails, the fault lives in one specific layer. Tag each symptom with the component most likely responsible — the card confirms instantly."
+      cats={[
+        { id: 'sg', label: 'Security Group', color: '#2563eb', desc: 'Stateful, allow-only, instance level' },
+        { id: 'nacl', label: 'Network ACL', color: '#7c3aed', desc: 'Stateless, allow+deny, subnet level' },
+        { id: 'route', label: 'Route Table', color: '#d97706', desc: 'Where a subnet sends traffic' },
+        { id: 'nat', label: 'NAT Gateway', color: '#16a34a', desc: 'Private subnet outbound to internet' },
+      ]}
+      items={[
+        { t: 'A private-subnet instance cannot reach the internet for OS updates, though everything else works', a: 'nat', why: 'Outbound internet from a private subnet flows through a NAT gateway — a missing/misplaced NAT is the cause.' },
+        { t: 'A specific malicious IP range must be explicitly blocked at the subnet edge', a: 'nacl', why: 'Only network ACLs support deny rules at the subnet boundary.' },
+        { t: 'Outbound requests succeed but replies are dropped on a stateless layer', a: 'nacl', why: 'NACLs are stateless — return traffic on ephemeral ports must be allowed explicitly.' },
+        { t: 'An instance has no route to the internet gateway in its public subnet', a: 'route', why: 'A missing 0.0.0.0/0 → IGW entry is a route table problem.' },
+        { t: 'One EC2 instance cannot accept traffic on port 443 though the subnet allows it', a: 'sg', why: 'Per-instance port allow/deny is governed by the security group attached to its ENI.' },
+        { t: 'Traffic meant for an on-premises CIDR is going to the internet instead', a: 'route', why: 'Wrong next hop for a destination CIDR is a route table misconfiguration.' },
+      ]}
+    />
+  )
+}
+
 const INTERACTIVE_WIDGETS = {
   'model-selector': ModelSelectorWidget,
   'vector-store-selector': VectorStoreSelectorWidget,
@@ -1348,6 +1444,10 @@ const INTERACTIVE_WIDGETS = {
   'ddb-capacity': DdbCapacityWidget,
   'lambda-concurrency': LambdaConcurrencyWidget,
   'deploy-strategy': DeployStrategyWidget,
+  'alarm-routing': AlarmRoutingWidget,
+  'scaling-policy': ScalingPolicyWidget,
+  'backup-strategy': BackupStrategyWidget,
+  'vpc-troubleshooter': VpcTroubleshooterWidget,
 }
 
 // ─── Small renderers ──────────────────────────────────────────────────────────
