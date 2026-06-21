@@ -6,7 +6,7 @@
 // the Supabase exam_types/question_sets rows. Exam facts below are the official
 // AWS numbers at time of writing.
 
-import { Cloud, BrainCircuit, Layers, Code2, Cpu, Network, Sparkles, Activity, Workflow } from 'lucide-react'
+import { Cloud, BrainCircuit, Layers, Code2, Cpu, Network, Sparkles, Activity, Workflow, Database } from 'lucide-react'
 
 export const PROGRAMS = [
   {
@@ -226,6 +226,42 @@ export const PROGRAMS = [
     facts: { questions: '65', time: '130 min', passing: '720 / 1000', cost: '$150' },
     evergreenValue:
       'Even if you never sit the exam, you learn how production cloud systems are actually operated — how to observe them, automate their upkeep, and recover them under pressure. That operational judgment is what makes any engineer someone a team can rely on.',
+  },
+  {
+    code: 'DEA-C01',
+    slug: 'dea-c01',
+    name: 'AWS Certified Data Engineer – Associate',
+    shortName: 'Data Engineer',
+    level: 'Associate',
+    Icon: Database,
+    color: '#0D9488',
+    tagline: 'Build, operate, and secure the data pipelines that power analytics on AWS.',
+    heroLead: 'Engineer the data',
+    heroAccent: 'that everything else runs on.',
+    blurb:
+      'DEA-C01 is AWS’s data engineering certification. It teaches you to ingest and transform data, orchestrate pipelines, choose and model the right data stores, operate and monitor everything in production, and apply the security and governance that real data demands.',
+    whyTopic:
+      'Every analytics dashboard, ML model, and business decision sits on top of a data pipeline someone had to build and keep running. That plumbing — moving data reliably from dozens of sources, transforming it cleanly, storing it where it can be queried affordably, and proving it is governed and secure — is one of the most in-demand skills in tech. This program trains the data engineer’s judgment: streaming versus batch, the right store for the access pattern, the least-overhead orchestration, and the cost trade-offs that separate a pipeline that scales from one that bleeds money.',
+    learnOutcomes: [
+      'Ingesting data from streaming and batch sources with Kinesis, MSK, Glue, DMS, and Lambda',
+      'Transforming and processing data with AWS Glue, EMR, Lambda, and Redshift — including formats, partitioning, and cost optimization',
+      'Choosing and modeling the right data store: Redshift, RDS, DynamoDB, S3 data lakes, and the Glue Data Catalog',
+      'Orchestrating, monitoring, and troubleshooting pipelines with Step Functions, MWAA, EventBridge, CloudWatch, and CloudTrail',
+      'Securing and governing data with IAM, Lake Formation, KMS encryption, Macie, and audit logging',
+    ],
+    careerBenefit:
+      'Data Engineer Associate validates exactly the skills employers struggle to hire for. It is built for the data engineer, analytics engineer, and ETL developer roles that sit at the foundation of every data and ML team, and it pairs naturally with the Solutions Architect and Machine Learning tracks.',
+    roles: ['Data engineers', 'Analytics & BI engineers', 'ETL developers', 'Backend engineers moving into data'],
+    sessions: 16,
+    domains: [
+      { label: 'Data Ingestion & Transformation', weight: '34%' },
+      { label: 'Data Store Management', weight: '26%' },
+      { label: 'Data Operations & Support', weight: '22%' },
+      { label: 'Data Security & Governance', weight: '18%' },
+    ],
+    facts: { questions: '65', time: '130 min', passing: '720 / 1000', cost: '$150' },
+    evergreenValue:
+      'Even if you never sit the exam, you learn how production data pipelines are actually built and operated — ingestion, transformation, the right store, orchestration, and governance. That data-engineering judgment is one of the most leveraged, transferable skills in modern tech, whatever your job title.',
   },
   {
     code: 'SAP-C02',

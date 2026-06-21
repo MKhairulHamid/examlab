@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DEA-C01 Exam Guide — CloudExamLab Wiki</title>
+  <style>
+    :root {
+      --sidebar-w: 255px;
+      --sidebar-bg: #0f172a;
+      --sidebar-text: #94a3b8;
+      --sidebar-active-text: #2dd4bf;
+      --sidebar-active-bg: rgba(45,212,191,0.08);
+      --sidebar-hover: #1e293b;
+      --accent: #0d9488;
+      --accent-light: #f0fdfa;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --heading: #0f172a;
+      --code-bg: #1e293b;
+      --code-text: #e2e8f0;
+      --stripe: #f8fafc;
+      --warn-bg: #fef2f2;
+      --warn-border: #ef4444;
+      --tip-bg: #f0fdf4;
+      --tip-border: #22c55e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--text);
+      line-height: 1.65;
+      background: #fff;
+    }
+
+    /* ── Sidebar ── */
+    #sidebar {
+      position: fixed; top: 0; left: 0;
+      width: var(--sidebar-w); height: 100vh;
+      background: var(--sidebar-bg);
+      overflow-y: auto; z-index: 100;
+      display: flex; flex-direction: column;
+    }
+    #sidebar::-webkit-scrollbar { width: 4px; }
+    #sidebar::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+    .sb-header {
+      padding: 20px 16px 14px;
+      border-bottom: 1px solid #1e293b;
+    }
+    .sb-logo { font-size: 13px; font-weight: 700; color: #f1f5f9; letter-spacing: .06em; text-transform: uppercase; }
+    .sb-sub  { font-size: 11px; color: var(--sidebar-text); margin-top: 2px; }
+    .sb-group { padding: 10px 0 2px; }
+    .sb-group-label {
+      font-size: 10px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: #475569;
+      padding: 0 16px; margin-bottom: 3px;
+    }
+    .sb-item {
+      display: block; padding: 6px 16px;
+      font-size: 12.5px; color: var(--sidebar-text);
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: background .12s, color .12s;
+    }
+    .sb-item:hover { background: var(--sidebar-hover); color: #f1f5f9; }
+    .sb-item.active { color: var(--sidebar-active-text); border-left-color: var(--sidebar-active-text); background: var(--sidebar-active-bg); }
+    .sb-item.ext { color: #2dd4bf; }
+    .sb-item.ext::after { content: ' ↗'; font-size: 10px; }
+
+    /* ── Main ── */
+    #main {
+      margin-left: var(--sidebar-w);
+      padding: 48px 64px 96px;
+      max-width: calc(var(--sidebar-w) + 880px);
+    }
+
+    /* ── Section ── */
+    .section { padding-top: 52px; border-top: 1px solid var(--border); margin-top: 28px; }
+    .section:first-of-type { border-top: none; margin-top: 0; padding-top: 0; }
+
+    /* ── Typography ── */
+    h1 { font-size: 27px; font-weight: 700; color: var(--heading); margin-bottom: 10px; }
+    h2 { font-size: 19px; font-weight: 700; color: var(--heading); margin-top: 38px; margin-bottom: 14px; }
+    h3 { font-size: 15px; font-weight: 600; color: var(--heading); margin-top: 24px; margin-bottom: 8px; }
+    p  { margin-bottom: 12px; }
+    a  { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ul, ol { padding-left: 22px; margin-bottom: 12px; }
+    li { margin-bottom: 4px; }
+    hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+    .section-meta { font-size: 14px; color: var(--text-muted); margin-bottom: 26px; margin-top: -4px; }
+
+    /* ── Chip label ── */
+    .chip {
+      display: inline-block; padding: 2px 9px; border-radius: 4px;
+      font-size: 10px; font-weight: 700; letter-spacing: .05em;
+      text-transform: uppercase; margin-bottom: 6px;
+    }
+    .chip-platform  { background: #eff6ff; color: #1d4ed8; }
+    .chip-technical { background: #f0fdf4; color: #15803d; }
+    .chip-reference { background: #fdf4ff; color: #7e22ce; }
+    .chip-exam      { background: #f0fdfa; color: #0f766e; }
+
+    /* ── Tables ── */
+    .tw { overflow-x: auto; margin: 16px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    th {
+      background: #f1f5f9; padding: 7px 12px;
+      text-align: left; font-size: 11px; font-weight: 700;
+      color: var(--text-muted); border-bottom: 2px solid var(--border);
+      white-space: nowrap;
+    }
+    td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:nth-child(even) td { background: var(--stripe); }
+
+    /* ── Code ── */
+    code {
+      font-family: 'SF Mono','Fira Code','Cascadia Code',Consolas,monospace;
+      font-size: 12px; background: #f1f5f9; color: #be185d;
+      padding: 2px 5px; border-radius: 3px;
+    }
+
+    /* ── Callouts ── */
+    .callout {
+      padding: 12px 16px; border-radius: 6px;
+      margin: 14px 0; font-size: 13.5px;
+    }
+    .callout-note    { background: var(--accent-light); border-left: 4px solid var(--accent); }
+    .callout-warning { background: var(--warn-bg);      border-left: 4px solid var(--warn-border); }
+    .callout-tip     { background: var(--tip-bg);       border-left: 4px solid var(--tip-border); }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 10px;
+      font-size: 11px; font-weight: 600;
+    }
+    .badge-green  { background: #dcfce7; color: #15803d; }
+    .badge-yellow { background: #fef3c7; color: #b45309; }
+    .badge-gray   { background: #f1f5f9; color: #475569; }
+    .badge-blue   { background: #dbeafe; color: #1d4ed8; }
+    .badge-teal   { background: #ccfbf1; color: #0f766e; }
+
+    /* ── Numbered steps ── */
+    .steps { counter-reset: step; list-style: none; padding: 0; margin-bottom: 14px; }
+    .steps li {
+      counter-increment: step;
+      padding: 7px 0 7px 36px; position: relative;
+      border-left: 2px solid var(--border); margin-left: 11px;
+    }
+    .steps li::before {
+      content: counter(step);
+      position: absolute; left: -11px; top: 7px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--accent); color: #fff;
+      font-size: 10px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── Page title ── */
+    .page-title { margin-bottom: 36px; }
+    .page-title h1 { font-size: 30px; margin-bottom: 8px; }
+    .page-title p  { font-size: 15px; color: var(--text-muted); margin: 0; }
+
+    /* ── Domain bar ── */
+    .domain-bar { display: flex; gap: 6px; flex-wrap: wrap; margin: 18px 0 8px; }
+    .domain-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 12px; border-radius: 20px;
+      font-size: 12px; font-weight: 600;
+      border: 1px solid var(--border); background: #f8fafc;
+    }
+    .domain-pill .pct {
+      background: var(--accent); color: #fff;
+      border-radius: 10px; padding: 1px 6px;
+      font-size: 10px; font-weight: 700;
+    }
+
+    /* ── Highlight row ── */
+    .hl td { background: #f0fdfa !important; font-weight: 600; }
+
+    /* ── Jump-to-top ── */
+    #top-btn {
+      position: fixed; bottom: 28px; right: 28px;
+      background: var(--accent); color: #fff;
+      border: none; border-radius: 50%; width: 38px; height: 38px;
+      font-size: 18px; cursor: pointer; display: none;
+      align-items: center; justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+      transition: opacity .2s;
+    }
+    #top-btn:hover { background: #0f766e; }
+  </style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<nav id="sidebar">
+  <div class="sb-header">
+    <div class="sb-logo">CloudExamLab</div>
+    <div class="sb-sub">Exam Guide Series</div>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">On this page</div>
+    <a class="sb-item active" href="#overview">Overview</a>
+    <a class="sb-item" href="#structure">Exam Structure</a>
+    <a class="sb-item" href="#domains">Content Domains</a>
+    <a class="sb-item" href="#domain1">D1 — Ingestion &amp; Transformation</a>
+    <a class="sb-item" href="#domain2">D2 — Data Store Management</a>
+    <a class="sb-item" href="#domain3">D3 — Operations &amp; Support</a>
+    <a class="sb-item" href="#domain4">D4 — Security &amp; Governance</a>
+    <a class="sb-item" href="#candidate-prep">Helping Candidates</a>
+    <a class="sb-item" href="#simulation">Simulation Design</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Wiki</div>
+    <a class="sb-item ext" href="index.html">Developer Wiki</a>
+    <a class="sb-item ext" href="new-program-playbook.html">New Program Playbook</a>
+    <a class="sb-item ext" href="exam-authoring-standard.html">Exam &amp; Question Authoring</a>
+    <a class="sb-item ext" href="aws-certification-roadmap.html">AWS Cert Roadmap</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Official</div>
+    <a class="sb-item ext" href="https://docs.aws.amazon.com/aws-certification/latest/data-engineer-associate-01/data-engineer-associate-01.html">AWS Exam Guide ↗</a>
+  </div>
+</nav>
+
+<!-- ══ MAIN ══ -->
+<main id="main">
+
+  <!-- OVERVIEW -->
+  <div class="page-title" id="overview">
+    <h1>AWS Certified Data Engineer – Associate (DEA-C01)</h1>
+    <p>Everything we need to know about this exam — structure, domains, candidate prep strategy, and simulation design.</p>
+  </div>
+
+  <h2>What This Exam Is</h2>
+  <p>The AWS Certified Data Engineer – Associate (DEA-C01) validates a candidate's ability to implement data pipelines and to monitor, troubleshoot, and optimize cost and performance issues in accordance with best practices. It is an Associate-level exam that tests whether a candidate can ingest and transform data, orchestrate pipelines, choose and model data stores, operate and monitor pipelines, ensure data quality, and apply security and governance to the data they manage.</p>
+  <ul>
+    <li><strong>Target audience:</strong> Data engineers who build and operate ETL/ELT pipelines, data lakes, and analytics data stores on AWS.</li>
+    <li><strong>Prerequisite experience:</strong> 2–3 years of data engineering experience and 1–2 years of hands-on experience with AWS services. Comfort with SQL, programming concepts, and Git source control.</li>
+    <li><strong>Why candidates take it:</strong> To validate practical data-engineering capability for data engineer, analytics engineer, and ETL developer roles, and as the data-focused complement to the Solutions Architect and Data Analytics tracks.</li>
+  </ul>
+
+  <!-- STRUCTURE -->
+  <div class="section" id="structure">
+    <span class="chip chip-exam">Exam Format</span>
+    <h1>Question Format &amp; Scoring</h1>
+    <p class="section-meta">Exact parameters from the official exam guide — use these verbatim in the simulation design.</p>
+
+    <h2>Question Types</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>Multiple choice</td><td>One correct answer from four options (three distractors)</td></tr>
+        <tr><td>Multiple response</td><td>Two or more correct answers from five or more options</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Scoring Model</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Setting</th><th>Value</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Total questions on exam</td><td>65</td><td>50 scored + 15 unscored pretest (unidentified)</td></tr>
+        <tr><td>Duration</td><td>130 minutes</td><td>Exact match to real exam</td></tr>
+        <tr><td>Passing score</td><td>720 / 1,000</td><td>Display as % equivalent: 72%</td></tr>
+        <tr><td>Scoring</td><td>Compensatory</td><td>No per-domain minimums — total score only</td></tr>
+        <tr><td>Result</td><td>Pass / Fail</td><td>Scaled scoring equalizes difficulty across exam forms</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Out-of-Scope Skills (Do NOT Test)</h2>
+    <p>The official exam guide explicitly lists these job tasks as out of scope for the target candidate. Any question that hinges on them is out of scope — cut it.</p>
+    <ul>
+      <li>Performing ML training and inferences</li>
+      <li>Demonstrating knowledge of programming language-specific syntax</li>
+      <li>Drawing business conclusions based on data</li>
+    </ul>
+    <div class="callout callout-tip"><strong>Exam tip:</strong> DEA-C01 tests <em>building and operating data pipelines</em> — how to ingest, transform, store, catalog, monitor, and secure data with the right managed service. The crux of most questions is "which service or configuration best meets the cost, performance, and access requirement?" — not language syntax or data-science modeling.</div>
+  </div>
+
+  <!-- DOMAIN OVERVIEW -->
+  <div class="section" id="domains">
+    <span class="chip chip-platform">Domains</span>
+    <h1>Domain Breakdown</h1>
+    <p class="section-meta">Four domains. D1 (Data Ingestion and Transformation) dominates at 34% — more than a third of the exam — with Data Store Management close behind.</p>
+
+    <div class="domain-bar">
+      <span class="domain-pill">D1 — Ingestion &amp; Transformation <span class="pct">34%</span></span>
+      <span class="domain-pill">D2 — Data Store Management <span class="pct">26%</span></span>
+      <span class="domain-pill">D3 — Operations &amp; Support <span class="pct">22%</span></span>
+      <span class="domain-pill">D4 — Security &amp; Governance <span class="pct">18%</span></span>
+    </div>
+
+    <div class="tw"><table>
+      <thead><tr><th>Domain</th><th>Weight</th><th>Task statements</th></tr></thead>
+      <tbody>
+        <tr><td>D1 — Data Ingestion and Transformation</td><td>34%</td><td>1.1 Perform data ingestion · 1.2 Transform &amp; process data · 1.3 Orchestrate data pipelines · 1.4 Apply programming concepts</td></tr>
+        <tr><td>D2 — Data Store Management</td><td>26%</td><td>2.1 Choose a data store · 2.2 Data cataloging systems · 2.3 Manage data lifecycle · 2.4 Design data models &amp; schema evolution</td></tr>
+        <tr><td>D3 — Data Operations and Support</td><td>22%</td><td>3.1 Automate data processing · 3.2 Analyze data · 3.3 Maintain &amp; monitor pipelines · 3.4 Ensure data quality</td></tr>
+        <tr><td>D4 — Data Security and Governance</td><td>18%</td><td>4.1 Authentication · 4.2 Authorization · 4.3 Encryption &amp; masking · 4.4 Prepare logs for audit · 4.5 Privacy &amp; governance</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <!-- DOMAIN 1 -->
+  <div class="section" id="domain1">
+    <span class="chip chip-platform">Domain 1 · 34%</span>
+    <h1>Data Ingestion and Transformation</h1>
+    <p class="section-meta">By far the largest domain. Covers reading data from streaming and batch sources, transforming and processing it, orchestrating pipelines, and applying programming and software-engineering concepts.</p>
+
+    <h2>Task 1.1 — Perform data ingestion</h2>
+    <p><strong>Knowledge of:</strong> Throughput and latency characteristics of AWS services that ingest data; data ingestion patterns (frequency, data history); streaming data ingestion; batch data ingestion (scheduled, event-driven); replayability of ingestion pipelines; stateful vs. stateless transactions.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Reading from streaming sources (e.g. Kinesis, Amazon MSK, DynamoDB Streams, AWS DMS, AWS Glue, Amazon Redshift)</li>
+      <li>Reading from batch sources (e.g. Amazon S3, AWS Glue, Amazon EMR, AWS DMS, Amazon Redshift, AWS Lambda, Amazon AppFlow)</li>
+      <li>Setting up schedulers (Amazon EventBridge, Apache Airflow, time-based) and event triggers (S3 Event Notifications, EventBridge)</li>
+      <li>Calling a Lambda function from Kinesis; managing fan-in and fan-out for streaming distribution</li>
+      <li>Implementing throttling and overcoming rate limits (DynamoDB, Amazon RDS, Kinesis); creating IP allowlists for source connections</li>
+    </ul>
+
+    <h2>Task 1.2 — Transform and process data</h2>
+    <p><strong>Knowledge of:</strong> Creation of ETL pipelines based on business requirements; volume, velocity, and variety of data (structured/unstructured); how to clean data; AWS transformation services (EMR, Glue, Lambda, Redshift); transforming data between formats; troubleshooting common transformation failures.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Optimizing container usage for performance (Amazon EKS, Amazon ECS)</li>
+      <li>Connecting to different data sources (JDBC, ODBC) and integrating data from multiple sources</li>
+      <li>Implementing transformation services per requirement (Amazon EMR, AWS Glue, Lambda, Amazon Redshift) and converting formats (e.g. .csv to Apache Parquet)</li>
+      <li>Optimizing costs while processing data; troubleshooting and debugging transformation failures and performance issues</li>
+      <li>Creating data APIs to make data available to other systems; integrating large language models (LLMs) for data processing</li>
+    </ul>
+
+    <h2>Task 1.3 — Orchestrate data pipelines</h2>
+    <p><strong>Knowledge of:</strong> How to integrate various AWS services to create ETL pipelines; event-driven architecture; how to configure AWS services for data pipelines based on schedules or dependencies; serverless workflows.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Using orchestration services to build workflows (Lambda, EventBridge, Amazon MWAA, AWS Step Functions, AWS Glue workflows)</li>
+      <li>Building data pipelines for performance, availability, scalability, resiliency, and fault tolerance</li>
+      <li>Implementing and maintaining serverless workflows</li>
+      <li>Using notification services to send alerts (Amazon SNS, Amazon SQS)</li>
+    </ul>
+
+    <h2>Task 1.4 — Apply programming concepts</h2>
+    <p><strong>Knowledge of:</strong> Continuous integration and continuous delivery (CI/CD); SQL queries; infrastructure as code (IaC) for repeatable deployments; distributed computing; data structures and algorithms; SQL query optimization.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Optimizing code to reduce runtime for ingestion and transformation; configuring Lambda concurrency and performance</li>
+      <li>Using programming languages and frameworks for data engineering (Python, SQL, Scala, R, Java, Bash, PowerShell)</li>
+      <li>Applying software engineering best practices (version control, testing, logging, monitoring)</li>
+      <li>Using IaC for repeatable deployment (AWS CloudFormation, AWS CDK) and AWS SAM to package serverless data pipelines</li>
+      <li>Using and mounting storage volumes from within Lambda functions</li>
+    </ul>
+  </div>
+
+  <!-- DOMAIN 2 -->
+  <div class="section" id="domain2">
+    <span class="chip chip-technical">Domain 2 · 26%</span>
+    <h1>Data Store Management</h1>
+    <p class="section-meta">Choosing and modeling where data lives. Covers selecting the right data store, cataloging schemas, managing data lifecycle, and designing data models that evolve.</p>
+
+    <h2>Task 2.1 — Choose a data store</h2>
+    <p><strong>Knowledge of:</strong> Storage platforms and their characteristics; storage services and configurations for specific performance demands; data storage formats (e.g. .csv, .txt, Parquet); how to align data storage with migration requirements; how to determine the appropriate storage solution for access patterns; open table formats; vector index types.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Implementing the appropriate storage services for cost and performance (Amazon Redshift, Amazon EMR, AWS Lake Formation, Amazon RDS, DynamoDB, Kinesis Data Streams, Amazon MSK)</li>
+      <li>Applying storage services to use cases (e.g. HNSW indexing with Amazon Aurora PostgreSQL; Amazon MemoryDB for fast key/value access)</li>
+      <li>Integrating migration tools (e.g. AWS Transfer Family) and remote access methods (Redshift federated queries, materialized views, Redshift Spectrum)</li>
+      <li>Managing locks to prevent access to data (Amazon Redshift, Amazon RDS); managing open table formats (e.g. Apache Iceberg)</li>
+      <li>Describing vector index types (e.g. HNSW, IVF)</li>
+    </ul>
+
+    <h2>Task 2.2 — Understand data cataloging systems</h2>
+    <p><strong>Knowledge of:</strong> How to create a data catalog; data classification based on requirements; components of metadata and data catalogs.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Using data catalogs to consume data from the data's source</li>
+      <li>Building and referencing a technical data catalog (AWS Glue Data Catalog, Apache Hive metastore)</li>
+      <li>Discovering schemas and using AWS Glue crawlers to populate catalogs; synchronizing partitions with a catalog</li>
+      <li>Creating new source or target connections for cataloging (e.g. AWS Glue); creating and managing business data catalogs (e.g. Amazon SageMaker Catalog)</li>
+    </ul>
+
+    <h2>Task 2.3 — Manage the lifecycle of data</h2>
+    <p><strong>Knowledge of:</strong> Appropriate storage solutions for specific access patterns; hot/warm/cold data storage cost optimization; how to manage S3 object lifecycle; how to delete data to meet business and legal requirements; data retention policies and archiving strategies; protecting data with appropriate resiliency and availability.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Performing load and unload operations to move data between Amazon S3 and Amazon Redshift</li>
+      <li>Managing S3 Lifecycle policies to change storage tier and to expire data at a specific age</li>
+      <li>Managing S3 versioning and DynamoDB TTL; deleting data to meet business and legal requirements</li>
+      <li>Protecting data with appropriate resiliency and availability</li>
+    </ul>
+
+    <h2>Task 2.4 — Design data models and schema evolution</h2>
+    <p><strong>Knowledge of:</strong> Data modeling concepts; how to ensure accuracy and trustworthiness using data lineage; best practices for indexing, partitioning, compression, and other data optimization techniques; how to model structured, semi-structured, and unstructured data; schema evolution techniques; vectorization concepts.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Designing schemas for Amazon Redshift, DynamoDB, and Lake Formation; addressing changes to the characteristics of data</li>
+      <li>Performing schema conversion (e.g. AWS Schema Conversion Tool [AWS SCT], AWS DMS Schema Conversion)</li>
+      <li>Establishing data lineage with AWS tools (Amazon SageMaker ML Lineage Tracking, Amazon SageMaker Catalog)</li>
+      <li>Applying indexing, partitioning strategies, compression, and other optimization techniques; describing vectorization (e.g. Amazon Bedrock knowledge base)</li>
+    </ul>
+  </div>
+
+  <!-- DOMAIN 3 -->
+  <div class="section" id="domain3">
+    <span class="chip chip-reference">Domain 3 · 22%</span>
+    <h1>Data Operations and Support</h1>
+    <p class="section-meta">Running pipelines in production. Covers automating data processing, analyzing data, maintaining and monitoring pipelines, and ensuring data quality.</p>
+
+    <h2>Task 3.1 — Automate data processing by using AWS services</h2>
+    <p><strong>Knowledge of:</strong> How to maintain and troubleshoot data processing for repeatable business outcomes; API calls for data processing; which services accept scripting (e.g. EMR, Redshift, AWS Glue).</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Orchestrating data pipelines (Amazon MWAA, AWS Step Functions); troubleshooting Amazon managed workflows</li>
+      <li>Calling SDKs to access Amazon features from code; using AWS service features to process data (Amazon EMR, Amazon Redshift, AWS Glue)</li>
+      <li>Preparing data for transformation (AWS Glue DataBrew, Amazon SageMaker Unified Studio); querying data (Amazon Athena)</li>
+      <li>Using AWS Lambda to automate data processing; managing events and schedulers (Amazon EventBridge)</li>
+    </ul>
+
+    <h2>Task 3.2 — Analyze data by using AWS services</h2>
+    <p><strong>Knowledge of:</strong> Tradeoffs between provisioned and serverless services; SQL queries (e.g. SELECT statements with multiple qualifiers or JOIN clauses); how to visualize data for analysis; data aggregation, rolling average, grouping, and pivoting.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Visualizing data with AWS services and tools (AWS Glue DataBrew, Amazon QuickSight)</li>
+      <li>Verifying and cleaning data (Lambda, Athena, QuickSight, Jupyter notebooks, Amazon SageMaker Data Wrangler)</li>
+      <li>Using SQL in Amazon Redshift and Athena to query data or create views; using Athena notebooks that use Apache Spark to explore data</li>
+    </ul>
+
+    <h2>Task 3.3 — Maintain and monitor data pipelines</h2>
+    <p><strong>Knowledge of:</strong> How to log application data; best practices for performance tuning; how to log access to AWS services; Amazon Macie, AWS CloudTrail, and Amazon CloudWatch.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Extracting logs for audits; deploying logging and monitoring solutions to facilitate auditing and traceability</li>
+      <li>Using notifications during monitoring to send alerts; troubleshooting performance issues</li>
+      <li>Using AWS CloudTrail to track API calls; using Amazon CloudWatch Logs to log application data</li>
+      <li>Analyzing logs with AWS services (Athena, Amazon EMR, Amazon OpenSearch Service, CloudWatch Logs Insights)</li>
+    </ul>
+
+    <h2>Task 3.4 — Ensure data quality</h2>
+    <p><strong>Knowledge of:</strong> Data sampling techniques; how to implement data skew mechanisms; data validation (completeness, consistency, accuracy, integrity).</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Running data quality checks while processing the data (e.g. checking for empty fields)</li>
+      <li>Defining data quality rules (e.g. AWS Glue DataBrew); investigating data consistency (e.g. DataBrew)</li>
+      <li>Describing data sampling techniques; implementing data skew mechanisms</li>
+    </ul>
+  </div>
+
+  <!-- DOMAIN 4 -->
+  <div class="section" id="domain4">
+    <span class="chip chip-exam">Domain 4 · 18%</span>
+    <h1>Data Security and Governance</h1>
+    <p class="section-meta">Protecting and governing data. Covers authentication, authorization, encryption and masking, preparing logs for audit, and data privacy and governance.</p>
+
+    <h2>Task 4.1 — Apply authentication mechanisms</h2>
+    <p><strong>Knowledge of:</strong> VPC security networking concepts; differences between managed and unmanaged services; authentication methods (password-based, certificate-based, role-based); differences between AWS managed policies and customer managed policies.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Updating VPC security groups; creating and updating IAM groups, roles, endpoints, and services</li>
+      <li>Creating and rotating credentials for password management (e.g. AWS Secrets Manager)</li>
+      <li>Setting up IAM roles for access (AWS Lambda, Amazon API Gateway, AWS CLI, AWS CloudFormation)</li>
+      <li>Applying IAM policies to roles, endpoints, and services (S3 Access Points, AWS PrivateLink)</li>
+    </ul>
+
+    <h2>Task 4.2 — Apply authorization mechanisms</h2>
+    <p><strong>Knowledge of:</strong> Authorization methods (role-based, policy-based, tag-based, attribute-based); principle of least privilege for access; role-based access control and expected access patterns; methods to protect data from unauthorized access across services.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Creating custom IAM policies when a managed policy does not meet the need; constructing policies that meet least privilege</li>
+      <li>Storing application and database credentials (Secrets Manager, AWS Systems Manager Parameter Store)</li>
+      <li>Providing database users, groups, and roles access and authority in a database (e.g. Amazon Redshift)</li>
+      <li>Managing permissions through AWS Lake Formation (for Redshift, EMR, Athena, and S3)</li>
+    </ul>
+
+    <h2>Task 4.3 — Ensure data encryption and masking</h2>
+    <p><strong>Knowledge of:</strong> Data encryption options available in AWS analytics services; differences between client-side and server-side encryption; protecting sensitive data; data anonymization, masking, and key salting.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Applying data masking and anonymization according to compliance laws or company policies</li>
+      <li>Using encryption keys to encrypt or decrypt data (e.g. AWS KMS); configuring encryption across AWS account boundaries</li>
+      <li>Enabling encryption in transit or before transit for data</li>
+    </ul>
+
+    <h2>Task 4.4 — Prepare logs for audit</h2>
+    <p><strong>Knowledge of:</strong> How to log application data; how to log access to AWS services; centralized AWS logs.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Using AWS CloudTrail to track API calls; using Amazon CloudWatch Logs to store application logs</li>
+      <li>Using AWS CloudTrail Lake for centralized logging queries</li>
+      <li>Analyzing logs by using AWS services (Athena, CloudWatch Logs Insights, Amazon OpenSearch Service)</li>
+      <li>Integrating various AWS services to perform logging (e.g. Amazon EMR for large volumes of log data)</li>
+    </ul>
+
+    <h2>Task 4.5 — Understand data privacy and governance</h2>
+    <p><strong>Knowledge of:</strong> How to protect personally identifiable information (PII); data sovereignty; how to maintain data privacy and governance.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Granting permissions for data sharing (e.g. data sharing for Amazon Redshift); implementing PII identification (e.g. Amazon Macie with Lake Formation)</li>
+      <li>Implementing data privacy strategies to prevent backups or replications to disallowed AWS Regions; maintaining data sovereignty</li>
+      <li>Viewing configuration changes in an account (e.g. AWS Config); managing data access through Amazon SageMaker Catalog projects</li>
+    </ul>
+  </div>
+
+  <!-- CANDIDATE PREP -->
+  <div class="section" id="candidate-prep">
+    <span class="chip chip-platform">Candidate Prep</span>
+    <h1>How We Help DEA-C01 Candidates</h1>
+    <p class="section-meta">Who takes this exam, where they struggle, and how to build a study path that gets them to 720+.</p>
+
+    <h2>Who Takes This Exam</h2>
+    <ul>
+      <li><strong>Working data engineers</strong> — already building ETL/ELT pipelines who want to validate their AWS data skills.</li>
+      <li><strong>Analytics &amp; BI engineers</strong> — moving from on-premises or single-tool stacks to AWS data lakes and warehouses.</li>
+      <li><strong>Backend &amp; cloud engineers</strong> — taking on data-pipeline responsibility and needing the data-store and orchestration depth.</li>
+    </ul>
+
+    <h2>What Candidates Struggle With</h2>
+    <ul>
+      <li><strong>Streaming vs. batch ingestion</strong> — Kinesis Data Streams vs. Firehose vs. MSK vs. Glue/DMS batch, and which fits a latency, throughput, or replay requirement.</li>
+      <li><strong>Choosing the right data store</strong> — Redshift vs. RDS vs. DynamoDB vs. S3 + Athena vs. EMR, matched to access pattern, cost, and scale.</li>
+      <li><strong>Glue ecosystem depth</strong> — Glue ETL vs. crawlers vs. Data Catalog vs. DataBrew vs. Glue Data Quality, and how partitions and Iceberg tables fit together.</li>
+      <li><strong>Orchestration choices</strong> — Step Functions vs. MWAA (Airflow) vs. Glue workflows vs. EventBridge, and when each is the least-overhead fit.</li>
+      <li><strong>Lake Formation permissions</strong> — fine-grained access across Redshift, Athena, EMR, and S3, and how it differs from raw IAM and S3 policies.</li>
+      <li><strong>Cost &amp; performance optimization</strong> — Parquet/partitioning/compression, provisioned vs. serverless trade-offs, and S3 storage-class lifecycle.</li>
+    </ul>
+
+    <h2>Recommended Study Path</h2>
+    <ol class="steps">
+      <li><strong>Domain 1 — Ingestion &amp; Transformation first.</strong> Over a third of the exam (34%) and the spine of every pipeline. Build the streaming-vs-batch and Glue/EMR/Lambda/Redshift transformation mental model before anything else.</li>
+      <li><strong>Domain 2 — Data Store Management.</strong> 26% and tightly coupled to D1. Master data-store selection, the Glue Data Catalog, S3 lifecycle, and schema/partitioning design.</li>
+      <li><strong>Domain 3 — Operations &amp; Support.</strong> 22%. Automation, analysis with Athena/QuickSight, pipeline monitoring with CloudWatch/CloudTrail, and data-quality checks.</li>
+      <li><strong>Domain 4 — Security &amp; Governance last.</strong> Smallest (18%) but it threads through every pipeline — IAM and Lake Formation authorization, KMS encryption, audit logging, and PII/governance with Macie and Config.</li>
+    </ol>
+
+    <h2>AI Explanation Quality for This Exam</h2>
+    <p>DEA-C01 questions are scenario-based and often have several workable services where one is the best fit on cost, latency, access pattern, or operational overhead. Every explanation must cover WHY a plausible option is inferior — not just "this is wrong." Common patterns to cover:</p>
+    <ul>
+      <li>For ingestion questions: explain why a service misses a constraint (e.g. "Kinesis Data Firehose buffers and cannot meet a sub-second latency requirement; Kinesis Data Streams delivers records in real time").</li>
+      <li>For data-store questions: explain why an option is wrong for the access pattern (e.g. "DynamoDB is poor for ad-hoc analytical scans; Redshift or Athena over S3 fits the OLAP query").</li>
+      <li>For format/cost questions: explain why a choice wastes money or scan time (e.g. "querying raw CSV in Athena scans the whole file; Parquet with partitioning prunes data and cuts cost").</li>
+    </ul>
+  </div>
+
+  <!-- SIMULATION DESIGN -->
+  <div class="section" id="simulation">
+    <span class="chip chip-exam">Simulation Design</span>
+    <h1>How to Formulate the Exam Simulation</h1>
+    <p class="section-meta">Parameters for building practice sets that match the real DEA-C01 exam. See the <a href="exam-authoring-standard.html">Exam &amp; Question Authoring Standard</a> for question-writing rules.</p>
+
+    <h2>Question Set Structure</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Setting</th><th>Value</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Total questions per simulation</td><td>65</td><td>Real exam is 50 scored + 15 unscored (unannounced); we present a full 65-question set</td></tr>
+        <tr><td>Duration</td><td>130 minutes</td><td>Exact match to real exam</td></tr>
+        <tr><td>Passing threshold</td><td>720 / 1,000</td><td>Display as % equivalent: 72%</td></tr>
+        <tr><td>Scoring</td><td>Compensatory</td><td>No domain minimums — total score only</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Domain Distribution per Set</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Domain</th><th>Weight</th><th>Qs in 65-Q set</th></tr></thead>
+      <tbody>
+        <tr><td>D1 — Data Ingestion and Transformation</td><td>34%</td><td>22</td></tr>
+        <tr><td>D2 — Data Store Management</td><td>26%</td><td>17</td></tr>
+        <tr><td>D3 — Data Operations and Support</td><td>22%</td><td>14</td></tr>
+        <tr><td>D4 — Data Security and Governance</td><td>18%</td><td>12</td></tr>
+        <tr class="hl"><td><strong>Total</strong></td><td><strong>100%</strong></td><td><strong>65</strong></td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Question Type Mix</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Type</th><th>Suggested % of set</th><th>Implementation priority</th></tr></thead>
+      <tbody>
+        <tr><td>Multiple choice (1-of-4)</td><td>~75%</td><td><span class="badge badge-green">High — launch with this</span></td></tr>
+        <tr><td>Multiple response (select N of 5–6)</td><td>~25%</td><td><span class="badge badge-green">High — common on exam</span></td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout callout-note">Free sample + Sim 1 (Foundational) are 100% multiple choice. Sim 2 (Architectural) and Sim 3 (Comparative) carry ~25% multiple response, matching the real exam's mix.</div>
+
+    <h2>Question Writing Rules (DEA-C01 specific)</h2>
+    <ul>
+      <li><strong>Scenario stems</strong> — "A data engineering team needs to ingest…" Establish the real constraint (latency, throughput, cost, access pattern, compliance) before asking.</li>
+      <li><strong>Best-of-several-workable answers</strong> — most distractors are technically valid services but lose on cost, latency, operational overhead, or one unmet requirement. Engineer the crux to be the trade-off.</li>
+      <li><strong>Managed and least-overhead framing</strong> — the right answer is usually the most managed, serverless, purpose-fit option. Make hand-rolled or mismatched services the plausible-but-wrong choices.</li>
+      <li><strong>Cross-domain wiring</strong> — DEA scenarios routinely span ingestion, storage, cataloging, and security. Let questions combine services as the real exam does.</li>
+      <li><strong>No ML modeling, no language syntax, no business conclusions</strong> — keep questions inside the in-scope service set; cut anything that hinges on out-of-scope depth.</li>
+    </ul>
+
+    <h2>Distractor Quality Guidelines</h2>
+    <ul>
+      <li>Use real data-engineering confusions as distractors: Kinesis Data Streams vs. Firehose vs. MSK; Glue ETL vs. EMR vs. Lambda; Redshift vs. Athena vs. RDS; Step Functions vs. MWAA vs. Glue workflows.</li>
+      <li>For ingestion questions: make one distractor a service whose latency or buffering model cannot meet the stated requirement, and one a higher-overhead self-managed approach.</li>
+      <li>For storage/format questions: make one distractor a store mismatched to the access pattern, and one a format/layout that wastes scan cost.</li>
+      <li>For security questions: make one distractor broad IAM where Lake Formation fine-grained control is required, and one an option that breaks least privilege or data sovereignty.</li>
+    </ul>
+
+    <h2>AI Explanation Template</h2>
+    <p>Each question requires an explanation covering:</p>
+    <ul>
+      <li>Why the correct answer is right — the conceptual reason it best meets every stated constraint</li>
+      <li>Why each distractor is wrong — one sentence per option, naming the specific unmet constraint or excess overhead</li>
+      <li>Concept link — which domain/task statement this tests (e.g. "D1 · Task 1.1 — Perform data ingestion")</li>
+      <li>Service context — if a service appears, one line on what it does and what distinguishes it from the similar services in the distractors</li>
+    </ul>
+  </div>
+
+</main>
+
+<button id="top-btn" title="Back to top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<script>
+  const topBtn = document.getElementById('top-btn');
+  window.addEventListener('scroll', () => {
+    topBtn.style.display = window.scrollY > 400 ? 'flex' : 'none';
+  });
+</script>
+</body>
+</html>
