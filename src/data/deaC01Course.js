@@ -850,6 +850,1016 @@ const deaC01Course = {
       ],
     },
 
+    // ═══════════════════════════════════════════════════════════════
+    //  DOMAIN 2 — DATA STORE MANAGEMENT (26%)
+    // ═══════════════════════════════════════════════════════════════
+
+    {
+      id: 'd2-s7',
+      number: 7,
+      module: 'Domain 2 · Data Store Management',
+      domain: 'd2',
+      weight: '26%',
+      task: 'Task 2.1',
+      title: 'Choosing the Right Data Store — Redshift, RDS, DynamoDB, S3, and More',
+      duration: 30,
+      summary: 'Picking where data lives is the highest-leverage decision a data engineer makes. This session builds the selection framework: Redshift for analytics, RDS/Aurora for relational OLTP, DynamoDB for key-value at scale, S3 + Athena for the data lake, plus migration and remote-access patterns (Transfer Family, Redshift federated queries, materialized views, Spectrum), locks, open table formats, and vector indexes.',
+      objectives: [
+        'Match a workload to the right store: Redshift, RDS/Aurora, DynamoDB, S3 data lake, EMR, MemoryDB',
+        'Apply remote-access patterns: Redshift federated queries, materialized views, and Redshift Spectrum',
+        'Explain open table formats (Apache Iceberg) and when they matter',
+        'Describe vector stores and index types (HNSW, IVF) for similarity search',
+      ],
+      preLearningCheck: {
+        question: 'A workload runs complex analytical queries (aggregations and JOINs) over billions of rows for BI dashboards. Which store is the best fit?',
+        options: [
+          'Amazon DynamoDB',
+          'Amazon Redshift (a columnar MPP data warehouse)',
+          'Amazon RDS for MySQL with a single instance',
+          'Amazon ElastiCache',
+        ],
+        correct: 1,
+        note: 'No pressure — guessing first improves retention. Redshift is a columnar, massively parallel data warehouse built for large analytical (OLAP) queries. DynamoDB excels at key-value lookups, not ad-hoc analytics; a single RDS instance cannot scan billions of rows efficiently.',
+      },
+      sections: [
+        {
+          heading: 'The data-store decision tree',
+          body: 'Every storage question is "which store matches the access pattern, scale, and cost?" Build sharp distinctions:\n\nAmazon Redshift — columnar MPP warehouse for OLAP analytics over large datasets. Amazon RDS / Aurora — relational OLTP for transactional apps and moderate-size relational data. Amazon DynamoDB — serverless key-value/document store for single-digit-millisecond lookups at any scale, with predictable access patterns. Amazon S3 + Athena — the data lake: cheap, durable object storage queried in place with serverless SQL. Amazon EMR — process huge datasets with Spark/Hive (compute, often over S3). Amazon MemoryDB / ElastiCache — in-memory for ultra-low-latency key-value and caching.',
+          bullets: [
+            'OLAP / analytics over big data → Redshift (or Athena over an S3 lake).',
+            'Transactional relational app → RDS / Aurora.',
+            'High-scale key-value with known access pattern → DynamoDB.',
+            'Cheap durable lake queried ad hoc → S3 + Athena.',
+            'Ultra-low-latency key-value / cache → MemoryDB / ElastiCache.',
+          ],
+          callout: { type: 'note', text: 'DynamoDB vs. Redshift is the classic trap: DynamoDB is point lookups and predictable patterns; Redshift is ad-hoc analytical scans and JOINs. Matching the access pattern is the whole game.' },
+          interactive: 'datastore-selector',
+        },
+        {
+          heading: 'Remote access: federated queries, materialized views, Spectrum',
+          body: 'Redshift can reach data without copying it. Federated queries let Redshift query live data in RDS/Aurora PostgreSQL/MySQL directly. Redshift Spectrum queries data in S3 in place (external tables in the Glue Data Catalog) — extending the warehouse over the lake. Materialized views precompute and store query results for fast repeated access, refreshed incrementally. Together they reduce data movement and speed analytics.',
+          bullets: [
+            'Redshift Spectrum: query S3 data with Redshift SQL without loading it — pay per data scanned.',
+            'Federated query: join live operational data in RDS/Aurora from Redshift without ETL.',
+            'Materialized views: cache expensive aggregate results; auto/incremental refresh.',
+          ],
+          callout: { type: 'tip', text: '"Analyze warehouse + lake together without copying" → Redshift Spectrum. "Speed up a repeated expensive aggregation" → a materialized view.' },
+        },
+        {
+          heading: 'Open table formats and locks',
+          body: 'Apache Iceberg is an open table format that brings database-like features to data-lake files in S3: ACID transactions, schema evolution, time travel, and efficient upserts/deletes — supported by Athena, EMR, Glue, and Redshift. Choose Iceberg when a lake needs reliable updates and evolving schemas rather than append-only files. On the warehouse side, locks (in Redshift and RDS) coordinate concurrent access; long-running transactions can block others, a common troubleshooting theme.',
+          bullets: [
+            'Iceberg = ACID transactions, schema evolution, time travel, row-level updates on S3 data.',
+            'Use open table formats when the lake needs updates/deletes and consistent reads, not just appends.',
+            'Lock contention (Redshift/RDS) from long transactions can block writers/readers — keep transactions short.',
+          ],
+        },
+        {
+          heading: 'Vector stores and index types',
+          body: 'Generative-AI workloads need similarity search over embeddings (vectors). AWS supports vectors in Amazon Aurora PostgreSQL (pgvector), Amazon OpenSearch Service, MemoryDB, and others. Two index types recur: HNSW (Hierarchical Navigable Small Worlds) — graph-based, fast and accurate, more memory; and IVF (Inverted File) — cluster-based, lower memory, tunable recall. The exam expects you to recognize these as vector index types for nearest-neighbor search, not to implement them.',
+          bullets: [
+            'Vectors = numeric embeddings enabling similarity / nearest-neighbor search.',
+            'HNSW: graph index, high speed/accuracy, higher memory.',
+            'IVF: inverted-file/cluster index, lower memory, tunable.',
+            'Aurora PostgreSQL (pgvector) and OpenSearch are common AWS vector stores.',
+          ],
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 0,
+          question: 'An application needs single-digit-millisecond lookups of user profiles by user ID at massive scale, with a well-known access pattern. Which store fits best?',
+          options: [
+            'Amazon Redshift',
+            'Amazon DynamoDB',
+            'Amazon Athena over S3',
+            'Amazon EMR',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — DynamoDB delivers consistent single-digit-millisecond key-value access at any scale when the access pattern is known and designed for.',
+          elaborativePrompt: 'Why is Redshift a poor fit for high-volume single-key lookups even though it can store the data?',
+        },
+        {
+          afterSection: 1,
+          question: 'A team wants to run Redshift SQL across both warehouse tables and large historical data sitting in S3 without loading the S3 data into Redshift. Which feature fits?',
+          options: [
+            'Redshift federated query',
+            'Redshift Spectrum',
+            'A DynamoDB global secondary index',
+            'An ElastiCache cluster',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — Redshift Spectrum queries S3 data in place via external tables, extending the warehouse over the lake with no load step.',
+          elaborativePrompt: 'How does Spectrum differ from a federated query in what it connects to?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself: a company has transactional orders in Aurora, billions of historical events in S3, and needs fast BI dashboards plus the occasional join of live orders with historical data. Walk through which store serves dashboards, how Spectrum and federated queries let Redshift reach S3 and Aurora without copying, and when a materialized view would speed a repeated report.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A BI team runs heavy analytical queries over 5 years of clickstream data in Amazon S3 and must occasionally join it with current records in an Aurora PostgreSQL database — without building ETL to copy either dataset. Which approach best meets the requirement?',
+        options: [
+          'Load all S3 data and all Aurora data into DynamoDB and query there',
+          'Use Amazon Redshift with Spectrum to query the S3 data in place and a federated query to join the live Aurora data',
+          'Run nightly EMR jobs to copy everything into a single RDS instance',
+          'Store the clickstream in ElastiCache for fast queries',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'Redshift Spectrum queries the S3 lake in place and federated queries reach live Aurora data — analytics across both with no ETL copying.',
+          perOption: [
+            'DynamoDB is a key-value store, not an analytical engine, and loading everything in defeats the no-copy requirement.',
+            'Correct — Spectrum covers the S3 historical data without loading it, and a federated query joins the live Aurora records directly.',
+            'Copying everything into one RDS instance is exactly the ETL and scale problem the requirement rules out.',
+            'ElastiCache is an in-memory cache, unsuited to 5 years of analytical clickstream data.',
+          ],
+          link: 'Domain 2 · Task 2.1 — Choose a data store',
+        },
+      },
+      videos: [
+        { videoId: '6G0bLDIcO7Y', title: 'AWS Certified Data Engineer – Associate (DEA-C01) [Full Course in 285min]', channel: 'Johnny Chivers', relevance: 'Covers data store selection across Redshift, RDS, DynamoDB, and S3 — companion to Task 2.1.' },
+      ],
+      keyTerms: [
+        { term: 'Amazon Redshift', def: 'A columnar, massively parallel data warehouse for large analytical (OLAP) queries; extends to S3 via Spectrum and to RDS/Aurora via federated queries.' },
+        { term: 'Redshift Spectrum', def: 'A Redshift feature that queries data in S3 in place via external tables, billed per data scanned.' },
+        { term: 'Materialized view', def: 'A precomputed, stored query result (often an aggregation) that is refreshed incrementally for fast repeated reads.' },
+        { term: 'Apache Iceberg', def: 'An open table format that adds ACID transactions, schema evolution, and time travel to data-lake files in S3.' },
+        { term: 'Vector index (HNSW / IVF)', def: 'Index structures for nearest-neighbor similarity search over embeddings; HNSW is graph-based, IVF is cluster/inverted-file based.' },
+      ],
+      awsServices: [
+        { name: 'Amazon Redshift', purpose: 'OLAP data warehouse with Spectrum (S3) and federated queries (RDS/Aurora) for analytics without data movement.' },
+        { name: 'Amazon DynamoDB', purpose: 'Serverless key-value/document store for single-digit-millisecond access at scale with known access patterns.' },
+        { name: 'Amazon S3 + Athena', purpose: 'Durable, cheap data lake queried in place with serverless SQL; the backbone of the lake architecture.' },
+      ],
+      examTips: [
+        'Match the access pattern: OLAP analytics → Redshift/Athena; relational OLTP → RDS/Aurora; key-value at scale → DynamoDB; cheap lake → S3.',
+        '"Query S3 from Redshift without loading" → Spectrum. "Join live RDS/Aurora from Redshift" → federated query.',
+        'Repeated expensive aggregation → materialized view.',
+        'Lake needs ACID updates/deletes + schema evolution → Apache Iceberg open table format.',
+        'Vectors/similarity search → pgvector on Aurora PostgreSQL or OpenSearch; HNSW and IVF are vector index types.',
+      ],
+    },
+
+    // ─────────────────────────────────────────────────────────────
+    {
+      id: 'd2-s8',
+      number: 8,
+      module: 'Domain 2 · Data Store Management',
+      domain: 'd2',
+      weight: '26%',
+      task: 'Task 2.2',
+      title: 'Data Cataloging — Glue Data Catalog, Crawlers, and Partitions',
+      duration: 30,
+      summary: 'A data lake without a catalog is a swamp. This session covers data cataloging on AWS: the AWS Glue Data Catalog as the central technical metastore, Glue crawlers for schema discovery, keeping partitions in sync, source/target connections, and business catalogs like Amazon SageMaker Catalog. The catalog is what makes S3 data queryable by Athena, EMR, Redshift Spectrum, and Glue.',
+      objectives: [
+        'Explain the AWS Glue Data Catalog as a shared technical metastore (Hive-compatible)',
+        'Use Glue crawlers to discover schemas and populate the catalog',
+        'Keep partitions synchronized so queries find new data',
+        'Distinguish technical catalogs from business catalogs (Amazon SageMaker Catalog)',
+      ],
+      preLearningCheck: {
+        question: 'New date-partitioned files were written to S3, but Athena queries do not return them. What is the most likely fix?',
+        options: [
+          'Restart the Athena service',
+          'Add the new partitions to the catalog (run a crawler, MSCK REPAIR TABLE, or partition projection)',
+          'Convert the data to CSV',
+          'Increase the Athena timeout',
+        ],
+        correct: 1,
+        note: 'No pressure — guessing first improves retention. Athena reads partitions registered in the catalog. New partitions must be added — by a crawler, MSCK REPAIR TABLE, the Glue API, or partition projection — or queries silently miss the new data.',
+      },
+      sections: [
+        {
+          heading: 'The Glue Data Catalog: one schema for every engine',
+          body: 'The AWS Glue Data Catalog is a central, Hive-compatible metastore holding table definitions, schemas, and partition metadata for data in S3 and other sources. It is the single source of truth that Athena, Redshift Spectrum, EMR, and Glue all read, so they agree on schema and location. A table in the catalog points to an S3 path and describes columns, types, format, and partitions — the data stays in S3; the catalog stores only metadata.',
+          bullets: [
+            'The catalog stores metadata (schema, location, partitions), not the data itself.',
+            'It is Hive-metastore compatible, so EMR/Spark/Presto can use it directly.',
+            'Athena, Redshift Spectrum, EMR, and Glue share it — one schema, many engines.',
+            'Databases group tables; tables map to an S3 prefix and a SerDe/format.',
+          ],
+          callout: { type: 'note', text: 'When a question stresses "consistent schema available to Athena, EMR, and Redshift Spectrum," the answer is the Glue Data Catalog as the shared metastore.' },
+        },
+        {
+          heading: 'Crawlers: automatic schema discovery',
+          body: 'A Glue crawler connects to a data store (S3, JDBC), infers schema and partition structure, and creates or updates tables in the Data Catalog. Crawlers can run on a schedule or on demand and detect new columns and partitions. They classify file formats (CSV, JSON, Parquet) and can group similar files into one table. Crawlers automate what would otherwise be manual DDL.',
+          bullets: [
+            'Crawlers infer schema and partitions and write table definitions to the catalog.',
+            'Schedule them (EventBridge / built-in) to pick up new data and schema changes.',
+            'Classifiers determine format; custom classifiers handle unusual formats.',
+            'For predictable layouts, partition projection can avoid crawlers entirely.',
+          ],
+        },
+        {
+          heading: 'Partitions and keeping them in sync',
+          body: 'Partitioning splits a table by column values (commonly date) into separate S3 prefixes, so query engines scan only relevant partitions — a major cost and speed win. But the catalog must know about each partition. New partitions are registered by re-running a crawler, MSCK REPAIR TABLE (Athena/Hive), the Glue AddPartition API, or partition projection, which computes partition locations from a pattern at query time with no catalog entries to maintain.',
+          bullets: [
+            'Partition pruning: engines skip partitions outside the query predicate, cutting scan cost.',
+            'Register new partitions via crawler, MSCK REPAIR TABLE, Glue API, or partition projection.',
+            'Partition projection is ideal for highly predictable, high-cardinality partition schemes (e.g. by hour).',
+          ],
+          callout: { type: 'warning', text: '"Athena does not see new data" is almost always unregistered partitions — not a permissions or format issue. Sync the partitions.' },
+        },
+        {
+          heading: 'Connections and business catalogs',
+          body: 'Glue connections store how a job or crawler reaches a source or target — JDBC endpoint, credentials (from Secrets Manager), and VPC networking — and are reused across jobs. Beyond the technical catalog, business data catalogs add human context: ownership, descriptions, classifications, and discovery for analysts. Amazon SageMaker Catalog (in SageMaker Unified Studio) provides governed business cataloging and data discovery on top of technical metadata.',
+          bullets: [
+            'Glue connections = reusable source/target connectivity (JDBC, network, credentials).',
+            'Technical catalog (Glue) = schemas/partitions for engines; business catalog = context/governance for people.',
+            'Amazon SageMaker Catalog provides business-level discovery and governance.',
+          ],
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 1,
+          question: 'A team continuously lands new daily partitions in S3 and wants the Data Catalog to stay current automatically as schemas and partitions evolve. What is the most appropriate tool?',
+          options: [
+            'Manually write CREATE TABLE statements each day',
+            'A scheduled AWS Glue crawler',
+            'A DynamoDB stream',
+            'An ElastiCache cluster',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — a scheduled Glue crawler discovers new partitions and schema changes and updates the catalog without manual DDL.',
+          elaborativePrompt: 'When would partition projection be preferable to running a crawler for this?',
+        },
+        {
+          afterSection: 0,
+          question: 'Why is the AWS Glue Data Catalog valuable in a multi-engine analytics environment?',
+          options: [
+            'It stores the actual data so engines do not need S3',
+            'It provides one shared, Hive-compatible schema that Athena, EMR, Redshift Spectrum, and Glue all read',
+            'It encrypts all data automatically',
+            'It replaces the need for IAM',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — the catalog is a shared metastore so every engine agrees on schema and location; the data itself stays in S3.',
+          elaborativePrompt: 'Why does separating metadata (catalog) from data (S3) help a multi-engine setup?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself: a lake in S3 is queried by Athena and Redshift Spectrum, and new date partitions arrive hourly. Walk through how the Glue Data Catalog provides one schema for both engines, how a crawler or partition projection keeps partitions current, and why "Athena missing new data" points to partition sync.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'An organization stores data in S3 and queries it with Athena, Amazon EMR, and Redshift Spectrum. They want a single, consistent schema definition shared by all three engines, kept current as new partitions arrive. Which solution best meets this?',
+        options: [
+          'Maintain a separate Hive metastore on each EMR cluster and copy definitions between engines',
+          'Use the AWS Glue Data Catalog as the shared metastore, populated and kept current by scheduled Glue crawlers (or partition projection)',
+          'Store schema definitions in a DynamoDB table each engine reads',
+          'Embed the schema in every query',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'The Glue Data Catalog is the shared, Hive-compatible metastore for Athena, EMR, and Redshift Spectrum; crawlers (or projection) keep partitions current.',
+          perOption: [
+            'Per-cluster Hive metastores duplicate and drift — the opposite of one shared schema.',
+            'Correct — one Glue Data Catalog gives all three engines a consistent schema, and crawlers/projection keep new partitions registered.',
+            'A hand-rolled DynamoDB schema store reinvents the catalog and is not understood natively by the query engines.',
+            'Embedding schema in queries is unmanageable and inconsistent across engines.',
+          ],
+          link: 'Domain 2 · Task 2.2 — Understand data cataloging systems',
+        },
+      },
+      videos: [
+        { videoId: '6G0bLDIcO7Y', title: 'AWS Certified Data Engineer – Associate (DEA-C01) [Full Course in 285min]', channel: 'Johnny Chivers', relevance: 'Covers the Glue Data Catalog, crawlers, and partitioning — companion to Task 2.2.' },
+      ],
+      keyTerms: [
+        { term: 'Glue Data Catalog', def: 'A central, Hive-compatible metastore of table schemas, locations, and partitions shared by Athena, EMR, Redshift Spectrum, and Glue.' },
+        { term: 'Glue crawler', def: 'A job that connects to a data store, infers schema and partitions, and creates or updates catalog tables automatically.' },
+        { term: 'Partition', def: 'A division of a table by column values (e.g. date) into S3 prefixes so engines scan only relevant data.' },
+        { term: 'Partition projection', def: 'An Athena feature that computes partition locations from a pattern at query time, avoiding catalog partition maintenance.' },
+        { term: 'SageMaker Catalog', def: 'A business data catalog providing governed discovery and context on top of technical metadata.' },
+      ],
+      awsServices: [
+        { name: 'AWS Glue Data Catalog', purpose: 'Shared technical metastore for all analytics engines over S3 and JDBC sources.' },
+        { name: 'AWS Glue Crawlers', purpose: 'Automatically discover schemas and partitions and keep the catalog current.' },
+        { name: 'Amazon Athena', purpose: 'Serverless SQL over cataloged S3 data; relies on registered partitions to find data.' },
+      ],
+      examTips: [
+        'Consistent schema across Athena/EMR/Redshift Spectrum → the Glue Data Catalog as a shared metastore.',
+        'The catalog stores metadata only; the data stays in S3.',
+        '"Athena does not see new data" → unregistered partitions; fix with crawler, MSCK REPAIR TABLE, Glue API, or partition projection.',
+        'Predictable, high-cardinality partitions → partition projection (no crawler needed).',
+        'Technical catalog (Glue) = schema for engines; business catalog (SageMaker Catalog) = context/governance for people.',
+      ],
+    },
+
+    // ─────────────────────────────────────────────────────────────
+    {
+      id: 'd2-s9',
+      number: 9,
+      module: 'Domain 2 · Data Store Management',
+      domain: 'd2',
+      weight: '26%',
+      task: 'Task 2.3',
+      title: 'Managing the Data Lifecycle — S3 Lifecycle, Versioning, and TTL',
+      duration: 30,
+      summary: 'Data has a lifecycle: hot when fresh, cold as it ages, eventually expired or archived. This session covers managing that lifecycle cost-effectively — S3 storage classes and Lifecycle policies, expiring old data, S3 versioning and DynamoDB TTL, compliant deletion, load/unload between S3 and Redshift, and protecting data with resiliency and availability.',
+      objectives: [
+        'Use S3 Lifecycle policies to transition data across storage classes and expire it',
+        'Manage S3 versioning and DynamoDB TTL for retention and cleanup',
+        'Perform load/unload operations between Amazon S3 and Amazon Redshift',
+        'Delete data to meet business and legal requirements and protect it with resiliency',
+      ],
+      preLearningCheck: {
+        question: 'Log data is queried heavily for 30 days, rarely after 90 days, and must be kept 7 years for compliance at lowest cost. What is the best approach?',
+        options: [
+          'Keep everything in S3 Standard forever',
+          'An S3 Lifecycle policy that transitions objects to cheaper classes (e.g. Standard-IA then Glacier/Deep Archive) over time',
+          'Delete the data after 30 days',
+          'Store all of it in DynamoDB',
+        ],
+        correct: 1,
+        note: 'No pressure — guessing first improves retention. S3 Lifecycle policies automatically transition aging data to cheaper tiers and can expire it, matching cost to access frequency over a long retention period.',
+      },
+      sections: [
+        {
+          heading: 'S3 storage classes and Lifecycle policies',
+          body: 'S3 offers storage classes priced for different access patterns: Standard (hot), Standard-IA / One Zone-IA (infrequent), Glacier Instant Retrieval, Glacier Flexible Retrieval, and Glacier Deep Archive (cheapest, slowest). S3 Lifecycle policies automate moving objects between classes and expiring them based on age. S3 Intelligent-Tiering moves objects between tiers automatically based on observed access, ideal when access patterns are unknown or changing.',
+          bullets: [
+            'Lifecycle transition rules move objects to cheaper classes as they age.',
+            'Lifecycle expiration rules delete objects after a set age.',
+            'Intelligent-Tiering auto-optimizes when access patterns are unpredictable (no retrieval fees for tier moves).',
+            'Match class to access: hot → Standard; cold/archive → Glacier tiers.',
+          ],
+          callout: { type: 'tip', text: 'Unknown/changing access pattern → S3 Intelligent-Tiering. Known aging pattern → explicit Lifecycle transitions. Long-term archive at lowest cost → Glacier Deep Archive.' },
+        },
+        {
+          heading: 'Versioning and DynamoDB TTL',
+          body: 'S3 versioning keeps every version of an object, protecting against accidental overwrite or deletion (a delete adds a delete marker; prior versions remain). Lifecycle rules can expire noncurrent versions to control cost. DynamoDB TTL automatically deletes items after a per-item expiry timestamp, cleaning up stale data (sessions, ephemeral records) at no extra cost and without consuming write capacity for the deletes.',
+          bullets: [
+            'S3 versioning protects against accidental overwrite/delete; combine with Lifecycle to expire old versions.',
+            'DynamoDB TTL auto-deletes expired items based on a timestamp attribute, free of charge.',
+            'Versioning underpins MFA delete and replication consistency.',
+          ],
+        },
+        {
+          heading: 'Load and unload: S3 ↔ Redshift',
+          body: 'Moving data between the lake and the warehouse is routine. The Redshift COPY command bulk-loads data from S3 (and other sources) into Redshift tables efficiently, in parallel across slices. The UNLOAD command exports Redshift query results back to S3 (often as Parquet) for archival or lake consumption. COPY/UNLOAD are the standard, performant bridge between S3 and Redshift.',
+          bullets: [
+            'COPY loads from S3 to Redshift in parallel — far faster than row-by-row inserts.',
+            'UNLOAD exports query results to S3, commonly as partitioned Parquet.',
+            'Use an IAM role on the cluster for COPY/UNLOAD S3 access (no static keys).',
+          ],
+        },
+        {
+          heading: 'Compliant deletion and resiliency',
+          body: 'Some data must be deleted to meet legal or business requirements (right-to-erasure, retention limits). Lifecycle expiration, targeted deletes, and Iceberg/row-level deletes handle this; verify deletion across replicas and backups. Protecting data means resiliency and availability: S3 is multi-AZ durable by design, cross-Region replication guards against regional loss, and AWS Backup centralizes backup policies — balanced against any data-sovereignty constraints on where copies may live.',
+          bullets: [
+            'Use Lifecycle expiration or explicit deletes to meet retention/erasure requirements; account for versions and backups.',
+            'S3 durability is multi-AZ; add cross-Region replication for regional resilience where allowed.',
+            'AWS Backup centralizes and schedules backups across services.',
+          ],
+          callout: { type: 'warning', text: 'A "data must be deleted for compliance" requirement is not satisfied while old object versions or cross-Region replicas still hold copies — expire versions and account for replicated data.' },
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 0,
+          question: 'Access patterns for a new dataset are unknown and may change month to month, and the team wants to minimize storage cost without manual tuning. Which S3 option fits best?',
+          options: [
+            'S3 Standard with a manual review every quarter',
+            'S3 Intelligent-Tiering',
+            'S3 Glacier Deep Archive immediately',
+            'Delete data after 7 days',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — Intelligent-Tiering automatically moves objects between access tiers based on usage, optimizing cost when patterns are unknown or shifting.',
+          elaborativePrompt: 'Why is an explicit Lifecycle transition rule less ideal than Intelligent-Tiering when access is unpredictable?',
+        },
+        {
+          afterSection: 2,
+          question: 'A team must bulk-load several terabytes of Parquet from S3 into Amazon Redshift as fast as possible. Which approach is best?',
+          options: [
+            'Row-by-row INSERT statements from a script',
+            'The Redshift COPY command loading from S3 in parallel, using an IAM role for access',
+            'Stream the data through DynamoDB first',
+            'Upload via the Redshift Console manually',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — COPY loads from S3 in parallel across slices and is the standard high-throughput load path; an attached IAM role grants S3 access.',
+          elaborativePrompt: 'Why is COPY dramatically faster than individual INSERT statements in Redshift?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself: event data is hot for 30 days, cold afterward, and must be retained 7 years then deleted, with a copy loaded into Redshift for analysis. Walk through the S3 Lifecycle transitions and expiration you set, why you use COPY to load Redshift, and how versioning and replicas affect "compliant deletion."',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A company keeps audit logs in S3 that are queried often for 30 days, occasionally for a year, and must be retained for 7 years at the lowest possible cost, then automatically deleted. Which configuration meets all requirements?',
+        options: [
+          'Store everything in S3 Standard and delete manually after 7 years',
+          'An S3 Lifecycle policy that transitions objects to Standard-IA, then to Glacier Deep Archive as they age, with an expiration rule at 7 years',
+          'Move all logs to DynamoDB with a TTL of 7 years',
+          'Keep two copies in S3 Standard in two Regions indefinitely',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'Lifecycle transitions match storage cost to declining access, and an expiration rule auto-deletes at 7 years — exactly the lifecycle described.',
+          perOption: [
+            'S3 Standard for 7 years is far more expensive than archival tiers, and manual deletion is error-prone.',
+            'Correct — transition to Standard-IA then Glacier Deep Archive cuts cost as access drops, and a 7-year expiration rule automates compliant deletion.',
+            'DynamoDB is the wrong store for large append-only logs and is costlier than S3 archival tiers.',
+            'Two indefinite Standard copies maximize cost and never delete, violating the retention limit.',
+          ],
+          link: 'Domain 2 · Task 2.3 — Manage the lifecycle of data',
+        },
+      },
+      videos: [
+        { videoId: '6G0bLDIcO7Y', title: 'AWS Certified Data Engineer – Associate (DEA-C01) [Full Course in 285min]', channel: 'Johnny Chivers', relevance: 'Covers S3 storage classes, lifecycle management, and Redshift load/unload — companion to Task 2.3.' },
+      ],
+      keyTerms: [
+        { term: 'S3 Lifecycle policy', def: 'Rules that automatically transition objects to cheaper storage classes and expire them based on age.' },
+        { term: 'S3 Intelligent-Tiering', def: 'A storage class that automatically moves objects between access tiers based on observed usage, ideal for unknown patterns.' },
+        { term: 'S3 versioning', def: 'Keeping multiple versions of an object to protect against accidental overwrite or deletion.' },
+        { term: 'DynamoDB TTL', def: 'A feature that auto-deletes items after a per-item expiry timestamp, at no extra cost.' },
+        { term: 'COPY / UNLOAD', def: 'Redshift commands that bulk-load data from S3 in parallel (COPY) and export query results to S3 (UNLOAD).' },
+      ],
+      awsServices: [
+        { name: 'Amazon S3 (storage classes + Lifecycle)', purpose: 'Tiered durable storage with automated transitions and expiration for cost-optimized retention.' },
+        { name: 'Amazon DynamoDB TTL', purpose: 'Automatically expire stale items without consuming write capacity.' },
+        { name: 'Amazon Redshift COPY/UNLOAD', purpose: 'High-throughput load from and unload to S3 between the lake and the warehouse.' },
+      ],
+      examTips: [
+        'Known aging pattern → S3 Lifecycle transitions; unknown/changing access → Intelligent-Tiering; cheapest archive → Glacier Deep Archive.',
+        'Lifecycle expiration automates compliant deletion — but account for noncurrent versions and cross-Region replicas.',
+        'DynamoDB TTL auto-deletes expired items free of charge.',
+        'Bulk S3→Redshift load → COPY (parallel) with an IAM role; export → UNLOAD (often Parquet).',
+        'S3 versioning protects against accidental delete/overwrite; expire old versions with Lifecycle to control cost.',
+      ],
+    },
+
+    // ─────────────────────────────────────────────────────────────
+    {
+      id: 'd2-s10',
+      number: 10,
+      module: 'Domain 2 · Data Store Management',
+      domain: 'd2',
+      weight: '26%',
+      task: 'Task 2.4',
+      title: 'Data Modeling, Schema Evolution, and Optimization',
+      duration: 30,
+      summary: 'How you model and lay out data determines query speed and cost. This session covers schema design for Redshift, DynamoDB, and Lake Formation; handling schema evolution and changing data characteristics; schema conversion with AWS SCT and DMS; data lineage; and the optimization levers — indexing, partitioning, compression, and distribution/sort keys.',
+      objectives: [
+        'Design effective schemas for Redshift, DynamoDB, and Lake Formation',
+        'Handle schema evolution and changes to data characteristics over time',
+        'Perform schema conversion with AWS SCT and AWS DMS Schema Conversion',
+        'Apply indexing, partitioning, compression, and distribution/sort keys for optimization',
+      ],
+      preLearningCheck: {
+        question: 'In Amazon Redshift, which choice most affects how efficiently large table JOINs run across the cluster?',
+        options: [
+          'The S3 bucket name',
+          'The table’s distribution style (and sort keys)',
+          'The IAM role attached to the cluster',
+          'The VPC CIDR block',
+        ],
+        correct: 1,
+        note: 'No pressure — guessing first improves retention. Redshift distributes table rows across slices by distribution style (KEY, ALL, EVEN, AUTO). Co-locating joined rows via a shared distribution key minimizes data redistribution during JOINs; sort keys speed range scans.',
+      },
+      sections: [
+        {
+          heading: 'Schema design per store',
+          body: 'Each store rewards a different modeling approach. Redshift (columnar OLAP) favors star/snowflake schemas, distribution keys to co-locate joins, and sort keys for range filters. DynamoDB (NoSQL) is designed from access patterns first — often a single-table design with composite keys and secondary indexes to serve each query without scans. Lake Formation governs tables over S3 (registered in the Glue Catalog) with fine-grained access; modeling there means sensible partitioning and columnar layout.',
+          bullets: [
+            'Redshift: star/snowflake; choose distribution style (KEY/ALL/EVEN/AUTO) and sort keys deliberately.',
+            'DynamoDB: model from access patterns; composite keys + GSIs/LSIs; avoid scans.',
+            'Lake Formation/S3: partition and use columnar formats; govern with table/column permissions.',
+          ],
+          callout: { type: 'note', text: 'DynamoDB modeling is access-pattern-first: list the queries, then design keys and indexes to serve them. Relational normalization habits often lead to anti-patterns in DynamoDB.' },
+        },
+        {
+          heading: 'Schema evolution and changing data',
+          body: 'Data changes shape over time — new columns, changed types, new sources. Schema evolution handles this without breaking consumers. Columnar formats and open table formats (Iceberg) support adding/renaming columns and evolving partitions safely. Glue crawlers can detect schema changes and update the catalog. Designing for evolution (nullable additions, versioned schemas, tolerant readers) prevents pipeline breakage when upstream data shifts.',
+          bullets: [
+            'Iceberg supports safe schema and partition evolution (add/drop/rename columns, partition spec changes).',
+            'Crawlers detect new/changed columns; plan for additive, backward-compatible changes.',
+            'Tolerant consumers and versioned schemas keep pipelines resilient to upstream changes.',
+          ],
+        },
+        {
+          heading: 'Schema conversion: SCT and DMS',
+          body: 'Migrating between database engines often requires converting schema and code. The AWS Schema Conversion Tool (AWS SCT) and DMS Schema Conversion convert source schemas, stored procedures, and data types to a target engine (e.g. Oracle → Aurora PostgreSQL, on-prem warehouse → Redshift). SCT reports what converts automatically and what needs manual rework, while AWS DMS moves the data. Together they enable heterogeneous migrations.',
+          bullets: [
+            'AWS SCT / DMS Schema Conversion: convert schema and code objects between heterogeneous engines.',
+            'DMS handles the data movement (full load + CDC); SCT handles the schema/code translation.',
+            'SCT assessment reports flag objects needing manual conversion.',
+          ],
+        },
+        {
+          heading: 'Optimization: lineage, partitioning, compression',
+          body: 'Optimization spans correctness and performance. Data lineage (via Amazon SageMaker Catalog / ML Lineage Tracking) records where data came from and how it was transformed — vital for trust and debugging. For performance: partition to prune scans, use columnar compression to shrink I/O, choose Redshift distribution/sort keys to minimize redistribution, and index in DynamoDB/RDS for the access pattern. These levers cut both latency and cost.',
+          bullets: [
+            'Lineage tracks origin and transformations for trust, auditing, and debugging.',
+            'Partitioning prunes scans; compression (columnar encodings) cuts I/O and storage.',
+            'Redshift: KEY distribution co-locates joins; sort keys speed range filters; let AUTO help when unsure.',
+            'DynamoDB GSIs/LSIs and RDS indexes serve specific access patterns efficiently.',
+          ],
+          callout: { type: 'tip', text: 'Performance-tuning questions usually reward the layout/optimization lever (partitioning, compression, distribution/sort key, index) — not a bigger instance.' },
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 0,
+          question: 'When designing a DynamoDB table, what should drive the choice of partition key, sort key, and secondary indexes?',
+          options: [
+            'Third-normal-form relational normalization',
+            'The application’s known access patterns and queries',
+            'The alphabetical order of attributes',
+            'The size of the S3 bucket',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — DynamoDB is modeled from access patterns: design keys and indexes so each required query is served efficiently without scans.',
+          elaborativePrompt: 'Why can applying relational normalization to DynamoDB lead to poor performance?',
+        },
+        {
+          afterSection: 2,
+          question: 'A company is migrating an on-premises Oracle database to Amazon Aurora PostgreSQL and must convert the schema and stored procedures. Which tool is purpose-built for this?',
+          options: [
+            'Amazon Athena',
+            'AWS Schema Conversion Tool (AWS SCT) / DMS Schema Conversion',
+            'Amazon QuickSight',
+            'AWS Glue DataBrew',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — AWS SCT / DMS Schema Conversion converts heterogeneous schemas and code objects; DMS then migrates the data.',
+          elaborativePrompt: 'What does SCT’s assessment report tell you before a migration begins?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself: a slow Redshift dashboard JOINs a large fact table to a dimension table and scans far more data than expected. Walk through how distribution style co-locates the join, how sort keys and compression reduce I/O, and how partitioning would help the equivalent query over S3 in Athena.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A Redshift dashboard JOINs a multi-billion-row fact table to a dimension table, and queries are slow due to heavy data redistribution across the cluster during the JOIN. Which change most directly addresses the problem?',
+        options: [
+          'Increase the Athena query timeout',
+          'Choose a KEY distribution style on the join column so matching rows are co-located on the same slices, and set appropriate sort keys',
+          'Convert the tables to DynamoDB',
+          'Store the data in S3 Glacier',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'KEY distribution on the join column co-locates matching rows, eliminating most cross-slice redistribution; sort keys further speed filtered scans.',
+          perOption: [
+            'Athena timeouts are irrelevant to a Redshift JOIN performance problem.',
+            'Correct — distributing both tables on the join key co-locates the join and removes the costly redistribution; sort keys aid range filters.',
+            'DynamoDB is a key-value store, not suited to ad-hoc analytical JOINs over billions of rows.',
+            'Glacier is archival storage and would make the data far slower to query, not faster.',
+          ],
+          link: 'Domain 2 · Task 2.4 — Design data models and schema evolution',
+        },
+      },
+      videos: [
+        { videoId: '6G0bLDIcO7Y', title: 'AWS Certified Data Engineer – Associate (DEA-C01) [Full Course in 285min]', channel: 'Johnny Chivers', relevance: 'Covers schema design, Redshift distribution/sort keys, and optimization — companion to Task 2.4.' },
+      ],
+      keyTerms: [
+        { term: 'Distribution style (Redshift)', def: 'How table rows are spread across slices (KEY, ALL, EVEN, AUTO); KEY on the join column co-locates joins to avoid redistribution.' },
+        { term: 'Sort key (Redshift)', def: 'A column ordering that lets Redshift skip blocks during range-filtered scans, speeding queries.' },
+        { term: 'Single-table design (DynamoDB)', def: 'Modeling multiple entity types in one table from access patterns, using composite keys and secondary indexes.' },
+        { term: 'Schema evolution', def: 'Safely changing a schema over time (adding/renaming columns, changing partitions) without breaking consumers — strong in Iceberg.' },
+        { term: 'AWS SCT', def: 'The Schema Conversion Tool that converts schemas and code between heterogeneous database engines, paired with DMS for data movement.' },
+      ],
+      awsServices: [
+        { name: 'Amazon Redshift', purpose: 'Columnar warehouse where distribution and sort keys plus compression drive analytical performance.' },
+        { name: 'AWS SCT / AWS DMS', purpose: 'Convert heterogeneous schemas/code (SCT) and migrate the data (DMS) during engine migrations.' },
+        { name: 'Amazon SageMaker Catalog', purpose: 'Establish data lineage and governed cataloging for trust and auditability.' },
+      ],
+      examTips: [
+        'DynamoDB modeling is access-pattern-first — list queries, then design keys/indexes; avoid relational normalization habits.',
+        'Redshift JOIN redistribution pain → KEY distribution on the join column; sort keys speed range filters.',
+        'Heterogeneous DB migration schema/code → AWS SCT / DMS Schema Conversion; DMS moves the data.',
+        'Performance tuning usually rewards a layout lever (partitioning, compression, dist/sort key, index) over a bigger instance.',
+        'Iceberg enables safe schema and partition evolution; design additive, backward-compatible changes.',
+      ],
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    //  DOMAIN 3 — DATA OPERATIONS AND SUPPORT (22%)
+    // ═══════════════════════════════════════════════════════════════
+
+    {
+      id: 'd3-s11',
+      number: 11,
+      module: 'Domain 3 · Data Operations and Support',
+      domain: 'd3',
+      weight: '22%',
+      task: 'Task 3.1',
+      title: 'Automating Data Processing — Glue, Step Functions, Lambda, and Athena',
+      duration: 30,
+      summary: 'Operations is about making pipelines run repeatably without babysitting. This session covers automating data processing with AWS services: orchestrating with MWAA and Step Functions, calling AWS SDKs from code, using Glue/EMR/Redshift features, preparing data with DataBrew and SageMaker Unified Studio, querying with Athena, and automating with Lambda and EventBridge.',
+      objectives: [
+        'Automate processing with Lambda, EventBridge, Step Functions, and MWAA',
+        'Call AWS SDKs to drive AWS features from code, and troubleshoot managed workflows',
+        'Use Glue DataBrew and SageMaker Unified Studio to prepare data with low/no code',
+        'Query data on demand with Amazon Athena',
+      ],
+      preLearningCheck: {
+        question: 'A team wants to prepare and clean data visually, without writing code, to profile columns and build repeatable transformation recipes. Which service fits best?',
+        options: [
+          'Amazon Athena',
+          'AWS Glue DataBrew',
+          'Amazon Kinesis Data Streams',
+          'AWS CloudFormation',
+        ],
+        correct: 1,
+        note: 'No pressure — guessing first improves retention. AWS Glue DataBrew is a visual data-preparation tool: profile data, apply 250+ built-in transformations as reusable recipes, all with no code. Athena queries data with SQL but is not a visual prep tool.',
+      },
+      sections: [
+        {
+          heading: 'Automating with the right service',
+          body: 'Automation removes humans from the run loop. Lambda runs event-driven processing; EventBridge schedules and routes events; Step Functions orchestrates multi-step workflows; MWAA runs Airflow DAGs. The skill is matching the automation tool to the shape of the work — single event → Lambda; scheduled or event-routed → EventBridge; ordered multi-step with retries → Step Functions; complex dependency DAG → MWAA. (These mirror the orchestration choices from Domain 1, now applied operationally.)',
+          bullets: [
+            'Lambda: event-driven, short processing and glue logic.',
+            'EventBridge: schedule jobs and route events to targets.',
+            'Step Functions: ordered, fault-tolerant multi-step automation.',
+            'MWAA: managed Airflow for complex, dependency-rich pipelines.',
+          ],
+        },
+        {
+          heading: 'SDKs and service features',
+          body: 'Beyond managed orchestration, data engineers automate by calling AWS SDKs (boto3 for Python and others) from Lambda, Glue, or containers — starting jobs, reading/writing S3, running Redshift queries via the Redshift Data API, and submitting EMR steps. Each processing service exposes features worth knowing: Glue jobs/triggers/workflows, EMR steps and notebooks, and Redshift stored procedures and the Data API for serverless query execution.',
+          bullets: [
+            'Use SDKs to start jobs, move data, and run queries programmatically.',
+            'Redshift Data API runs SQL asynchronously without managing connections — great from Lambda.',
+            'Glue triggers/workflows and EMR steps automate multi-job sequences.',
+          ],
+          callout: { type: 'tip', text: 'Running Redshift SQL from Lambda without managing JDBC connections or VPC plumbing → the Redshift Data API.' },
+        },
+        {
+          heading: 'Low-code prep: DataBrew and SageMaker Unified Studio',
+          body: 'Not all transformation needs Spark code. AWS Glue DataBrew offers visual, no-code data preparation — profiling, 250+ transformations, and reusable recipes — ideal for analysts and quick cleaning. Amazon SageMaker Unified Studio brings data engineering, analytics, and ML into one governed environment for preparing and processing data. These tools speed routine prep without custom code.',
+          bullets: [
+            'DataBrew: visual profiling and reusable transformation recipes, no code.',
+            'SageMaker Unified Studio: unified, governed workspace for data prep and analytics.',
+            'Choose low-code prep for routine cleaning; Glue/EMR Spark for heavy custom logic.',
+          ],
+        },
+        {
+          heading: 'Querying with Athena and troubleshooting workflows',
+          body: 'Amazon Athena runs serverless SQL directly over S3 (via the Glue Catalog) — no infrastructure, pay per data scanned. It is the default for ad-hoc querying and lightweight automated checks. When automated workflows fail, troubleshooting MWAA and Step Functions means reading execution history, task logs (CloudWatch), and error states — a frequent operations theme covered more in the monitoring session.',
+          bullets: [
+            'Athena: serverless SQL over S3; pay per scan; ideal for ad-hoc and scheduled queries.',
+            'Troubleshoot Step Functions via execution history and CloudWatch Logs; MWAA via Airflow task logs.',
+            'Pair Athena with partitioned Parquet to keep automated queries cheap.',
+          ],
+          interactive: 'orchestration-selector',
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 1,
+          question: 'A Lambda function must run SQL against Amazon Redshift without managing persistent JDBC connections or placing the function in the cluster’s VPC. What is the cleanest approach?',
+          options: [
+            'Open a JDBC connection from the Lambda on every invocation',
+            'Use the Amazon Redshift Data API to run SQL asynchronously',
+            'Export the data to DynamoDB and query there',
+            'Run the query manually in the Console',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — the Redshift Data API runs SQL over HTTPS without managing connections or VPC networking, ideal for serverless callers like Lambda.',
+          elaborativePrompt: 'Why does the Data API simplify running Redshift queries from short-lived serverless functions?',
+        },
+        {
+          afterSection: 2,
+          question: 'Analysts need to profile a messy dataset and build a repeatable cleaning workflow without writing Spark code. Which service is the best fit?',
+          options: [
+            'Amazon EMR with custom Scala',
+            'AWS Glue DataBrew',
+            'Amazon Kinesis Data Firehose',
+            'AWS Step Functions',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — DataBrew provides visual profiling and reusable no-code recipes for exactly this routine cleaning work.',
+          elaborativePrompt: 'When would you still reach for Glue Spark jobs instead of DataBrew?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself: a daily pipeline must run a Glue job, then run a Redshift query from a Lambda, then notify a team — all automated. Walk through which service orchestrates, how the Lambda uses the Redshift Data API, and where DataBrew or Athena would fit for prep and ad-hoc checks.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A serverless pipeline must, on a schedule, run a transformation and then execute several SQL statements in Amazon Redshift from a Lambda function, with no JDBC connection management and minimal operational overhead. Which combination best meets this?',
+        options: [
+          'A cron job on EC2 that opens JDBC connections to Redshift',
+          'Amazon EventBridge Scheduler to trigger the workflow and the Amazon Redshift Data API to run the SQL from Lambda',
+          'A manual Console run each day',
+          'Amazon Kinesis Data Streams to push SQL to Redshift',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'EventBridge Scheduler triggers the run and the Redshift Data API executes SQL from Lambda without connection or VPC management — fully serverless and low overhead.',
+          perOption: [
+            'An EC2 cron job with JDBC adds servers, connection management, and operational overhead the requirement avoids.',
+            'Correct — EventBridge Scheduler handles the schedule and the Redshift Data API runs SQL from Lambda with no connection management.',
+            'Manual Console runs are not automation.',
+            'Kinesis Data Streams is for streaming ingestion, not executing SQL in Redshift.',
+          ],
+          link: 'Domain 3 · Task 3.1 — Automate data processing by using AWS services',
+        },
+      },
+      videos: [
+        { videoId: '6G0bLDIcO7Y', title: 'AWS Certified Data Engineer – Associate (DEA-C01) [Full Course in 285min]', channel: 'Johnny Chivers', relevance: 'Covers automation with Glue, Step Functions, Lambda, Athena, and DataBrew — companion to Task 3.1.' },
+      ],
+      keyTerms: [
+        { term: 'Redshift Data API', def: 'An HTTPS API to run SQL on Redshift asynchronously without managing JDBC connections or VPC networking — ideal for Lambda.' },
+        { term: 'AWS Glue DataBrew', def: 'A visual, no-code data-preparation tool for profiling data and building reusable transformation recipes.' },
+        { term: 'SageMaker Unified Studio', def: 'A unified, governed environment combining data engineering, analytics, and ML for preparing and processing data.' },
+        { term: 'Amazon Athena', def: 'Serverless SQL query service over S3 (via the Glue Catalog), billed per data scanned.' },
+        { term: 'AWS SDK automation', def: 'Driving AWS features (start jobs, run queries, move data) programmatically from code such as boto3 in Lambda or Glue.' },
+      ],
+      awsServices: [
+        { name: 'AWS Step Functions / Amazon MWAA', purpose: 'Orchestrate multi-step and dependency-rich data processing automatically.' },
+        { name: 'AWS Glue DataBrew', purpose: 'Visual, no-code data preparation with reusable recipes.' },
+        { name: 'Amazon Athena', purpose: 'Serverless SQL over S3 for ad-hoc and automated querying.' },
+      ],
+      examTips: [
+        'Match automation to work shape: single event → Lambda; schedule/route → EventBridge; ordered multi-step → Step Functions; complex DAG → MWAA.',
+        'Run Redshift SQL from Lambda with no connection/VPC management → the Redshift Data API.',
+        'No-code visual data prep with reusable recipes → AWS Glue DataBrew.',
+        'Ad-hoc SQL over S3 with no infrastructure → Athena (keep it cheap with partitioned Parquet).',
+        'Troubleshoot Step Functions via execution history + CloudWatch; MWAA via Airflow task logs.',
+      ],
+    },
+
+    // ─────────────────────────────────────────────────────────────
+    {
+      id: 'd3-s12',
+      number: 12,
+      module: 'Domain 3 · Data Operations and Support',
+      domain: 'd3',
+      weight: '22%',
+      task: 'Tasks 3.2 & 3.4',
+      title: 'Analyzing Data and Ensuring Data Quality',
+      duration: 30,
+      summary: 'Operations includes making data analyzable and trustworthy. This session covers analyzing data with Athena and QuickSight, SQL in Redshift and Athena, Athena Spark notebooks, the provisioned-vs-serverless trade-off, and aggregation concepts — plus ensuring data quality with checks, Glue Data Quality and DataBrew rules, sampling, and handling data skew.',
+      objectives: [
+        'Analyze and visualize data with Athena, QuickSight, and SQL in Redshift/Athena',
+        'Use Athena notebooks with Apache Spark to explore data',
+        'Weigh provisioned vs. serverless trade-offs for analytics workloads',
+        'Ensure data quality with checks, Glue Data Quality / DataBrew rules, sampling, and skew handling',
+      ],
+      preLearningCheck: {
+        question: 'A team wants interactive business dashboards over data in Redshift and S3, shared with non-technical stakeholders. Which AWS service is purpose-built for this?',
+        options: [
+          'Amazon Athena',
+          'Amazon QuickSight',
+          'AWS Glue crawler',
+          'Amazon SQS',
+        ],
+        correct: 1,
+        note: 'No pressure — guessing first improves retention. Amazon QuickSight is AWS’s serverless BI and dashboarding service, connecting to Redshift, Athena/S3, RDS, and more to build interactive visualizations for business users.',
+      },
+      sections: [
+        {
+          heading: 'Analyzing and visualizing data',
+          body: 'Analysis turns stored data into answers. Amazon Athena runs SQL over S3 for ad-hoc analysis; Amazon Redshift runs SQL for warehouse analytics and can create views to encapsulate logic. Amazon QuickSight is the BI layer — interactive dashboards and visualizations over Redshift, Athena, and more, with SPICE in-memory acceleration. The exam expects you to know SQL analysis concepts: aggregation, rolling averages, GROUP BY, and pivoting.',
+          bullets: [
+            'Athena: serverless SQL over S3 for ad-hoc analysis and views.',
+            'Redshift: warehouse SQL and views for repeated analytical workloads.',
+            'QuickSight: serverless BI dashboards; SPICE caches data for fast visuals.',
+            'Know aggregation, rolling average, grouping, and pivoting as SQL concepts.',
+          ],
+        },
+        {
+          heading: 'Athena Spark notebooks and exploration',
+          body: 'Beyond SQL, Athena supports Apache Spark notebooks for interactive, code-based exploration over large datasets without provisioning a cluster — useful for data scientists and engineers exploring data with PySpark. This pairs serverless convenience with Spark’s expressiveness for transformations and analysis that exceed plain SQL.',
+          bullets: [
+            'Athena for Apache Spark: run PySpark in notebooks, serverless, no cluster to manage.',
+            'Good for exploratory, code-based analysis over S3 data.',
+            'Complements Athena SQL for logic that is awkward in pure SQL.',
+          ],
+        },
+        {
+          heading: 'Provisioned vs. serverless trade-offs',
+          body: 'A recurring decision: provisioned (Redshift provisioned clusters, EMR on EC2) vs. serverless (Athena, Redshift Serverless, EMR Serverless, Glue). Serverless minimizes operations and bills per use — ideal for spiky, unpredictable, or intermittent workloads. Provisioned can be cheaper and more controllable for steady, high-utilization workloads and offers fine tuning. Match the billing and operations model to the workload pattern.',
+          bullets: [
+            'Serverless (Athena, Redshift Serverless, Glue): no ops, pay-per-use, great for spiky/intermittent loads.',
+            'Provisioned (Redshift clusters, EMR on EC2): steady high-utilization, tunable, can be cheaper at scale.',
+            'Decide on workload predictability and utilization, not just preference.',
+          ],
+          callout: { type: 'tip', text: 'Spiky, unpredictable, or occasional analytics → serverless (Athena/Redshift Serverless). Steady, heavy, 24/7 utilization → a right-sized provisioned cluster is often cheaper.' },
+        },
+        {
+          heading: 'Ensuring data quality',
+          body: 'Trustworthy pipelines validate data. Run quality checks during processing — completeness (no empty required fields), validity, uniqueness, and consistency. AWS Glue Data Quality defines and runs rules on Glue tables and jobs; DataBrew profiles data and applies rule-based validation. Sampling examines a representative subset for quick checks, and handling data skew (rebalancing hot keys) keeps distributed jobs from stalling. Failing records can be quarantined for review rather than corrupting downstream data.',
+          bullets: [
+            'Check completeness, validity, uniqueness, and consistency while processing.',
+            'AWS Glue Data Quality / DataBrew define and enforce data-quality rules.',
+            'Sampling gives fast quality signals on large datasets.',
+            'Mitigate data skew (salting/repartitioning) so distributed jobs stay balanced.',
+          ],
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 2,
+          question: 'An analytics workload runs heavy queries only a few hours a week, unpredictably. Which model minimizes cost and operational overhead?',
+          options: [
+            'A large, always-on provisioned Redshift cluster',
+            'Serverless options such as Amazon Athena or Redshift Serverless that bill per use',
+            'A fleet of EC2 instances running constantly',
+            'An on-premises Hadoop cluster',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — serverless analytics bills per use and requires no idle capacity, ideal for spiky, intermittent workloads.',
+          elaborativePrompt: 'At what utilization level would a provisioned cluster start to beat serverless on cost?',
+        },
+        {
+          afterSection: 3,
+          question: 'A pipeline must reject records with missing required fields and enforce uniqueness rules as part of an AWS Glue job. Which capability fits best?',
+          options: [
+            'Amazon QuickSight visuals',
+            'AWS Glue Data Quality rules',
+            'S3 versioning',
+            'A DynamoDB GSI',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — AWS Glue Data Quality defines and evaluates rules (completeness, uniqueness, validity) within Glue jobs to gate bad data.',
+          elaborativePrompt: 'Why is quarantining failing records often better than dropping them silently?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself: a weekly analytics job runs unpredictably and must produce a stakeholder dashboard from trustworthy data. Walk through why you choose serverless analytics, where QuickSight fits, and how Glue Data Quality rules ensure completeness and uniqueness before the data reaches the dashboard.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A company runs ad-hoc analytical SQL over S3 a few times a week and must publish interactive dashboards to business stakeholders, while ensuring incoming data has no missing required fields. Which combination best meets all requirements with the least operational overhead?',
+        options: [
+          'A 24/7 provisioned Redshift cluster, Excel exports, and manual spot-checks',
+          'Amazon Athena for the ad-hoc SQL, Amazon QuickSight for dashboards, and AWS Glue Data Quality rules to enforce completeness',
+          'Amazon EMR on EC2 running constantly, with custom Spark dashboards',
+          'DynamoDB for analytics with a Lambda emailing CSVs',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'Athena (serverless SQL) + QuickSight (serverless BI) + Glue Data Quality (rule enforcement) match the intermittent, low-overhead, quality-gated requirement exactly.',
+          perOption: [
+            'A 24/7 cluster wastes money for a few-times-a-week workload, and manual checks do not enforce quality.',
+            'Correct — Athena handles intermittent SQL with no idle cost, QuickSight delivers stakeholder dashboards, and Glue Data Quality enforces completeness rules.',
+            'Always-on EMR and custom dashboards add heavy operational overhead for an occasional workload.',
+            'DynamoDB is not an analytical engine, and emailing CSVs is not interactive dashboarding.',
+          ],
+          link: 'Domain 3 · Tasks 3.2 & 3.4 — Analyze data and ensure data quality',
+        },
+      },
+      videos: [
+        { videoId: '6G0bLDIcO7Y', title: 'AWS Certified Data Engineer – Associate (DEA-C01) [Full Course in 285min]', channel: 'Johnny Chivers', relevance: 'Covers Athena, QuickSight, serverless vs. provisioned, and data quality — companion to Tasks 3.2 and 3.4.' },
+      ],
+      keyTerms: [
+        { term: 'Amazon QuickSight', def: 'AWS’s serverless BI service for interactive dashboards over Redshift, Athena/S3, and more, with SPICE in-memory acceleration.' },
+        { term: 'Athena for Apache Spark', def: 'Serverless Spark notebooks in Athena for code-based exploration of S3 data without managing a cluster.' },
+        { term: 'Serverless vs. provisioned', def: 'A cost/operations trade-off: serverless bills per use for spiky loads; provisioned suits steady, high-utilization workloads.' },
+        { term: 'AWS Glue Data Quality', def: 'A capability to define and evaluate data-quality rules (completeness, uniqueness, validity) on Glue tables and jobs.' },
+        { term: 'Data skew', def: 'Uneven key distribution that overloads one worker; mitigated by salting or repartitioning to keep jobs balanced.' },
+      ],
+      awsServices: [
+        { name: 'Amazon Athena', purpose: 'Serverless SQL and Spark notebooks for ad-hoc analysis and exploration over S3.' },
+        { name: 'Amazon QuickSight', purpose: 'Serverless BI dashboards and visualizations for business stakeholders.' },
+        { name: 'AWS Glue Data Quality / DataBrew', purpose: 'Define and enforce data-quality rules and profile data during processing.' },
+      ],
+      examTips: [
+        'Interactive BI dashboards for stakeholders → Amazon QuickSight.',
+        'Spiky/occasional analytics → serverless (Athena, Redshift Serverless); steady heavy load → provisioned cluster.',
+        'Code-based exploration without a cluster → Athena for Apache Spark notebooks.',
+        'Enforce completeness/uniqueness/validity in pipelines → AWS Glue Data Quality (or DataBrew rules).',
+        'Know SQL analysis concepts: aggregation, rolling average, GROUP BY, pivoting; mitigate skew with salting/repartitioning.',
+      ],
+    },
+
+    // ─────────────────────────────────────────────────────────────
+    {
+      id: 'd3-s13',
+      number: 13,
+      module: 'Domain 3 · Data Operations and Support',
+      domain: 'd3',
+      weight: '22%',
+      task: 'Task 3.3',
+      title: 'Maintaining and Monitoring Pipelines — CloudWatch, CloudTrail, and Log Analysis',
+      duration: 30,
+      summary: 'Pipelines fail quietly unless you watch them. This session covers maintaining and monitoring data pipelines: logging application data to CloudWatch Logs, tracking API calls with CloudTrail, alerting on problems, troubleshooting performance and failures in Glue and EMR, extracting logs for audit, and analyzing logs with Athena, OpenSearch, and CloudWatch Logs Insights.',
+      objectives: [
+        'Log application and pipeline data with Amazon CloudWatch Logs',
+        'Track API activity for audit and troubleshooting with AWS CloudTrail',
+        'Send alerts and troubleshoot performance and failures in Glue and EMR',
+        'Extract and analyze logs with Athena, Amazon OpenSearch Service, and CloudWatch Logs Insights',
+      ],
+      preLearningCheck: {
+        question: 'You need to know which user or role deleted an S3 object and when, for an audit. Which service provides this record?',
+        options: [
+          'Amazon CloudWatch metrics',
+          'AWS CloudTrail (API activity logging)',
+          'Amazon QuickSight',
+          'AWS Glue crawler logs',
+        ],
+        correct: 1,
+        note: 'No pressure — guessing first improves retention. AWS CloudTrail records API calls — who did what, when, and from where — across AWS, making it the source of truth for auditing actions like a DeleteObject call.',
+      },
+      sections: [
+        {
+          heading: 'Logging and metrics with CloudWatch',
+          body: 'Amazon CloudWatch is the observability backbone. CloudWatch Logs collects application and service logs (Glue, EMR, Lambda, Redshift) for searching and retention control. CloudWatch metrics track performance and health; alarms fire when a metric breaches a threshold and notify via SNS or trigger automation. Structured logs plus the right metrics make a pipeline’s behavior visible and alertable.',
+          bullets: [
+            'CloudWatch Logs: centralize pipeline and application logs; set retention to control cost.',
+            'CloudWatch metrics + alarms: detect threshold breaches and notify (SNS) or act.',
+            'Most data services emit logs/metrics to CloudWatch natively.',
+          ],
+        },
+        {
+          heading: 'Auditing with CloudTrail',
+          body: 'AWS CloudTrail records management and (optionally) data-event API calls across the account — the authoritative audit trail of who did what. It answers "who deleted this table," "who changed this IAM policy," and feeds security and compliance reviews. CloudTrail logs can be delivered to S3 and queried (Athena) or analyzed in CloudTrail Lake. Distinguish CloudTrail (API activity / audit) from CloudWatch (metrics, logs, alarms).',
+          bullets: [
+            'CloudTrail = API call history for audit and forensic troubleshooting.',
+            'Deliver trails to S3; query with Athena or use CloudTrail Lake.',
+            'CloudTrail (who/what/when on APIs) vs. CloudWatch (performance metrics + app logs).',
+          ],
+          callout: { type: 'note', text: 'Audit "who performed an action" → CloudTrail. Monitor "how the system is performing / app logs" → CloudWatch. This split is a frequent distractor.' },
+        },
+        {
+          heading: 'Troubleshooting Glue and EMR',
+          body: 'Operations means fixing pipelines. Glue job failures and performance issues are diagnosed from job run details, CloudWatch Logs, and metrics (DPU usage, errors); common causes include OOM from skew, schema mismatches, and throttled sources. EMR issues are read from step logs, YARN/Spark UIs, and CloudWatch; common causes include under-sized nodes, skew, and Spot interruptions. Bookmarks, retries, and right-sizing are typical remedies.',
+          bullets: [
+            'Glue: inspect job run logs/metrics; fix OOM (skew), schema drift, and source throttling.',
+            'EMR: use step logs and Spark/YARN UIs; right-size nodes and handle Spot interruptions.',
+            'Use retries and idempotency so transient failures recover automatically.',
+          ],
+        },
+        {
+          heading: 'Extracting and analyzing logs',
+          body: 'Logs are a dataset too. For audits and analysis, extract logs to S3 and query them with Athena, stream them to Amazon OpenSearch Service for search and dashboards, or use CloudWatch Logs Insights for fast ad-hoc queries directly on log groups. For very large log volumes, EMR can process them at scale. Match the tool to volume and latency: Logs Insights for quick interactive queries, OpenSearch for search/dashboards, Athena/EMR for big batch log analytics.',
+          bullets: [
+            'CloudWatch Logs Insights: fast interactive queries over log groups.',
+            'OpenSearch Service: full-text search and dashboards over log data.',
+            'Athena (logs in S3) / EMR: large-scale batch log analysis.',
+          ],
+          callout: { type: 'tip', text: 'Quick interactive log queries → CloudWatch Logs Insights. Search + dashboards over logs → OpenSearch. Huge historical log analytics in S3 → Athena or EMR.' },
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 1,
+          question: 'A security review must determine which IAM principal ran an UnloadFromRedshift-related API call and when. Which service holds this information?',
+          options: [
+            'Amazon CloudWatch metrics',
+            'AWS CloudTrail',
+            'Amazon Athena query history only',
+            'AWS Glue Data Catalog',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — CloudTrail records API activity with the principal, time, and source, serving as the audit trail for such reviews.',
+          elaborativePrompt: 'How do CloudTrail and CloudWatch play complementary but distinct roles in operations?',
+        },
+        {
+          afterSection: 3,
+          question: 'An on-call engineer needs to run a quick, interactive query across recent application logs in a CloudWatch log group to find error patterns. Which tool is the most direct fit?',
+          options: [
+            'Amazon QuickSight',
+            'CloudWatch Logs Insights',
+            'AWS CloudFormation',
+            'Amazon SQS',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — CloudWatch Logs Insights runs fast, interactive queries directly over log groups, ideal for ad-hoc error investigation.',
+          elaborativePrompt: 'When would you stream logs to OpenSearch instead of using Logs Insights?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself: a nightly Glue job started failing and a stakeholder asks both "why is it failing" and "who changed its configuration." Walk through how CloudWatch Logs/metrics diagnose the failure, how CloudTrail reveals the configuration change, and which tool you use to query the logs quickly versus at large scale.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A data team must alert on AWS Glue job failures within minutes, investigate the cause from logs, and separately produce an audit record of who modified the job’s configuration. Which combination of services is appropriate?',
+        options: [
+          'Use only Amazon QuickSight dashboards for everything',
+          'CloudWatch metrics/alarms (with SNS) and CloudWatch Logs to detect and investigate failures, plus AWS CloudTrail to audit who changed the job configuration',
+          'Rely on S3 versioning to detect failures and audit changes',
+          'Use DynamoDB Streams to capture job failures and configuration changes',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'CloudWatch alarms + Logs handle failure detection and root-cause investigation; CloudTrail provides the audit trail of configuration changes — each service in its proper role.',
+          perOption: [
+            'QuickSight is a BI tool, not an alerting, logging, or audit service.',
+            'Correct — CloudWatch alarms (via SNS) alert on failures, CloudWatch Logs supports investigation, and CloudTrail records who changed the configuration.',
+            'S3 versioning tracks object versions, not Glue job failures or API-level configuration changes.',
+            'DynamoDB Streams captures table item changes, not Glue failures or IAM/config API activity.',
+          ],
+          link: 'Domain 3 · Task 3.3 — Maintain and monitor data pipelines',
+        },
+      },
+      videos: [
+        { videoId: '6G0bLDIcO7Y', title: 'AWS Certified Data Engineer – Associate (DEA-C01) [Full Course in 285min]', channel: 'Johnny Chivers', relevance: 'Covers CloudWatch, CloudTrail, and log analysis for pipeline monitoring — companion to Task 3.3.' },
+      ],
+      keyTerms: [
+        { term: 'Amazon CloudWatch Logs', def: 'Centralized log collection for AWS services and applications, with retention control and querying via Logs Insights.' },
+        { term: 'CloudWatch alarm', def: 'A rule that fires when a metric breaches a threshold, notifying via SNS or triggering automation.' },
+        { term: 'AWS CloudTrail', def: 'A record of API calls across AWS — who did what, when, from where — the authoritative audit trail.' },
+        { term: 'CloudWatch Logs Insights', def: 'An interactive query tool for fast ad-hoc analysis of CloudWatch log groups.' },
+        { term: 'Amazon OpenSearch Service', def: 'A managed search and analytics engine used to search and visualize log data.' },
+      ],
+      awsServices: [
+        { name: 'Amazon CloudWatch', purpose: 'Collect logs, track metrics, and alarm on pipeline health and performance.' },
+        { name: 'AWS CloudTrail', purpose: 'Audit API activity to determine who changed or accessed resources.' },
+        { name: 'Amazon OpenSearch Service / Athena', purpose: 'Search, dashboard, and analyze log data for troubleshooting and audit.' },
+      ],
+      examTips: [
+        'Audit "who did what" → CloudTrail; monitor performance + app logs → CloudWatch. Keep the split straight.',
+        'Alert on pipeline failures → CloudWatch alarms → SNS.',
+        'Quick interactive log queries → CloudWatch Logs Insights; search/dashboards → OpenSearch; big batch log analytics → Athena/EMR.',
+        'Glue failures: read job run logs/metrics; common causes are skew OOM, schema drift, throttling.',
+        'Build retries and idempotency so transient pipeline failures recover automatically.',
+      ],
+    },
+
   ],
 }
 
