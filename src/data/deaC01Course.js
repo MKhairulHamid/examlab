@@ -1860,6 +1860,437 @@ const deaC01Course = {
       ],
     },
 
+    // ═══════════════════════════════════════════════════════════════
+    //  DOMAIN 4 — DATA SECURITY AND GOVERNANCE (18%)
+    // ═══════════════════════════════════════════════════════════════
+
+    {
+      id: 'd4-s14',
+      number: 14,
+      module: 'Domain 4 · Data Security and Governance',
+      domain: 'd4',
+      weight: '18%',
+      task: 'Tasks 4.1 & 4.2',
+      title: 'Authentication and Authorization — IAM, Lake Formation, and Least Privilege',
+      duration: 30,
+      summary: 'Securing data starts with who can connect (authentication) and what they can do (authorization). This session covers VPC security groups, IAM roles and policies for data services, Secrets Manager and Parameter Store for credentials, S3 Access Points and PrivateLink, fine-grained authorization with AWS Lake Formation, Redshift database privileges, and the principle of least privilege via RBAC/TBAC/ABAC.',
+      objectives: [
+        'Configure authentication: VPC security groups, IAM roles for Lambda/API Gateway/CLI/CloudFormation, and credential rotation',
+        'Apply authorization with custom IAM policies and least privilege',
+        'Use AWS Lake Formation for fine-grained, centralized data-lake permissions',
+        'Grant database-level access in Redshift and choose RBAC, TBAC, or ABAC models',
+      ],
+      preLearningCheck: {
+        question: 'A team needs fine-grained, column- and row-level access control over data-lake tables in S3 that is enforced consistently across Athena, Redshift Spectrum, and EMR. Which service is purpose-built for this?',
+        options: [
+          'Raw S3 bucket policies only',
+          'AWS Lake Formation',
+          'Security groups',
+          'Amazon CloudWatch',
+        ],
+        correct: 1,
+        note: 'No pressure — guessing first improves retention. AWS Lake Formation provides centralized, fine-grained (database, table, column, row) permissions over data-lake tables that integrate across Athena, Redshift Spectrum, EMR, and Glue — far more granular than coarse S3 bucket policies.',
+      },
+      sections: [
+        {
+          heading: 'Authentication: networks, roles, and secrets',
+          body: 'Authentication establishes identity and connectivity. VPC security groups act as stateful firewalls controlling which sources reach a data store (e.g. allowing only an app subnet to reach RDS). IAM roles grant AWS services (Lambda, API Gateway, Glue, EC2) temporary credentials to act — no long-lived keys. AWS Secrets Manager stores and rotates database and application credentials; AWS Systems Manager Parameter Store holds configuration and SecureString secrets. Services retrieve secrets at run time rather than embedding them.',
+          bullets: [
+            'Security groups: control network access to RDS/Redshift/etc.; least-open ingress.',
+            'IAM roles: temporary credentials for services (Lambda, Glue, EC2) — never hardcode keys.',
+            'Secrets Manager: store + automatically rotate credentials; Parameter Store: config and SecureStrings.',
+            'S3 Access Points and PrivateLink: scoped, private connectivity to data without public exposure.',
+          ],
+          callout: { type: 'note', text: 'Rotatable database/API credentials → Secrets Manager. Plain config values and small secrets → Parameter Store. Both are retrieved at run time; nothing is hardcoded.' },
+        },
+        {
+          heading: 'Authorization with IAM and least privilege',
+          body: 'Authorization decides what an authenticated identity may do. IAM policies grant or deny actions on resources. When AWS managed policies are too broad, write custom (customer managed) policies scoped to exactly the needed actions and resources — the principle of least privilege. Use conditions to constrain by tag, source IP, or encryption. Over-broad policies (e.g. s3:* on all buckets) are the classic exam anti-pattern.',
+          bullets: [
+            'Prefer custom, scoped policies over broad managed ones when precision is required.',
+            'Least privilege: grant only the specific actions and resources needed.',
+            'Use policy conditions (tags, encryption, source) to tighten access.',
+          ],
+        },
+        {
+          heading: 'Lake Formation: fine-grained data-lake access',
+          body: 'AWS Lake Formation centralizes permissions over data-lake tables registered in the Glue Data Catalog. It grants database-, table-, column-, and row-level access (and data filters) that are enforced uniformly across Athena, Redshift Spectrum, EMR, and Glue — without writing per-service S3 policies. This is the answer whenever a scenario needs consistent, granular, centrally managed lake permissions, especially for sensitive columns.',
+          bullets: [
+            'Lake Formation grants table/column/row-level access centrally over cataloged S3 data.',
+            'Permissions apply consistently across Athena, Redshift Spectrum, EMR, and Glue.',
+            'Use column-level filters to hide sensitive fields from specific principals.',
+          ],
+          callout: { type: 'tip', text: 'Column/row-level data-lake access enforced across multiple analytics engines → Lake Formation, not hand-written S3 bucket policies.' },
+        },
+        {
+          heading: 'Database privileges and access models',
+          body: 'Within Amazon Redshift, authorization is also managed at the database layer: GRANT/REVOKE on schemas, tables, and views to database users, groups, and roles. Choose an access model to fit the organization: RBAC (role-based) groups permissions by job role; TBAC (tag-based) grants by resource tags; ABAC (attribute-based) uses attributes (on principal and resource) for dynamic, scalable access. ABAC scales well when many principals share attribute-driven rules.',
+          bullets: [
+            'Redshift: GRANT/REVOKE to users, groups, and roles for database-level authorization.',
+            'RBAC: permissions by role; TBAC: by tags; ABAC: by attributes for scalable, dynamic access.',
+            'ABAC reduces policy sprawl when access can be expressed as attribute rules.',
+          ],
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 0,
+          question: 'A pipeline needs database credentials that are rotated automatically every 30 days without code changes. Which service should store them?',
+          options: [
+            'A plaintext environment variable',
+            'AWS Secrets Manager with automatic rotation',
+            'A hardcoded value in the Glue script',
+            'An S3 object with public read',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — Secrets Manager stores credentials and rotates them automatically (via Lambda), so the pipeline always retrieves a current secret at run time.',
+          elaborativePrompt: 'When is Parameter Store SecureString a reasonable alternative to Secrets Manager?',
+        },
+        {
+          afterSection: 2,
+          question: 'Analysts must see all columns of a table except a sensitive "ssn" column, enforced whether they query via Athena or Redshift Spectrum. What is the best approach?',
+          options: [
+            'Duplicate the table without the column for each engine',
+            'Use AWS Lake Formation column-level permissions to exclude the sensitive column',
+            'Rely on an honor system',
+            'Put a broad s3:* policy on the bucket',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — Lake Formation column-level permissions hide the sensitive column consistently across all integrated engines, with no data duplication.',
+          elaborativePrompt: 'Why is centralized Lake Formation control safer than maintaining per-engine copies or policies?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself: a data lake holds tables with some sensitive columns, queried by analysts through Athena and Redshift Spectrum, and a pipeline service needs scoped access with rotating DB credentials. Walk through how Lake Formation enforces column-level access across engines, how IAM roles and least-privilege policies scope the pipeline, and where Secrets Manager fits.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A company must give analysts access to data-lake tables in S3 but hide two sensitive columns, enforce the rule identically across Athena and Redshift Spectrum, and avoid duplicating data or writing per-engine S3 policies. Which solution best meets the requirement?',
+        options: [
+          'Create separate redacted copies of each table for each query engine',
+          'Use AWS Lake Formation to grant table access with column-level permissions excluding the sensitive columns',
+          'Apply a single broad IAM policy granting s3:GetObject on the whole bucket',
+          'Email analysts a CSV with the columns removed',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'Lake Formation provides centralized column-level permissions enforced across Athena and Redshift Spectrum, meeting the requirement without data duplication or per-engine policies.',
+          perOption: [
+            'Redacted copies multiply storage, drift, and maintenance — the opposite of centralized control.',
+            'Correct — Lake Formation column-level grants hide the sensitive columns uniformly across integrated engines with no duplication.',
+            'A broad s3:GetObject policy exposes the full objects including sensitive columns — it cannot do column-level control.',
+            'Emailing CSVs is not a governed, queryable, or scalable access mechanism.',
+          ],
+          link: 'Domain 4 · Tasks 4.1 & 4.2 — Authentication and authorization',
+        },
+      },
+      videos: [
+        { videoId: '6G0bLDIcO7Y', title: 'AWS Certified Data Engineer – Associate (DEA-C01) [Full Course in 285min]', channel: 'Johnny Chivers', relevance: 'Covers IAM, Lake Formation, and access control for data — companion to Tasks 4.1 and 4.2.' },
+      ],
+      keyTerms: [
+        { term: 'IAM role', def: 'An identity granting temporary credentials to AWS services (Lambda, Glue, EC2) so they act without long-lived keys.' },
+        { term: 'AWS Secrets Manager', def: 'A service that stores and automatically rotates credentials, retrieved at run time instead of being hardcoded.' },
+        { term: 'AWS Lake Formation', def: 'Centralized, fine-grained (table/column/row) permissions over data-lake tables, enforced across Athena, Redshift Spectrum, EMR, and Glue.' },
+        { term: 'Least privilege', def: 'Granting only the specific actions and resources an identity needs — the core authorization principle.' },
+        { term: 'ABAC', def: 'Attribute-based access control that grants access from principal/resource attributes, scaling better than per-identity policies.' },
+      ],
+      awsServices: [
+        { name: 'AWS IAM', purpose: 'Authenticate services via roles and authorize actions via least-privilege policies.' },
+        { name: 'AWS Lake Formation', purpose: 'Centralized fine-grained data-lake permissions across analytics engines.' },
+        { name: 'AWS Secrets Manager / Parameter Store', purpose: 'Store and rotate credentials and configuration retrieved at run time.' },
+      ],
+      examTips: [
+        'Fine-grained column/row data-lake access across engines → Lake Formation, not broad S3 policies.',
+        'Rotatable DB/API credentials → Secrets Manager; config/SecureStrings → Parameter Store; never hardcode.',
+        'Services act via IAM roles (temporary creds); scope custom policies to least privilege.',
+        'Private, scoped data connectivity → S3 Access Points and PrivateLink.',
+        'Access models: RBAC by role, TBAC by tag, ABAC by attribute — ABAC scales for large, dynamic access.',
+      ],
+    },
+
+    // ─────────────────────────────────────────────────────────────
+    {
+      id: 'd4-s15',
+      number: 15,
+      module: 'Domain 4 · Data Security and Governance',
+      domain: 'd4',
+      weight: '18%',
+      task: 'Tasks 4.3 & 4.4',
+      title: 'Encryption, Masking, and Audit Logging',
+      duration: 30,
+      summary: 'Protecting data means encrypting it and proving who touched it. This session covers encryption at rest and in transit with AWS KMS, client-side vs. server-side encryption, cross-account encryption, data masking and anonymization, and preparing logs for audit with CloudTrail, CloudTrail Lake, CloudWatch Logs, and analysis via Athena, Logs Insights, and OpenSearch.',
+      objectives: [
+        'Encrypt data at rest and in transit with AWS KMS; distinguish client-side and server-side encryption',
+        'Configure encryption across AWS account boundaries',
+        'Apply data masking and anonymization for compliance',
+        'Prepare and analyze audit logs with CloudTrail, CloudTrail Lake, CloudWatch Logs, Athena, and OpenSearch',
+      ],
+      preLearningCheck: {
+        question: 'Which AWS service manages the encryption keys used to encrypt data at rest across S3, Redshift, RDS, and other services, with centralized control and auditing?',
+        options: [
+          'AWS KMS (Key Management Service)',
+          'Amazon CloudWatch',
+          'AWS Glue',
+          'Amazon Athena',
+        ],
+        correct: 0,
+        note: 'No pressure — guessing first improves retention. AWS KMS centrally creates, manages, and audits encryption keys, and integrates with S3, Redshift, RDS, EBS, and more for server-side encryption at rest. Key usage is logged in CloudTrail.',
+      },
+      sections: [
+        {
+          heading: 'Encryption at rest with KMS',
+          body: 'AWS Key Management Service (KMS) is the central key manager. Most data services integrate with KMS for server-side encryption at rest — S3 (SSE-KMS), Redshift, RDS, EBS, Glue, Kinesis — using AWS managed or customer managed keys (CMKs). Customer managed keys give control over rotation, key policies (who can use the key), and grants. KMS logs every key use in CloudTrail, supporting audit. Encryption with the wrong/forgotten key policy is a frequent cross-account pitfall.',
+          bullets: [
+            'KMS provides server-side encryption keys for S3, Redshift, RDS, EBS, Glue, Kinesis, and more.',
+            'Customer managed keys (CMKs) allow custom key policies, rotation, and grants.',
+            'Key policies control who can use a key — the gatekeeper for encrypted data access.',
+            'KMS key usage is recorded in CloudTrail for audit.',
+          ],
+        },
+        {
+          heading: 'Client-side, in-transit, and cross-account',
+          body: 'Server-side encryption encrypts data after it reaches AWS; client-side encryption encrypts it before upload so AWS never sees plaintext — used when the client must hold the keys. Encryption in transit (TLS/HTTPS) protects data moving between services and clients. Cross-account encryption requires the KMS key policy (and grants) to permit the other account to use the key — both the resource policy and the key policy must align, or access fails.',
+          bullets: [
+            'Server-side: AWS encrypts at rest (SSE-KMS); client-side: encrypt before upload, client holds keys.',
+            'In transit: enforce TLS/HTTPS; some services require encryption-in-transit settings.',
+            'Cross-account: the KMS key policy must grant the other account decrypt/use permissions.',
+          ],
+          callout: { type: 'warning', text: 'A cross-account "access denied" on encrypted data is usually a missing KMS key-policy grant for the other account — not just a bucket/resource policy issue.' },
+        },
+        {
+          heading: 'Masking and anonymization',
+          body: 'Compliance often requires hiding or transforming sensitive values. Data masking obscures fields (e.g. showing only the last 4 digits); anonymization/pseudonymization removes or replaces identifiers so individuals cannot be re-identified. Techniques include tokenization, hashing with salt, redaction, and dynamic data masking in Redshift. Glue/DataBrew transforms, Redshift dynamic data masking, and Lake Formation cell filters all help apply these rules per policy.',
+          bullets: [
+            'Masking hides values (partial display); anonymization removes/replaces identifiers.',
+            'Redshift dynamic data masking applies masking policies by role at query time.',
+            'Apply masking in transforms (Glue/DataBrew) or at access (Redshift/Lake Formation).',
+          ],
+        },
+        {
+          heading: 'Preparing logs for audit',
+          body: 'Audit readiness means capturing and analyzing the right logs. AWS CloudTrail records API activity; CloudTrail Lake provides a managed, queryable store for centralized log analysis with SQL. Amazon CloudWatch Logs stores application logs. For analysis, query CloudTrail logs in S3 with Athena, use CloudWatch Logs Insights for interactive queries, or stream to Amazon OpenSearch Service for search and dashboards. For very large log volumes, EMR can process them at scale.',
+          bullets: [
+            'CloudTrail = API audit trail; CloudTrail Lake = managed, SQL-queryable central log store.',
+            'CloudWatch Logs stores application logs; Logs Insights queries them interactively.',
+            'Analyze logs at scale with Athena (S3), OpenSearch (search/dashboards), or EMR (huge volumes).',
+          ],
+          callout: { type: 'tip', text: 'Centralized, SQL-queryable audit history without building your own pipeline → CloudTrail Lake. Ad-hoc queries over CloudTrail logs already in S3 → Athena.' },
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 1,
+          question: 'An S3 object encrypted with a customer managed KMS key in Account A must be read by a role in Account B, which already has S3 bucket access but still gets AccessDenied. What is the most likely missing piece?',
+          options: [
+            'The object must be made public',
+            'The KMS key policy (or a grant) does not allow Account B to use the key for decryption',
+            'The bucket is in the wrong Region',
+            'Account B needs a larger instance',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — decrypting KMS-encrypted data requires permission on the key itself; the key policy/grant must allow Account B, in addition to the bucket policy.',
+          elaborativePrompt: 'Why do cross-account encrypted reads require both a resource policy and a KMS key-policy grant?',
+        },
+        {
+          afterSection: 3,
+          question: 'A compliance team wants a centralized, SQL-queryable store of API activity across the organization without building a custom log pipeline. Which feature fits best?',
+          options: [
+            'CloudWatch metrics',
+            'AWS CloudTrail Lake',
+            'S3 versioning',
+            'Amazon QuickSight',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — CloudTrail Lake stores CloudTrail events in a managed lake you query with SQL, ideal for centralized audit without custom plumbing.',
+          elaborativePrompt: 'How does CloudTrail Lake differ from sending CloudTrail logs to S3 and querying with Athena?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself: sensitive data is stored encrypted in S3 with a customer managed KMS key, shared read-only with a partner account, with some columns masked for analysts, and all access auditable. Walk through the KMS key policy for cross-account decrypt, where masking is applied, and how CloudTrail/CloudTrail Lake provide the audit trail.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A company encrypts a dataset in Amazon S3 with a customer managed KMS key and must share read access with a partner AWS account while keeping a full audit trail of key usage. Which set of actions correctly enables this?',
+        options: [
+          'Disable encryption so the partner can read the data',
+          'Grant the partner account access in the S3 bucket policy AND in the KMS key policy (or via a grant), and rely on CloudTrail to record key usage',
+          'Copy the data to a public bucket',
+          'Share the customer managed key’s key material by email',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'Cross-account access to KMS-encrypted data needs both the resource (bucket) grant and a KMS key-policy/grant for the partner; CloudTrail records every key use for audit.',
+          perOption: [
+            'Disabling encryption violates the security requirement entirely.',
+            'Correct — both the S3 bucket policy and the KMS key policy must permit the partner account, and CloudTrail logs key usage for the audit trail.',
+            'A public bucket exposes the data to everyone — the opposite of controlled sharing.',
+            'KMS key material is never exported or emailed; that is not how KMS works and is grossly insecure.',
+          ],
+          link: 'Domain 4 · Tasks 4.3 & 4.4 — Encryption, masking, and audit logging',
+        },
+      },
+      videos: [
+        { videoId: '6G0bLDIcO7Y', title: 'AWS Certified Data Engineer – Associate (DEA-C01) [Full Course in 285min]', channel: 'Johnny Chivers', relevance: 'Covers KMS encryption, masking, and audit logging with CloudTrail — companion to Tasks 4.3 and 4.4.' },
+      ],
+      keyTerms: [
+        { term: 'AWS KMS', def: 'Key Management Service — centrally creates, controls, and audits encryption keys integrated with S3, Redshift, RDS, and more.' },
+        { term: 'Customer managed key (CMK)', def: 'A KMS key you control, with custom key policies, rotation, and grants governing who may use it.' },
+        { term: 'Client-side vs. server-side encryption', def: 'Client-side encrypts before upload (client holds keys); server-side encrypts at rest within AWS (SSE-KMS).' },
+        { term: 'Data masking / anonymization', def: 'Obscuring values (masking) or removing/replacing identifiers (anonymization) to protect sensitive data per compliance rules.' },
+        { term: 'AWS CloudTrail Lake', def: 'A managed, SQL-queryable store of CloudTrail events for centralized audit and log analysis.' },
+      ],
+      awsServices: [
+        { name: 'AWS KMS', purpose: 'Manage encryption keys and key policies for at-rest encryption across data services, with CloudTrail auditing.' },
+        { name: 'AWS CloudTrail / CloudTrail Lake', purpose: 'Record API activity and provide a centralized, queryable audit history.' },
+        { name: 'Amazon OpenSearch Service / Athena', purpose: 'Analyze and search audit and application logs for compliance and troubleshooting.' },
+      ],
+      examTips: [
+        'Central encryption keys for at-rest data → AWS KMS; customer managed keys give policy/rotation control.',
+        'Cross-account encrypted access needs BOTH the resource policy and a KMS key-policy/grant — a classic gotcha.',
+        'Client-side = encrypt before upload (client holds keys); server-side = SSE-KMS at rest; enforce TLS in transit.',
+        'Centralized SQL-queryable audit history → CloudTrail Lake; ad-hoc over CloudTrail logs in S3 → Athena.',
+        'Apply masking/anonymization in transforms (Glue/DataBrew) or at access (Redshift dynamic data masking, Lake Formation filters).',
+      ],
+    },
+
+    // ─────────────────────────────────────────────────────────────
+    {
+      id: 'd4-s16',
+      number: 16,
+      module: 'Domain 4 · Data Security and Governance',
+      domain: 'd4',
+      weight: '18%',
+      task: 'Task 4.5',
+      title: 'Data Privacy and Governance — PII, Sovereignty, and Sharing',
+      duration: 30,
+      summary: 'The final session covers data privacy and governance: identifying PII with Amazon Macie, sharing data safely (Redshift data sharing), preventing data from leaving allowed Regions for sovereignty, tracking configuration changes with AWS Config, governing access through SageMaker Catalog, and understanding governance frameworks and data-sharing patterns.',
+      objectives: [
+        'Identify PII at scale with Amazon Macie and protect it with Lake Formation',
+        'Share data securely, including Amazon Redshift data sharing',
+        'Enforce data sovereignty and prevent backups/replication to disallowed Regions',
+        'Track configuration changes with AWS Config and govern access via SageMaker Catalog',
+      ],
+      preLearningCheck: {
+        question: 'A company must automatically discover and classify personally identifiable information (PII) sitting in large Amazon S3 data lakes. Which service is purpose-built for this?',
+        options: [
+          'Amazon Macie',
+          'Amazon Athena',
+          'AWS Glue crawler',
+          'Amazon CloudWatch',
+        ],
+        correct: 0,
+        note: 'No pressure — guessing first improves retention. Amazon Macie uses managed ML to discover, classify, and report sensitive data (PII) in S3 at scale, integrating with governance workflows. A Glue crawler infers schema, not sensitivity.',
+      },
+      sections: [
+        {
+          heading: 'Identifying and protecting PII',
+          body: 'Governance starts with knowing where sensitive data is. Amazon Macie scans S3 with managed machine learning to discover and classify PII and other sensitive data, reporting findings you can act on. Combined with AWS Lake Formation (column/row permissions and cell filters), discovered PII can be restricted or masked so only authorized principals see it. This pairing — detect with Macie, control with Lake Formation — is a common governance pattern.',
+          bullets: [
+            'Macie discovers and classifies PII/sensitive data in S3 at scale.',
+            'Pair Macie findings with Lake Formation column/row controls to restrict sensitive fields.',
+            'Automate remediation (alerts, access changes) from Macie findings.',
+          ],
+          callout: { type: 'note', text: '"Find PII automatically in S3" → Amazon Macie. "Restrict access to those sensitive columns" → Lake Formation. The exam often pairs them.' },
+        },
+        {
+          heading: 'Data sharing patterns',
+          body: 'Sharing data without copying it is efficient and governable. Amazon Redshift data sharing lets one cluster grant live, read-only access to its data to other Redshift clusters/accounts without moving data. Lake Formation enables cross-account data-lake sharing with fine-grained permissions. AWS Data Exchange supports licensed third-party data. The governance goal is controlled, audited sharing — grant least-privilege access and track who consumes what.',
+          bullets: [
+            'Redshift data sharing: live, read-only cross-cluster/account access with no data copy.',
+            'Lake Formation: governed cross-account lake sharing with fine-grained grants.',
+            'Share with least privilege and keep an audit trail of consumers.',
+          ],
+        },
+        {
+          heading: 'Data sovereignty and Region controls',
+          body: 'Data sovereignty laws require data to stay within certain geographic boundaries. Enforce this by keeping data in approved Regions and preventing copies, backups, or replication to disallowed Regions. Service Control Policies (SCPs) in AWS Organizations can deny actions in non-approved Regions; S3 replication and AWS Backup must be configured to respect allowed Regions; and Config rules can detect violations. The goal is that data never lands where policy forbids.',
+          bullets: [
+            'Use SCPs to deny resource creation/replication in disallowed Regions org-wide.',
+            'Configure S3 replication and AWS Backup to target only approved Regions.',
+            'Detect drift/violations with AWS Config rules.',
+          ],
+          callout: { type: 'warning', text: 'Preventing data from leaving a Region is enforced proactively (SCPs, scoped replication/backup), not just detected after the fact — though Config rules add detection.' },
+        },
+        {
+          heading: 'Configuration tracking and governance frameworks',
+          body: 'Governance needs visibility into change. AWS Config records resource configurations and changes over time, evaluates compliance with Config rules, and shows a configuration timeline — answering "what changed and when." Amazon SageMaker Catalog (in SageMaker Unified Studio) governs data access through projects, providing business-level discovery and access control. A governance framework ties these together: classification, access policy, lineage, auditing, and sharing patterns that keep data trustworthy and compliant.',
+          bullets: [
+            'AWS Config: track configuration changes and evaluate compliance with rules.',
+            'SageMaker Catalog projects: govern data access and discovery at the business level.',
+            'A governance framework spans classification, access, lineage, auditing, and sharing.',
+          ],
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 0,
+          question: 'After Amazon Macie flags columns containing PII in an S3 data lake, which service best enforces restricting those columns to authorized analysts across Athena and Redshift Spectrum?',
+          options: [
+            'Amazon CloudWatch',
+            'AWS Lake Formation column-level permissions',
+            'Amazon SQS',
+            'A broad S3 bucket policy',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — Lake Formation enforces fine-grained column-level access across integrated engines, restricting the Macie-identified PII columns consistently.',
+          elaborativePrompt: 'How do Macie and Lake Formation divide responsibilities in a PII-protection workflow?',
+        },
+        {
+          afterSection: 2,
+          question: 'A regulation requires that customer data never be replicated or backed up outside the eu-west-1 Region across all accounts. Which control most effectively enforces this org-wide?',
+          options: [
+            'Hope engineers remember the rule',
+            'A Service Control Policy (SCP) that denies actions/replication in disallowed Regions, with scoped S3 replication and AWS Backup',
+            'A CloudWatch dashboard',
+            'An S3 lifecycle rule',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — SCPs deny non-approved-Region actions across the organization, and scoping replication/backup to allowed Regions prevents data from leaving; Config can detect violations.',
+          elaborativePrompt: 'Why is proactive prevention (SCPs) stronger than detection alone for data sovereignty?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself: a regulated company must find PII across its S3 lake, restrict it to authorized analysts, share a curated dataset with a partner without copying it, and guarantee no data is replicated outside its home Region. Walk through Macie for discovery, Lake Formation for access, Redshift/Lake Formation sharing, and SCPs for Region enforcement.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A regulated company must (1) automatically discover PII across S3, (2) restrict those columns to authorized analysts uniformly across query engines, and (3) ensure no copies of the data are replicated to Regions outside its approved Region. Which combination meets all three requirements?',
+        options: [
+          'Amazon Athena for all three requirements',
+          'Amazon Macie for PII discovery, AWS Lake Formation column-level permissions for restriction, and Service Control Policies (plus scoped replication/backup) to enforce the Region boundary',
+          'S3 versioning, CloudWatch alarms, and manual reviews',
+          'DynamoDB TTL, QuickSight, and a public bucket policy',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'Macie discovers PII, Lake Formation restricts the sensitive columns across engines, and SCPs (with scoped replication/backup) enforce data sovereignty — each requirement mapped to the right service.',
+          perOption: [
+            'Athena is a query engine; it does not discover PII, enforce column-level governance, or control Regions.',
+            'Correct — Macie (discovery) + Lake Formation (column-level restriction) + SCPs and scoped replication/backup (Region enforcement) cover all three requirements.',
+            'Versioning, alarms, and manual reviews neither discover PII nor enforce column or Region controls.',
+            'These services are unrelated to the requirements, and a public bucket policy is a security violation.',
+          ],
+          link: 'Domain 4 · Task 4.5 — Understand data privacy and governance',
+        },
+      },
+      videos: [
+        { videoId: '6G0bLDIcO7Y', title: 'AWS Certified Data Engineer – Associate (DEA-C01) [Full Course in 285min]', channel: 'Johnny Chivers', relevance: 'Covers Macie, data sharing, sovereignty, and AWS Config governance — companion to Task 4.5 and a capstone for the course.' },
+      ],
+      keyTerms: [
+        { term: 'Amazon Macie', def: 'A service that uses managed ML to discover and classify sensitive data (PII) in Amazon S3 at scale.' },
+        { term: 'Redshift data sharing', def: 'Live, read-only sharing of Redshift data across clusters and accounts without copying the data.' },
+        { term: 'Data sovereignty', def: 'The requirement that data remain within specific geographic/Region boundaries, enforced by Region controls.' },
+        { term: 'Service Control Policy (SCP)', def: 'An AWS Organizations guardrail that can deny actions (e.g. replication to disallowed Regions) across all accounts.' },
+        { term: 'AWS Config', def: 'A service that records resource configurations and changes over time and evaluates compliance with rules.' },
+      ],
+      awsServices: [
+        { name: 'Amazon Macie', purpose: 'Discover and classify PII and sensitive data in S3 for governance.' },
+        { name: 'AWS Lake Formation', purpose: 'Restrict access to sensitive (Macie-identified) columns across analytics engines and govern cross-account sharing.' },
+        { name: 'AWS Config / SCPs', purpose: 'Track configuration changes and enforce Region/data-sovereignty guardrails org-wide.' },
+      ],
+      examTips: [
+        'Discover PII in S3 → Amazon Macie; restrict the sensitive columns → Lake Formation. The exam pairs them.',
+        'Share Redshift data live without copying → Redshift data sharing; govern lake sharing → Lake Formation.',
+        'Enforce data sovereignty → SCPs deny disallowed-Region actions; scope S3 replication and AWS Backup to approved Regions.',
+        'Track "what configuration changed and when" → AWS Config (with compliance rules).',
+        'Govern business-level data access and discovery → Amazon SageMaker Catalog projects.',
+      ],
+    },
+
   ],
 }
 

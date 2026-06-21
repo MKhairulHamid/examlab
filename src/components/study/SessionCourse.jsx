@@ -1515,6 +1515,102 @@ function SsmCapabilityWidget() {
   )
 }
 
+// ── DEA D1 (Sessions 1-2): which ingestion service fits ──────────────────────
+function IngestionSelectorWidget() {
+  return (
+    <ScenarioSorter
+      title="Data Ingestion — Match the Source to the Service"
+      intro="Streaming vs. batch, real-time vs. delivery, DB vs. SaaS. Tag each requirement with the ingestion service that fits best."
+      cats={[
+        { id: 'kds', label: 'Kinesis Data Streams', color: '#2563eb', desc: 'Real-time, multi-consumer, replay' },
+        { id: 'firehose', label: 'Data Firehose', color: '#0d9488', desc: 'Managed delivery to S3/Redshift' },
+        { id: 'dms', label: 'AWS DMS', color: '#7c3aed', desc: 'Relational DB migration + CDC' },
+        { id: 'appflow', label: 'Amazon AppFlow', color: '#ea580c', desc: 'SaaS application data' },
+      ]}
+      items={[
+        { t: 'Ingest clickstream in real time for two independent consumers with 72-hour replay', a: 'kds', why: 'Kinesis Data Streams retains records and supports multiple real-time consumers with replay.' },
+        { t: 'Continuously load streaming records into S3 as Parquet with no code to manage', a: 'firehose', why: 'Data Firehose is fully managed delivery with format conversion — no shards or consumers.' },
+        { t: 'Replicate ongoing changes from an on-prem PostgreSQL database into S3', a: 'dms', why: 'DMS does full load plus change data capture from relational sources.' },
+        { t: 'Pull opportunity records from Salesforce on a schedule', a: 'appflow', why: 'AppFlow transfers SaaS application data without custom integration code.' },
+        { t: 'Buffer and deliver logs straight to Amazon OpenSearch with no consumer to operate', a: 'firehose', why: 'Firehose delivers to OpenSearch/S3/Redshift as a managed sink.' },
+        { t: 'Capture events once and let several apps process the same stream in real time', a: 'kds', why: 'Multiple independent real-time consumers is the Kinesis Data Streams pattern, not Firehose.' },
+      ]}
+    />
+  )
+}
+
+// ── DEA D1 (Session 3): which transformation engine fits ─────────────────────
+function TransformServiceWidget() {
+  return (
+    <ScenarioSorter
+      title="Transformation Engine — Pick the Right Tool"
+      intro="Glue, EMR, Lambda, or Redshift? Tag each workload with the engine that fits its scale and style."
+      cats={[
+        { id: 'glue', label: 'AWS Glue', color: '#2563eb', desc: 'Serverless Spark ETL + catalog' },
+        { id: 'emr', label: 'Amazon EMR', color: '#7c3aed', desc: 'Big/custom/Spot-tuned Spark' },
+        { id: 'lambda', label: 'AWS Lambda', color: '#0d9488', desc: 'Short, light per-file transforms' },
+        { id: 'redshift', label: 'Amazon Redshift', color: '#ea580c', desc: 'Transform-in-warehouse with SQL' },
+      ]}
+      items={[
+        { t: 'Serverless Spark ETL with a managed catalog and incremental processing', a: 'glue', why: 'Glue is serverless Spark with the Data Catalog and job bookmarks — no clusters.' },
+        { t: 'Multi-terabyte nightly Spark job tuned with Spot task nodes for lowest cost', a: 'emr', why: 'EMR gives cluster control and Spot for large, cost-sensitive batch.' },
+        { t: 'Transform a small file in seconds when it lands, event-driven', a: 'lambda', why: 'Lambda fits short, light, event-driven per-object processing under 15 minutes.' },
+        { t: 'Load raw data then transform it with SQL and stored procedures in the warehouse', a: 'redshift', why: 'Redshift ELT transforms in-warehouse with SQL.' },
+        { t: 'Run custom Spark frameworks with fine-grained executor tuning', a: 'emr', why: 'EMR allows custom frameworks and detailed Spark tuning that Glue abstracts away.' },
+        { t: 'Convert daily S3 files to partitioned Parquet with no servers to operate', a: 'glue', why: 'Glue serverless jobs convert formats and write partitioned Parquet without cluster ops.' },
+      ]}
+    />
+  )
+}
+
+// ── DEA D1/D3 (Sessions 4, 11): which orchestration service fits ─────────────
+function OrchestrationSelectorWidget() {
+  return (
+    <ScenarioSorter
+      title="Pipeline Orchestration — Choose the Coordinator"
+      intro="Step Functions, MWAA, Glue workflows, or EventBridge? Tag each orchestration need with the least-overhead fit."
+      cats={[
+        { id: 'sfn', label: 'Step Functions', color: '#2563eb', desc: 'Serverless state machine + retries' },
+        { id: 'mwaa', label: 'Amazon MWAA', color: '#7c3aed', desc: 'Managed Airflow DAGs' },
+        { id: 'glue', label: 'Glue workflows', color: '#0d9488', desc: 'All-Glue crawler + job chains' },
+        { id: 'eb', label: 'EventBridge', color: '#ea580c', desc: 'Schedules + event routing' },
+      ]}
+      items={[
+        { t: 'Ordered serverless steps with native retry, catch, and branching', a: 'sfn', why: 'Step Functions is a serverless state machine with Retry/Catch and branching.' },
+        { t: 'Migrate existing Apache Airflow DAGs with complex dependencies and backfills', a: 'mwaa', why: 'MWAA is managed Airflow — existing DAGs and skills carry over.' },
+        { t: 'Chain Glue crawlers and jobs together when the whole pipeline lives in Glue', a: 'glue', why: 'Glue workflows orchestrate crawlers and jobs within Glue.' },
+        { t: 'Trigger a job on a cron schedule or route an S3 event to a target', a: 'eb', why: 'EventBridge handles scheduling and event routing to many targets.' },
+        { t: 'Fault-tolerant multi-step workflow integrating Lambda, Glue, and EMR with no servers', a: 'sfn', why: 'Step Functions integrates services with built-in error handling, fully serverless.' },
+        { t: 'Rich Python DAG with task dependencies a team already runs in Airflow', a: 'mwaa', why: 'Complex Airflow DAGs map directly onto MWAA.' },
+      ]}
+    />
+  )
+}
+
+// ── DEA D2 (Session 7): which data store fits ────────────────────────────────
+function DatastoreSelectorWidget() {
+  return (
+    <ScenarioSorter
+      title="Data Store — Match the Access Pattern"
+      intro="The right store depends on the access pattern, scale, and cost. Tag each workload with the store that fits."
+      cats={[
+        { id: 'redshift', label: 'Amazon Redshift', color: '#2563eb', desc: 'OLAP analytics warehouse' },
+        { id: 'dynamodb', label: 'Amazon DynamoDB', color: '#0d9488', desc: 'Key-value at scale, ms latency' },
+        { id: 's3', label: 'S3 + Athena', color: '#7c3aed', desc: 'Cheap lake, ad-hoc SQL' },
+        { id: 'rds', label: 'Amazon RDS/Aurora', color: '#ea580c', desc: 'Relational OLTP transactions' },
+      ]}
+      items={[
+        { t: 'Complex analytical JOINs and aggregations over billions of rows for BI', a: 'redshift', why: 'Redshift is a columnar MPP warehouse built for large OLAP queries.' },
+        { t: 'Single-digit-millisecond lookups of user profiles by ID at massive scale', a: 'dynamodb', why: 'DynamoDB delivers consistent key-value access at any scale for known patterns.' },
+        { t: 'Query 5 years of raw event files cheaply, only occasionally', a: 's3', why: 'S3 + Athena is the low-cost lake with serverless ad-hoc SQL, pay per scan.' },
+        { t: 'Back a transactional order-entry application with ACID relational data', a: 'rds', why: 'RDS/Aurora is relational OLTP for transactional workloads.' },
+        { t: 'Ad-hoc analytical scans over data in the lake without loading a warehouse', a: 's3', why: 'Athena over S3 queries the lake in place — no warehouse load needed.' },
+        { t: 'Predictable high-throughput writes and reads by a known partition key', a: 'dynamodb', why: 'DynamoDB excels when the access pattern is known and designed into the keys.' },
+      ]}
+    />
+  )
+}
+
 const INTERACTIVE_WIDGETS = {
   'model-selector': ModelSelectorWidget,
   'vector-store-selector': VectorStoreSelectorWidget,
@@ -1546,6 +1642,10 @@ const INTERACTIVE_WIDGETS = {
   'test-stage': TestStageWidget,
   'iac-selector': IacSelectorWidget,
   'ssm-capability': SsmCapabilityWidget,
+  'ingestion-selector': IngestionSelectorWidget,
+  'transform-service': TransformServiceWidget,
+  'orchestration-selector': OrchestrationSelectorWidget,
+  'datastore-selector': DatastoreSelectorWidget,
 }
 
 // ─── Small renderers ──────────────────────────────────────────────────────────
