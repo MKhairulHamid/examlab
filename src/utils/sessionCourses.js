@@ -11,6 +11,7 @@ import mlaC01Course from '../data/mlaC01Course'
 import sapC02Course from '../data/sapC02Course'
 import aipC01Course from '../data/aipC01Course'
 import soaC03Course from '../data/soaC03Course'
+import dopC02Course from '../data/dopC02Course'
 
 const SESSION_COURSES = [
   { match: ['aif', 'ai-practitioner'], course: aifC01Course },
@@ -21,6 +22,7 @@ const SESSION_COURSES = [
   { match: ['sap', 'solutions-architect-professional'], course: sapC02Course },
   { match: ['aip', 'generative-ai-developer'], course: aipC01Course },
   { match: ['soa', 'cloudops-engineer-associate'], course: soaC03Course },
+  { match: ['dop', 'devops-engineer-professional'], course: dopC02Course },
 ]
 
 export function getSessionCourse(slug) {

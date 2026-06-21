@@ -1923,6 +1923,742 @@ const dopC02Course = {
       ],
     },
 
+    // ═══════════════════════════════════════════════════════════════
+    //  DOMAIN 5 — INCIDENT AND EVENT RESPONSE (14%)
+    // ═══════════════════════════════════════════════════════════════
+
+    {
+      id: 'd5-s14',
+      number: 14,
+      module: 'Domain 5 · Incident & Event Response',
+      domain: 'd5',
+      weight: '14%',
+      task: 'Tasks 5.1 & 5.2',
+      title: 'Event-Driven Response — Event Sources, Workflows, and Configuration Changes',
+      duration: 30,
+      summary: 'Incident response in the cloud is event-driven automation. This session covers the services that generate and capture events (AWS Health, EventBridge, CloudTrail), building reliable event-processing workflows, and applying configuration changes automatically in response to events to remediate a non-desired state.',
+      objectives: [
+        'Integrate AWS event sources — AWS Health, EventBridge, and CloudTrail',
+        'Build event-processing workflows with SQS, SNS, Kinesis, Lambda, and Step Functions',
+        'Choose the right event-driven pattern: fan-out, queuing, and streaming',
+        'Apply configuration changes in response to events to remediate non-desired states',
+      ],
+      preLearningCheck: {
+        question: 'A company wants to be automatically notified and take action whenever AWS schedules maintenance or reports degraded health for their resources. Which event source provides these events?',
+        options: [
+          'Amazon S3 access logs',
+          'AWS Health (Personal Health Dashboard) events delivered through Amazon EventBridge',
+          'A custom ping script against the AWS status page',
+          'CloudWatch billing alarms',
+        ],
+        correct: 1,
+        note: 'No pressure — guessing first improves retention. AWS Health emits account-specific events (scheduled maintenance, degraded resources, retirements) that EventBridge can route to SNS, Lambda, or a workflow for automated awareness and action.',
+      },
+      sections: [
+        {
+          heading: 'AWS event sources',
+          body: 'Automated response begins with capturing the right events. Three sources dominate the exam. AWS Health emits account-specific operational events (scheduled changes, resource health, retirements). Amazon EventBridge is the central bus that receives events from AWS services, custom apps, and SaaS. AWS CloudTrail records API activity and can drive event-based reactions to specific calls.',
+          bullets: [
+            'AWS Health → EventBridge → automate awareness of maintenance, retirements, and degraded resources.',
+            'CloudTrail events (via EventBridge) react to specific API calls (e.g. a security-group change, a root login).',
+            'EventBridge rules match patterns from any source and route to targets — the hub of event-driven design.',
+            'Scheduled (cron) EventBridge rules drive time-based automation.',
+          ],
+          callout: { type: 'note', text: 'AWS Health = "what is AWS doing to my account/resources." CloudTrail = "what API calls happened." EventBridge = the router that turns either into automated action.' },
+        },
+        {
+          heading: 'Building event-processing workflows',
+          body: 'Once events are captured, you process them reliably. The exam expects you to choose among SQS, SNS, Kinesis, Lambda, and Step Functions based on the delivery semantics required.',
+          bullets: [
+            'SQS: durable queue that buffers and decouples; one consumer group; great for reliable async work and smoothing spikes.',
+            'SNS: pub/sub fan-out to many subscribers (Lambda, SQS, email, HTTP) at once.',
+            'Kinesis Data Streams: ordered, replayable streaming for high-volume, multiple-consumer real-time analytics.',
+            'Lambda processes events; Step Functions orchestrates multi-step response workflows with retries and branching.',
+          ],
+        },
+        {
+          heading: 'Fan-out, queuing, and streaming patterns',
+          body: 'Each pattern fits a different need, and picking the right one is a common question.',
+          bullets: [
+            'Fan-out: SNS (or EventBridge) delivers one event to many independent targets — notify several systems at once.',
+            'Queuing: SQS buffers work for a single processing path, decoupling producers from consumers and absorbing spikes.',
+            'Streaming: Kinesis handles ordered, high-throughput records with multiple consumers and replay.',
+            'SNS+SQS together (fan-out to queues) gives durable, parallel processing across independent consumers.',
+          ],
+          callout: { type: 'tip', text: 'One event, many independent reactions → SNS/EventBridge fan-out. Reliable buffered work for one consumer → SQS. Ordered, replayable, high-volume with many readers → Kinesis.' },
+        },
+        {
+          heading: 'Configuration changes in response to events',
+          body: 'Beyond notifying, response often means changing the system to restore a desired state. Fleet and configuration services apply those changes automatically.',
+          bullets: [
+            'EventBridge/Config event → SSM Automation runbook or Lambda → apply the corrective configuration change.',
+            'Systems Manager and Auto Scaling adjust fleets (patch, replace, scale) in response to events.',
+            'AWS Config detects drift/non-compliance; remediation actions converge resources back to the desired state.',
+            'Remediating a non-desired state (e.g. an opened security group, a stopped agent) should be automatic and idempotent.',
+          ],
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 2,
+          question: 'An application must deliver each order event to four independent downstream systems simultaneously, each processing at its own pace without losing messages. Which pattern fits best?',
+          options: [
+            'A single SQS queue read by all four systems',
+            'SNS fan-out to four SQS queues, one per consumer, so each processes durably and independently',
+            'A Kinesis stream with one consumer',
+            'Direct synchronous calls from the producer to each system',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — SNS fan-out to per-consumer SQS queues delivers each event to all four systems and lets each process durably at its own pace.',
+          elaborativePrompt: 'Why does giving each consumer its own SQS queue (rather than sharing one) prevent one slow consumer from blocking the others?',
+        },
+        {
+          afterSection: 3,
+          question: 'When CloudTrail records that a security group was changed to allow 0.0.0.0/0 on port 22, the company wants the rule automatically reverted. Which design achieves this?',
+          options: [
+            'A weekly manual security review',
+            'An EventBridge rule on the CloudTrail event that triggers an SSM Automation runbook (or Lambda) to remove the offending rule',
+            'A CloudWatch dashboard of security groups',
+            'Increasing CloudTrail log retention',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — EventBridge matches the CloudTrail event and triggers automation that reverts the change, restoring the desired state automatically.',
+          elaborativePrompt: 'How does reacting to the CloudTrail event in near real time improve security posture compared with catching the change in a periodic audit?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself: a company wants to be alerted to AWS-scheduled maintenance, fan an order event out to several systems durably, and automatically revert risky security-group changes. Walk through which event source, which messaging pattern, and which remediation mechanism handles each, and why polling would be worse.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A security team wants near-real-time, automated remediation: whenever an S3 bucket policy is changed to grant public access, the change must be detected from the API activity and automatically reverted, with the team notified. Which event-driven design meets this with the least operational overhead?',
+        options: [
+          'A cron job that lists all bucket policies every hour and emails differences',
+          'An EventBridge rule matching the CloudTrail PutBucketPolicy event that triggers an SSM Automation runbook (or Lambda) to revert the policy and an SNS notification',
+          'A CloudWatch dashboard the team reviews each morning',
+          'Quarterly manual audits of bucket policies',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'EventBridge reacting to the CloudTrail API event drives immediate automated remediation plus notification — the event-driven, low-overhead pattern.',
+          perOption: [
+            'Hourly polling is slower, is custom code to maintain, and only reports rather than remediating.',
+            'Correct — an EventBridge rule on the CloudTrail event triggers automation to revert the policy and notifies via SNS in near real time.',
+            'A dashboard needs a human to notice and act, failing the automation requirement.',
+            'Quarterly audits are far too slow for a public-access exposure.',
+          ],
+          link: 'Domain 5 · Tasks 5.1 & 5.2 — Manage event sources and implement configuration changes in response to events',
+        },
+      },
+      videos: [
+        { videoId: 'uhOZqiw7mdk', title: 'New AWS DevOps Professional (DOP-C02) Certification Exam', channel: 'Digital Cloud Training', relevance: 'Companion overview — event-driven response with EventBridge, SNS/SQS, and automated remediation is core Domain 5 material.' },
+      ],
+      keyTerms: [
+        { term: 'AWS Health', def: 'A source of account-specific operational events (maintenance, degraded resources, retirements) routable via EventBridge.' },
+        { term: 'EventBridge rule', def: 'A pattern match on events from AWS/custom/SaaS sources that routes to targets like Lambda, SNS, SQS, and Step Functions.' },
+        { term: 'Fan-out', def: 'Delivering one event to many independent consumers at once, typically via SNS (often to per-consumer SQS queues).' },
+        { term: 'Queuing (SQS)', def: 'Buffering work in a durable queue to decouple producers from consumers and absorb spikes.' },
+        { term: 'Streaming (Kinesis)', def: 'Ordered, replayable, high-throughput record processing with multiple consumers for real-time analytics.' },
+      ],
+      awsServices: [
+        { name: 'Amazon EventBridge', purpose: 'Captures and routes events from AWS Health, CloudTrail, and custom sources to automated response targets.' },
+        { name: 'Amazon SNS / SQS', purpose: 'Provide fan-out pub/sub and durable queuing to build reliable event-processing workflows.' },
+        { name: 'AWS Systems Manager Automation', purpose: 'Runs runbooks that apply corrective configuration changes in response to events.' },
+      ],
+      examTips: [
+        'AWS Health = account/resource health events; CloudTrail = API activity; EventBridge = the router to automation.',
+        'Fan-out (one→many) → SNS/EventBridge; reliable buffered work → SQS; ordered/replayable/high-volume → Kinesis.',
+        'SNS→SQS per consumer gives durable, independent, parallel processing.',
+        'React to a risky API call → EventBridge rule on the CloudTrail event → SSM Automation/Lambda remediation.',
+        'Remediation should be automatic and idempotent — restore the desired state without human steps.',
+      ],
+    },
+
+    // ─────────────────────────────────────────────────────────────
+    {
+      id: 'd5-s15',
+      number: 15,
+      module: 'Domain 5 · Incident & Event Response',
+      domain: 'd5',
+      weight: '14%',
+      task: 'Task 5.3',
+      title: 'Troubleshooting Failures — Deployments, Pipelines, and Failed Processes',
+      duration: 30,
+      summary: 'When something breaks, a DevOps engineer finds the root cause fast. This session covers troubleshooting the things that fail most: pipeline and deployment failures across CodePipeline/CodeBuild/CodeDeploy/CloudFormation, and failed processes in auto scaling, ECS, and EKS — using CloudWatch, X-Ray, AWS Health, and OpsCenter.',
+      objectives: [
+        'Apply a root-cause-analysis approach using CloudWatch, X-Ray, and AWS Health',
+        'Diagnose failed CodePipeline, CodeBuild, CodeDeploy, and CloudFormation executions',
+        'Troubleshoot failed auto scaling, ECS, and EKS processes',
+        'Use CloudWatch Synthetics and OpsCenter to detect and centralize operational issues',
+      ],
+      preLearningCheck: {
+        question: 'A CloudFormation stack update fails partway and the stack rolls back. Where do you look first to find which resource failed and why?',
+        options: [
+          'The EC2 console only',
+          'The CloudFormation stack Events tab (and the resource\'s status reason), which lists each resource action and the failure reason',
+          'The billing dashboard',
+          'A random instance\'s system log',
+        ],
+        correct: 1,
+        note: 'No pressure — guessing first improves retention. The CloudFormation Events tab is the authoritative timeline of what each resource did and the exact status reason for the failure that triggered the rollback — always the first stop.',
+      },
+      sections: [
+        {
+          heading: 'A root-cause-analysis mindset',
+          body: 'Troubleshooting is systematic, not lucky. Start from the symptom, gather evidence from logs and metrics, form a hypothesis, and confirm it. AWS gives you the evidence sources: CloudWatch (metrics, logs, alarms), X-Ray (request traces), AWS Health (AWS-side issues), and Systems Manager OpsCenter (centralized operational items, OpsItems).',
+          bullets: [
+            'CloudWatch Logs and Logs Insights: the application/service-level evidence of what happened.',
+            'X-Ray: where in a distributed request the failure or latency originates.',
+            'AWS Health: rule out (or confirm) an AWS-side event before chasing your own code.',
+            'OpsCenter aggregates OpsItems (from alarms, Config, events) so operational issues are tracked and investigated centrally.',
+          ],
+          callout: { type: 'note', text: 'Before deep-diving your own stack, check AWS Health — an AWS-side degradation can be the real cause, and you cannot fix that by changing your code.' },
+        },
+        {
+          heading: 'Diagnosing pipeline and deployment failures',
+          body: 'Each delivery service surfaces failures in a specific place; knowing where saves time.',
+          bullets: [
+            'CodePipeline: the failed stage/action shows the error and links to the underlying execution (build or deploy).',
+            'CodeBuild: the build logs in CloudWatch Logs show the exact command and exit code that failed.',
+            'CodeDeploy: deployment events and lifecycle-hook logs (and the CodeDeploy agent log on the instance) reveal which hook failed and why; failed health checks trigger rollback.',
+            'CloudFormation: the Events tab and resource status reason show the failing resource; rollback restores the prior state. Check IAM permissions and resource limits as common causes.',
+          ],
+        },
+        {
+          heading: 'Troubleshooting failed processes',
+          body: 'Beyond deployments, running processes fail. Auto scaling, ECS, and EKS each have characteristic failure modes and evidence trails.',
+          bullets: [
+            'Auto Scaling: scaling activities and the activity history show why an instance launch failed (e.g. capacity, IAM, AMI, health check failing immediately).',
+            'ECS: stopped-task reasons and the service events explain why tasks die (image pull error, failed health check, insufficient memory/CPU, task role permissions).',
+            'EKS: pod events, kubectl describe, and Container Insights surface CrashLoopBackOff, image, and resource issues.',
+            'Repeated rapid failures often mean a failing health check, a bad image/AMI, or a missing IAM permission — check those first.',
+          ],
+          callout: { type: 'tip', text: 'An instance or task that launches and immediately terminates in a loop almost always points to a failing health check, a bad image/AMI, or a missing IAM/role permission. Read the activity/stopped-reason before anything else.' },
+        },
+        {
+          heading: 'Synthetic monitoring and proactive detection',
+          body: 'The best troubleshooting catches the problem before users do. CloudWatch Synthetics canaries continuously exercise endpoints and critical flows, alarming on failures, and integrate into the evidence trail.',
+          bullets: [
+            'Synthetics canaries test endpoints/workflows on a schedule and alarm on failure or latency.',
+            'They detect "the deployment looks healthy but the user flow is broken" gaps that infrastructure metrics miss.',
+            'Canary results plus X-Ray traces pinpoint where a synthetic transaction broke.',
+            'Route canary alarms into OpsCenter/EventBridge for automated tracking and response.',
+          ],
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 1,
+          question: 'A CodeDeploy blue/green deployment keeps rolling back. Where is the most direct evidence of why the new version is failing?',
+          options: [
+            'The S3 bucket access logs',
+            'The CodeDeploy deployment events and lifecycle-hook logs (plus the agent log on the instance), which show the failing hook or health check',
+            'The billing console',
+            'The Route 53 hosted zone',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — CodeDeploy surfaces which lifecycle hook or health check failed in the deployment events and hook/agent logs, the direct cause of the rollback.',
+          elaborativePrompt: 'Why do CodeDeploy lifecycle-hook logs give you faster root cause than just observing that traffic was rolled back?',
+        },
+        {
+          afterSection: 2,
+          question: 'ECS tasks for a service start and then immediately stop, repeatedly. What is the best first source of root cause?',
+          options: [
+            'Guess and increase the desired count',
+            'The stopped-task reason and service events (e.g. image pull failure, failed health check, task role permission, insufficient resources)',
+            'The CloudFront cache statistics',
+            'The AWS Marketplace',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — the stopped-task reason and ECS service events state exactly why tasks die, the authoritative starting point for the diagnosis.',
+          elaborativePrompt: 'What are the most common reasons a container task starts and immediately stops, and how does the stopped-reason distinguish them?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself: a release goes out, the pipeline shows green, but users hit errors; meanwhile ECS tasks are flapping and a CloudFormation change failed earlier. Walk through, in order, which evidence source you would open for each symptom and the most likely root cause of a task that immediately restarts in a loop.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'After a deployment, an ECS service\'s tasks repeatedly start and stop within seconds, and the service never reaches a steady running count. Which troubleshooting step most directly identifies the root cause?',
+        options: [
+          'Increase the service\'s desired task count and redeploy',
+          'Examine the ECS stopped-task reasons and service events to see why tasks are terminating (e.g. image pull error, failing health check, task role permissions, or insufficient memory/CPU)',
+          'Switch the load balancer from ALB to NLB',
+          'Raise the CloudWatch log retention period',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'The ECS stopped-task reason and service events state precisely why tasks die, making them the direct path to root cause for flapping tasks.',
+          perOption: [
+            'Increasing desired count multiplies the failures without explaining them.',
+            'Correct — stopped-task reasons and service events reveal the exact cause (image, health check, permissions, resources) of the repeated terminations.',
+            'Changing the load balancer type is unrelated to why the tasks themselves are stopping.',
+            'Longer log retention does not diagnose an immediate, repeating task failure.',
+          ],
+          link: 'Domain 5 · Task 5.3 — Troubleshoot system and application failures',
+        },
+      },
+      videos: [
+        { videoId: 'uhOZqiw7mdk', title: 'New AWS DevOps Professional (DOP-C02) Certification Exam', channel: 'Digital Cloud Training', relevance: 'Companion overview — troubleshooting failed deployments and processes is the synthesis topic of Domain 5.' },
+      ],
+      keyTerms: [
+        { term: 'Root cause analysis', def: 'A systematic method of moving from symptom to confirmed cause using logs, metrics, and traces.' },
+        { term: 'CloudFormation Events', def: 'The per-resource timeline and status reason that shows which resource failed and why during a stack operation.' },
+        { term: 'Stopped-task reason', def: 'The ECS field that states exactly why a task terminated (image, health check, permissions, resources).' },
+        { term: 'Scaling activity history', def: 'The Auto Scaling record explaining why instance launches/terminations succeeded or failed.' },
+        { term: 'CloudWatch Synthetics canary', def: 'A scheduled scripted test of an endpoint or user flow that alarms on failure to catch issues proactively.' },
+      ],
+      awsServices: [
+        { name: 'Amazon CloudWatch', purpose: 'Provides logs, metrics, alarms, and Synthetics canaries that form the primary troubleshooting evidence.' },
+        { name: 'AWS X-Ray', purpose: 'Localizes where in a distributed request a failure or latency originates.' },
+        { name: 'AWS Systems Manager OpsCenter', purpose: 'Centralizes operational items (OpsItems) from alarms, Config, and events for investigation.' },
+      ],
+      examTips: [
+        'Check AWS Health first to rule out an AWS-side cause before debugging your own stack.',
+        'CloudFormation failure → Events tab + resource status reason (often IAM or limits); the stack rolls back to the prior state.',
+        'CodeDeploy rollback → deployment events + lifecycle-hook/agent logs show the failing hook or health check.',
+        'Task/instance flapping (start→stop loop) → read the ECS stopped-reason or ASG activity: usually health check, image/AMI, or IAM.',
+        'Use Synthetics canaries to catch broken user flows that pass infrastructure health checks.',
+      ],
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    //  DOMAIN 6 — SECURITY AND COMPLIANCE (17%)
+    // ═══════════════════════════════════════════════════════════════
+
+    {
+      id: 'd6-s16',
+      number: 16,
+      module: 'Domain 6 · Security & Compliance',
+      domain: 'd6',
+      weight: '17%',
+      task: 'Task 6.1',
+      title: 'Identity and Access Management at Scale — Roles, Federation, and Least Privilege',
+      duration: 30,
+      summary: 'Security at scale starts with identity. This session covers using IAM entities correctly for human and machine access, federating identities instead of creating local users, bounding permissions with permissions boundaries and SCPs, implementing RBAC/ABAC, and rotating machine credentials automatically.',
+      objectives: [
+        'Choose the right IAM entity for human vs. machine access and identity-based vs. resource-based policies',
+        'Federate human access with IAM Identity Center and external identity providers',
+        'Enforce least privilege with permissions boundaries, SCPs, and RBAC/ABAC patterns',
+        'Automate credential rotation and secure machine identities with Secrets Manager, STS, and MFA',
+      ],
+      preLearningCheck: {
+        question: 'An application on EC2 needs to read from an S3 bucket. What is the best practice for granting this access?',
+        options: [
+          'Create an IAM user, generate access keys, and store them in the application config',
+          'Attach an IAM role to the EC2 instance (instance profile) so the app gets temporary, automatically rotated credentials',
+          'Hardcode root credentials in the code',
+          'Make the S3 bucket public',
+        ],
+        correct: 1,
+        note: 'No pressure — guessing first improves retention. Machine identities should use IAM roles, not long-lived access keys. An instance profile delivers temporary credentials via the metadata service that rotate automatically — no secrets to store or leak.',
+      },
+      sections: [
+        {
+          heading: 'The right IAM entity for the job',
+          body: 'IAM has distinct entities for distinct purposes, and using the right one is the foundation of secure access. Users represent long-lived human or service principals (avoid for workloads); roles provide temporary credentials assumed by humans, services, or federated identities; groups organize users; policies (identity-based, resource-based, session) grant or scope permissions.',
+          bullets: [
+            'Machine/workload access → IAM roles (instance profiles, task roles, Lambda execution roles) with temporary credentials — never static keys.',
+            'Identity-based policies attach to a principal; resource-based policies (e.g. S3 bucket policy, KMS key policy) attach to the resource and enable cross-account access.',
+            'Session policies further scope a session\'s permissions at assume-role time.',
+            'Avoid IAM users with long-lived access keys; if unavoidable, rotate and monitor them.',
+          ],
+          callout: { type: 'note', text: 'Cross-account access is built from roles (assume-role) plus resource-based policies. A resource-based policy is what lets another account\'s principal use your resource.' },
+        },
+        {
+          heading: 'Federation and IAM Identity Center',
+          body: 'Creating IAM users per person does not scale and fragments identity. Federation centralizes human identity in one place. AWS IAM Identity Center (successor to AWS SSO) provides workforce single sign-on across accounts and integrates with external IdPs (Okta, Azure AD/Entra ID) or its own directory.',
+          bullets: [
+            'IAM Identity Center: central workforce access to many accounts with permission sets, no per-account IAM users.',
+            'SAML/OIDC federation lets users authenticate with the corporate IdP and assume roles via temporary credentials.',
+            'Web identity federation (Cognito) handles customer/app identities for mobile and web apps.',
+            'Federation means joiners/leavers are managed once in the IdP, not across dozens of accounts.',
+          ],
+        },
+        {
+          heading: 'Bounding permissions: least privilege at scale',
+          body: 'Granting least privilege across an organization needs guardrails beyond individual policies. Permissions boundaries cap the maximum permissions an IAM entity can have; SCPs cap an entire account; RBAC and ABAC make scaling permissions manageable.',
+          bullets: [
+            'Permissions boundary: a managed policy that sets the ceiling for what a role/user can be granted — used to delegate IAM safely.',
+            'SCPs (Organizations) cap permissions for whole accounts/OUs regardless of IAM.',
+            'RBAC: permissions by role/job function. ABAC: permissions by tags (e.g. allow access where resource tag team = principal tag team) — scales without new policies per project.',
+            'Use IAM Access Analyzer to validate policies and find unintended external access; refine toward least privilege.',
+          ],
+          callout: { type: 'tip', text: 'ABAC (tag-based) shines when many teams/projects need isolated access without writing a new policy each time — one tag-aware policy scales across them. Permissions boundaries let you safely delegate role creation.' },
+        },
+        {
+          heading: 'Securing and rotating machine credentials',
+          body: 'Machine identities and any unavoidable secrets must be protected and rotated automatically. AWS Secrets Manager stores and rotates secrets; AWS STS issues temporary credentials; MFA protects sensitive human and root actions.',
+          bullets: [
+            'Secrets Manager: store DB/app credentials and rotate them automatically via Lambda; apps fetch at runtime.',
+            'STS: issues short-lived credentials for assumed roles and federation — the basis of temporary access.',
+            'Enforce MFA for privileged actions and protect the root user; remove root access keys entirely.',
+            'Prefer roles over keys everywhere; where keys exist, rotate on a schedule and monitor with Access Analyzer/credential reports.',
+          ],
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 1,
+          question: 'A company with 60 AWS accounts wants employees to sign in once with their existing corporate identity provider and get appropriate access to each account, with no per-account IAM users. Which solution fits?',
+          options: [
+            'Create matching IAM users in all 60 accounts and sync passwords',
+            'Use AWS IAM Identity Center integrated with the corporate IdP, assigning permission sets across accounts',
+            'Share one root user among employees',
+            'Email temporary access keys weekly',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — IAM Identity Center federates the corporate IdP and grants cross-account access via permission sets, eliminating per-account users.',
+          elaborativePrompt: 'How does centralizing identity in an IdP via Identity Center simplify the joiner/mover/leaver process compared with per-account IAM users?',
+        },
+        {
+          afterSection: 2,
+          question: 'A platform team must let project teams create their own IAM roles, but those roles must never exceed a defined set of permissions. Which mechanism enforces that ceiling?',
+          options: [
+            'Hope the teams follow guidelines',
+            'Attach a permissions boundary so any role they create cannot exceed the boundary\'s maximum permissions',
+            'Give every team AdministratorAccess',
+            'Disable IAM entirely',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — a permissions boundary caps the effective permissions of the roles teams create, enabling safe delegation of IAM.',
+          elaborativePrompt: 'Why is a permissions boundary the right tool for delegating role creation safely, compared with simply reviewing each role by hand?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself: an org wants workforce SSO across many accounts, applications that never store static keys, project teams that can self-serve roles without over-granting, and database passwords that rotate automatically. Walk through which IAM mechanism delivers each and why static access keys are the anti-pattern throughout.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A company must give applications running on EC2 and Lambda access to AWS services without any long-lived credentials, give the workforce single sign-on across 40 accounts from their existing IdP, and ensure delegated teams cannot create roles that exceed an approved permission ceiling. Which combination meets all three requirements?',
+        options: [
+          'IAM users with access keys for the apps, shared admin logins for staff, and manual role reviews',
+          'IAM roles (instance/task/execution roles) for the apps, IAM Identity Center federated to the IdP for the workforce, and permissions boundaries to cap delegated role creation',
+          'Public resources for the apps, root access for staff, and no boundaries',
+          'Access keys rotated yearly, one IAM user per employee per account, and AdministratorAccess for delegated teams',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'Roles give apps keyless temporary credentials, Identity Center federates workforce SSO across accounts, and permissions boundaries cap delegated roles — each requirement met with the best-practice mechanism.',
+          perOption: [
+            'Long-lived access keys, shared admin logins, and manual reviews violate least privilege and credential hygiene.',
+            'Correct — IAM roles for workloads, IAM Identity Center for federated SSO, and permissions boundaries for safe delegation address all three requirements.',
+            'Public resources and root access are severe anti-patterns.',
+            'Per-account IAM users and AdministratorAccess for delegated teams neither scale nor enforce a ceiling.',
+          ],
+          link: 'Domain 6 · Task 6.1 — Implement techniques for identity and access management at scale',
+        },
+      },
+      videos: [
+        { videoId: 'uhOZqiw7mdk', title: 'New AWS DevOps Professional (DOP-C02) Certification Exam', channel: 'Digital Cloud Training', relevance: 'Companion overview — IAM at scale, federation, and least privilege are core Domain 6 topics.' },
+      ],
+      keyTerms: [
+        { term: 'IAM role', def: 'An identity assumed for temporary credentials by humans, services, or federated users — the right choice for machine access.' },
+        { term: 'IAM Identity Center', def: 'AWS workforce SSO across many accounts, integrating external IdPs and granting access via permission sets.' },
+        { term: 'Permissions boundary', def: 'A managed policy that caps the maximum permissions an IAM entity can have, enabling safe delegation.' },
+        { term: 'ABAC', def: 'Attribute-based access control using tags to grant access, scaling permissions without a new policy per project.' },
+        { term: 'AWS Secrets Manager', def: 'A service that stores and automatically rotates secrets (e.g. database credentials) retrieved by applications at runtime.' },
+      ],
+      awsServices: [
+        { name: 'AWS IAM', purpose: 'Provides users, roles, groups, and policies to control human and machine access with least privilege.' },
+        { name: 'AWS IAM Identity Center', purpose: 'Delivers federated workforce single sign-on and cross-account permission sets.' },
+        { name: 'AWS Secrets Manager / STS', purpose: 'Store and rotate secrets and issue temporary credentials for roles and federation.' },
+      ],
+      examTips: [
+        'Machine/workload access → IAM roles (instance/task/execution), never long-lived access keys.',
+        'Cross-account access = assume-role + a resource-based policy on the target resource.',
+        'Workforce SSO across accounts → IAM Identity Center federated to the corporate IdP.',
+        'Cap delegated role creation → permissions boundary; cap whole accounts → SCP.',
+        'ABAC (tags) scales multi-team access; rotate secrets automatically with Secrets Manager; enforce MFA and remove root keys.',
+      ],
+    },
+
+    // ─────────────────────────────────────────────────────────────
+    {
+      id: 'd6-s17',
+      number: 17,
+      module: 'Domain 6 · Security & Compliance',
+      domain: 'd6',
+      weight: '17%',
+      task: 'Task 6.2',
+      title: 'Automating Security Controls and Data Protection — Defense in Depth',
+      duration: 30,
+      summary: 'Security at scale means controls applied automatically and layered. This session covers network security components, encryption and key management, automating controls across multi-account environments, combining services for defense in depth, and discovering sensitive data with Macie.',
+      objectives: [
+        'Layer network controls — security groups, NACLs, WAF, Shield, and Network Firewall',
+        'Encrypt data in transit and at rest with KMS, CloudHSM, and ACM',
+        'Automate security controls across accounts with Security Hub, Organizations, and Control Tower',
+        'Discover sensitive data at scale with Amazon Macie and apply defense in depth',
+      ],
+      preLearningCheck: {
+        question: 'A web application is being targeted by SQL-injection and cross-site-scripting attempts at the HTTP layer. Which AWS service is purpose-built to filter these application-layer attacks?',
+        options: [
+          'A security group rule',
+          'AWS WAF with managed rule groups in front of the ALB/CloudFront',
+          'A network ACL',
+          'Amazon Macie',
+        ],
+        correct: 1,
+        note: 'No pressure — guessing first improves retention. AWS WAF inspects HTTP(S) requests and blocks application-layer attacks like SQLi and XSS using managed and custom rules. Security groups and NACLs operate at the network layer and cannot inspect request content.',
+      },
+      sections: [
+        {
+          heading: 'Layered network security',
+          body: 'Network controls operate at different layers and combine for defense in depth. Security groups are stateful instance-level firewalls; network ACLs are stateless subnet-level filters; AWS WAF filters HTTP(S) application-layer attacks; AWS Shield protects against DDoS; AWS Network Firewall provides managed, stateful network-layer filtering across VPCs.',
+          bullets: [
+            'Security groups (stateful, allow rules, instance/ENI level) vs. NACLs (stateless, allow+deny, subnet level) — know the distinction cold.',
+            'AWS WAF: layer-7 filtering (SQLi, XSS, rate limiting, geo) on CloudFront, ALB, API Gateway.',
+            'AWS Shield Standard (free, common DDoS) and Shield Advanced (enhanced protection + response team).',
+            'Network Firewall: centralized, stateful traffic filtering and intrusion prevention across a VPC/organization.',
+          ],
+          interactive: 'sg-vs-nacl',
+        },
+        {
+          heading: 'Encryption and key management',
+          body: 'Protecting data means encrypting it in transit and at rest, with controlled keys. AWS KMS manages encryption keys and integrates with most services; AWS CloudHSM provides dedicated hardware modules for strict compliance; AWS Certificate Manager (ACM) provisions and renews TLS certificates for in-transit encryption.',
+          bullets: [
+            'KMS: customer managed keys (CMKs) with key policies, grants, rotation, and per-service integration (S3, EBS, RDS, etc.).',
+            'Encryption in transit: ACM-issued TLS certificates on ALB/CloudFront/API Gateway; enforce HTTPS.',
+            'CloudHSM: single-tenant FIPS 140-2 Level 3 HSMs when regulations require dedicated key control.',
+            'Enforce encryption with SCPs/Config rules (e.g. deny unencrypted S3 or EBS) so it is automatic, not optional.',
+          ],
+        },
+        {
+          heading: 'Automating controls across accounts',
+          body: 'At scale, controls must be applied and enforced automatically org-wide, not configured by hand per account. Security Hub, Organizations, Control Tower, and Systems Manager deliver this.',
+          bullets: [
+            'Security Hub: enables security standards (CIS, AWS FSBP) and aggregates findings across accounts org-wide.',
+            'Organizations + Control Tower: apply guardrails (SCPs, Config rules) to every account automatically, including new ones.',
+            'Systems Manager: enforce patching and configuration baselines across the fleet.',
+            'Firewall Manager: centrally apply WAF, Shield, and security-group policies across accounts.',
+          ],
+          callout: { type: 'tip', text: 'Apply WAF/Shield/security-group rules consistently across many accounts → AWS Firewall Manager (built on Organizations). Aggregate and standardize findings → Security Hub.' },
+        },
+        {
+          heading: 'Sensitive data discovery and defense in depth',
+          body: 'You cannot protect data you do not know you have. Amazon Macie uses machine learning to discover and classify sensitive data (PII) in S3 at scale. Defense in depth combines multiple controls so no single failure is catastrophic.',
+          bullets: [
+            'Macie: automated discovery/classification of sensitive data in S3 and alerts on exposure (public/unencrypted buckets).',
+            'Defense in depth: ACM + WAF + security groups/NACLs + Config rules + GuardDuty + encryption layered together.',
+            'GuardDuty (threat detection), Inspector (vulnerabilities), Detective (investigation), Config (compliance) reinforce each other.',
+            'Combine preventive (SCPs, security groups), detective (Config, GuardDuty), and responsive (automation) controls.',
+          ],
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 0,
+          question: 'A team needs a stateless, subnet-level control that can explicitly DENY traffic from a specific IP range, in addition to the stateful instance-level firewall. Which control provides explicit deny at the subnet level?',
+          options: [
+            'A security group (stateful, allow-only, instance level)',
+            'A network ACL (stateless, supports allow and deny, subnet level)',
+            'AWS WAF',
+            'Amazon Macie',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — network ACLs are stateless, operate at the subnet level, and support explicit deny rules, which security groups (allow-only) cannot.',
+          elaborativePrompt: 'When would you specifically need a NACL deny rule that a security group cannot express, and why?',
+        },
+        {
+          afterSection: 2,
+          question: 'A company must apply the same AWS WAF web-ACL and security-group policies consistently across 50 accounts and any new accounts. Which service centralizes this?',
+          options: [
+            'Editing each account\'s rules manually',
+            'AWS Firewall Manager, which centrally applies WAF, Shield, and security-group policies across the organization',
+            'A single large security group shared by all',
+            'CloudWatch dashboards',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — Firewall Manager (on top of Organizations) centrally enforces WAF, Shield, and security-group policies across all accounts, including new ones.',
+          elaborativePrompt: 'Why is centrally managing firewall policies with Firewall Manager safer than relying on each account team to configure WAF correctly?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself: a regulated company must block layer-7 web attacks, encrypt everything in transit and at rest with controlled keys, apply the same controls across all accounts automatically, and find any PII sitting in S3. Walk through which service handles each layer and how they combine into defense in depth.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A company wants to (1) block application-layer attacks against its public web tier, (2) ensure the same protections are applied uniformly across all member accounts including new ones, and (3) continuously discover any unencrypted or publicly exposed sensitive data in S3. Which combination meets these requirements?',
+        options: [
+          'Security groups on each instance, manual per-account configuration, and quarterly bucket reviews',
+          'AWS WAF managed rules fronting the web tier, AWS Firewall Manager to apply WAF/security-group policies org-wide, and Amazon Macie to discover sensitive and exposed data in S3',
+          'Network ACLs only, a shared admin account, and S3 versioning',
+          'Shield Standard only and manual encryption checks',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'WAF blocks layer-7 attacks, Firewall Manager enforces the controls org-wide automatically, and Macie discovers exposed sensitive data — each requirement matched to the purpose-built service.',
+          perOption: [
+            'Per-instance security groups and manual per-account config cannot block layer-7 attacks or guarantee uniform org-wide application.',
+            'Correct — WAF (layer-7), Firewall Manager (org-wide enforcement), and Macie (sensitive-data discovery) directly meet all three requirements.',
+            'NACLs cannot inspect HTTP content, and a shared admin account is an anti-pattern.',
+            'Shield Standard addresses DDoS, not application-layer filtering or data discovery.',
+          ],
+          link: 'Domain 6 · Task 6.2 — Apply automation for security controls and data protection',
+        },
+      },
+      videos: [
+        { videoId: 'uhOZqiw7mdk', title: 'New AWS DevOps Professional (DOP-C02) Certification Exam', channel: 'Digital Cloud Training', relevance: 'Companion overview — network controls, encryption, and automated security are core Domain 6 material.' },
+      ],
+      keyTerms: [
+        { term: 'AWS WAF', def: 'A web application firewall that filters HTTP(S) requests to block layer-7 attacks like SQLi and XSS.' },
+        { term: 'Security group vs. NACL', def: 'A stateful instance-level allow-firewall vs. a stateless subnet-level filter that supports explicit deny.' },
+        { term: 'AWS KMS', def: 'A managed key service for encryption keys with policies, rotation, and broad service integration.' },
+        { term: 'AWS Firewall Manager', def: 'A service that centrally applies WAF, Shield, and security-group policies across an organization.' },
+        { term: 'Amazon Macie', def: 'A service that uses ML to discover and classify sensitive data (PII) in S3 and flag exposure.' },
+      ],
+      awsServices: [
+        { name: 'AWS WAF / Shield / Network Firewall', purpose: 'Provide layered protection against application-layer attacks, DDoS, and network threats.' },
+        { name: 'AWS KMS / ACM / CloudHSM', purpose: 'Encrypt data at rest and in transit with managed or dedicated key control.' },
+        { name: 'AWS Firewall Manager / Security Hub / Macie', purpose: 'Automate, standardize, and audit security controls and sensitive-data discovery across accounts.' },
+      ],
+      examTips: [
+        'Layer-7 web attacks (SQLi/XSS) → AWS WAF; DDoS → Shield; subnet allow/deny → NACL; instance stateful firewall → security group.',
+        'Encrypt at rest with KMS (CloudHSM when dedicated/FIPS required); in transit with ACM-issued TLS; enforce with Config/SCPs.',
+        'Apply WAF/Shield/SG policies org-wide → AWS Firewall Manager; aggregate findings → Security Hub.',
+        'Discover sensitive/PII data in S3 → Amazon Macie.',
+        'Defense in depth = preventive + detective + responsive controls combined, never a single layer.',
+      ],
+    },
+
+    // ─────────────────────────────────────────────────────────────
+    {
+      id: 'd6-s18',
+      number: 18,
+      module: 'Domain 6 · Security & Compliance',
+      domain: 'd6',
+      weight: '17%',
+      task: 'Task 6.3',
+      title: 'Security Monitoring and Auditing — GuardDuty, Config, CloudTrail, and Threats',
+      duration: 30,
+      summary: 'The final session closes the loop: detecting, auditing, and alerting on security events. It covers the auditing services (CloudTrail, Config, VPC Flow Logs, drift detection), the threat-detection services (GuardDuty, Inspector, Access Analyzer), recognizing common cloud security threats, and alerting on anomalous activity.',
+      objectives: [
+        'Build robust auditing with CloudTrail, AWS Config, VPC Flow Logs, and drift detection',
+        'Detect threats and vulnerabilities with GuardDuty, Inspector, and IAM Access Analyzer',
+        'Recognize common cloud security threats and how to surface them',
+        'Configure alerting on unexpected or anomalous security events and analyze findings',
+      ],
+      preLearningCheck: {
+        question: 'A security team needs an authoritative record of every API call made in their AWS accounts — who did what, when, and from where — for audit and forensic investigation. Which service provides this?',
+        options: [
+          'Amazon CloudWatch metrics',
+          'AWS CloudTrail',
+          'AWS Cost Explorer',
+          'Amazon QuickSight',
+        ],
+        correct: 1,
+        note: 'No pressure — guessing first improves retention. CloudTrail records management and (optionally) data-plane API activity across the account — the canonical audit and forensic log of who did what.',
+      },
+      sections: [
+        {
+          heading: 'The auditing services',
+          body: 'Auditing answers "what happened and is everything as it should be?" Four services anchor it. CloudTrail records API activity; AWS Config records resource configuration over time and evaluates compliance; VPC Flow Logs capture network traffic metadata; CloudFormation drift detection finds infrastructure that no longer matches its template.',
+          bullets: [
+            'CloudTrail: who made which API call, when, from where — enable an organization trail to a central, locked S3 bucket.',
+            'AWS Config: configuration timeline + rules for continuous compliance; aggregate across accounts.',
+            'VPC Flow Logs: source/destination/port/accept-reject network metadata for investigation and detection.',
+            'Drift detection: surfaces resources changed out-of-band from their CloudFormation definition.',
+          ],
+          callout: { type: 'note', text: 'CloudTrail = API activity (identity/action). Config = resource state and compliance over time. Flow Logs = network traffic metadata. Each answers a different audit question — match the service to the evidence needed.' },
+        },
+        {
+          heading: 'Threat and vulnerability detection',
+          body: 'Auditing is passive; detection actively finds threats. Amazon GuardDuty continuously analyzes CloudTrail, VPC Flow Logs, and DNS logs for malicious activity; Amazon Inspector scans workloads (EC2, ECR images, Lambda) for vulnerabilities; IAM Access Analyzer finds resources shared externally and validates policies.',
+          bullets: [
+            'GuardDuty: ML-based threat detection (e.g. crypto-mining, credential exfiltration, anomalous API calls) with no agents; enable org-wide.',
+            'Inspector: continuous vulnerability scanning of EC2, container images in ECR, and Lambda functions.',
+            'IAM Access Analyzer: identifies resources (S3, roles, KMS) accessible from outside the account/org and validates/refines policies.',
+            'Feed all findings into Security Hub for one prioritized view.',
+          ],
+        },
+        {
+          heading: 'Common cloud security threats',
+          body: 'The exam expects you to recognize the threats these services surface, drawn directly from the guide.',
+          bullets: [
+            'Exposed/leaked AWS access keys (e.g. committed to a public repo) → rotate, detect with GuardDuty, prevent with roles.',
+            'S3 buckets with public access or encryption disabled → detect with Config/Macie/Access Analyzer, remediate automatically.',
+            'Insecure web traffic (HTTP, weak TLS) → enforce HTTPS via ACM and WAF.',
+            'Anomalous API behavior (unusual Region, mass deletions, disabled logging) → GuardDuty findings and CloudTrail analysis.',
+          ],
+          callout: { type: 'tip', text: 'Exposed access keys and public/unencrypted S3 buckets are the two threats the guide names explicitly — expect scenarios that test detecting and auto-remediating exactly these.' },
+        },
+        {
+          heading: 'Alerting and analyzing findings',
+          body: 'Detection only helps if it drives a timely response. Route findings to alerting and automation, and analyze them to confirm and contain.',
+          bullets: [
+            'Security Hub aggregates and prioritizes findings; EventBridge routes them to SNS, Lambda, or Step Functions for response.',
+            'Configure alerting on anomalous events (root login, disabled CloudTrail, GuardDuty high-severity) for immediate action.',
+            'Analyze with CloudTrail (in Athena), Detective (linked investigation), and Logs Insights to establish scope and root cause.',
+            'Close the loop: finding → notify → automated remediation (e.g. isolate an instance, revoke keys) → verify.',
+          ],
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 1,
+          question: 'A company wants continuous, agentless detection of threats like credential exfiltration and crypto-mining across all accounts, analyzing CloudTrail, VPC Flow Logs, and DNS logs. Which service fits?',
+          options: [
+            'AWS Config rules only',
+            'Amazon GuardDuty, enabled org-wide',
+            'Amazon QuickSight',
+            'AWS Cost Explorer',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — GuardDuty continuously analyzes those data sources with ML to detect threats, requires no agents, and can be enabled across the organization.',
+          elaborativePrompt: 'Why is GuardDuty\'s agentless, managed threat detection easier to operate at scale than building your own log-analysis pipeline?',
+        },
+        {
+          afterSection: 2,
+          question: 'A security team needs to know immediately if anyone disables CloudTrail logging or an S3 bucket becomes public, and have it auto-remediated. Which approach fits best?',
+          options: [
+            'Review logs manually once a month',
+            'GuardDuty/Config detect the event, EventBridge routes it to SNS for alerting and to an SSM Automation/Lambda remediation',
+            'Turn off alerts to reduce noise',
+            'A static CloudWatch dashboard',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — detection (GuardDuty/Config) plus EventBridge-driven alerting and automated remediation gives immediate, closed-loop response.',
+          elaborativePrompt: 'Why is disabling CloudTrail itself a high-priority security signal worth immediate automated response?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself: a company must keep an immutable audit trail of all API activity, detect threats like exposed keys and public buckets across every account, and alert plus auto-remediate the moment something dangerous happens. Walk through which auditing service, which detection service, and which alerting/remediation path you would wire together.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A company needs an organization-wide security posture: an immutable record of all API activity, continuous threat detection across accounts, and automated alerting plus remediation when a high-severity finding (such as an exposed access key being used) occurs. Which combination best achieves this?',
+        options: [
+          'Per-account CloudWatch dashboards reviewed manually each week',
+          'An organization CloudTrail to a locked central S3 bucket, GuardDuty enabled org-wide with findings in Security Hub, and EventBridge routing high-severity findings to SNS and an SSM Automation/Lambda remediation',
+          'VPC Flow Logs only, analyzed quarterly',
+          'IAM access keys rotated yearly and manual incident response',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'A central immutable CloudTrail provides the audit record, org-wide GuardDuty plus Security Hub detects and aggregates threats, and EventBridge-driven alerting and remediation closes the loop automatically.',
+          perOption: [
+            'Manual weekly dashboard review is neither continuous nor automated and misses fast-moving threats.',
+            'Correct — organization CloudTrail (audit), GuardDuty + Security Hub (detection/aggregation), and EventBridge → SNS/SSM (alert + remediate) deliver the full closed-loop posture.',
+            'Flow Logs alone do not capture API identity/actions or provide threat detection, and quarterly analysis is too slow.',
+            'Yearly key rotation and manual response do not provide continuous detection or timely remediation.',
+          ],
+          link: 'Domain 6 · Task 6.3 — Implement security monitoring and auditing solutions',
+        },
+      },
+      videos: [
+        { videoId: 'uhOZqiw7mdk', title: 'New AWS DevOps Professional (DOP-C02) Certification Exam', channel: 'Digital Cloud Training', relevance: 'Companion overview — security monitoring, auditing, and threat detection complete the Domain 6 picture.' },
+      ],
+      keyTerms: [
+        { term: 'AWS CloudTrail', def: 'The authoritative log of API activity (who/what/when/where), best delivered as an organization trail to a locked central bucket.' },
+        { term: 'Amazon GuardDuty', def: 'Agentless, ML-based threat detection across CloudTrail, VPC Flow Logs, and DNS logs, enabled org-wide.' },
+        { term: 'Amazon Inspector', def: 'Continuous vulnerability scanning of EC2 instances, ECR container images, and Lambda functions.' },
+        { term: 'IAM Access Analyzer', def: 'A service that finds resources shared with external principals and validates/refines IAM policies.' },
+        { term: 'VPC Flow Logs', def: 'Records of network traffic metadata (source, destination, port, accept/reject) for investigation and detection.' },
+      ],
+      awsServices: [
+        { name: 'AWS CloudTrail / Config', purpose: 'Provide the API-activity audit trail and resource configuration/compliance history.' },
+        { name: 'Amazon GuardDuty / Inspector / Access Analyzer', purpose: 'Detect threats, vulnerabilities, and unintended external access across the estate.' },
+        { name: 'AWS Security Hub', purpose: 'Aggregates and prioritizes findings org-wide and feeds EventBridge-driven alerting and remediation.' },
+      ],
+      examTips: [
+        'CloudTrail = API activity; Config = resource state/compliance; VPC Flow Logs = network metadata — match the audit question to the source.',
+        'Continuous, agentless, org-wide threat detection → GuardDuty; vulnerability scanning → Inspector; external-access detection → Access Analyzer.',
+        'The two named threats: exposed access keys and public/unencrypted S3 buckets — detect and auto-remediate them.',
+        'Aggregate findings in Security Hub; route high-severity ones via EventBridge to SNS + SSM/Lambda remediation.',
+        'Disabling CloudTrail or a sudden public bucket is a high-priority signal — alert and remediate immediately.',
+      ],
+    },
+
   ],
 }
 

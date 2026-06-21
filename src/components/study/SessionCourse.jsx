@@ -1421,6 +1421,100 @@ function VpcTroubleshooterWidget() {
   )
 }
 
+// ── DOP D1 (Session 1): which Code* service does the job ─────────────────────
+function PipelineStageWidget() {
+  return (
+    <ScenarioSorter
+      title="CI/CD Toolchain — Who Does What?"
+      intro="A pipeline is an assembly line of distinct jobs. Tag each task with the AWS service that performs it — the card confirms instantly."
+      cats={[
+        { id: 'pipeline', label: 'CodePipeline', color: '#ea580c', desc: 'Orchestrates the stages and passes artifacts' },
+        { id: 'build', label: 'CodeBuild', color: '#2563eb', desc: 'Compiles, runs tests, builds images' },
+        { id: 'deploy', label: 'CodeDeploy', color: '#7c3aed', desc: 'Releases to EC2 / ECS / Lambda' },
+      ]}
+      items={[
+        { t: 'Runs unit tests and builds a Docker image, then pushes it to ECR', a: 'build', why: 'Compiling, testing, and image building happen in CodeBuild (privileged mode for Docker).' },
+        { t: 'Shifts traffic between a blue and green fleet with automatic rollback on alarm', a: 'deploy', why: 'Traffic shifting and rollback across compute targets is CodeDeploy.' },
+        { t: 'Reacts to a source change and runs each stage in order, stopping on failure', a: 'pipeline', why: 'Orchestration of the end-to-end flow is CodePipeline.' },
+        { t: 'Performs a canary release of a new Lambda version via an alias', a: 'deploy', why: 'CodeDeploy does the canary/linear traffic shifting on the Lambda alias.' },
+        { t: 'Adds a manual approval gate before the production stage', a: 'pipeline', why: 'Manual approval actions are stages within CodePipeline.' },
+        { t: 'Executes the buildspec phases and produces the output artifact', a: 'build', why: 'The buildspec and artifact generation belong to CodeBuild.' },
+      ]}
+    />
+  )
+}
+
+// ── DOP D1 (Session 2): where each test belongs in the pipeline ──────────────
+function TestStageWidget() {
+  return (
+    <ScenarioSorter
+      title="Test Placement — Shift Left"
+      intro="Cheap, fast tests run early; slow, expensive tests run later against real environments. Tag each test with where it belongs."
+      cats={[
+        { id: 'pr', label: 'On the pull request / build', color: '#2563eb', desc: 'Fast unit tests + scans, before merge' },
+        { id: 'test', label: 'After deploy to a test stack', color: '#7c3aed', desc: 'Integration / acceptance tests' },
+        { id: 'staging', label: 'In staging before prod', color: '#ea580c', desc: 'Slow load / stress / performance' },
+      ]}
+      items={[
+        { t: 'Fast unit tests that should block a broken merge to main', a: 'pr', why: 'Unit tests run earliest, on the pull request, as a required check.' },
+        { t: 'Load and stress tests that need a production-like deployed environment', a: 'staging', why: 'Slow, infrastructure-heavy tests run last, in staging before the prod gate.' },
+        { t: 'Tests that verify the service correctly talks to its real dependencies', a: 'test', why: 'Integration tests run after deploying to a test stack.' },
+        { t: 'A SAST/dependency security scan gating the merge', a: 'pr', why: 'Security scans are pipeline tests run early, on the PR/build.' },
+        { t: 'End-to-end performance benchmarking before release', a: 'staging', why: 'Performance benchmarking runs in staging against real infrastructure.' },
+        { t: 'Acceptance tests against a freshly deployed test environment', a: 'test', why: 'Acceptance/integration tests run after the test-stage deploy.' },
+      ]}
+    />
+  )
+}
+
+// ── DOP D2 (Session 5): which CloudFormation capability fits ─────────────────
+function IacSelectorWidget() {
+  return (
+    <ScenarioSorter
+      title="CloudFormation Capability — Pick the Right One"
+      intro="Each IaC need maps to a specific CloudFormation feature. Tag each scenario with the capability that solves it."
+      cats={[
+        { id: 'stacksets', label: 'StackSets', color: '#ea580c', desc: 'Deploy across many accounts / Regions' },
+        { id: 'changeset', label: 'Change set', color: '#2563eb', desc: 'Preview an update before applying' },
+        { id: 'drift', label: 'Drift detection', color: '#7c3aed', desc: 'Find out-of-band manual changes' },
+        { id: 'catalog', label: 'Service Catalog', color: '#16a34a', desc: 'Governed self-service products' },
+      ]}
+      items={[
+        { t: 'Roll a security baseline into all 150 org accounts, including new ones', a: 'stacksets', why: 'StackSets (service-managed) deploy and auto-enroll across accounts and Regions.' },
+        { t: 'Confirm an update will not replace a production database before running it', a: 'changeset', why: 'A change set previews add/modify/REPLACE actions before execution.' },
+        { t: 'Detect that someone changed a resource by hand outside the template', a: 'drift', why: 'Drift detection reports resources that no longer match the template.' },
+        { t: 'Let app teams launch approved stacks without broad permissions', a: 'catalog', why: 'Service Catalog publishes governed, versioned products with launch constraints.' },
+        { t: 'Update the same baseline stack consistently across every account at once', a: 'stacksets', why: 'StackSets propagate updates to all stack instances org-wide.' },
+        { t: 'Review exactly which resources a risky update will recreate', a: 'changeset', why: 'The change set shows Replacement: True before you apply.' },
+      ]}
+    />
+  )
+}
+
+// ── DOP D2 (Session 7): which Systems Manager capability fits ────────────────
+function SsmCapabilityWidget() {
+  return (
+    <ScenarioSorter
+      title="Systems Manager — Match the Capability"
+      intro="SSM is a toolbox of distinct capabilities. Tag each operational need with the right one."
+      cats={[
+        { id: 'patch', label: 'Patch Manager', color: '#ea580c', desc: 'Scheduled patching + compliance' },
+        { id: 'state', label: 'State Manager', color: '#2563eb', desc: 'Enforce desired config continuously' },
+        { id: 'session', label: 'Session Manager', color: '#7c3aed', desc: 'Audited shell, no open ports' },
+        { id: 'automation', label: 'Automation', color: '#16a34a', desc: 'Multi-step runbook workflows' },
+      ]}
+      items={[
+        { t: 'Patch thousands of instances on a schedule with compliance reporting', a: 'patch', why: 'Patch Manager scans and patches via maintenance windows and reports compliance.' },
+        { t: 'Continuously ensure the CloudWatch agent stays installed and running', a: 'state', why: 'State Manager re-applies desired configuration on a cadence, self-healing drift.' },
+        { t: 'Give engineers shell access with no inbound SSH ports or bastion hosts', a: 'session', why: 'Session Manager provides audited shell access via the agent and IAM.' },
+        { t: 'Run a defined patch-then-reboot-then-validate workflow as a runbook', a: 'automation', why: 'Automation runbooks orchestrate multi-step operational workflows.' },
+        { t: 'Reinstall a security agent automatically whenever it is removed', a: 'state', why: 'State Manager enforces the desired state, reinstalling drift automatically.' },
+        { t: 'Auto-remediate a non-compliant resource flagged by an AWS Config rule', a: 'automation', why: 'A Config rule triggers an SSM Automation runbook to remediate.' },
+      ]}
+    />
+  )
+}
+
 const INTERACTIVE_WIDGETS = {
   'model-selector': ModelSelectorWidget,
   'vector-store-selector': VectorStoreSelectorWidget,
@@ -1448,6 +1542,10 @@ const INTERACTIVE_WIDGETS = {
   'scaling-policy': ScalingPolicyWidget,
   'backup-strategy': BackupStrategyWidget,
   'vpc-troubleshooter': VpcTroubleshooterWidget,
+  'pipeline-stage': PipelineStageWidget,
+  'test-stage': TestStageWidget,
+  'iac-selector': IacSelectorWidget,
+  'ssm-capability': SsmCapabilityWidget,
 }
 
 // ─── Small renderers ──────────────────────────────────────────────────────────
