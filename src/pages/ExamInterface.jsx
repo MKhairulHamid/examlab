@@ -101,21 +101,33 @@ function ExamInterface() {
           
           setDuration(examDuration * 60)
 
-          // Start or resume exam (checks for existing in-progress exam first).
-          // Returns the resumed attempt's progress so we don't query for it twice.
-          const { existingProgress } = await startOrResumeExam(setId, user.id, questionSet.question_count || 0)
+          const wantFresh = searchParams.get('fresh') === '1'
 
-          // Show resume notification if exam was resumed
-          if (existingProgress) {
-            setShowResumeNotification(true)
-            setTimeout(() => setShowResumeNotification(false), 5000) // Hide after 5 seconds
-            
-            // Initialize answeredQuestions set with already answered questions
-            const existingAnswers = existingProgress.answers || existingProgress.current_answers_json || {}
-            const answeredIndices = Object.keys(existingAnswers)
-              .filter(key => existingAnswers[key] && existingAnswers[key].length > 0)
-              .map(key => parseInt(key))
-            setAnsweredQuestions(new Set(answeredIndices))
+          if (wantFresh) {
+            // Abandon any in-progress attempt for this set before starting fresh.
+            // Remove the param from the URL immediately so a page-refresh doesn't
+            // repeat the abandon.
+            await progressService.abandonExam(user.id, setId)
+            const next = new URLSearchParams(searchParams)
+            next.delete('fresh')
+            navigate(`/exam/${slug}/take?${next.toString()}`, { replace: true })
+            await startExam(setId, user.id, questionSet.question_count || 0)
+          } else {
+            // Start or resume exam (checks for existing in-progress exam first).
+            // Returns the resumed attempt's progress so we don't query for it twice.
+            const { existingProgress } = await startOrResumeExam(setId, user.id, questionSet.question_count || 0)
+
+            // Show resume notification if exam was resumed
+            if (existingProgress) {
+              setShowResumeNotification(true)
+              setTimeout(() => setShowResumeNotification(false), 5000)
+
+              const existingAnswers = existingProgress.answers || existingProgress.current_answers_json || {}
+              const answeredIndices = Object.keys(existingAnswers)
+                .filter(key => existingAnswers[key] && existingAnswers[key].length > 0)
+                .map(key => parseInt(key))
+              setAnsweredQuestions(new Set(answeredIndices))
+            }
           }
           
           setLoading(false)

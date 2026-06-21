@@ -226,6 +226,48 @@ export default function UsersManager() {
                       </div>
                     </section>
                   )}
+
+                  {/* Vouchers */}
+                  <section>
+                    <div style={{ ...labelStyle, marginBottom: '0.5rem' }}>Vouchers</div>
+                    {u.vouchers && u.vouchers.length > 0 ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                        {u.vouchers.map((v, i) => {
+                          const activeBadge = v.is_active
+                            ? { text: 'Active', color: '#00D4AA', bg: 'rgba(0,212,170,0.12)' }
+                            : { text: 'Expired', color: '#ffb86b', bg: 'rgba(255,184,107,0.12)' }
+                          return (
+                            <dl key={i} style={{ margin: 0, fontSize: '0.8rem', display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '0.25rem 0.75rem' }}>
+                              <dt style={{ color: 'rgba(231,238,246,0.5)' }}>Code</dt>
+                              <dd style={{ margin: 0, color: '#e7eef6', fontFamily: 'monospace', fontSize: '0.75rem' }}>{v.code}</dd>
+                              <dt style={{ color: 'rgba(231,238,246,0.5)' }}>Scope</dt>
+                              <dd style={{ margin: 0, color: '#e7eef6' }}>
+                                {v.all_programs ? 'All programs' : (v.exam_type || '—')}
+                                {v.duration_days ? <span style={{ color: 'rgba(231,238,246,0.4)' }}> · {v.duration_days}d</span> : null}
+                              </dd>
+                              {v.target_group && (
+                                <>
+                                  <dt style={{ color: 'rgba(231,238,246,0.5)' }}>Group</dt>
+                                  <dd style={{ margin: 0, color: '#e7eef6' }}>{v.target_group}</dd>
+                                </>
+                              )}
+                              <dt style={{ color: 'rgba(231,238,246,0.5)' }}>Redeemed</dt>
+                              <dd style={{ margin: 0, color: '#e7eef6' }}>{fmtDate(v.redeemed_at)}</dd>
+                              <dt style={{ color: 'rgba(231,238,246,0.5)' }}>Expires</dt>
+                              <dd style={{ margin: 0, color: '#e7eef6' }}>
+                                {fmtDate(v.expires_at)}
+                                <span style={{ marginLeft: '0.5rem', fontSize: '0.65rem', fontWeight: 700, color: activeBadge.color, background: activeBadge.bg, padding: '0.1rem 0.4rem', borderRadius: '0.3rem' }}>
+                                  {activeBadge.text}
+                                </span>
+                              </dd>
+                            </dl>
+                          )
+                        })}
+                      </div>
+                    ) : (
+                      <p style={{ margin: 0, fontSize: '0.8rem', color: 'rgba(231,238,246,0.45)' }}>No voucher redemptions.</p>
+                    )}
+                  </section>
                 </div>
               )}
             </div>

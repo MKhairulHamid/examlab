@@ -197,6 +197,38 @@ export const progressService = {
   },
 
   /**
+   * Abandon the current in-progress exam for a question set.
+   * Marks both exam_attempts and user_progress as 'abandoned' so the slot is
+   * freed and a fresh attempt can be started immediately.
+   */
+  async abandonExam(userId, questionSetId) {
+    try {
+      const existing = await this.findInProgressExam(userId, questionSetId)
+      if (!existing) return null
+
+      const attemptId = existing.attemptId || existing.id
+
+      await Promise.all([
+        supabase
+          .from('exam_attempts')
+          .update({ status: 'abandoned', updated_at: new Date().toISOString() })
+          .eq('id', attemptId)
+          .eq('user_id', userId),
+        supabase
+          .from('user_progress')
+          .update({ status: 'abandoned', updated_at: new Date().toISOString() })
+          .eq('exam_attempt_id', attemptId)
+          .eq('user_id', userId),
+      ])
+
+      return attemptId
+    } catch (error) {
+      console.error('Failed to abandon exam:', error)
+      return null
+    }
+  },
+
+  /**
    * Find in-progress exam for a question set from Supabase
    * Returns the attempt if found, null otherwise
    */

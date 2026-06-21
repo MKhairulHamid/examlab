@@ -490,6 +490,8 @@ Deno.serve(async (req) => {
           enrollRes,
           examTypesRes,
           aiRes,
+          redemptionsRes,
+          promoCodesRes,
         ] = await Promise.all([
           supabase.from('profiles').select('id, email, full_name, is_admin, exam_dates_json, created_at, updated_at'),
           supabase.from('user_subscriptions').select('user_id, plan_id, status, current_period_start, current_period_end, cancelled_at, created_at'),
@@ -500,14 +502,17 @@ Deno.serve(async (req) => {
           supabase.from('user_enrollments').select('user_id, exam_type_id, enrolled_at'),
           supabase.from('exam_types').select('id, name, slug'),
           supabase.from('ai_usage').select('user_id, usage_date, call_count'),
+          supabase.from('promo_redemptions').select('user_id, promo_code_id, exam_type_id, all_programs, redeemed_at, expires_at'),
+          supabase.from('promo_codes').select('id, code, target_group, duration_days'),
         ])
 
-        const firstErr = [profilesRes, subsRes, plansRes, attemptsRes, streaksRes, courseRes, enrollRes, examTypesRes, aiRes]
+        const firstErr = [profilesRes, subsRes, plansRes, attemptsRes, streaksRes, courseRes, enrollRes, examTypesRes, aiRes, redemptionsRes, promoCodesRes]
           .find(r => r.error)
         if (firstErr?.error) return jsonResponse({ error: firstErr.error.message }, 500)
 
         const plansById = new Map((plansRes.data || []).map(p => [p.id, p]))
         const examTypesById = new Map((examTypesRes.data || []).map(t => [t.id, t]))
+        const promoCodesById = new Map((promoCodesRes.data || []).map(c => [c.id, c]))
 
         const byUser = (rows: any[]) => {
           const m = new Map<string, any[]>()
@@ -524,6 +529,7 @@ Deno.serve(async (req) => {
         const courseByUser = byUser(courseRes.data || [])
         const enrollByUser = byUser(enrollRes.data || [])
         const aiByUser = byUser(aiRes.data || [])
+        const redemptionsByUser = byUser(redemptionsRes.data || [])
 
         const countSessions = (v: unknown) =>
           Array.isArray(v) ? v.length : (v && typeof v === 'object' ? Object.keys(v).length : 0)
@@ -549,6 +555,20 @@ Deno.serve(async (req) => {
             enrolled_at: e.enrolled_at,
           }))
           const aiCalls = (aiByUser.get(p.id) || []).reduce((sum, r) => sum + (r.call_count || 0), 0)
+          const now = new Date()
+          const vouchers = (redemptionsByUser.get(p.id) || []).map(r => {
+            const code = promoCodesById.get(r.promo_code_id)
+            return {
+              code: code?.code || r.promo_code_id,
+              target_group: code?.target_group || null,
+              duration_days: code?.duration_days || null,
+              exam_type: r.all_programs ? null : (examTypesById.get(r.exam_type_id)?.slug || r.exam_type_id),
+              all_programs: r.all_programs,
+              redeemed_at: r.redeemed_at,
+              expires_at: r.expires_at,
+              is_active: new Date(r.expires_at) > now,
+            }
+          }).sort((a: any, b: any) => (b.redeemed_at || '').localeCompare(a.redeemed_at || ''))
 
           return {
             id: p.id,
@@ -570,6 +590,7 @@ Deno.serve(async (req) => {
             streak,
             courses,
             enrollments,
+            vouchers,
           }
         }).sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''))
 

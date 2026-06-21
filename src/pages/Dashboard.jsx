@@ -59,6 +59,7 @@ function Dashboard() {
   const [studyProgress, setStudyProgress] = useState([]) // [{courseSlug, completedSessions, updatedAt}] from the DB
   const [practiceSets, setPracticeSets] = useState([])   // exam simulations for the focused exam
   const [loadingSets, setLoadingSets] = useState(false)
+  const [inProgressBySet, setInProgressBySet] = useState({}) // { [setId]: progressObj | null }
   const autoFocusedRef = useRef(false)
 
   const userName = profile?.full_name || user?.email?.split('@')[0] || 'Student'
@@ -285,7 +286,20 @@ function Dashboard() {
           .eq('is_active', true)
           .order('set_number', { ascending: true })
         if (error) throw error
-        if (!cancelled) setPracticeSets(data || [])
+        if (!cancelled) {
+          const sets = data || []
+          setPracticeSets(sets)
+          // Load in-progress status for each set in parallel
+          if (sets.length && user) {
+            const entries = await Promise.all(
+              sets.map(s =>
+                progressService.findInProgressExam(user.id, s.id)
+                  .then(p => [s.id, p])
+              )
+            )
+            if (!cancelled) setInProgressBySet(Object.fromEntries(entries))
+          }
+        }
       } catch {
         if (!cancelled) setPracticeSets([])
       } finally {
@@ -293,7 +307,7 @@ function Dashboard() {
       }
     })()
     return () => { cancelled = true }
-  }, [featuredExam])
+  }, [featuredExam, user])
 
   // ── Resume: most recent in-progress practice exam ─────────────────
   useEffect(() => {
@@ -1033,10 +1047,24 @@ function Dashboard() {
                       {set.is_final_exam && (<><span>·</span><span className="text-[#00D4AA] font-semibold">Final exam</span></>)}
                     </div>
                     {(isFree || hasAccess) ? (
-                      <Button variant="primary" size="sm" className="w-full gap-1.5"
-                              onClick={() => navigate(`/exam/${featuredExam.slug}/take?set=${set.id}`)}>
-                        Start simulation <ArrowRight className="w-4 h-4" />
-                      </Button>
+                      inProgressBySet[set.id] ? (
+                        <div className="flex flex-col gap-2">
+                          <Button variant="primary" size="sm" className="w-full gap-1.5"
+                                  onClick={() => navigate(`/exam/${featuredExam.slug}/take?set=${set.id}`)}>
+                            Continue <ArrowRight className="w-4 h-4" />
+                          </Button>
+                          <button
+                            className="text-xs text-gray-400 hover:text-gray-600 underline underline-offset-2 text-center"
+                            onClick={() => navigate(`/exam/${featuredExam.slug}/take?set=${set.id}&fresh=1`)}>
+                            Start over
+                          </button>
+                        </div>
+                      ) : (
+                        <Button variant="primary" size="sm" className="w-full gap-1.5"
+                                onClick={() => navigate(`/exam/${featuredExam.slug}/take?set=${set.id}`)}>
+                          Start simulation <ArrowRight className="w-4 h-4" />
+                        </Button>
+                      )
                     ) : (
                       <Button variant="outline" size="sm" className="w-full gap-1.5"
                               onClick={() => setShowEnrollmentModal(true)}>
