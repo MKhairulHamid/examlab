@@ -6,7 +6,7 @@
 // the Supabase exam_types/question_sets rows. Exam facts below are the official
 // AWS numbers at time of writing.
 
-import { Cloud, BrainCircuit, Layers, Code2, Cpu, Network, Sparkles, Activity } from 'lucide-react'
+import { Cloud, BrainCircuit, Layers, Code2, Cpu, Network, Sparkles, Activity, Workflow } from 'lucide-react'
 
 export const PROGRAMS = [
   {
@@ -299,6 +299,44 @@ export const PROGRAMS = [
     facts: { questions: '75', time: '180 min', passing: '750 / 1000', cost: '$300' },
     evergreenValue:
       'Even if you never sit the exam, you learn how production generative AI is actually engineered — grounding, agents, safety, and cost control. That is the practical, in-demand skill behind every serious GenAI product, whatever your job title.',
+  },
+  {
+    code: 'DOP-C02',
+    slug: 'dop-c02',
+    name: 'AWS Certified DevOps Engineer – Professional',
+    shortName: 'DevOps Engineer Pro',
+    level: 'Professional',
+    Icon: Workflow,
+    color: '#EA580C',
+    tagline: 'Automate the delivery, operation, and recovery of distributed systems on AWS.',
+    heroLead: 'Ship faster, fail safer —',
+    heroAccent: 'automate the whole delivery lifecycle.',
+    blurb:
+      'DOP-C02 is AWS’s definitive DevOps credential. It teaches you to build continuous-delivery pipelines, manage infrastructure as code across many accounts, design systems that are highly available and self-healing, instrument them with deep monitoring, and respond to incidents with automation — the full operate-and-deliver lifecycle of a senior DevOps engineer.',
+    whyTopic:
+      'Modern software lives or dies on how well it is delivered and operated. Anyone can deploy once by hand; the valuable skill is making deployment, recovery, monitoring, and compliance happen automatically, safely, and at scale across an entire organization. This program trains exactly that engineering judgment — how to design a pipeline that ships dozens of times a day without breaking production, infrastructure that rebuilds itself from code, and systems that detect and remediate their own failures before a human is paged. It is the difference between running software and engineering the machine that runs it.',
+    learnOutcomes: [
+      'Building CI/CD pipelines with CodePipeline, CodeBuild, and CodeDeploy — including blue/green and canary releases for EC2, ECS, EKS, and Lambda',
+      'Managing infrastructure as code at scale: CloudFormation, SAM, CDK, StackSets, and multi-account governance with Organizations and Control Tower',
+      'Designing resilient, scalable systems — Multi-AZ and multi-Region, auto scaling, and automated recovery against real RTO and RPO targets',
+      'Instrumenting deep observability with CloudWatch, X-Ray, metric filters, and event-driven alerting and remediation',
+      'Automating incident response and security/compliance controls — EventBridge, Systems Manager, Config, GuardDuty, and Security Hub',
+    ],
+    careerBenefit:
+      'DevOps Engineer Professional is one of the highest-value credentials in cloud and a recognized signal for senior DevOps, platform, and SRE roles. It is the natural next step after the Developer or SysOps Associate and the cert that moves you from "can deploy on AWS" to "can own the delivery and reliability of an entire platform."',
+    roles: ['DevOps & platform engineers', 'Site reliability engineers', 'Release & build engineers', 'Cloud automation leads'],
+    sessions: 18,
+    domains: [
+      { label: 'SDLC Automation', weight: '22%' },
+      { label: 'Configuration Management & IaC', weight: '17%' },
+      { label: 'Resilient Cloud Solutions', weight: '15%' },
+      { label: 'Monitoring & Logging', weight: '15%' },
+      { label: 'Incident & Event Response', weight: '14%' },
+      { label: 'Security & Compliance', weight: '17%' },
+    ],
+    facts: { questions: '75', time: '180 min', passing: '750 / 1000', cost: '$300' },
+    evergreenValue:
+      'Even if you never sit the exam, you learn how high-performing teams actually deliver and operate software on AWS — pipelines, infrastructure as code, observability, and self-healing automation. That operational engineering is the most leveraged, transferable skill in modern cloud work, whatever your job title.',
   },
 ]
 

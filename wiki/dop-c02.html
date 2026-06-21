@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DOP-C02 Exam Guide — CloudExamLab Wiki</title>
+  <style>
+    :root {
+      --sidebar-w: 255px;
+      --sidebar-bg: #0f172a;
+      --sidebar-text: #94a3b8;
+      --sidebar-active-text: #fb923c;
+      --sidebar-active-bg: rgba(251,146,60,0.08);
+      --sidebar-hover: #1e293b;
+      --accent: #ea580c;
+      --accent-light: #fff7ed;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --heading: #0f172a;
+      --code-bg: #1e293b;
+      --code-text: #e2e8f0;
+      --stripe: #f8fafc;
+      --warn-bg: #fef2f2;
+      --warn-border: #ef4444;
+      --tip-bg: #f0fdf4;
+      --tip-border: #22c55e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--text);
+      line-height: 1.65;
+      background: #fff;
+    }
+
+    /* ── Sidebar ── */
+    #sidebar {
+      position: fixed; top: 0; left: 0;
+      width: var(--sidebar-w); height: 100vh;
+      background: var(--sidebar-bg);
+      overflow-y: auto; z-index: 100;
+      display: flex; flex-direction: column;
+    }
+    #sidebar::-webkit-scrollbar { width: 4px; }
+    #sidebar::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+    .sb-header {
+      padding: 20px 16px 14px;
+      border-bottom: 1px solid #1e293b;
+    }
+    .sb-logo { font-size: 13px; font-weight: 700; color: #f1f5f9; letter-spacing: .06em; text-transform: uppercase; }
+    .sb-sub  { font-size: 11px; color: var(--sidebar-text); margin-top: 2px; }
+    .sb-group { padding: 10px 0 2px; }
+    .sb-group-label {
+      font-size: 10px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: #475569;
+      padding: 0 16px; margin-bottom: 3px;
+    }
+    .sb-item {
+      display: block; padding: 6px 16px;
+      font-size: 12.5px; color: var(--sidebar-text);
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: background .12s, color .12s;
+    }
+    .sb-item:hover { background: var(--sidebar-hover); color: #f1f5f9; }
+    .sb-item.active { color: var(--sidebar-active-text); border-left-color: var(--sidebar-active-text); background: var(--sidebar-active-bg); }
+    .sb-item.ext { color: #fb923c; }
+    .sb-item.ext::after { content: ' ↗'; font-size: 10px; }
+
+    /* ── Main ── */
+    #main {
+      margin-left: var(--sidebar-w);
+      padding: 48px 64px 96px;
+      max-width: calc(var(--sidebar-w) + 880px);
+    }
+
+    /* ── Section ── */
+    .section { padding-top: 52px; border-top: 1px solid var(--border); margin-top: 28px; }
+    .section:first-of-type { border-top: none; margin-top: 0; padding-top: 0; }
+
+    /* ── Typography ── */
+    h1 { font-size: 27px; font-weight: 700; color: var(--heading); margin-bottom: 10px; }
+    h2 { font-size: 19px; font-weight: 700; color: var(--heading); margin-top: 38px; margin-bottom: 14px; }
+    h3 { font-size: 15px; font-weight: 600; color: var(--heading); margin-top: 24px; margin-bottom: 8px; }
+    p  { margin-bottom: 12px; }
+    a  { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ul, ol { padding-left: 22px; margin-bottom: 12px; }
+    li { margin-bottom: 4px; }
+    hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+    .section-meta { font-size: 14px; color: var(--text-muted); margin-bottom: 26px; margin-top: -4px; }
+
+    /* ── Chip label ── */
+    .chip {
+      display: inline-block; padding: 2px 9px; border-radius: 4px;
+      font-size: 10px; font-weight: 700; letter-spacing: .05em;
+      text-transform: uppercase; margin-bottom: 6px;
+    }
+    .chip-platform  { background: #eff6ff; color: #1d4ed8; }
+    .chip-technical { background: #f0fdf4; color: #15803d; }
+    .chip-reference { background: #fdf4ff; color: #7e22ce; }
+    .chip-exam      { background: #fff7ed; color: #c2410c; }
+
+    /* ── Tables ── */
+    .tw { overflow-x: auto; margin: 16px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    th {
+      background: #f1f5f9; padding: 7px 12px;
+      text-align: left; font-size: 11px; font-weight: 700;
+      color: var(--text-muted); border-bottom: 2px solid var(--border);
+      white-space: nowrap;
+    }
+    td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:nth-child(even) td { background: var(--stripe); }
+
+    /* ── Code ── */
+    code {
+      font-family: 'SF Mono','Fira Code','Cascadia Code',Consolas,monospace;
+      font-size: 12px; background: #f1f5f9; color: #be185d;
+      padding: 2px 5px; border-radius: 3px;
+    }
+
+    /* ── Callouts ── */
+    .callout {
+      padding: 12px 16px; border-radius: 6px;
+      margin: 14px 0; font-size: 13.5px;
+    }
+    .callout-note    { background: var(--accent-light); border-left: 4px solid var(--accent); }
+    .callout-warning { background: var(--warn-bg);      border-left: 4px solid var(--warn-border); }
+    .callout-tip     { background: var(--tip-bg);       border-left: 4px solid var(--tip-border); }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 10px;
+      font-size: 11px; font-weight: 600;
+    }
+    .badge-green  { background: #dcfce7; color: #15803d; }
+    .badge-yellow { background: #fef3c7; color: #b45309; }
+    .badge-gray   { background: #f1f5f9; color: #475569; }
+    .badge-blue   { background: #dbeafe; color: #1d4ed8; }
+    .badge-orange { background: #ffedd5; color: #c2410c; }
+
+    /* ── Numbered steps ── */
+    .steps { counter-reset: step; list-style: none; padding: 0; margin-bottom: 14px; }
+    .steps li {
+      counter-increment: step;
+      padding: 7px 0 7px 36px; position: relative;
+      border-left: 2px solid var(--border); margin-left: 11px;
+    }
+    .steps li::before {
+      content: counter(step);
+      position: absolute; left: -11px; top: 7px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--accent); color: #fff;
+      font-size: 10px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── Page title ── */
+    .page-title { margin-bottom: 36px; }
+    .page-title h1 { font-size: 30px; margin-bottom: 8px; }
+    .page-title p  { font-size: 15px; color: var(--text-muted); margin: 0; }
+
+    /* ── Domain bar ── */
+    .domain-bar { display: flex; gap: 6px; flex-wrap: wrap; margin: 18px 0 8px; }
+    .domain-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 12px; border-radius: 20px;
+      font-size: 12px; font-weight: 600;
+      border: 1px solid var(--border); background: #f8fafc;
+    }
+    .domain-pill .pct {
+      background: var(--accent); color: #fff;
+      border-radius: 10px; padding: 1px 6px;
+      font-size: 10px; font-weight: 700;
+    }
+
+    /* ── Highlight row ── */
+    .hl td { background: #fff7ed !important; font-weight: 600; }
+
+    /* ── Jump-to-top ── */
+    #top-btn {
+      position: fixed; bottom: 28px; right: 28px;
+      background: var(--accent); color: #fff;
+      border: none; border-radius: 50%; width: 38px; height: 38px;
+      font-size: 18px; cursor: pointer; display: none;
+      align-items: center; justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+      transition: opacity .2s;
+    }
+    #top-btn:hover { background: #c2410c; }
+  </style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<nav id="sidebar">
+  <div class="sb-header">
+    <div class="sb-logo">CloudExamLab</div>
+    <div class="sb-sub">Exam Guide Series</div>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">On this page</div>
+    <a class="sb-item active" href="#overview">Overview</a>
+    <a class="sb-item" href="#structure">Exam Structure</a>
+    <a class="sb-item" href="#domains">Content Domains</a>
+    <a class="sb-item" href="#domain1">D1 — SDLC Automation</a>
+    <a class="sb-item" href="#domain2">D2 — Config Mgmt &amp; IaC</a>
+    <a class="sb-item" href="#domain3">D3 — Resilient Solutions</a>
+    <a class="sb-item" href="#domain4">D4 — Monitoring &amp; Logging</a>
+    <a class="sb-item" href="#domain5">D5 — Incident &amp; Event Response</a>
+    <a class="sb-item" href="#domain6">D6 — Security &amp; Compliance</a>
+    <a class="sb-item" href="#candidate-prep">Helping Candidates</a>
+    <a class="sb-item" href="#simulation">Simulation Design</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Wiki</div>
+    <a class="sb-item ext" href="index.html">Developer Wiki</a>
+    <a class="sb-item ext" href="new-program-playbook.html">New Program Playbook</a>
+    <a class="sb-item ext" href="exam-authoring-standard.html">Exam &amp; Question Authoring</a>
+    <a class="sb-item ext" href="aws-certification-roadmap.html">AWS Cert Roadmap</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Official</div>
+    <a class="sb-item ext" href="https://docs.aws.amazon.com/aws-certification/latest/devops-engineer-professional-02/devops-engineer-professional-02.html">AWS Exam Guide ↗</a>
+  </div>
+</nav>
+
+<!-- ══ MAIN ══ -->
+<main id="main">
+
+  <!-- OVERVIEW -->
+  <div class="page-title" id="overview">
+    <h1>AWS Certified DevOps Engineer – Professional (DOP-C02)</h1>
+    <p>Everything we need to know about this exam — structure, domains, candidate prep strategy, and simulation design.</p>
+  </div>
+
+  <h2>What This Exam Is</h2>
+  <p>The AWS Certified DevOps Engineer – Professional (DOP-C02) validates technical expertise in provisioning, operating, and managing distributed application systems on AWS. It is a Professional-level exam that tests whether a candidate can implement continuous delivery, automate security and governance, deploy monitoring at scale, and build systems that are highly available, scalable, and self-healing.</p>
+  <ul>
+    <li><strong>Target audience:</strong> DevOps engineers, platform engineers, and SREs who provision, operate, and manage AWS environments and own delivery and reliability.</li>
+    <li><strong>Prerequisite experience:</strong> 2+ years of experience provisioning, operating, and managing AWS environments, plus experience with the software development lifecycle and programming/scripting.</li>
+    <li><strong>Why candidates take it:</strong> To validate senior DevOps capability for lead/platform/SRE roles, and as the advanced continuation of the Developer Associate (DVA) or CloudOps Associate (SOA) path.</li>
+  </ul>
+
+  <!-- STRUCTURE -->
+  <div class="section" id="structure">
+    <span class="chip chip-exam">Exam Format</span>
+    <h1>Question Format &amp; Scoring</h1>
+    <p class="section-meta">Exact parameters from the official exam guide — use these verbatim in the simulation design.</p>
+
+    <h2>Question Types</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>Multiple choice</td><td>One correct answer from four options (three distractors)</td></tr>
+        <tr><td>Multiple response</td><td>Two or more correct answers from five or more options</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Scoring Model</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Setting</th><th>Value</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Total questions on exam</td><td>75</td><td>65 scored + 10 unscored pretest (unidentified)</td></tr>
+        <tr><td>Duration</td><td>180 minutes</td><td>Exact match to real exam</td></tr>
+        <tr><td>Passing score</td><td>750 / 1,000</td><td>Display as % equivalent: 75%</td></tr>
+        <tr><td>Scoring</td><td>Compensatory</td><td>No per-domain minimums — total score only</td></tr>
+        <tr><td>Result</td><td>Pass / Fail</td><td>Scaled scoring equalizes difficulty across exam forms</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Out-of-Scope Skills (Do NOT Test)</h2>
+    <p>The official exam guide explicitly lists these job tasks as out of scope for the target candidate. Any question that hinges on them is out of scope — cut it.</p>
+    <ul>
+      <li>Advanced networking knowledge (e.g. advanced routing algorithms, failover techniques)</li>
+      <li>Providing deep-level security recommendations to developers</li>
+      <li>Designing, querying, and optimizing the performance of databases</li>
+      <li>Developing full-stack application code</li>
+    </ul>
+    <div class="callout callout-tip"><strong>Exam tip:</strong> DOP-C02 tests <em>automation and operational judgment</em> at scale — how to build pipelines, codify infrastructure, observe systems, and respond to events. The crux of most questions is "which automated, least-operational-overhead solution fits?" — not raw service trivia.</div>
+  </div>
+
+  <!-- DOMAIN OVERVIEW -->
+  <div class="section" id="domains">
+    <span class="chip chip-platform">Domains</span>
+    <h1>Domain Breakdown</h1>
+    <p class="section-meta">Six domains. D1 (SDLC Automation) carries the most weight, with Configuration Management &amp; IaC and Security &amp; Compliance tied just behind it.</p>
+
+    <div class="domain-bar">
+      <span class="domain-pill">D1 — SDLC Automation <span class="pct">22%</span></span>
+      <span class="domain-pill">D2 — Config Mgmt &amp; IaC <span class="pct">17%</span></span>
+      <span class="domain-pill">D3 — Resilient Solutions <span class="pct">15%</span></span>
+      <span class="domain-pill">D4 — Monitoring &amp; Logging <span class="pct">15%</span></span>
+      <span class="domain-pill">D5 — Incident &amp; Event Response <span class="pct">14%</span></span>
+      <span class="domain-pill">D6 — Security &amp; Compliance <span class="pct">17%</span></span>
+    </div>
+
+    <div class="tw"><table>
+      <thead><tr><th>Domain</th><th>Weight</th><th>Task statements</th></tr></thead>
+      <tbody>
+        <tr><td>D1 — SDLC Automation</td><td>22%</td><td>1.1 CI/CD pipelines · 1.2 Automated testing · 1.3 Build &amp; manage artifacts · 1.4 Deployment strategies</td></tr>
+        <tr><td>D2 — Configuration Management and IaC</td><td>17%</td><td>2.1 Reusable IaC &amp; config management · 2.2 Multi-account/multi-Region account automation · 2.3 Complex large-scale automation</td></tr>
+        <tr><td>D3 — Resilient Cloud Solutions</td><td>15%</td><td>3.1 High availability · 3.2 Scalability · 3.3 Automated recovery (RTO/RPO)</td></tr>
+        <tr><td>D4 — Monitoring and Logging</td><td>15%</td><td>4.1 Collect, aggregate &amp; store logs/metrics · 4.2 Audit, monitor &amp; analyze · 4.3 Automate monitoring &amp; event management</td></tr>
+        <tr><td>D5 — Incident and Event Response</td><td>14%</td><td>5.1 Manage event sources · 5.2 Config changes in response to events · 5.3 Troubleshoot failures</td></tr>
+        <tr><td>D6 — Security and Compliance</td><td>17%</td><td>6.1 IAM at scale · 6.2 Automate security controls &amp; data protection · 6.3 Security monitoring &amp; auditing</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <!-- DOMAIN 1 -->
+  <div class="section" id="domain1">
+    <span class="chip chip-platform">Domain 1 · 22%</span>
+    <h1>SDLC Automation</h1>
+    <p class="section-meta">The largest domain. Covers continuous integration and delivery — pipelines, automated testing, artifact management, and deployment strategies for every compute platform.</p>
+
+    <h2>Task 1.1 — Implement CI/CD pipelines</h2>
+    <p><strong>Knowledge of:</strong> SDLC concepts, phases, and models; pipeline deployment patterns for single- and multi-account environments.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Configuring code, image, and artifact repositories</li>
+      <li>Using version control to integrate pipelines with application environments</li>
+      <li>Setting up build processes (e.g. AWS CodeBuild)</li>
+      <li>Managing build and deployment secrets (e.g. AWS Secrets Manager, AWS Systems Manager Parameter Store)</li>
+      <li>Determining appropriate deployment strategies (e.g. AWS CodeDeploy)</li>
+    </ul>
+
+    <h2>Task 1.2 — Integrate automated testing into CI/CD pipelines</h2>
+    <p><strong>Knowledge of:</strong> Different types of tests (unit, integration, acceptance, UI, security scans); reasonable use of different tests at different pipeline stages.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Running builds or tests when generating pull requests or code merges (e.g. CodeBuild)</li>
+      <li>Running load/stress tests, performance benchmarking, and application testing at scale</li>
+      <li>Measuring application health based on application exit codes</li>
+      <li>Automating unit tests and code coverage</li>
+      <li>Invoking AWS services in a pipeline for testing</li>
+    </ul>
+
+    <h2>Task 1.3 — Build and manage artifacts</h2>
+    <p><strong>Knowledge of:</strong> Artifact use cases and secure management; methods to create and generate artifacts; artifact lifecycle considerations.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Creating and configuring artifact repositories (e.g. AWS CodeArtifact, Amazon S3, Amazon ECR)</li>
+      <li>Configuring build tools for generating artifacts (e.g. CodeBuild, AWS Lambda)</li>
+      <li>Automating Amazon EC2 instance and container image build processes (e.g. EC2 Image Builder)</li>
+    </ul>
+
+    <h2>Task 1.4 — Implement deployment strategies for instance, container, and serverless environments</h2>
+    <p><strong>Knowledge of:</strong> Deployment methodologies for various platforms (EC2, ECS, EKS, Lambda); application storage patterns (EFS, S3, EBS); mutable vs. immutable deployment patterns; tools for distributing code (CodeDeploy, Image Builder).</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Configuring security permissions to allow access to artifact repositories (e.g. IAM, CodeArtifact)</li>
+      <li>Configuring deployment agents (e.g. CodeDeploy agent)</li>
+      <li>Troubleshooting deployment issues</li>
+      <li>Using different deployment methods (e.g. blue/green, canary)</li>
+    </ul>
+  </div>
+
+  <!-- DOMAIN 2 -->
+  <div class="section" id="domain2">
+    <span class="chip chip-technical">Domain 2 · 17%</span>
+    <h1>Configuration Management and IaC</h1>
+    <p class="section-meta">Codifying infrastructure and governance. Covers reusable IaC templates, multi-account/multi-Region account automation, and large-scale operational automation.</p>
+
+    <h2>Task 2.1 — Define cloud infrastructure and reusable components to provision and manage systems throughout their lifecycle</h2>
+    <p><strong>Knowledge of:</strong> IaC options and tools for AWS; change management processes for IaC-based platforms; configuration management services and strategies.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Composing and deploying IaC templates (e.g. AWS SAM, AWS CloudFormation, AWS CDK)</li>
+      <li>Applying CloudFormation stack sets across multiple accounts and AWS Regions</li>
+      <li>Determining optimal configuration management services (e.g. AWS OpsWorks, AWS Systems Manager, AWS Config, AWS AppConfig)</li>
+      <li>Implementing infrastructure patterns, governance controls, and security standards into reusable IaC templates (e.g. AWS Service Catalog, CloudFormation modules, AWS CDK)</li>
+    </ul>
+
+    <h2>Task 2.2 — Deploy automation to create, onboard, and secure AWS accounts in a multi-account or multi-Region environment</h2>
+    <p><strong>Knowledge of:</strong> AWS account structures, best practices, and related AWS services.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Standardizing and automating account provisioning and configuration</li>
+      <li>Creating, consolidating, and centrally managing accounts (e.g. AWS Organizations, AWS Control Tower)</li>
+      <li>Applying IAM solutions for multi-account and complex organization structures (e.g. SCPs, assuming roles)</li>
+      <li>Implementing and developing governance and security controls at scale (AWS Config, Control Tower, Security Hub, Amazon Detective, Amazon GuardDuty, Service Catalog, SCPs)</li>
+    </ul>
+
+    <h2>Task 2.3 — Design and build automated solutions for complex tasks and large-scale environments</h2>
+    <p><strong>Knowledge of:</strong> AWS services and solutions to automate tasks and processes; methods and strategies to interact with the AWS software-defined infrastructure.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Automating system inventory, configuration, and patch management (e.g. Systems Manager, AWS Config)</li>
+      <li>Developing AWS Lambda function automations for complex scenarios (e.g. AWS SDKs, Lambda, AWS Step Functions)</li>
+      <li>Automating the configuration of software applications to the desired state (e.g. OpsWorks, Systems Manager State Manager)</li>
+      <li>Maintaining software compliance (e.g. Systems Manager)</li>
+    </ul>
+  </div>
+
+  <!-- DOMAIN 3 -->
+  <div class="section" id="domain3">
+    <span class="chip chip-reference">Domain 3 · 15%</span>
+    <h1>Resilient Cloud Solutions</h1>
+    <p class="section-meta">Designing for failure and growth. Covers high availability, scalability, and automated recovery against measurable RTO/RPO targets.</p>
+
+    <h2>Task 3.1 — Implement highly available solutions to meet resilience and business requirements</h2>
+    <p><strong>Knowledge of:</strong> Multi-AZ and multi-Region deployments (compute and data layers); SLAs; replication and failover methods for stateful services; techniques to achieve high availability.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Translating business requirements into technical resiliency needs</li>
+      <li>Identifying and remediating single points of failure in existing workloads</li>
+      <li>Enabling cross-Region solutions where available (e.g. DynamoDB, RDS, Route 53, S3, CloudFront)</li>
+      <li>Configuring load balancing to support cross-AZ services</li>
+      <li>Configuring applications and related services to support multiple AZs and Regions while minimizing downtime</li>
+    </ul>
+
+    <h2>Task 3.2 — Implement solutions that are scalable to meet business requirements</h2>
+    <p><strong>Knowledge of:</strong> Appropriate metrics for scaling services; loosely coupled and distributed architectures; serverless architectures; container platforms.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Identifying and remediating scaling issues</li>
+      <li>Identifying and implementing appropriate auto scaling, load balancing, and caching solutions</li>
+      <li>Deploying container-based applications (e.g. Amazon ECS, Amazon EKS)</li>
+      <li>Deploying workloads in multiple Regions for global scalability</li>
+      <li>Configuring serverless applications (e.g. Amazon API Gateway, AWS Lambda, AWS Fargate)</li>
+    </ul>
+
+    <h2>Task 3.3 — Implement automated recovery processes to meet RTO and RPO requirements</h2>
+    <p><strong>Knowledge of:</strong> Disaster recovery concepts (RTO, RPO); AWS Backup and recovery strategies (e.g. pilot light, warm standby); recovery procedures.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Testing failover of Multi-AZ and multi-Region workloads (e.g. RDS, Aurora, Route 53, CloudFront)</li>
+      <li>Identifying and implementing appropriate cross-Region AWS Backup and recovery strategies (e.g. AWS Backup, S3, Systems Manager)</li>
+      <li>Configuring a load balancer to recover from backend failure</li>
+    </ul>
+  </div>
+
+  <!-- DOMAIN 4 -->
+  <div class="section" id="domain4">
+    <span class="chip chip-platform">Domain 4 · 15%</span>
+    <h1>Monitoring and Logging</h1>
+    <p class="section-meta">Observability at scale. Covers collecting and storing logs and metrics, analyzing them to detect issues, and automating monitoring and event management.</p>
+
+    <h2>Task 4.1 — Configure the collection, aggregation, and storage of logs and metrics</h2>
+    <p><strong>Knowledge of:</strong> How to monitor applications and infrastructure; CloudWatch metrics (namespaces, metrics, dimensions, resolution); real-time log ingestion; encryption options for logs/metrics (client-side, server-side, KMS); security configurations (IAM roles/permissions for log collection).</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Securely storing and managing logs</li>
+      <li>Creating CloudWatch metrics from log events using metric filters</li>
+      <li>Creating CloudWatch metric streams (e.g. Amazon S3 or Kinesis Data Firehose)</li>
+      <li>Collecting custom metrics (e.g. using the CloudWatch agent)</li>
+      <li>Managing log storage lifecycles (e.g. S3 lifecycles, CloudWatch log group retention)</li>
+      <li>Processing log data using CloudWatch log subscriptions (e.g. Kinesis, Lambda, OpenSearch Service)</li>
+      <li>Searching log data using filter and pattern syntax or CloudWatch Logs Insights</li>
+      <li>Configuring encryption of log data (e.g. AWS KMS)</li>
+    </ul>
+
+    <h2>Task 4.2 — Audit, monitor, and analyze logs and metrics to detect issues</h2>
+    <p><strong>Knowledge of:</strong> Anomaly detection alarms (CloudWatch anomaly detection); common CloudWatch metrics and logs; Amazon Inspector and common assessment templates; AWS Config rules; CloudTrail log events.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Building CloudWatch dashboards and Amazon QuickSight visualizations</li>
+      <li>Associating CloudWatch alarms with CloudWatch metrics (standard and custom)</li>
+      <li>Configuring AWS X-Ray for different services (e.g. containers, API Gateway, Lambda)</li>
+      <li>Analyzing real-time log streams (e.g. using Kinesis Data Streams)</li>
+      <li>Analyzing logs with AWS services (e.g. Amazon Athena, CloudWatch Logs Insights)</li>
+    </ul>
+
+    <h2>Task 4.3 — Automate monitoring and event management of complex environments</h2>
+    <p><strong>Knowledge of:</strong> Event-driven, asynchronous design patterns (e.g. S3 Event Notifications or EventBridge events to SNS or Lambda); auto scaling capabilities across services; alert notification and action capabilities; health check capabilities (ALB target groups, Route 53).</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Configuring solutions for auto scaling (e.g. DynamoDB, EC2 Auto Scaling groups, RDS storage auto scaling, ECS capacity provider)</li>
+      <li>Creating CloudWatch custom metrics, metric filters, alarms, and notifications (e.g. SNS, Lambda)</li>
+      <li>Configuring S3 events to process log files (e.g. via Lambda) and deliver to another destination (e.g. OpenSearch Service, CloudWatch Logs)</li>
+      <li>Configuring EventBridge to send notifications based on a particular event pattern</li>
+      <li>Installing and configuring agents on EC2 instances (e.g. SSM Agent, CloudWatch agent)</li>
+      <li>Configuring AWS Config rules to remediate issues</li>
+      <li>Configuring health checks (e.g. Route 53, ALB)</li>
+    </ul>
+  </div>
+
+  <!-- DOMAIN 5 -->
+  <div class="section" id="domain5">
+    <span class="chip chip-technical">Domain 5 · 14%</span>
+    <h1>Incident and Event Response</h1>
+    <p class="section-meta">Detect, respond, and recover. Covers managing event sources, applying configuration changes in response to events, and troubleshooting system and application failures.</p>
+
+    <h2>Task 5.1 — Manage event sources to process, notify, and take action in response to events</h2>
+    <p><strong>Knowledge of:</strong> AWS services that generate, capture, and process events (e.g. AWS Health, EventBridge, CloudTrail); event-driven architectures (e.g. fan out, event streaming, queuing).</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Integrating AWS event sources (e.g. AWS Health, EventBridge, CloudTrail)</li>
+      <li>Building event processing workflows (e.g. SQS, Kinesis, SNS, Lambda, Step Functions)</li>
+    </ul>
+
+    <h2>Task 5.2 — Implement configuration changes in response to events</h2>
+    <p><strong>Knowledge of:</strong> Fleet management services (e.g. Systems Manager, AWS Auto Scaling); configuration management services (e.g. AWS Config).</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Applying configuration changes to systems</li>
+      <li>Modifying infrastructure configurations in response to events</li>
+      <li>Remediating a non-desired system state</li>
+    </ul>
+
+    <h2>Task 5.3 — Troubleshoot system and application failures</h2>
+    <p><strong>Knowledge of:</strong> AWS metrics and logging services (e.g. CloudWatch, X-Ray); AWS service health services (e.g. AWS Health, CloudWatch, Systems Manager OpsCenter); root cause analysis.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Analyzing failed deployments (e.g. CodePipeline, CodeBuild, CodeDeploy, CloudFormation, CloudWatch synthetic monitoring)</li>
+      <li>Analyzing incidents regarding failed processes (e.g. auto scaling, ECS, EKS)</li>
+    </ul>
+  </div>
+
+  <!-- DOMAIN 6 -->
+  <div class="section" id="domain6">
+    <span class="chip chip-exam">Domain 6 · 17%</span>
+    <h1>Security and Compliance</h1>
+    <p class="section-meta">Automating security at scale. Covers identity and access management for large organizations, automated security controls and data protection, and security monitoring and auditing.</p>
+
+    <h2>Task 6.1 — Implement techniques for identity and access management at scale</h2>
+    <p><strong>Knowledge of:</strong> Appropriate usage of IAM entities for human and machine access (users, groups, roles, identity providers, identity-based/resource-based/session policies); identity federation (IAM identity providers, IAM Identity Center); permission delegation via IAM permissions boundaries; organizational SCPs.</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Designing policies to enforce least privilege access</li>
+      <li>Implementing role-based and attribute-based access control patterns</li>
+      <li>Automating credential rotation for machine identities (e.g. AWS Secrets Manager)</li>
+      <li>Managing permissions to control access to human and machine identities (e.g. MFA, AWS STS, IAM profiles)</li>
+    </ul>
+
+    <h2>Task 6.2 — Apply automation for security controls and data protection</h2>
+    <p><strong>Knowledge of:</strong> Network security components (security groups, network ACLs, routing, Network Firewall, WAF, Shield); certificates and PKI; data management (classification, encryption, key management, access controls).</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Automating the application of security controls in multi-account and multi-Region environments (e.g. Security Hub, Organizations, Control Tower, Systems Manager)</li>
+      <li>Combining security controls to apply defense in depth (e.g. ACM, WAF, AWS Config + rules, Security Hub, GuardDuty, security groups, network ACLs, Detective, Network Firewall)</li>
+      <li>Automating the discovery of sensitive data at scale (e.g. Amazon Macie)</li>
+      <li>Encrypting data in transit and at rest (e.g. AWS KMS, AWS CloudHSM, ACM)</li>
+    </ul>
+
+    <h2>Task 6.3 — Implement security monitoring and auditing solutions</h2>
+    <p><strong>Knowledge of:</strong> Security auditing services and features (CloudTrail, AWS Config, VPC Flow Logs, CloudFormation drift detection); services for identifying vulnerabilities and events (GuardDuty, Inspector, IAM Access Analyzer, AWS Config); common cloud security threats (insecure web traffic, exposed access keys, public/unencrypted S3 buckets).</p>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Implementing robust security auditing</li>
+      <li>Configuring alerting based on unexpected or anomalous security events</li>
+      <li>Configuring service and application logging (e.g. CloudTrail, CloudWatch Logs)</li>
+      <li>Analyzing logs, metrics, and security findings</li>
+    </ul>
+  </div>
+
+  <!-- CANDIDATE PREP -->
+  <div class="section" id="candidate-prep">
+    <span class="chip chip-platform">Candidate Prep</span>
+    <h1>How We Help DOP-C02 Candidates</h1>
+    <p class="section-meta">Who takes this exam, where they struggle, and how to build a study path that gets them to 750+.</p>
+
+    <h2>Who Takes This Exam</h2>
+    <ul>
+      <li><strong>Working DevOps and platform engineers</strong> — already running CI/CD and AWS infrastructure who want to validate senior capability.</li>
+      <li><strong>Associate-level graduates</strong> — DVA or SOA holders moving up to the Professional tier on the operations track.</li>
+      <li><strong>SREs and cloud automation leads</strong> — engineers responsible for reliability, observability, and incident response at scale.</li>
+    </ul>
+
+    <h2>What Candidates Struggle With</h2>
+    <ul>
+      <li><strong>Deployment strategy nuance</strong> — blue/green vs. canary vs. rolling, and how CodeDeploy implements each across EC2, ECS, EKS, and Lambda. The exam tests trade-offs, not definitions.</li>
+      <li><strong>Multi-account governance</strong> — Organizations, Control Tower, SCPs, and how account factory and StackSets automate provisioning and guardrails at scale.</li>
+      <li><strong>Event-driven automation chains</strong> — wiring EventBridge, SNS, SQS, Lambda, Step Functions, and Config remediation into reliable, least-overhead workflows.</li>
+      <li><strong>Resilience math</strong> — matching RTO/RPO targets to the right DR strategy (backup/restore, pilot light, warm standby, multi-site) and the cost/complexity each implies.</li>
+      <li><strong>Observability depth</strong> — metric filters, subscription filters, metric streams, X-Ray, anomaly detection, and which one a given symptom calls for.</li>
+      <li><strong>Security automation</strong> — least-privilege at scale, credential rotation, and combining GuardDuty/Security Hub/Config/Macie into defense in depth.</li>
+    </ul>
+
+    <h2>Recommended Study Path</h2>
+    <ol class="steps">
+      <li><strong>Domain 1 — SDLC Automation first.</strong> Highest weight (22%) and the spine of the exam. Build the CodePipeline → CodeBuild → CodeDeploy mental model and the blue/green vs. canary distinction before anything else.</li>
+      <li><strong>Domain 2 — Configuration Management &amp; IaC.</strong> Tied for second (17%). CloudFormation/CDK/StackSets and multi-account governance underpin many cross-domain scenarios.</li>
+      <li><strong>Domain 6 — Security &amp; Compliance.</strong> Also 17%. IAM at scale, data protection automation, and security monitoring recur throughout the exam.</li>
+      <li><strong>Domains 3 &amp; 4 — Resilience and Observability.</strong> 15% each. Resilient architectures and deep monitoring are heavily interleaved with incident response.</li>
+      <li><strong>Domain 5 — Incident &amp; Event Response last.</strong> Smallest (14%) but it synthesizes everything else — event sources, automated remediation, and troubleshooting failed deployments and processes.</li>
+    </ol>
+
+    <h2>AI Explanation Quality for This Exam</h2>
+    <p>DOP-C02 questions are long, multi-service scenarios where several options work but one is best (least overhead, most automated, meets all constraints). Every explanation must cover WHY a plausible option is inferior — not just "this is wrong." Common patterns to cover:</p>
+    <ul>
+      <li>For deployment questions: explain why a strategy fails a constraint (e.g. "in-place deployment cannot meet the zero-downtime requirement; blue/green can shift traffic only after the new fleet is healthy").</li>
+      <li>For automation questions: explain why a manual or higher-overhead option loses (e.g. "a custom Lambda poller reinvents what an EventBridge rule does natively — more code to maintain").</li>
+      <li>For resilience questions: explain why an option misses the stated RTO/RPO (e.g. "backup/restore cannot meet a 5-minute RTO; warm standby keeps a scaled-down copy already running").</li>
+    </ul>
+  </div>
+
+  <!-- SIMULATION DESIGN -->
+  <div class="section" id="simulation">
+    <span class="chip chip-exam">Simulation Design</span>
+    <h1>How to Formulate the Exam Simulation</h1>
+    <p class="section-meta">Parameters for building practice sets that match the real DOP-C02 exam. See the <a href="exam-authoring-standard.html">Exam &amp; Question Authoring Standard</a> for question-writing rules.</p>
+
+    <h2>Question Set Structure</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Setting</th><th>Value</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Total questions per simulation</td><td>65</td><td>Scored-question count; real exam adds 10 unscored (unannounced) for 75 total</td></tr>
+        <tr><td>Duration</td><td>180 minutes</td><td>Exact match to real exam</td></tr>
+        <tr><td>Passing threshold</td><td>750 / 1,000</td><td>Display as % equivalent: 75%</td></tr>
+        <tr><td>Scoring</td><td>Compensatory</td><td>No domain minimums — total score only</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Domain Distribution per Set</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Domain</th><th>Weight</th><th>Qs in 65-Q set</th></tr></thead>
+      <tbody>
+        <tr><td>D1 — SDLC Automation</td><td>22%</td><td>14</td></tr>
+        <tr><td>D2 — Configuration Management and IaC</td><td>17%</td><td>11</td></tr>
+        <tr><td>D3 — Resilient Cloud Solutions</td><td>15%</td><td>10</td></tr>
+        <tr><td>D4 — Monitoring and Logging</td><td>15%</td><td>10</td></tr>
+        <tr><td>D5 — Incident and Event Response</td><td>14%</td><td>9</td></tr>
+        <tr><td>D6 — Security and Compliance</td><td>17%</td><td>11</td></tr>
+        <tr class="hl"><td><strong>Total</strong></td><td><strong>100%</strong></td><td><strong>65</strong></td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Question Type Mix</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Type</th><th>Suggested % of set</th><th>Implementation priority</th></tr></thead>
+      <tbody>
+        <tr><td>Multiple choice (1-of-4)</td><td>~75%</td><td><span class="badge badge-green">High — launch with this</span></td></tr>
+        <tr><td>Multiple response (select N of 5–6)</td><td>~25%</td><td><span class="badge badge-green">High — common on exam</span></td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout callout-note">Free sample + Sim 1 (Foundational) are 100% multiple choice. Sim 2 (Architectural) and Sim 3 (Comparative) carry ~25% multiple response, matching the real exam's mix.</div>
+
+    <h2>Question Writing Rules (DOP-C02 specific)</h2>
+    <ul>
+      <li><strong>Long scenario stems</strong> — "A company runs a multi-account workload and needs to…" Professional questions establish real constraints (downtime budget, RTO/RPO, account structure, compliance) before asking.</li>
+      <li><strong>Best-of-several-workable answers</strong> — most distractors are technically valid but lose on overhead, automation, or one unmet constraint. Engineer the crux to be the trade-off.</li>
+      <li><strong>Automation and least-operational-overhead framing</strong> — the right answer is usually the most automated, managed, event-driven option. Make manual/custom-code options the plausible-but-wrong choices.</li>
+      <li><strong>Cross-domain wiring</strong> — DOP scenarios routinely span pipelines, IaC, monitoring, and response. Let questions combine services as the real exam does.</li>
+      <li><strong>No DB tuning, no full-stack code, no advanced routing</strong> — keep questions inside the in-scope service set; cut anything that hinges on out-of-scope depth.</li>
+    </ul>
+
+    <h2>Distractor Quality Guidelines</h2>
+    <ul>
+      <li>Use real DevOps confusions as distractors: blue/green vs. canary vs. rolling; CodeDeploy vs. CodePipeline vs. CodeBuild; EventBridge vs. SNS vs. SQS; pilot light vs. warm standby.</li>
+      <li>For deployment questions: make one distractor a strategy that cannot meet the stated downtime/rollback constraint, and one a higher-overhead manual approach.</li>
+      <li>For automation questions: make one distractor a custom Lambda/cron solution that reinvents a native managed capability (EventBridge rule, Config remediation, StackSets).</li>
+      <li>For resilience questions: make each distractor a DR strategy whose RTO/RPO or cost profile is wrong for the scenario.</li>
+    </ul>
+
+    <h2>AI Explanation Template</h2>
+    <p>Each question requires an explanation covering:</p>
+    <ul>
+      <li>Why the correct answer is right — the conceptual reason it best meets every stated constraint</li>
+      <li>Why each distractor is wrong — one sentence per option, naming the specific unmet constraint or excess overhead</li>
+      <li>Concept link — which domain/task statement this tests (e.g. "D1 · Task 1.4 — Deployment strategies")</li>
+      <li>Service context — if a service appears, one line on what it does and what distinguishes it from the similar services in the distractors</li>
+    </ul>
+  </div>
+
+</main>
+
+<button id="top-btn" title="Back to top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<script>
+  const topBtn = document.getElementById('top-btn');
+  window.addEventListener('scroll', () => {
+    topBtn.style.display = window.scrollY > 400 ? 'flex' : 'none';
+  });
+</script>
+</body>
+</html>
