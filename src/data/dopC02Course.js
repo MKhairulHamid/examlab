@@ -1037,6 +1037,892 @@ const dopC02Course = {
       ],
     },
 
+    // ═══════════════════════════════════════════════════════════════
+    //  DOMAIN 3 — RESILIENT CLOUD SOLUTIONS (15%)
+    // ═══════════════════════════════════════════════════════════════
+
+    {
+      id: 'd3-s8',
+      number: 8,
+      module: 'Domain 3 · Resilient Cloud Solutions',
+      domain: 'd3',
+      weight: '15%',
+      task: 'Task 3.1',
+      title: 'High Availability — Multi-AZ, Multi-Region, and Eliminating Single Points of Failure',
+      duration: 30,
+      summary: 'Resilience starts with surviving the failure of a component without users noticing. This session covers the high-availability toolkit: spreading across Availability Zones and Regions, replicating and failing over stateful services, and systematically hunting and removing single points of failure in an existing architecture.',
+      objectives: [
+        'Translate business resilience requirements into Multi-AZ and multi-Region designs',
+        'Identify and remediate single points of failure in an existing workload',
+        'Use cross-Region capabilities of DynamoDB, RDS/Aurora, Route 53, S3, and CloudFront',
+        'Configure load balancing and health checks so traffic only reaches healthy targets',
+      ],
+      preLearningCheck: {
+        question: 'An application runs on EC2 instances in a single Availability Zone behind a load balancer. What is the simplest change that most improves availability against an AZ failure?',
+        options: [
+          'Buy larger instances in the same AZ',
+          'Run instances across multiple Availability Zones in an Auto Scaling group behind the load balancer',
+          'Add more instances in the same AZ',
+          'Move the load balancer to a different account',
+        ],
+        correct: 1,
+        note: 'No pressure — guessing first improves retention. Availability Zones are isolated failure domains. Spreading instances across AZs (with an ASG and a cross-AZ load balancer) means one AZ failing does not take down the application — the highest-leverage, simplest HA improvement.',
+      },
+      sections: [
+        {
+          heading: 'AZs and Regions as failure domains',
+          body: 'High availability means designing so that the failure of one component does not cause an outage. The foundation is using AWS isolation boundaries correctly. Availability Zones are physically separate data centers within a Region; spreading across AZs protects against a data-center-level failure. Regions are independent geographies; multi-Region protects against a whole-Region event and serves global low latency, at higher cost and complexity.',
+          bullets: [
+            'Multi-AZ is the default HA pattern — usually the right first answer for "survive a data-center failure."',
+            'Multi-Region adds protection against Region-wide events and supports data sovereignty and global latency.',
+            'Map the requirement: AZ-level resilience is cheap and simple; Region-level resilience is for the most demanding RTO/RPO and global needs.',
+            'Stateless tiers scale across AZs easily; the hard part is the stateful (data) layer.',
+          ],
+          callout: { type: 'note', text: 'Reach for multi-AZ first. Only escalate to multi-Region when the requirement explicitly needs Region-failure survival, global latency, or data residency — multi-Region adds real cost and operational complexity.' },
+        },
+        {
+          heading: 'Replicating and failing over stateful services',
+          body: 'The compute tier is easy to make redundant; the data tier is where HA is won or lost. Each managed data service has its own replication and failover model, and the exam expects you to know them.',
+          bullets: [
+            'RDS Multi-AZ: a synchronous standby in another AZ with automatic failover (DNS flips to the standby) — HA, not read scaling.',
+            'Aurora: a cluster volume replicated across three AZs; replicas can be promoted; Aurora Global Database replicates cross-Region with low RPO.',
+            'DynamoDB: inherently multi-AZ; global tables give active-active multi-Region replication.',
+            'S3: durable across AZs by default; Cross-Region Replication (CRR) copies objects to another Region.',
+            'ElastiCache and others have their own replication/Multi-AZ options — match the service to its failover mechanism.',
+          ],
+          callout: { type: 'tip', text: 'RDS Multi-AZ = availability (standby, auto-failover). RDS read replicas = scaling reads (and can be cross-Region). Do not confuse the two — a classic distractor pair.' },
+        },
+        {
+          heading: 'Hunting single points of failure',
+          body: 'A Professional-level skill is auditing an existing architecture for single points of failure (SPOFs) — any component whose failure takes down the system. You then remediate each one with redundancy or a managed, inherently-HA service.',
+          bullets: [
+            'A single NAT instance, a single AZ, one database with no standby, a self-managed service on one EC2 instance — all SPOFs.',
+            'Remediate: NAT Gateway (managed, AZ-redundant) instead of a NAT instance; ASG across AZs; Multi-AZ database; managed services over single-host software.',
+            'Decouple tiers with load balancers and queues so a failed component is bypassed, not fatal.',
+            'Health checks ensure traffic is not sent to an unhealthy target — a SPOF that silently keeps receiving traffic is worse than one that is detected.',
+          ],
+        },
+        {
+          heading: 'Load balancing and health checks for cross-AZ HA',
+          body: 'Elastic Load Balancing distributes traffic across healthy targets in multiple AZs, and health checks are what make failover automatic. Route 53 adds DNS-level health checks and failover routing for cross-Region scenarios.',
+          bullets: [
+            'ALB/NLB span multiple AZs and only route to targets that pass health checks; enable cross-zone load balancing for even distribution.',
+            'Route 53 health checks + failover routing direct users to a healthy Region when the primary fails.',
+            'Connection draining / deregistration delay lets in-flight requests finish during failover or deployment.',
+            'Combine ASG health checks (replace bad instances) with ELB health checks (stop routing to them) for self-healing compute.',
+          ],
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 1,
+          question: 'A team needs automatic database failover if an Availability Zone fails, with no application changes. Which RDS feature provides this?',
+          options: [
+            'A cross-Region read replica',
+            'RDS Multi-AZ deployment with a synchronous standby and automatic failover',
+            'A larger instance class',
+            'Manual snapshots taken nightly',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — RDS Multi-AZ maintains a synchronous standby in another AZ and fails over automatically by flipping the DNS endpoint. Read replicas scale reads, not HA failover.',
+          elaborativePrompt: 'Why is RDS Multi-AZ about availability while read replicas are about scaling reads, even though both create another copy of the data?',
+        },
+        {
+          afterSection: 2,
+          question: 'An architecture review finds the entire app depends on a single self-managed proxy running on one EC2 instance in one AZ. What is the best remediation?',
+          options: [
+            'Take more frequent backups of the instance',
+            'Replace it with a managed, AZ-redundant equivalent (or run it in an ASG across multiple AZs behind a load balancer)',
+            'Give the instance a larger volume',
+            'Document the risk and move on',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — the fix for a single-host SPOF is redundancy: a managed AZ-redundant service or an ASG across AZs behind a load balancer so one failure is not fatal.',
+          elaborativePrompt: 'Why does adding redundancy across AZs address a SPOF more effectively than simply making the single component bigger or more frequently backed up?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself: you inherit a web app running in one AZ with a single RDS instance, a NAT instance, and a self-managed cache on one EC2 box. Walk through each single point of failure and the specific change that removes it while keeping operational overhead low.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A company runs a stateful web application in a single Availability Zone: EC2 instances behind an ALB, a single RDS MySQL instance, and a NAT instance for outbound traffic. They need to survive the loss of any one Availability Zone with automatic recovery and minimal operational overhead. Which set of changes best meets this?',
+        options: [
+          'Increase the EC2 instance size and take hourly RDS snapshots',
+          'Run EC2 in an Auto Scaling group across multiple AZs behind the ALB, convert RDS to a Multi-AZ deployment, and replace the NAT instance with NAT gateways in each AZ',
+          'Move everything to a second Region and run it active-active',
+          'Add a second NAT instance in the same AZ and nothing else',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'Each SPOF is remediated with AZ-level redundancy and managed services: ASG across AZs, RDS Multi-AZ auto-failover, and AZ-redundant NAT gateways — exactly the requirement at low overhead.',
+          perOption: [
+            'Bigger instances and snapshots do nothing to survive an AZ failure — the app is still single-AZ.',
+            'Correct — ASG across AZs, RDS Multi-AZ, and per-AZ NAT gateways remove every single point of failure with automatic recovery and managed services.',
+            'Full active-active multi-Region is far more cost and complexity than surviving one AZ requires — over-engineered for the stated need.',
+            'A second NAT instance in the same AZ leaves the AZ itself as a SPOF and ignores the database and compute tiers.',
+          ],
+          link: 'Domain 3 · Task 3.1 — Implement highly available solutions',
+        },
+      },
+      videos: [
+        { videoId: 'uhOZqiw7mdk', title: 'New AWS DevOps Professional (DOP-C02) Certification Exam', channel: 'Digital Cloud Training', relevance: 'Companion overview — high availability and resilient design are core Domain 3 topics in the walkthrough.' },
+      ],
+      keyTerms: [
+        { term: 'Availability Zone', def: 'A physically isolated data center within a Region; spreading across AZs protects against data-center-level failure.' },
+        { term: 'RDS Multi-AZ', def: 'A deployment with a synchronous standby in another AZ and automatic failover — for availability, not read scaling.' },
+        { term: 'Aurora Global Database', def: 'Aurora replication across Regions with low RPO for cross-Region resilience and low-latency global reads.' },
+        { term: 'Single point of failure (SPOF)', def: 'A component whose failure brings down the whole system; remediated with redundancy or managed HA services.' },
+        { term: 'Health check', def: 'A test (ELB or Route 53) that determines whether a target is healthy so traffic is only sent to working instances.' },
+      ],
+      awsServices: [
+        { name: 'Elastic Load Balancing', purpose: 'Distributes traffic across healthy targets in multiple AZs and enables automatic failover via health checks.' },
+        { name: 'Amazon RDS / Aurora', purpose: 'Provide Multi-AZ standby failover and cross-Region replication for the stateful data tier.' },
+        { name: 'Amazon Route 53', purpose: 'Adds DNS health checks and failover routing for cross-Region high availability.' },
+      ],
+      examTips: [
+        'Multi-AZ is the default HA answer; escalate to multi-Region only when a Region-failure, latency, or residency requirement is explicit.',
+        'RDS Multi-AZ = availability (auto-failover standby); read replicas = read scaling (can be cross-Region). Do not confuse them.',
+        'DynamoDB global tables and Aurora Global Database provide active-active / low-RPO cross-Region data.',
+        'Replace single NAT instances with NAT gateways and single-host software with managed AZ-redundant services.',
+        'Pair ASG health checks (replace bad instances) with ELB health checks (stop routing to them) for self-healing compute.',
+      ],
+    },
+
+    // ─────────────────────────────────────────────────────────────
+    {
+      id: 'd3-s9',
+      number: 9,
+      module: 'Domain 3 · Resilient Cloud Solutions',
+      domain: 'd3',
+      weight: '15%',
+      task: 'Task 3.2',
+      title: 'Scalability — Auto Scaling, Load Balancing, Caching, and Serverless',
+      duration: 30,
+      summary: 'Scalable systems absorb load changes automatically instead of falling over or being permanently over-provisioned. This session covers choosing scaling metrics, EC2 Auto Scaling policy types, caching and loose coupling to remove bottlenecks, and the inherently elastic serverless and container platforms.',
+      objectives: [
+        'Choose appropriate metrics and Auto Scaling policy types for a workload',
+        'Use load balancing, caching, and queues to remove scaling bottlenecks',
+        'Scale container workloads with ECS capacity providers and EKS autoscalers',
+        'Recognize when serverless (Lambda, Fargate, API Gateway) is the simplest scalable choice',
+      ],
+      preLearningCheck: {
+        question: 'A workload has predictable daily traffic that ramps every morning and falls every night. Which EC2 Auto Scaling approach handles this most efficiently?',
+        options: [
+          'Manually add instances each morning',
+          'Scheduled scaling to pre-scale before the known ramp, optionally combined with target-tracking for variation',
+          'Run peak capacity 24/7',
+          'Disable Auto Scaling and use one large instance',
+        ],
+        correct: 1,
+        note: 'No pressure — guessing first improves retention. When the pattern is known and time-based, scheduled scaling pre-provisions capacity before demand arrives; target tracking then handles any residual variation. Running peak capacity all day wastes money.',
+      },
+      sections: [
+        {
+          heading: 'Scaling metrics and policy types',
+          body: 'Scaling well starts with choosing the right signal and the right policy. EC2 Auto Scaling offers target tracking (keep a metric at a target, e.g. 50% CPU), step scaling (add/remove capacity in steps based on alarm breach size), and scheduled scaling (change capacity at known times). Predictive scaling forecasts from history.',
+          bullets: [
+            'Target tracking: simplest and most common — pick a metric and target, AWS manages the rest.',
+            'Step scaling: react proportionally to how far a metric breaches an alarm threshold.',
+            'Scheduled scaling: for known, time-based patterns (business hours, batch windows).',
+            'Choose a metric that reflects real load — CPU for compute-bound, queue depth or request count for I/O-bound or async workloads.',
+          ],
+          callout: { type: 'note', text: 'For queue-driven workers, scale on ApproximateNumberOfMessagesVisible (backlog per instance), not CPU. Picking the wrong metric is a common reason auto scaling "does not work."' },
+          interactive: 'scaling-policy',
+        },
+        {
+          heading: 'Removing bottlenecks: caching and loose coupling',
+          body: 'Scaling the compute tier is pointless if it overwhelms a downstream component. Caching and loose coupling remove the bottlenecks that limit scalability.',
+          bullets: [
+            'ElastiCache (Redis/Memcached) and DAX offload read pressure from databases.',
+            'CloudFront caches at the edge, absorbing read traffic and reducing origin load.',
+            'SQS decouples producers from consumers so spikes are buffered, not dropped — workers scale on backlog.',
+            'SNS/EventBridge fan out events so components scale independently.',
+          ],
+          callout: { type: 'tip', text: 'When a database is the bottleneck under read-heavy load, add a cache (ElastiCache/DAX) or read replicas before scaling the app tier — the app tier was never the limit.' },
+        },
+        {
+          heading: 'Scaling containers',
+          body: 'Container platforms scale at two levels: the tasks/pods and the underlying capacity. The exam expects familiarity with both ECS and EKS scaling mechanisms.',
+          bullets: [
+            'ECS service auto scaling adjusts the number of tasks; capacity providers (including Fargate) add/remove the underlying capacity.',
+            'EKS uses the Kubernetes Cluster Autoscaler / Karpenter for nodes and the Horizontal Pod Autoscaler for pods.',
+            'Fargate removes node management entirely — you scale tasks/pods and AWS provides the capacity.',
+            'Match the requirement: "no servers to manage" → Fargate; "fine-grained node control / existing Kubernetes" → EKS with autoscalers.',
+          ],
+        },
+        {
+          heading: 'Serverless as inherently elastic',
+          body: 'The simplest scalable architecture often has nothing to scale manually. Lambda, Fargate, API Gateway, DynamoDB on-demand, and S3 scale automatically with demand, which is why the exam favors them when the requirement is "scale to zero / handle spiky, unpredictable load with minimal ops."',
+          bullets: [
+            'Lambda scales by concurrency automatically; use reserved/provisioned concurrency to bound or pre-warm it.',
+            'API Gateway + Lambda + DynamoDB on-demand is a fully elastic, no-capacity-planning stack.',
+            'Fargate runs containers without managing servers, scaling per task.',
+            'Serverless shifts the scaling problem to AWS — ideal for variable or unpredictable traffic.',
+          ],
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 0,
+          question: 'A fleet of workers pulls jobs from an SQS queue. Under load the backlog grows but CPU stays low, so a CPU-based scaling policy never triggers. What is the fix?',
+          options: [
+            'Increase the instance size',
+            'Scale the Auto Scaling group on the SQS queue depth (backlog per instance) instead of CPU',
+            'Delete the queue',
+            'Switch to scheduled scaling at midnight',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — the real load signal for queue workers is backlog, not CPU. Target-track on messages-visible per instance so capacity follows the queue.',
+          elaborativePrompt: 'Why does the choice of scaling metric matter more than the policy type for a queue-driven workload?',
+        },
+        {
+          afterSection: 3,
+          question: 'A startup expects highly variable, unpredictable traffic and wants to avoid capacity planning and server management entirely. Which architecture fits best?',
+          options: [
+            'A fixed fleet of large EC2 instances running 24/7',
+            'API Gateway + Lambda + DynamoDB on-demand, which scale automatically with demand',
+            'A single EC2 instance scaled by hand',
+            'EKS with a fixed node count',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — the serverless stack scales automatically with no capacity planning or servers to manage, ideal for unpredictable load.',
+          elaborativePrompt: 'What capacity-planning and operational burdens disappear when you choose a fully serverless stack over a fixed EC2 fleet?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself: an app has a read-heavy database bottleneck during predictable business hours plus occasional unpredictable spikes from a marketing event. Walk through which scaling policy, caching, and decoupling choices you would combine, and why scaling the app tier alone would not fix the database bottleneck.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'An ecommerce site is read-heavy and slows down under load because the relational database is saturated by repeated product lookups. Traffic also spikes unpredictably during flash sales. Which combination best improves scalability with the least re-architecture?',
+        options: [
+          'Scale the web tier to many more EC2 instances and leave the database unchanged',
+          'Add an ElastiCache caching layer (and/or read replicas) for the hot reads and put the web tier in an Auto Scaling group with target tracking',
+          'Move the database to a larger single instance and run it 24/7',
+          'Replace the relational database with manual sharding across instances',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'The bottleneck is database reads, so caching (and read replicas) removes it; an ASG with target tracking absorbs the unpredictable web-tier spikes — the least-re-architecture fix.',
+          perOption: [
+            'Scaling the web tier without relieving the database makes the bottleneck worse, not better.',
+            'Correct — caching the hot reads (ElastiCache/DAX or read replicas) addresses the real limit, and target-tracking auto scaling handles the variable web load.',
+            'A bigger single database instance still has a hard ceiling and adds cost without elasticity.',
+            'Manual sharding is a large re-architecture and operational burden the scenario does not call for.',
+          ],
+          link: 'Domain 3 · Task 3.2 — Implement solutions that are scalable',
+        },
+      },
+      videos: [
+        { videoId: 'uhOZqiw7mdk', title: 'New AWS DevOps Professional (DOP-C02) Certification Exam', channel: 'Digital Cloud Training', relevance: 'Companion overview — scaling, caching, and serverless elasticity are core Domain 3 material.' },
+      ],
+      keyTerms: [
+        { term: 'Target tracking', def: 'An Auto Scaling policy that adds/removes capacity to keep a chosen metric at a target value — the simplest policy type.' },
+        { term: 'Scheduled scaling', def: 'Changing capacity at known times to pre-provision for predictable, time-based demand patterns.' },
+        { term: 'ElastiCache / DAX', def: 'In-memory caching layers that offload read pressure from databases to improve scalability and latency.' },
+        { term: 'ECS capacity provider', def: 'The mechanism that manages the underlying capacity (including Fargate) for an ECS service as tasks scale.' },
+        { term: 'Serverless elasticity', def: 'The automatic scaling of Lambda, Fargate, API Gateway, and DynamoDB on-demand with no capacity planning.' },
+      ],
+      awsServices: [
+        { name: 'Amazon EC2 Auto Scaling', purpose: 'Scales instance capacity via target tracking, step, scheduled, and predictive policies.' },
+        { name: 'Amazon ElastiCache', purpose: 'Provides in-memory caching to relieve database read bottlenecks and improve scalability.' },
+        { name: 'AWS Lambda / Fargate', purpose: 'Provide inherently elastic compute that scales automatically with demand and minimal operations.' },
+      ],
+      examTips: [
+        'Choose the scaling metric that reflects real load — queue depth for workers, not CPU.',
+        'Known time-based pattern → scheduled scaling; general variation → target tracking; proportional reaction → step scaling.',
+        'Relieve a database bottleneck with caching (ElastiCache/DAX) or read replicas before scaling the app tier.',
+        'Decouple with SQS/SNS/EventBridge so components scale independently and spikes are buffered.',
+        '"No servers, unpredictable load, no capacity planning" → serverless (Lambda/Fargate/API Gateway/DynamoDB on-demand).',
+      ],
+    },
+
+    // ─────────────────────────────────────────────────────────────
+    {
+      id: 'd3-s10',
+      number: 10,
+      module: 'Domain 3 · Resilient Cloud Solutions',
+      domain: 'd3',
+      weight: '15%',
+      task: 'Task 3.3',
+      title: 'Automated Recovery — RTO, RPO, and the Four DR Strategies',
+      duration: 30,
+      summary: 'Disaster recovery is where resilience meets the business clock. This session covers RTO and RPO, the four DR strategies and their trade-offs, AWS Backup for centralized cross-Region protection, and how to test failover so recovery actually works when you need it.',
+      objectives: [
+        'Define RTO and RPO and map them to the right DR strategy',
+        'Compare backup/restore, pilot light, warm standby, and multi-site active/active',
+        'Centralize and automate cross-Region protection with AWS Backup',
+        'Test Multi-AZ and multi-Region failover so recovery is proven, not assumed',
+      ],
+      preLearningCheck: {
+        question: 'A workload can tolerate losing at most 1 minute of data (RPO) and must be back within 5 minutes (RTO). Which DR strategy is the minimum that meets this?',
+        options: [
+          'Backup and restore from nightly snapshots',
+          'Warm standby (a scaled-down copy always running, replicating data, scaled up on failover) or multi-site active/active',
+          'Pilot light with manual rebuild',
+          'No DR — re-create from scratch after an outage',
+        ],
+        correct: 1,
+        note: 'No pressure — guessing first improves retention. A 1-minute RPO and 5-minute RTO are too aggressive for backup/restore or pilot light. Warm standby keeps a live, replicating, scaled-down copy that scales up fast; active/active is the most aggressive. The tighter the RTO/RPO, the warmer (and costlier) the strategy.',
+      },
+      sections: [
+        {
+          heading: 'RTO and RPO — the two clocks',
+          body: 'Every DR decision reduces to two numbers. RPO (Recovery Point Objective) is how much data you can afford to lose, measured in time — it drives how frequently you replicate or back up. RTO (Recovery Time Objective) is how long you can be down — it drives how ready your standby must be. Tighter objectives demand warmer, more expensive strategies.',
+          bullets: [
+            'RPO = acceptable data loss → backup/replication frequency (continuous replication ≈ seconds; nightly backup ≈ a day).',
+            'RTO = acceptable downtime → how pre-provisioned the recovery environment is.',
+            'The business sets these numbers; your job is the cheapest strategy that meets both.',
+            'Over-buying DR (active/active when nightly backup suffices) wastes money; under-buying misses the objective.',
+          ],
+          callout: { type: 'note', text: 'Read the stem for the two clocks. "Up to X minutes of data loss" is RPO; "back online within Y" is RTO. They jointly pick the strategy.' },
+        },
+        {
+          heading: 'The four DR strategies',
+          body: 'AWS frames DR as a spectrum from cheapest/slowest to costliest/fastest. Know each and the RTO/RPO range it serves.',
+          bullets: [
+            'Backup & restore: back up data (and IaC), restore in a Region on demand. Cheapest; RTO/RPO in hours. Good for non-critical workloads.',
+            'Pilot light: core data replicated and minimal core services always on but switched off; scale up and turn on at failover. Lower RTO than backup/restore.',
+            'Warm standby: a scaled-down but fully functional copy always running and replicating; scale up to full capacity on failover. Minutes-level RTO/RPO.',
+            'Multi-site active/active: full capacity running in multiple Regions serving traffic; near-zero RTO/RPO. Costliest and most complex.',
+          ],
+          interactive: 'dr-strategy',
+        },
+        {
+          heading: 'AWS Backup — centralized, cross-Region protection',
+          body: 'Rather than scripting per-service backups, AWS Backup centrally manages backups across many services (EBS, RDS, DynamoDB, EFS, S3, and more) with backup plans, schedules, lifecycle, and cross-Region/cross-account copy. It is the managed answer to "automate and centralize backups for compliance."',
+          bullets: [
+            'Backup plans define frequency, retention, and lifecycle (e.g. move to cold storage after N days).',
+            'Cross-Region and cross-account copy protect against Region loss and account compromise.',
+            'Backup Vault Lock provides WORM immutability for compliance and ransomware protection.',
+            'Tag-based resource selection applies a plan to all matching resources automatically.',
+          ],
+          callout: { type: 'tip', text: '"Centralize, automate, and prove compliance for backups across many services and accounts" → AWS Backup with cross-Region copy and Vault Lock — not per-service custom scripts.' },
+        },
+        {
+          heading: 'Testing failover',
+          body: 'A DR plan that is never tested is a hope, not a strategy. The exam expects you to test failover regularly. AWS provides mechanisms to exercise recovery without waiting for a real disaster.',
+          bullets: [
+            'Test RDS/Aurora failover by forcing a failover (reboot with failover) and measuring recovery.',
+            'Use Route 53 health-check failover and test by simulating an unhealthy primary.',
+            'AWS Elastic Disaster Recovery (DRS) continuously replicates servers and supports non-disruptive recovery drills.',
+            'Automate and document the runbook; measure actual RTO/RPO against targets and close the gap.',
+          ],
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 1,
+          question: 'A non-critical internal tool needs DR but can tolerate several hours of downtime and a day of data loss, and cost must be minimal. Which strategy fits best?',
+          options: [
+            'Multi-site active/active across two Regions',
+            'Backup and restore — back up data and IaC, restore in another Region when needed',
+            'Warm standby running continuously',
+            'Pilot light with hot databases',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — generous RTO/RPO and a cost constraint point to backup & restore, the cheapest strategy. Warmer strategies would waste money here.',
+          elaborativePrompt: 'Why would choosing warm standby or active/active for this workload be an example of over-engineering DR?',
+        },
+        {
+          afterSection: 2,
+          question: 'A company must centrally schedule, retain, and cross-Region copy backups for EBS, RDS, and DynamoDB with immutable retention for compliance, with minimal custom code. Which service fits?',
+          options: [
+            'Custom Lambda functions per service triggered by cron',
+            'AWS Backup with backup plans, cross-Region copy, and Vault Lock',
+            'Manual snapshots taken by an administrator',
+            'S3 versioning only',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — AWS Backup centralizes multi-service backups with schedules, cross-Region copy, and Vault Lock immutability, no per-service scripting.',
+          elaborativePrompt: 'How does centralizing backups in AWS Backup improve compliance auditability compared with per-service scripts and manual snapshots?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself: a business states a 15-minute RTO and a 5-minute RPO for a revenue-critical app, plus a compliance need to keep immutable cross-Region backups. Walk through which DR strategy meets the clocks, how AWS Backup covers the compliance need, and how you would test the failover.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A revenue-critical application requires a Recovery Time Objective of about 10 minutes and a Recovery Point Objective of a few minutes, while keeping cost lower than running full duplicate capacity. Which disaster recovery strategy best fits?',
+        options: [
+          'Backup and restore from cross-Region snapshots',
+          'Warm standby: a scaled-down but running copy in a second Region that continuously replicates data and scales up on failover',
+          'Pilot light with databases powered off until needed',
+          'Multi-site active/active at full capacity in both Regions',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'A ~10-minute RTO and few-minute RPO are too tight for backup/restore or pilot light but do not require full active/active; warm standby meets the clocks at lower cost than running duplicate full capacity.',
+          perOption: [
+            'Backup and restore yields hours-level RTO/RPO — far short of the few-minute requirement.',
+            'Correct — warm standby keeps a live, replicating, scaled-down environment that scales up within minutes, meeting the clocks without paying for full duplicate capacity.',
+            'Pilot light keeps core services off and typically needs more time to scale and start than a 10-minute RTO allows for a revenue-critical app.',
+            'Active/active meets the clocks but costs the most (full capacity in both Regions) — more than the requirement and the cost constraint allow.',
+          ],
+          link: 'Domain 3 · Task 3.3 — Implement automated recovery to meet RTO and RPO',
+        },
+      },
+      videos: [
+        { videoId: 'uhOZqiw7mdk', title: 'New AWS DevOps Professional (DOP-C02) Certification Exam', channel: 'Digital Cloud Training', relevance: 'Companion overview — DR strategies and RTO/RPO trade-offs are central to Domain 3.' },
+      ],
+      keyTerms: [
+        { term: 'RPO (Recovery Point Objective)', def: 'The maximum acceptable data loss measured in time; drives backup/replication frequency.' },
+        { term: 'RTO (Recovery Time Objective)', def: 'The maximum acceptable downtime; drives how pre-provisioned the recovery environment must be.' },
+        { term: 'Pilot light', def: 'A DR strategy keeping core data replicated and minimal services dormant, scaled up at failover.' },
+        { term: 'Warm standby', def: 'A scaled-down but running, replicating copy that scales to full capacity on failover for minutes-level RTO/RPO.' },
+        { term: 'AWS Backup', def: 'A managed service that centralizes scheduled, cross-Region, immutable backups across many AWS services.' },
+      ],
+      awsServices: [
+        { name: 'AWS Backup', purpose: 'Centralizes and automates cross-Region, cross-account, immutable backups across many services for compliance.' },
+        { name: 'AWS Elastic Disaster Recovery (DRS)', purpose: 'Continuously replicates servers for low-RTO recovery and supports non-disruptive failover drills.' },
+        { name: 'Amazon Route 53', purpose: 'Provides health-check failover routing to redirect traffic to a recovery Region.' },
+      ],
+      examTips: [
+        'Read both clocks: "data loss" = RPO, "downtime" = RTO. Together they pick the strategy.',
+        'Spectrum (cheap→costly, slow→fast): backup/restore → pilot light → warm standby → active/active.',
+        'Tight RTO/RPO (minutes) → warm standby or active/active; generous (hours/day) + cost-sensitive → backup/restore.',
+        'Centralize multi-service, cross-Region, immutable backups with AWS Backup (+ Vault Lock) — not custom scripts.',
+        'Test failover regularly (forced RDS failover, Route 53 health-check drills, DRS recovery drills) — an untested plan is not DR.',
+      ],
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    //  DOMAIN 4 — MONITORING AND LOGGING (15%)
+    // ═══════════════════════════════════════════════════════════════
+
+    {
+      id: 'd4-s11',
+      number: 11,
+      module: 'Domain 4 · Monitoring & Logging',
+      domain: 'd4',
+      weight: '15%',
+      task: 'Task 4.1',
+      title: 'Collecting and Storing Logs and Metrics — CloudWatch, Agents, and Subscriptions',
+      duration: 30,
+      summary: 'You cannot operate what you cannot see. This session builds the ingestion side of observability: the CloudWatch metric model, turning logs into metrics with filters, streaming metrics and logs onward, collecting custom and in-guest data with the agent, and managing retention and encryption.',
+      objectives: [
+        'Explain the CloudWatch metric model — namespaces, dimensions, and resolution',
+        'Turn log events into metrics with metric filters and stream metrics onward',
+        'Collect custom and in-guest metrics and logs with the CloudWatch agent',
+        'Manage log retention, lifecycle, encryption, and subscription delivery to other services',
+      ],
+      preLearningCheck: {
+        question: 'A team needs the memory utilization of EC2 Linux instances in CloudWatch, but the metric never appears. Why?',
+        options: [
+          'Memory metrics only exist for Windows',
+          'Memory is an in-guest metric the hypervisor cannot see — the CloudWatch agent must be installed to publish it',
+          'The instances must be rebooted first',
+          'CloudWatch does not support memory at all',
+        ],
+        correct: 1,
+        note: 'No pressure — guessing first improves retention. The hypervisor sees CPU, network, and disk I/O from outside the instance, but memory and disk-used live inside the guest OS. The CloudWatch agent fills that gap.',
+      },
+      sections: [
+        {
+          heading: 'The CloudWatch metric model',
+          body: 'Observability rests on one model. A metric is a time-ordered series in a namespace (e.g. AWS/EC2), identified by dimensions (name/value pairs like InstanceId=i-123), viewed with a statistic (Average, Sum, Maximum, p99) over a period. Standard resolution is 1-minute; high-resolution custom metrics go to 1 second. Reading a metric as "namespace → name → dimensions → statistic over period" answers most ingestion questions.',
+          bullets: [
+            'AWS services publish metrics automatically into AWS/* namespaces; custom metrics go into namespaces you define.',
+            'Dimensions identify exactly which resource a data point belongs to.',
+            'Detailed monitoring gives EC2 1-minute metrics (vs. default 5-minute) — higher frequency, not new metric types.',
+            'High-resolution custom metrics (1-second) are for fast-changing signals; they cost more.',
+          ],
+          callout: { type: 'note', text: 'Default EC2 metrics never include memory or disk-used (in-guest). Detailed monitoring only raises frequency. The agent adds in-guest metrics. Keep these three facts straight.' },
+        },
+        {
+          heading: 'Turning logs into metrics, and streaming them onward',
+          body: 'Logs and metrics are connected. Metric filters scan a log group for a pattern (e.g. "ERROR" or a 5xx status) and emit a CloudWatch metric you can alarm on. Metric streams continuously deliver metrics to a destination for analytics or third-party tools.',
+          bullets: [
+            'Metric filter: pattern-match log events → custom metric → alarm. The standard way to alarm on something in logs.',
+            'CloudWatch metric streams deliver metrics in near-real-time to S3 or Kinesis Data Firehose (e.g. to a data lake or partner monitoring tool).',
+            'Embedded Metric Format (EMF) lets applications emit logs that CloudWatch parses into metrics automatically.',
+            'Subscription filters (next section) do the same continuous delivery for log events.',
+          ],
+          interactive: 'alarm-routing',
+        },
+        {
+          heading: 'The CloudWatch agent and custom collection',
+          body: 'AWS publishes only what it can observe from outside the workload. The unified CloudWatch agent runs inside EC2, on-premises servers, and containers to publish in-guest metrics (memory, disk used, swap) and ship logs. Custom application metrics are published via the agent, EMF, or the PutMetricData API.',
+          bullets: [
+            'Unified CloudWatch agent: in-guest metrics + log collection from EC2, on-prem, ECS, EKS.',
+            'StatusCheckFailed_System (AWS infrastructure) vs StatusCheckFailed_Instance (the guest) — pair a system-check alarm with EC2 auto-recovery.',
+            'PutMetricData publishes custom metrics directly from application code or scripts.',
+            'The agent needs an IAM role with CloudWatch and Logs permissions; deploy/configure it fleet-wide with SSM.',
+          ],
+        },
+        {
+          heading: 'Retention, lifecycle, encryption, and subscriptions',
+          body: 'Logs must be stored securely and economically. CloudWatch log groups have configurable retention; long-term or cheap archival goes to S3 with lifecycle rules. KMS encrypts log data, and subscription filters route log events in real time to processing destinations.',
+          bullets: [
+            'Set log group retention (default is never-expire — a common cost trap); archive to S3 for cheap long-term storage with lifecycle transitions to Glacier.',
+            'Encrypt log groups with KMS; the key policy must allow the CloudWatch Logs service.',
+            'Subscription filters stream log events to Kinesis Data Streams, Kinesis Data Firehose, Lambda, or OpenSearch Service in real time.',
+            'Use this to centralize logs (e.g. all accounts → a central OpenSearch or S3 data lake).',
+          ],
+          callout: { type: 'tip', text: 'Real-time log processing/centralization → CloudWatch Logs subscription filter to Kinesis/Firehose/Lambda/OpenSearch. Cheap long-term retention → export/lifecycle to S3 + Glacier. Set retention explicitly or pay forever.' },
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 1,
+          question: 'A team must trigger an alarm whenever the string "OutOfMemoryError" appears in an application log group. What is the standard mechanism?',
+          options: [
+            'Manually read the logs each hour',
+            'Create a CloudWatch Logs metric filter matching the pattern, then alarm on the resulting metric',
+            'Enable detailed monitoring on the instance',
+            'Increase the log retention period',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — a metric filter turns matching log events into a metric, and a CloudWatch alarm on that metric fires when the pattern occurs.',
+          elaborativePrompt: 'Why is a metric filter plus alarm more reliable and timely than periodically reading logs by hand?',
+        },
+        {
+          afterSection: 3,
+          question: 'A company needs all application logs from many accounts streamed in real time into a central Amazon OpenSearch Service domain for search. Which feature delivers this?',
+          options: [
+            'A nightly S3 export job',
+            'CloudWatch Logs subscription filters that stream log events to OpenSearch (often via Kinesis/Firehose)',
+            'Increasing log group retention',
+            'Detailed monitoring',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — subscription filters stream log events in real time to destinations like Kinesis/Firehose and OpenSearch, enabling central real-time search.',
+          elaborativePrompt: 'When would you choose a subscription filter to OpenSearch over simply exporting logs to S3 for later analysis?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself: an EC2-hosted app is crashing on memory exhaustion, the team has no memory metric, logs are never expiring (and costing a fortune), and security wants logs encrypted and centralized. Walk through the agent, retention, encryption, and subscription changes that fix each problem.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A DevOps team must (1) alarm before EC2 instances run out of memory, (2) stop paying to retain logs forever, and (3) stream all logs in real time to a central analytics pipeline. Which combination meets all three with the least custom development?',
+        options: [
+          'Write a script per instance to read free memory and email reports, keep all logs forever, and copy logs nightly by hand',
+          'Install the CloudWatch agent to publish memory metrics and alarm on them, set CloudWatch log group retention (archiving to S3 as needed), and add subscription filters to stream logs to Kinesis Data Firehose',
+          'Enable detailed monitoring, delete old logs manually, and download logs to a laptop',
+          'Use only PutMetricData from application code and never store logs',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'The agent publishes in-guest memory for alarming, explicit retention stops the forever-cost, and subscription filters stream logs in real time — all native, low-overhead features.',
+          perOption: [
+            'Per-instance scripts, infinite retention, and manual copying are exactly the custom, costly, manual work to avoid.',
+            'Correct — CloudWatch agent for memory, configured retention with S3 archival, and subscription filters to Firehose meet all three requirements natively.',
+            'Detailed monitoring does not add memory metrics, and manual deletion/download is not automated streaming.',
+            'PutMetricData alone does not collect memory automatically, and discarding logs fails the real-time analytics requirement.',
+          ],
+          link: 'Domain 4 · Task 4.1 — Configure the collection, aggregation, and storage of logs and metrics',
+        },
+      },
+      videos: [
+        { videoId: 'uhOZqiw7mdk', title: 'New AWS DevOps Professional (DOP-C02) Certification Exam', channel: 'Digital Cloud Training', relevance: 'Companion overview — CloudWatch metrics, logs, and the agent are foundational Domain 4 topics.' },
+      ],
+      keyTerms: [
+        { term: 'Namespace / dimension', def: 'A namespace groups metrics (e.g. AWS/EC2); dimensions are name/value pairs identifying which resource a metric belongs to.' },
+        { term: 'Metric filter', def: 'A pattern match over a CloudWatch log group that emits a metric, enabling alarms on log content.' },
+        { term: 'CloudWatch agent', def: 'Software run inside instances/containers to publish in-guest metrics (memory, disk) and collect logs.' },
+        { term: 'Subscription filter', def: 'A real-time stream of CloudWatch log events to Kinesis, Firehose, Lambda, or OpenSearch.' },
+        { term: 'Metric stream', def: 'Continuous near-real-time delivery of CloudWatch metrics to S3 or Kinesis Data Firehose.' },
+      ],
+      awsServices: [
+        { name: 'Amazon CloudWatch', purpose: 'Collects metrics and logs, creates metrics from logs via filters, and stores/retains log data.' },
+        { name: 'CloudWatch agent', purpose: 'Publishes in-guest metrics and ships logs from EC2, on-premises servers, and containers.' },
+        { name: 'Amazon Kinesis Data Firehose', purpose: 'Receives metric streams and log subscription data for delivery to S3, OpenSearch, and analytics.' },
+      ],
+      examTips: [
+        'Memory and disk-used are in-guest → require the CloudWatch agent. Default EC2 metrics never include them.',
+        'Alarm on something in logs → metric filter → metric → alarm.',
+        'Real-time log delivery/centralization → subscription filters to Kinesis/Firehose/Lambda/OpenSearch.',
+        'Set log group retention explicitly (default never-expires) and archive to S3/Glacier for cheap long-term storage.',
+        'Encrypt log groups with KMS; the key policy must permit the CloudWatch Logs service.',
+      ],
+    },
+
+    // ─────────────────────────────────────────────────────────────
+    {
+      id: 'd4-s12',
+      number: 12,
+      module: 'Domain 4 · Monitoring & Logging',
+      domain: 'd4',
+      weight: '15%',
+      task: 'Task 4.2',
+      title: 'Analyzing Logs and Metrics — Dashboards, X-Ray, Insights, and Anomaly Detection',
+      duration: 30,
+      summary: 'Collecting data is half the job; finding the problem in it is the other half. This session covers the analysis side: dashboards and visualizations, distributed tracing with X-Ray, querying logs with Logs Insights and Athena, anomaly detection alarms, and auditing with Config and CloudTrail.',
+      objectives: [
+        'Build dashboards and visualizations to monitor across resources and accounts',
+        'Trace requests across services with AWS X-Ray to find latency and errors',
+        'Query logs at scale with CloudWatch Logs Insights and Amazon Athena',
+        'Detect issues with anomaly detection alarms, Config rules, and CloudTrail analysis',
+      ],
+      preLearningCheck: {
+        question: 'A request passes through API Gateway, several Lambda functions, and DynamoDB, and is intermittently slow. The team needs to see where the latency is introduced across the whole call path. Which service is purpose-built for this?',
+        options: [
+          'CloudWatch metric filters',
+          'AWS X-Ray distributed tracing',
+          'Amazon Athena',
+          'A larger Lambda memory size',
+        ],
+        correct: 1,
+        note: 'No pressure — guessing first improves retention. X-Ray traces a request end to end across services and shows a service map with per-segment latency, so you can see exactly which hop is slow — something per-service metrics alone cannot reveal.',
+      },
+      sections: [
+        {
+          heading: 'Dashboards and visualizations',
+          body: 'Dashboards turn raw metrics into an at-a-glance operational picture. CloudWatch dashboards are customizable, shareable views that can span resources, accounts, and Regions. For richer business analytics over operational data, Amazon QuickSight visualizes data (e.g. from Athena over logs in S3).',
+          bullets: [
+            'CloudWatch dashboards: metric and alarm widgets, cross-account and cross-Region, shareable without full console access.',
+            'Cross-account observability lets a central monitoring account view metrics, logs, and traces from many source accounts.',
+            'QuickSight builds business-style dashboards over query results for non-operational stakeholders.',
+            'Metric math and anomaly bands can be visualized directly on dashboard widgets.',
+          ],
+        },
+        {
+          heading: 'Distributed tracing with X-Ray',
+          body: 'In a distributed system, per-service metrics tell you a service is slow but not why a particular request is slow. AWS X-Ray traces requests end to end, producing a service map and per-segment timing to pinpoint the bottleneck or error source.',
+          bullets: [
+            'X-Ray instruments applications (SDK or auto-instrumentation) and supports Lambda, API Gateway, ECS/EKS, and EC2.',
+            'The service map shows dependencies and where latency and faults concentrate.',
+            'Annotations and subsegments add searchable context (e.g. customer ID, downstream call).',
+            'Use X-Ray when the question is "where in the call path is the latency/error?" — not aggregate metrics.',
+          ],
+          callout: { type: 'note', text: 'Per-service CloudWatch metrics → "which service is unhealthy?" X-Ray traces → "where in a single request\'s path is the time going?" Match the tool to the question.' },
+        },
+        {
+          heading: 'Querying logs at scale',
+          body: 'When you need to interrogate logs ad hoc, two tools dominate. CloudWatch Logs Insights runs fast queries over CloudWatch log groups with a purpose-built query language. Amazon Athena queries logs stored in S3 (CloudTrail, VPC Flow Logs, ALB logs) using standard SQL — ideal for large historical analysis.',
+          bullets: [
+            'Logs Insights: interactive queries over CloudWatch Logs (filter, stats, parse) for recent operational investigation.',
+            'Athena: serverless SQL over S3 — query CloudTrail/Flow Logs/ALB logs at scale without loading them anywhere.',
+            'Real-time stream analysis uses Kinesis Data Streams (e.g. detect patterns as events arrive).',
+            'Pick by location and horizon: CloudWatch Logs + Insights for recent; S3 + Athena for large historical.',
+          ],
+        },
+        {
+          heading: 'Anomaly detection, Config, and CloudTrail',
+          body: 'Detection is not always a fixed threshold. CloudWatch anomaly detection learns a metric\'s normal band and alarms on deviations — useful when normal varies by time of day. AWS Config records configuration history and evaluates rules; CloudTrail records API activity for audit and forensic analysis.',
+          bullets: [
+            'Anomaly detection alarms fit metrics with no good static threshold (seasonal/variable traffic).',
+            'AWS Config rules continuously evaluate resource compliance and can trigger remediation; Config records the configuration timeline.',
+            'CloudTrail logs every API call — who did what, when — and is the source for security and change investigations.',
+            'Amazon Inspector assesses workloads for vulnerabilities using assessment templates.',
+          ],
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 2,
+          question: 'A security team needs to analyze a year of CloudTrail logs stored in S3 with ad hoc SQL queries, without standing up a database. Which service fits best?',
+          options: [
+            'CloudWatch Logs Insights',
+            'Amazon Athena querying the CloudTrail logs in S3',
+            'AWS X-Ray',
+            'A CloudWatch dashboard',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — Athena runs serverless SQL directly over logs in S3, ideal for large historical CloudTrail analysis with no infrastructure to manage.',
+          elaborativePrompt: 'Why is Athena over S3 a better fit than CloudWatch Logs Insights for querying a year of archived logs?',
+        },
+        {
+          afterSection: 3,
+          question: 'A metric has no single good threshold because normal traffic varies widely by time of day, yet the team still needs to be alerted to genuinely unusual behavior. Which approach fits?',
+          options: [
+            'A static threshold alarm at a fixed number',
+            'A CloudWatch anomaly detection alarm that learns the normal band and alerts on deviations',
+            'Turning off alarms to avoid noise',
+            'A metric filter on the logs',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — anomaly detection models the expected range and alerts on deviation, which fits metrics whose normal value changes over time.',
+          elaborativePrompt: 'In what situations does a static threshold cause either false alarms or missed incidents that anomaly detection avoids?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself: users report intermittent slowness in a serverless app, security wants a year of API history searchable, and a variable metric keeps causing false alarms. Walk through which analysis tool (X-Ray, Athena, anomaly detection) solves each, and why per-service metrics alone would not.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A serverless application (API Gateway, multiple Lambda functions, DynamoDB) shows intermittent high latency that the team cannot localize from per-service CloudWatch metrics. They need to identify which component in a request\'s path is responsible. What should they implement?',
+        options: [
+          'Increase the memory of every Lambda function and hope it helps',
+          'Enable AWS X-Ray tracing across API Gateway and the Lambda functions to view the service map and per-segment latency',
+          'Create more CloudWatch dashboards of aggregate metrics',
+          'Query the logs with Athena for error strings',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'X-Ray traces a single request across all services and shows per-segment timing, pinpointing the slow hop that aggregate per-service metrics cannot reveal.',
+          perOption: [
+            'Blindly increasing memory is guesswork that does not localize the bottleneck.',
+            'Correct — X-Ray distributed tracing produces a service map and segment-level latency, directly identifying the responsible component in the call path.',
+            'More dashboards of aggregate metrics still cannot show where time goes within a single request.',
+            'Athena log queries find error strings but do not reconstruct end-to-end request latency across services.',
+          ],
+          link: 'Domain 4 · Task 4.2 — Audit, monitor, and analyze logs and metrics to detect issues',
+        },
+      },
+      videos: [
+        { videoId: 'uhOZqiw7mdk', title: 'New AWS DevOps Professional (DOP-C02) Certification Exam', channel: 'Digital Cloud Training', relevance: 'Companion overview — X-Ray, Logs Insights, and analysis tooling are key Domain 4 material.' },
+      ],
+      keyTerms: [
+        { term: 'AWS X-Ray', def: 'A distributed tracing service that follows a request across services and shows a service map with per-segment latency.' },
+        { term: 'CloudWatch Logs Insights', def: 'An interactive query language over CloudWatch log groups for fast operational log investigation.' },
+        { term: 'Amazon Athena', def: 'A serverless SQL query engine over data in S3, used for large historical log analysis (CloudTrail, Flow Logs).' },
+        { term: 'Anomaly detection alarm', def: 'A CloudWatch alarm that learns a metric\'s normal band and alerts on deviation, for metrics without a good static threshold.' },
+        { term: 'AWS Config', def: 'A service that records resource configuration history and evaluates compliance rules over time.' },
+      ],
+      awsServices: [
+        { name: 'AWS X-Ray', purpose: 'Traces requests end to end across distributed services to localize latency and errors.' },
+        { name: 'Amazon Athena', purpose: 'Runs serverless SQL over logs in S3 for large-scale historical and security analysis.' },
+        { name: 'AWS CloudTrail / Config', purpose: 'Record API activity and configuration history for audit, compliance, and investigation.' },
+      ],
+      examTips: [
+        'Per-service metrics say which service is unhealthy; X-Ray traces say where in a request the time goes.',
+        'Recent operational log queries → CloudWatch Logs Insights; large historical logs in S3 → Athena (SQL).',
+        'Variable/seasonal metric with no good fixed threshold → anomaly detection alarm.',
+        'CloudTrail = who did what API call when; Config = resource configuration timeline and compliance.',
+        'CloudWatch dashboards and cross-account observability give one pane of glass across accounts and Regions.',
+      ],
+    },
+
+    // ─────────────────────────────────────────────────────────────
+    {
+      id: 'd4-s13',
+      number: 13,
+      module: 'Domain 4 · Monitoring & Logging',
+      domain: 'd4',
+      weight: '15%',
+      task: 'Task 4.3',
+      title: 'Automating Monitoring and Event Management — EventBridge, Alarms, and Auto Scaling',
+      duration: 30,
+      summary: 'Mature monitoring does not just alert a human — it triggers action. This session covers automating responses to operational events: event-driven patterns with EventBridge and S3 events, alarm actions to SNS/Lambda/EC2 recovery, auto scaling across services, health checks, and Config-driven remediation.',
+      objectives: [
+        'Design event-driven, asynchronous responses with EventBridge and S3 events',
+        'Wire CloudWatch alarms to SNS, Lambda, and EC2 automatic recovery actions',
+        'Configure auto scaling and health checks across EC2, DynamoDB, RDS, ECS, and Route 53/ALB',
+        'Auto-remediate non-compliant resources with AWS Config rules',
+      ],
+      preLearningCheck: {
+        question: 'A company wants every new object uploaded to an S3 bucket to automatically trigger a Lambda function that processes the file, with no servers polling the bucket. Which approach fits?',
+        options: [
+          'A cron job on EC2 that lists the bucket every minute',
+          'An S3 event notification (or EventBridge rule) that invokes the Lambda function on object creation',
+          'A manual review of the bucket each day',
+          'A CloudWatch dashboard widget',
+        ],
+        correct: 1,
+        note: 'No pressure — guessing first improves retention. S3 event notifications (or S3-to-EventBridge) invoke Lambda the moment an object is created — event-driven, serverless, and far cheaper and timelier than polling.',
+      },
+      sections: [
+        {
+          heading: 'Event-driven, asynchronous patterns',
+          body: 'The core of monitoring automation is reacting to events instead of polling. Amazon EventBridge is the central event bus: AWS services, custom apps, and SaaS partners emit events, and rules match patterns and route to targets (Lambda, SNS, SQS, Step Functions, and more). S3 event notifications similarly trigger on object operations.',
+          bullets: [
+            'EventBridge rules match an event pattern (e.g. an EC2 state change, a CodePipeline failure) and route to one or more targets.',
+            'S3 events / S3-to-EventBridge trigger processing on object create/delete — the canonical "process a file on upload" pattern.',
+            'Fan-out: one event to many targets via EventBridge or SNS; buffering via SQS for reliable async processing.',
+            'Event-driven beats polling: cheaper, timelier, and scales with the event rate.',
+          ],
+          callout: { type: 'note', text: 'EventBridge is the modern default for routing AWS and custom events to automation. Reach for it when a scenario says "when X happens, automatically do Y."' },
+          interactive: 'alarm-routing',
+        },
+        {
+          heading: 'Alarm actions — from signal to automation',
+          body: 'A CloudWatch alarm is not just a notification; it can take action. Alarm actions notify an SNS topic (fanning out to email, chat, or a Lambda), trigger an Auto Scaling policy, or invoke an EC2 action such as automatic recovery.',
+          bullets: [
+            'Alarm → SNS → (email/Lambda/automation): the common alert-and-act chain.',
+            'Alarm → Auto Scaling policy: scale out/in on a metric breach.',
+            'Alarm → EC2 actions: stop, terminate, reboot, or recover an instance.',
+            'EC2 auto recovery on StatusCheckFailed_System recovers the instance on new hardware, preserving its identity.',
+          ],
+        },
+        {
+          heading: 'Auto scaling and health checks across services',
+          body: 'Automation keeps capacity and health right without humans. Many services have their own scaling, and health checks ensure traffic only reaches healthy targets.',
+          bullets: [
+            'EC2 Auto Scaling groups, DynamoDB auto scaling, RDS storage auto scaling, ECS capacity providers, EKS autoscalers — each scales its own resource.',
+            'Application Auto Scaling provides a common scaling mechanism for DynamoDB, ECS, Aurora replicas, and more.',
+            'ALB target group health checks and Route 53 health checks remove unhealthy targets/endpoints automatically.',
+            'Combine ASG + ELB health checks for self-healing compute (replace and stop routing to bad instances).',
+          ],
+        },
+        {
+          heading: 'Config-driven remediation and agents',
+          body: 'Closed-loop automation detects a bad state and fixes it. AWS Config rules evaluate resources continuously and can trigger automatic remediation (an SSM Automation runbook) when something drifts out of compliance. Agents must be present for much of this to work.',
+          bullets: [
+            'Config rule (detective) + SSM Automation remediation (corrective) = auto-fix non-compliant resources (e.g. re-enable encryption, close a public security group).',
+            'EventBridge can route Config compliance-change events to notification or remediation targets.',
+            'Install/maintain the SSM Agent and CloudWatch agent fleet-wide (often via SSM State Manager) so automation and metrics work.',
+            'Health checks plus alarms plus remediation form the self-healing operational loop the exam rewards.',
+          ],
+          callout: { type: 'tip', text: '"Automatically remediate a non-compliant resource" → AWS Config rule with an SSM Automation remediation action. A custom Lambda poller is the higher-overhead distractor.' },
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 1,
+          question: 'When an EC2 instance fails its system status check due to underlying hardware failure, the team wants it to recover automatically on healthy hardware while keeping its instance ID and IP. Which action provides this?',
+          options: [
+            'A CloudWatch alarm on StatusCheckFailed_System with an EC2 auto-recovery action',
+            'A metric filter on the application logs',
+            'A scheduled scaling action',
+            'An SNS email only',
+          ],
+          correct: 0,
+          explainCorrect: 'Correct — an alarm on StatusCheckFailed_System with the EC2 recover action migrates the instance to new hardware, preserving its identity (ID, private IP, EIP).',
+          elaborativePrompt: 'Why is automatic EC2 recovery preferable to simply emailing an operator when a system status check fails at 3 a.m.?',
+        },
+        {
+          afterSection: 3,
+          question: 'A security policy requires that any S3 bucket with public access be automatically made private without human intervention. Which combination achieves this with the least custom code?',
+          options: [
+            'A nightly script that scans all buckets and emails findings',
+            'An AWS Config rule that detects public buckets plus an SSM Automation remediation action that removes public access',
+            'A CloudWatch dashboard of bucket policies',
+            'Manual review during quarterly audits',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — a Config rule detects the violation and an SSM Automation remediation corrects it automatically — closed-loop, low-code remediation.',
+          elaborativePrompt: 'How does pairing a Config detective rule with SSM Automation create a self-healing control compared with alerting a human to fix it?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself: a company wants uploaded files processed automatically, instances recovered on hardware failure, capacity scaled to load, and public S3 buckets auto-remediated — all without humans in the loop. Walk through which event-driven service and action handles each, and why polling or manual review loses.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A team needs a fully automated operational response: whenever AWS Config detects an EBS volume that is unencrypted, the resource should be flagged and a remediation workflow run, and the security team notified — with no servers polling and minimal custom code. Which design fits best?',
+        options: [
+          'A cron-based Lambda that lists all volumes hourly and emails a report',
+          'An AWS Config rule that evaluates volume encryption, an SSM Automation remediation action to remediate, and an EventBridge rule routing the compliance-change event to SNS for notification',
+          'A CloudWatch dashboard the team checks each morning',
+          'Manual quarterly audits of EBS volumes',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'A Config rule detects the violation, SSM Automation remediates it, and EventBridge routes the compliance event to SNS — an event-driven, low-code, self-healing control with notification.',
+          perOption: [
+            'An hourly polling Lambda is custom code, slower, and only reports rather than remediating.',
+            'Correct — Config (detect) + SSM Automation (remediate) + EventBridge→SNS (notify) is the native, event-driven, least-overhead closed loop.',
+            'A dashboard requires a human to look and act, failing the "fully automated" requirement.',
+            'Quarterly audits are neither timely nor automated.',
+          ],
+          link: 'Domain 4 · Task 4.3 — Automate monitoring and event management of complex environments',
+        },
+      },
+      videos: [
+        { videoId: 'uhOZqiw7mdk', title: 'New AWS DevOps Professional (DOP-C02) Certification Exam', channel: 'Digital Cloud Training', relevance: 'Companion overview — EventBridge, alarm actions, and automated remediation span Domains 4 and 5.' },
+      ],
+      keyTerms: [
+        { term: 'Amazon EventBridge', def: 'A serverless event bus that matches event patterns and routes them to targets like Lambda, SNS, SQS, and Step Functions.' },
+        { term: 'Alarm action', def: 'An automated response attached to a CloudWatch alarm — notify SNS, trigger Auto Scaling, or run an EC2 action.' },
+        { term: 'EC2 auto recovery', def: 'Recovering an instance on new hardware after a system status check failure, preserving its ID and IP.' },
+        { term: 'Application Auto Scaling', def: 'A common scaling service for resources like DynamoDB, ECS, and Aurora replicas beyond EC2 ASGs.' },
+        { term: 'Config remediation', def: 'An SSM Automation action triggered by a non-compliant AWS Config rule to auto-correct the resource.' },
+      ],
+      awsServices: [
+        { name: 'Amazon EventBridge', purpose: 'Routes AWS, custom, and SaaS events to automation targets based on event patterns.' },
+        { name: 'Amazon CloudWatch alarms', purpose: 'Trigger notifications, Auto Scaling, and EC2 recovery actions automatically on metric breaches.' },
+        { name: 'AWS Config', purpose: 'Continuously evaluates compliance and triggers SSM Automation remediation for non-compliant resources.' },
+      ],
+      examTips: [
+        '"When X happens, automatically do Y" → EventBridge rule to a target (Lambda/SNS/SQS/Step Functions).',
+        'Process a file on upload → S3 event notification / S3-to-EventBridge → Lambda. Never poll.',
+        'System status check failure → CloudWatch alarm with EC2 auto-recovery action (preserves identity).',
+        'Auto-remediate non-compliant resources → Config rule + SSM Automation remediation, not a custom poller.',
+        'Self-healing loop = health checks + alarms + automated remediation, with agents installed fleet-wide via SSM.',
+      ],
+    },
+
   ],
 }
 
