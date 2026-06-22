@@ -6,7 +6,7 @@
 // the Supabase exam_types/question_sets rows. Exam facts below are the official
 // AWS numbers at time of writing.
 
-import { Cloud, BrainCircuit, Layers, Code2, Cpu, Network, Sparkles, Activity, Workflow, Database } from 'lucide-react'
+import { Cloud, BrainCircuit, Layers, Code2, Cpu, Network, Sparkles, Activity, Workflow, Database, ShieldCheck } from 'lucide-react'
 
 export const PROGRAMS = [
   {
@@ -373,6 +373,44 @@ export const PROGRAMS = [
     facts: { questions: '75', time: '180 min', passing: '750 / 1000', cost: '$300' },
     evergreenValue:
       'Even if you never sit the exam, you learn how high-performing teams actually deliver and operate software on AWS — pipelines, infrastructure as code, observability, and self-healing automation. That operational engineering is the most leveraged, transferable skill in modern cloud work, whatever your job title.',
+  },
+  {
+    code: 'SCS-C03',
+    slug: 'scs-c03',
+    name: 'AWS Certified Security – Specialty',
+    shortName: 'Security Specialty',
+    level: 'Specialty',
+    Icon: ShieldCheck,
+    color: '#DC2626',
+    tagline: 'Secure AWS workloads end to end — detection, identity, data protection, and governance.',
+    heroLead: 'Security is the job that never sleeps.',
+    heroAccent: 'Learn to do it at cloud scale.',
+    blurb:
+      'SCS-C03 is AWS’s deepest security credential. It teaches you to detect threats and build logging at scale, respond to incidents with forensics and containment, secure infrastructure from the edge to the network, manage identity and access with least privilege, protect data in transit and at rest, and govern security across an entire multi-account organization.',
+    whyTopic:
+      'Security is the one concern that touches every workload, every team, and every line of the shared responsibility model — and it is where a single misconfiguration becomes a breach. The valuable skill is not memorizing services; it is reasoning about how an attacker moves, where a control belongs in a layered defense, and how an Allow and a Deny actually combine when an organization, a resource policy, and a permission boundary all have a say. This program trains exactly that judgment: how to see what is happening in an account, lock identity down to least privilege, keep data confidential and intact, and prove compliance across hundreds of accounts. It is the difference between using AWS security services and engineering a security posture.',
+    learnOutcomes: [
+      'Designing detection and logging at scale — GuardDuty, Security Hub, Macie, Detective, Security Lake, organization CloudTrail trails, and the right log source for each threat',
+      'Responding to incidents — forensic artifact capture, containment and eradication, automated remediation, and root cause analysis with Amazon Detective',
+      'Securing infrastructure — edge protection with WAF and Shield Advanced, hardened compute and patching, and network controls and segmentation',
+      'Managing identity and access — IAM Identity Center, federation, ABAC and RBAC, and how SCPs, resource policies, permission boundaries, and session policies evaluate together',
+      'Protecting data — TLS and private connectivity, KMS and CloudHSM encryption at rest, key management, and secrets rotation; plus multi-account governance with Organizations and Control Tower',
+    ],
+    careerBenefit:
+      'Security Specialty is one of the highest-paying and fastest-growing AWS certifications, and a recognized signal for cloud security engineer, security architect, and DevSecOps roles. It unlocks regulated work in healthcare, finance, government, and defense — and moves you from "can build on AWS" to "can secure what the whole organization builds on AWS."',
+    roles: ['Cloud security engineers', 'Security architects', 'DevSecOps engineers', 'Compliance & IAM specialists'],
+    sessions: 16,
+    domains: [
+      { label: 'Detection', weight: '16%' },
+      { label: 'Incident Response', weight: '14%' },
+      { label: 'Infrastructure Security', weight: '18%' },
+      { label: 'Identity & Access Management', weight: '20%' },
+      { label: 'Data Protection', weight: '18%' },
+      { label: 'Security Foundations & Governance', weight: '14%' },
+    ],
+    facts: { questions: '65', time: '170 min', passing: '750 / 1000', cost: '$300' },
+    evergreenValue:
+      'Even if you never sit the exam, you walk away able to reason about cloud security the way an attacker and a defender both do — least-privilege identity, layered network and data controls, detection and response, and governance across many accounts. That security judgment is among the most in-demand and durable skills in all of technology, whatever your job title.',
   },
 ]
 

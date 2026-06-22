@@ -78,7 +78,7 @@ const FAQ_ITEMS = [
   },
   {
     question: 'Which certifications do you cover?',
-    answer: "We cover the AWS foundational, associate, and professional certifications: Cloud Practitioner (CLF-C02), AI Practitioner (AIF-C01), Solutions Architect Associate (SAA-C03), Developer Associate (DVA-C02), Machine Learning Engineer Associate (MLA-C01), CloudOps Engineer Associate (SOA-C03), Data Engineer Associate (DEA-C01), Solutions Architect Professional (SAP-C02), Generative AI Developer Professional (AIP-C01), and DevOps Engineer Professional (DOP-C02). One subscription gives you access to all of them.",
+    answer: "We cover the AWS foundational, associate, professional, and specialty certifications: Cloud Practitioner (CLF-C02), AI Practitioner (AIF-C01), Solutions Architect Associate (SAA-C03), Developer Associate (DVA-C02), Machine Learning Engineer Associate (MLA-C01), CloudOps Engineer Associate (SOA-C03), Data Engineer Associate (DEA-C01), Solutions Architect Professional (SAP-C02), Generative AI Developer Professional (AIP-C01), DevOps Engineer Professional (DOP-C02), and Security Specialty (SCS-C03). One subscription gives you access to all of them.",
   },
   {
     question: 'How long does it take to prepare?',
@@ -94,7 +94,7 @@ const FAQ_ITEMS = [
   },
 ]
 
-const LEVEL_ORDER = ['Foundational', 'Associate', 'Professional']
+const LEVEL_ORDER = ['Foundational', 'Associate', 'Professional', 'Specialty']
 
 function Reveal({ children, className = '', delay = 0, as: Tag = 'div', style, ...props }) {
   const ref = useRef(null)

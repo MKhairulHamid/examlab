@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SCS-C03 Exam Guide — CloudExamLab Wiki</title>
+  <style>
+    :root {
+      --sidebar-w: 255px;
+      --sidebar-bg: #0f172a;
+      --sidebar-text: #94a3b8;
+      --sidebar-active-text: #f87171;
+      --sidebar-active-bg: rgba(248,113,113,0.08);
+      --sidebar-hover: #1e293b;
+      --accent: #dc2626;
+      --accent-light: #fef2f2;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --heading: #0f172a;
+      --code-bg: #1e293b;
+      --code-text: #e2e8f0;
+      --stripe: #f8fafc;
+      --warn-bg: #fef2f2;
+      --warn-border: #ef4444;
+      --tip-bg: #f0fdf4;
+      --tip-border: #22c55e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--text);
+      line-height: 1.65;
+      background: #fff;
+    }
+
+    /* ── Sidebar ── */
+    #sidebar {
+      position: fixed; top: 0; left: 0;
+      width: var(--sidebar-w); height: 100vh;
+      background: var(--sidebar-bg);
+      overflow-y: auto; z-index: 100;
+      display: flex; flex-direction: column;
+    }
+    #sidebar::-webkit-scrollbar { width: 4px; }
+    #sidebar::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+    .sb-header {
+      padding: 20px 16px 14px;
+      border-bottom: 1px solid #1e293b;
+    }
+    .sb-logo { font-size: 13px; font-weight: 700; color: #f1f5f9; letter-spacing: .06em; text-transform: uppercase; }
+    .sb-sub  { font-size: 11px; color: var(--sidebar-text); margin-top: 2px; }
+    .sb-group { padding: 10px 0 2px; }
+    .sb-group-label {
+      font-size: 10px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: #475569;
+      padding: 0 16px; margin-bottom: 3px;
+    }
+    .sb-item {
+      display: block; padding: 6px 16px;
+      font-size: 12.5px; color: var(--sidebar-text);
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: background .12s, color .12s;
+    }
+    .sb-item:hover { background: var(--sidebar-hover); color: #f1f5f9; }
+    .sb-item.active { color: var(--sidebar-active-text); border-left-color: var(--sidebar-active-text); background: var(--sidebar-active-bg); }
+    .sb-item.ext { color: #f87171; }
+    .sb-item.ext::after { content: ' ↗'; font-size: 10px; }
+
+    /* ── Main ── */
+    #main {
+      margin-left: var(--sidebar-w);
+      padding: 48px 64px 96px;
+      max-width: calc(var(--sidebar-w) + 880px);
+    }
+
+    /* ── Section ── */
+    .section { padding-top: 52px; border-top: 1px solid var(--border); margin-top: 28px; }
+    .section:first-of-type { border-top: none; margin-top: 0; padding-top: 0; }
+
+    /* ── Typography ── */
+    h1 { font-size: 27px; font-weight: 700; color: var(--heading); margin-bottom: 10px; }
+    h2 { font-size: 19px; font-weight: 700; color: var(--heading); margin-top: 38px; margin-bottom: 14px; }
+    h3 { font-size: 15px; font-weight: 600; color: var(--heading); margin-top: 24px; margin-bottom: 8px; }
+    p  { margin-bottom: 12px; }
+    a  { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ul, ol { padding-left: 22px; margin-bottom: 12px; }
+    li { margin-bottom: 4px; }
+    hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+    .section-meta { font-size: 14px; color: var(--text-muted); margin-bottom: 26px; margin-top: -4px; }
+
+    /* ── Chip label ── */
+    .chip {
+      display: inline-block; padding: 2px 9px; border-radius: 4px;
+      font-size: 10px; font-weight: 700; letter-spacing: .05em;
+      text-transform: uppercase; margin-bottom: 6px;
+    }
+    .chip-platform  { background: #eff6ff; color: #1d4ed8; }
+    .chip-technical { background: #f0fdf4; color: #15803d; }
+    .chip-reference { background: #fdf4ff; color: #7e22ce; }
+    .chip-exam      { background: #fef2f2; color: #b91c1c; }
+
+    /* ── Tables ── */
+    .tw { overflow-x: auto; margin: 16px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    th {
+      background: #f1f5f9; padding: 7px 12px;
+      text-align: left; font-size: 11px; font-weight: 700;
+      color: var(--text-muted); border-bottom: 2px solid var(--border);
+      white-space: nowrap;
+    }
+    td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:nth-child(even) td { background: var(--stripe); }
+
+    /* ── Code ── */
+    code {
+      font-family: 'SF Mono','Fira Code','Cascadia Code',Consolas,monospace;
+      font-size: 12px; background: #f1f5f9; color: #be185d;
+      padding: 2px 5px; border-radius: 3px;
+    }
+
+    /* ── Callouts ── */
+    .callout {
+      padding: 12px 16px; border-radius: 6px;
+      margin: 14px 0; font-size: 13.5px;
+    }
+    .callout-note    { background: var(--accent-light); border-left: 4px solid var(--accent); }
+    .callout-warning { background: var(--warn-bg);      border-left: 4px solid var(--warn-border); }
+    .callout-tip     { background: var(--tip-bg);       border-left: 4px solid var(--tip-border); }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 10px;
+      font-size: 11px; font-weight: 600;
+    }
+    .badge-green  { background: #dcfce7; color: #15803d; }
+    .badge-yellow { background: #fef3c7; color: #b45309; }
+    .badge-gray   { background: #f1f5f9; color: #475569; }
+    .badge-blue   { background: #dbeafe; color: #1d4ed8; }
+    .badge-red    { background: #fee2e2; color: #b91c1c; }
+
+    /* ── Numbered steps ── */
+    .steps { counter-reset: step; list-style: none; padding: 0; margin-bottom: 14px; }
+    .steps li {
+      counter-increment: step;
+      padding: 7px 0 7px 36px; position: relative;
+      border-left: 2px solid var(--border); margin-left: 11px;
+    }
+    .steps li::before {
+      content: counter(step);
+      position: absolute; left: -11px; top: 7px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--accent); color: #fff;
+      font-size: 10px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── Page title ── */
+    .page-title { margin-bottom: 36px; }
+    .page-title h1 { font-size: 30px; margin-bottom: 8px; }
+    .page-title p  { font-size: 15px; color: var(--text-muted); margin: 0; }
+
+    /* ── Domain bar ── */
+    .domain-bar { display: flex; gap: 6px; flex-wrap: wrap; margin: 18px 0 8px; }
+    .domain-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 12px; border-radius: 20px;
+      font-size: 12px; font-weight: 600;
+      border: 1px solid var(--border); background: #f8fafc;
+    }
+    .domain-pill .pct {
+      background: var(--accent); color: #fff;
+      border-radius: 10px; padding: 1px 6px;
+      font-size: 10px; font-weight: 700;
+    }
+
+    /* ── Highlight row ── */
+    .hl td { background: #fef2f2 !important; font-weight: 600; }
+
+    /* ── Jump-to-top ── */
+    #top-btn {
+      position: fixed; bottom: 28px; right: 28px;
+      background: var(--accent); color: #fff;
+      border: none; border-radius: 50%; width: 38px; height: 38px;
+      font-size: 18px; cursor: pointer; display: none;
+      align-items: center; justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+      transition: opacity .2s;
+    }
+    #top-btn:hover { background: #b91c1c; }
+  </style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<nav id="sidebar">
+  <div class="sb-header">
+    <div class="sb-logo">CloudExamLab</div>
+    <div class="sb-sub">Exam Guide Series</div>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">On this page</div>
+    <a class="sb-item active" href="#overview">Overview</a>
+    <a class="sb-item" href="#structure">Exam Structure</a>
+    <a class="sb-item" href="#domains">Content Domains</a>
+    <a class="sb-item" href="#domain1">D1 — Detection</a>
+    <a class="sb-item" href="#domain2">D2 — Incident Response</a>
+    <a class="sb-item" href="#domain3">D3 — Infrastructure Security</a>
+    <a class="sb-item" href="#domain4">D4 — Identity &amp; Access Mgmt</a>
+    <a class="sb-item" href="#domain5">D5 — Data Protection</a>
+    <a class="sb-item" href="#domain6">D6 — Foundations &amp; Governance</a>
+    <a class="sb-item" href="#candidate-prep">Helping Candidates</a>
+    <a class="sb-item" href="#simulation">Simulation Design</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Wiki</div>
+    <a class="sb-item ext" href="index.html">Developer Wiki</a>
+    <a class="sb-item ext" href="new-program-playbook.html">New Program Playbook</a>
+    <a class="sb-item ext" href="exam-authoring-standard.html">Exam &amp; Question Authoring</a>
+    <a class="sb-item ext" href="aws-certification-roadmap.html">AWS Cert Roadmap</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Official</div>
+    <a class="sb-item ext" href="https://docs.aws.amazon.com/aws-certification/latest/security-specialty-03/security-specialty-03.html">AWS Exam Guide ↗</a>
+  </div>
+</nav>
+
+<!-- ══ MAIN ══ -->
+<main id="main">
+
+  <!-- OVERVIEW -->
+  <div class="page-title" id="overview">
+    <h1>AWS Certified Security – Specialty (SCS-C03)</h1>
+    <p>Everything we need to know about this exam — structure, domains, candidate prep strategy, and simulation design.</p>
+  </div>
+
+  <h2>What This Exam Is</h2>
+  <p>The AWS Certified Security – Specialty (SCS-C03) validates a candidate's ability to effectively secure AWS products and services. It is a Specialty-level exam — the deepest security credential AWS offers — testing whether a candidate can design and operate detection and logging pipelines, respond to incidents, secure infrastructure at the edge and inside the network, manage identity and access at scale, protect data in transit and at rest, and govern security across a multi-account organization.</p>
+  <ul>
+    <li><strong>Target audience:</strong> Security engineers, security architects, and cloud security specialists responsible for securing AWS workloads.</li>
+    <li><strong>Prerequisite experience:</strong> The equivalent of 3–5 years of experience securing cloud solutions, plus working knowledge of the shared responsibility model, identity at scale, multi-account governance, incident response, and encryption methodologies.</li>
+    <li><strong>Why candidates take it:</strong> To validate specialized, hands-on cloud security capability for security engineer, security architect, and DevSecOps roles, and as the security-focused capstone alongside the Solutions Architect and DevOps tracks.</li>
+  </ul>
+
+  <!-- STRUCTURE -->
+  <div class="section" id="structure">
+    <span class="chip chip-exam">Exam Format</span>
+    <h1>Question Format &amp; Scoring</h1>
+    <p class="section-meta">Exact parameters from the official exam guide — use these verbatim in the simulation design.</p>
+
+    <h2>Question Types</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>Multiple choice</td><td>One correct answer from four options (three distractors)</td></tr>
+        <tr><td>Multiple response</td><td>Two or more correct answers from five or more options</td></tr>
+        <tr><td>Ordering / Matching</td><td>On the real exam only — we author MC and MR exclusively, as on every CloudExamLab program</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Scoring Model</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Setting</th><th>Value</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Total questions on exam</td><td>65</td><td>50 scored + 15 unscored pretest (unidentified)</td></tr>
+        <tr><td>Duration</td><td>170 minutes</td><td>Exact match to real exam</td></tr>
+        <tr><td>Passing score</td><td>750 / 1,000</td><td>Display as % equivalent: 75%</td></tr>
+        <tr><td>Scoring</td><td>Compensatory</td><td>No per-domain minimums — total score only</td></tr>
+        <tr><td>Result</td><td>Pass / Fail</td><td>Scaled scoring equalizes difficulty across exam forms</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Out-of-Scope Skills (Do NOT Test)</h2>
+    <p>The official exam guide explicitly lists these job tasks as out of scope for the target candidate. Any question that hinges on them is out of scope — cut it.</p>
+    <ul>
+      <li>Designing cryptographic algorithms</li>
+      <li>Analyzing traffic at the packet level</li>
+      <li>Architecting overall cloud deployments</li>
+      <li>Managing end-user compute resources</li>
+      <li>Training machine learning models</li>
+    </ul>
+    <div class="callout callout-tip"><strong>Exam tip:</strong> SCS-C03 tests <em>securing and operating AWS workloads</em> — how to detect, respond, protect, and govern with the right security service and configuration. The crux of most questions is "which control or service best meets the security, cost, and operational requirement?" — not cryptography internals or packet forensics.</div>
+  </div>
+
+  <!-- DOMAIN OVERVIEW -->
+  <div class="section" id="domains">
+    <span class="chip chip-platform">Domains</span>
+    <h1>Domain Breakdown</h1>
+    <p class="section-meta">Six domains. Identity and Access Management (20%) leads, with Infrastructure Security and Data Protection close behind at 18% each — together they make up well over half the exam.</p>
+
+    <div class="domain-bar">
+      <span class="domain-pill">D1 — Detection <span class="pct">16%</span></span>
+      <span class="domain-pill">D2 — Incident Response <span class="pct">14%</span></span>
+      <span class="domain-pill">D3 — Infrastructure Security <span class="pct">18%</span></span>
+      <span class="domain-pill">D4 — Identity &amp; Access Mgmt <span class="pct">20%</span></span>
+      <span class="domain-pill">D5 — Data Protection <span class="pct">18%</span></span>
+      <span class="domain-pill">D6 — Foundations &amp; Governance <span class="pct">14%</span></span>
+    </div>
+
+    <div class="tw"><table>
+      <thead><tr><th>Domain</th><th>Weight</th><th>Task statements</th></tr></thead>
+      <tbody>
+        <tr><td>D1 — Detection</td><td>16%</td><td>1.1 Monitoring &amp; alerting · 1.2 Logging solutions · 1.3 Troubleshoot monitoring/logging/alerting</td></tr>
+        <tr><td>D2 — Incident Response</td><td>14%</td><td>2.1 Design &amp; test an IR plan · 2.2 Respond to security events</td></tr>
+        <tr><td>D3 — Infrastructure Security</td><td>18%</td><td>3.1 Edge security controls · 3.2 Compute workload security · 3.3 Network security controls</td></tr>
+        <tr><td>D4 — Identity and Access Management</td><td>20%</td><td>4.1 Authentication strategies · 4.2 Authorization strategies</td></tr>
+        <tr><td>D5 — Data Protection</td><td>18%</td><td>5.1 Data in transit · 5.2 Data at rest · 5.3 Secrets, credentials &amp; key material</td></tr>
+        <tr><td>D6 — Security Foundations and Governance</td><td>14%</td><td>6.1 Centrally deploy/manage accounts · 6.2 Secure consistent deployment · 6.3 Evaluate compliance</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <!-- DOMAIN 1 -->
+  <div class="section" id="domain1">
+    <span class="chip chip-platform">Domain 1 · 16%</span>
+    <h1>Detection</h1>
+    <p class="section-meta">Seeing what is happening in the account. Covers designing monitoring and alerting, building logging solutions and log data lakes, and troubleshooting when monitoring, logging, or alerting breaks.</p>
+
+    <h2>Task 1.1 — Design and implement monitoring and alerting solutions for an AWS account or organization</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Analyzing workloads to determine monitoring requirements</li>
+      <li>Designing and implementing workload monitoring strategies (e.g. configuring resource health checks)</li>
+      <li>Aggregating security and monitoring events</li>
+      <li>Creating metrics, alerts, and dashboards to detect anomalous data and events (e.g. Amazon GuardDuty, Amazon Security Lake, AWS Security Hub, Amazon Macie)</li>
+      <li>Creating and managing automations for regular assessments and investigations (e.g. AWS Config conformance packs, Security Hub, AWS Systems Manager State Manager)</li>
+    </ul>
+
+    <h2>Task 1.2 — Design and implement logging solutions</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Identifying sources for log ingestion and storage based on requirements</li>
+      <li>Configuring logging for AWS services and applications (e.g. an organization CloudTrail trail, a dedicated Amazon CloudWatch logging account, the CloudWatch Logs agent)</li>
+      <li>Implementing log storage and log data lakes (e.g. Security Lake) and integrating with third-party security tools</li>
+      <li>Using AWS services to analyze logs (e.g. CloudWatch Logs Insights, Amazon Athena, Security Hub findings)</li>
+      <li>Using AWS services to normalize, parse, and correlate logs (e.g. Amazon OpenSearch Service, AWS Lambda, Amazon Managed Grafana)</li>
+      <li>Configuring appropriate log sources based on network design, threats, and attacks (e.g. VPC Flow Logs, transit gateway flow logs, Amazon Route 53 Resolver logs)</li>
+    </ul>
+
+    <h2>Task 1.3 — Troubleshoot security monitoring, logging, and alerting solutions</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Analyzing the functionality, permissions, and configuration of resources (e.g. Lambda function logging, Amazon API Gateway logging, health checks, Amazon CloudFront logging)</li>
+      <li>Remediating misconfiguration of resources (e.g. troubleshooting CloudWatch Agent configurations, troubleshooting missing logs)</li>
+    </ul>
+  </div>
+
+  <!-- DOMAIN 2 -->
+  <div class="section" id="domain2">
+    <span class="chip chip-technical">Domain 2 · 14%</span>
+    <h1>Incident Response</h1>
+    <p class="section-meta">Preparing for and reacting to security events. Covers designing and testing an incident response plan, and responding to events with forensics, containment, eradication, recovery, and root cause analysis.</p>
+
+    <h2>Task 2.1 — Design and test an incident response plan</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Designing and implementing response plans and runbooks (e.g. Systems Manager OpsCenter, Amazon SageMaker AI notebooks)</li>
+      <li>Using AWS service features to prepare for incidents (e.g. provisioning access, deploying security tools, minimizing the blast radius, configuring AWS Shield Advanced protections)</li>
+      <li>Recommending procedures to test and validate the effectiveness of an incident response plan (e.g. AWS Fault Injection Service, AWS Resilience Hub)</li>
+      <li>Using AWS services to automatically remediate incidents (e.g. Systems Manager, Automated Forensics Orchestrator for Amazon EC2, AWS Step Functions, Amazon Application Recovery Controller, Lambda functions)</li>
+    </ul>
+
+    <h2>Task 2.2 — Respond to security events</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Capturing and storing relevant system and application logs as forensic artifacts</li>
+      <li>Searching and correlating logs for security events across applications and AWS services</li>
+      <li>Validating findings from AWS security services to assess the scope and impact of an event</li>
+      <li>Responding to affected resources by containing and eradicating threats, and recovering resources (e.g. network containment controls, restoring backups)</li>
+      <li>Describing methods to conduct root cause analysis (e.g. Amazon Detective)</li>
+    </ul>
+  </div>
+
+  <!-- DOMAIN 3 -->
+  <div class="section" id="domain3">
+    <span class="chip chip-reference">Domain 3 · 18%</span>
+    <h1>Infrastructure Security</h1>
+    <p class="section-meta">Securing the perimeter, the compute, and the network. Covers edge protection, hardening and patching compute workloads, and designing network controls and segmentation.</p>
+
+    <h2>Task 3.1 — Design, implement, and troubleshoot security controls for network edge services</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Defining and selecting edge security strategies based on anticipated threats and attacks</li>
+      <li>Implementing edge protection (e.g. CloudFront headers, AWS WAF, AWS IoT policies, OWASP Top 10, Amazon S3 CORS, Shield Advanced)</li>
+      <li>Designing edge controls and rules based on requirements (e.g. geography, geolocation, rate limiting, client fingerprinting)</li>
+      <li>Configuring integrations with AWS edge services and third-party services (e.g. ingesting OCSF-format data, third-party WAF rules)</li>
+    </ul>
+
+    <h2>Task 3.2 — Design, implement, and troubleshoot security controls for compute workloads</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Designing and implementing hardened EC2 AMIs and container images (e.g. Systems Manager, EC2 Image Builder)</li>
+      <li>Applying instance profiles, service roles, and execution roles to authorize compute workloads</li>
+      <li>Scanning compute resources for known vulnerabilities (e.g. Amazon Inspector for container images and Lambda; GuardDuty runtime monitoring)</li>
+      <li>Deploying patches across compute resources and integrating continuous validation (e.g. Systems Manager Patch Manager, Amazon Inspector)</li>
+      <li>Configuring secure administrative access (e.g. Systems Manager Session Manager, EC2 Instance Connect)</li>
+      <li>Discovering and remediating vulnerabilities within a pipeline (e.g. Amazon Q Developer, Amazon CodeGuru Security)</li>
+      <li>Implementing protections and guardrails for generative AI applications (e.g. GenAI OWASP Top 10 for LLM Applications)</li>
+    </ul>
+
+    <h2>Task 3.3 — Design and troubleshoot network security controls</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Designing and troubleshooting controls to permit or prevent traffic (e.g. security groups, network ACLs, AWS Network Firewall)</li>
+      <li>Designing secure connectivity between hybrid and multi-cloud networks (e.g. AWS Site-to-Site VPN, AWS Direct Connect, MACsec)</li>
+      <li>Configuring secure workload communication between hybrid environments and AWS (e.g. AWS Verified Access)</li>
+      <li>Designing network segmentation based on security requirements (e.g. north/south and east/west protections, isolated subnets)</li>
+      <li>Identifying unnecessary network access (e.g. AWS Verified Access, Network Access Analyzer, Amazon Inspector network reachability findings)</li>
+    </ul>
+  </div>
+
+  <!-- DOMAIN 4 -->
+  <div class="section" id="domain4">
+    <span class="chip chip-exam">Domain 4 · 20%</span>
+    <h1>Identity and Access Management</h1>
+    <p class="section-meta">The largest domain. Covers designing, implementing, and troubleshooting authentication and authorization for human, application, and system access — the heart of AWS security.</p>
+
+    <h2>Task 4.1 — Design, implement, and troubleshoot authentication strategies</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Designing identity solutions for human, application, and system authentication (e.g. AWS IAM Identity Center, Amazon Cognito, MFA, IdP integration)</li>
+      <li>Configuring mechanisms to issue temporary credentials (e.g. AWS STS, Amazon S3 presigned URLs)</li>
+      <li>Troubleshooting authentication issues (e.g. CloudTrail, Amazon Cognito, IAM Identity Center permission sets, AWS Directory Service)</li>
+    </ul>
+
+    <h2>Task 4.2 — Design, implement, and troubleshoot authorization strategies</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Designing and evaluating authorization controls for human, application, and system access (e.g. Amazon Verified Permissions, IAM paths, IAM Roles Anywhere, resource policies for cross-account access, IAM role trust policies)</li>
+      <li>Designing attribute-based (ABAC) and role-based (RBAC) access control strategies (e.g. resource access based on tags or attributes)</li>
+      <li>Designing, interpreting, and implementing IAM policies by following least privilege (e.g. permission boundaries, session policies)</li>
+      <li>Analyzing authorization failures to determine causes or effects (e.g. IAM Policy Simulator, IAM Access Analyzer)</li>
+      <li>Investigating and correcting unintended permissions or privileges (e.g. IAM Access Analyzer)</li>
+    </ul>
+  </div>
+
+  <!-- DOMAIN 5 -->
+  <div class="section" id="domain5">
+    <span class="chip chip-platform">Domain 5 · 18%</span>
+    <h1>Data Protection</h1>
+    <p class="section-meta">Keeping data confidential and intact. Covers controls for data in transit, controls for data at rest, and protecting confidential data, credentials, secrets, and cryptographic key material.</p>
+
+    <h2>Task 5.1 — Design and implement controls for data in transit</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Requiring encryption when connecting to resources (e.g. ELB security policies, enforcing TLS configurations)</li>
+      <li>Designing secure and private access to resources (e.g. AWS PrivateLink, VPC endpoints, AWS Client VPN, AWS Verified Access)</li>
+      <li>Designing inter-resource encryption in transit (e.g. inter-node encryption for Amazon EMR, Amazon EKS, SageMaker AI; Nitro encryption)</li>
+    </ul>
+
+    <h2>Task 5.2 — Design and implement controls for data at rest</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Configuring encryption at rest to requirements (e.g. selecting AWS CloudHSM vs. AWS KMS; client-side vs. server-side encryption)</li>
+      <li>Protecting data integrity (e.g. S3 Object Lock, S3 Glacier Vault Lock, versioning, digital code signing, file validation)</li>
+      <li>Designing lifecycle management and retention (e.g. S3 Lifecycle policies, S3 Object Lock, Amazon EFS Lifecycle policies, Amazon FSx for Lustre backup policies)</li>
+      <li>Designing secure replication and backup (e.g. Amazon Data Lifecycle Manager, AWS Backup, ransomware protection, AWS DataSync)</li>
+    </ul>
+
+    <h2>Task 5.3 — Design and implement controls to protect confidential data, credentials, secrets, and key material</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Designing management and rotation of credentials and secrets (e.g. AWS Secrets Manager)</li>
+      <li>Managing and using imported key material (e.g. rotating imported key material, configuring external key stores)</li>
+      <li>Describing the differences between imported key material and AWS-generated key material</li>
+      <li>Masking sensitive data (e.g. CloudWatch Logs data protection policies, Amazon SNS message data protection)</li>
+      <li>Creating and managing encryption keys and certificates across one or multiple Regions (e.g. AWS KMS customer managed keys, AWS Private Certificate Authority)</li>
+    </ul>
+  </div>
+
+  <!-- DOMAIN 6 -->
+  <div class="section" id="domain6">
+    <span class="chip chip-technical">Domain 6 · 14%</span>
+    <h1>Security Foundations and Governance</h1>
+    <p class="section-meta">Governing security across the whole organization. Covers centrally deploying and managing accounts, enforcing a secure and consistent deployment strategy, and evaluating the compliance of resources.</p>
+
+    <h2>Task 6.1 — Develop a strategy to centrally deploy and manage AWS accounts</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Deploying and configuring organizations by using AWS Organizations</li>
+      <li>Implementing and managing AWS Control Tower in new and existing environments, and deploying optional and custom controls</li>
+      <li>Implementing organization policies to manage permissions (e.g. SCPs, RCPs, AI service opt-out policies, declarative policies)</li>
+      <li>Centrally managing security services (e.g. delegated administrator accounts)</li>
+      <li>Managing AWS account root user credentials (e.g. centralizing root access for member accounts, managing MFA, designing break-glass procedures)</li>
+    </ul>
+
+    <h2>Task 6.2 — Implement a secure and consistent deployment strategy for cloud resources</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Using infrastructure as code to deploy resources consistently and securely across accounts (e.g. CloudFormation stack sets, third-party IaC, CloudFormation Guard, cfn-lint)</li>
+      <li>Using tags to organize AWS resources into groups (e.g. by department, cost center, environment)</li>
+      <li>Deploying and enforcing policies and configurations from a central source (e.g. AWS Firewall Manager)</li>
+      <li>Securely sharing resources across AWS accounts (e.g. AWS Service Catalog, AWS Resource Access Manager)</li>
+    </ul>
+
+    <h2>Task 6.3 — Evaluate the compliance of AWS resources</h2>
+    <p><strong>Skills in:</strong></p>
+    <ul>
+      <li>Creating or enabling rules to detect and remediate noncompliant resources and send notifications (e.g. AWS Config to aggregate alerts and remediate, Security Hub)</li>
+      <li>Using AWS audit services to collect and organize evidence (e.g. AWS Audit Manager, AWS Artifact)</li>
+      <li>Using AWS services to evaluate architecture for compliance with best practices (e.g. AWS Well-Architected Framework tool)</li>
+    </ul>
+  </div>
+
+  <!-- CANDIDATE PREP -->
+  <div class="section" id="candidate-prep">
+    <span class="chip chip-platform">Candidate Prep</span>
+    <h1>How We Help SCS-C03 Candidates</h1>
+    <p class="section-meta">Who takes this exam, where they struggle, and how to build a study path that gets them to 750+.</p>
+
+    <h2>Who Takes This Exam</h2>
+    <ul>
+      <li><strong>Security engineers &amp; analysts</strong> — already operating detection, IR, and IAM on AWS who want to validate specialized depth.</li>
+      <li><strong>Cloud &amp; security architects</strong> — designing secure multi-account landing zones and data-protection strategies.</li>
+      <li><strong>DevSecOps &amp; platform engineers</strong> — embedding security controls into pipelines, infrastructure as code, and guardrails at scale.</li>
+    </ul>
+
+    <h2>What Candidates Struggle With</h2>
+    <ul>
+      <li><strong>The detective-service map</strong> — GuardDuty vs. Security Hub vs. Macie vs. Inspector vs. Detective vs. Config, and which one answers a given "what happened / what's wrong" question.</li>
+      <li><strong>Logging architecture</strong> — organization CloudTrail trails, a dedicated logging account, Security Lake, and which log source (VPC Flow Logs, Resolver logs, CloudFront logs) sees a given threat.</li>
+      <li><strong>KMS depth</strong> — customer managed vs. AWS managed keys, key policies vs. IAM vs. grants, multi-Region keys, imported key material, external key stores, and CloudHSM vs. KMS.</li>
+      <li><strong>IAM authorization evaluation</strong> — how SCPs, resource policies, permission boundaries, session policies, and identity policies combine, and why an Allow is or isn't effective.</li>
+      <li><strong>Cross-account &amp; org governance</strong> — Organizations, Control Tower, SCPs/RCPs, delegated administration, and Firewall Manager / RAM for central enforcement and sharing.</li>
+      <li><strong>Edge &amp; network protection</strong> — WAF vs. Shield Advanced vs. Network Firewall vs. security groups/NACLs, and where each control belongs in a layered defense.</li>
+    </ul>
+
+    <h2>Recommended Study Path</h2>
+    <ol class="steps">
+      <li><strong>Domain 4 — Identity and Access Management first.</strong> The largest domain (20%) and the foundation everything else builds on. Master authentication strategies and how authorization actually evaluates before anything else.</li>
+      <li><strong>Domain 3 — Infrastructure Security &amp; Domain 5 — Data Protection.</strong> 18% each. Edge/compute/network controls and encryption in transit and at rest are the bulk of the hands-on security work.</li>
+      <li><strong>Domain 1 — Detection.</strong> 16%. The detective-service map, logging architecture, and troubleshooting when telemetry breaks.</li>
+      <li><strong>Domain 2 — Incident Response &amp; Domain 6 — Foundations and Governance.</strong> 14% each. Tie it together: respond to events with forensics and containment, and govern security across the whole organization.</li>
+    </ol>
+
+    <h2>AI Explanation Quality for This Exam</h2>
+    <p>SCS-C03 questions are scenario-based and frequently offer several controls that "work," where one is the best fit on security posture, blast radius, cost, or operational overhead. Every explanation must cover WHY a plausible option is inferior — not just "this is wrong." Common patterns to cover:</p>
+    <ul>
+      <li>For detection questions: explain why a service misses the signal (e.g. "Macie classifies sensitive data in S3; it does not detect the IAM credential-exfiltration behavior that GuardDuty surfaces").</li>
+      <li>For IAM questions: explain why an Allow is ineffective (e.g. "an identity policy Allow is overridden by an SCP Deny at the organization level, so the action still fails").</li>
+      <li>For data-protection questions: explain why a control is weaker (e.g. "SSE-S3 meets encryption-at-rest but cannot give the customer-controlled key rotation and audit trail that SSE-KMS with a customer managed key provides").</li>
+    </ul>
+  </div>
+
+  <!-- SIMULATION DESIGN -->
+  <div class="section" id="simulation">
+    <span class="chip chip-exam">Simulation Design</span>
+    <h1>How to Formulate the Exam Simulation</h1>
+    <p class="section-meta">Parameters for building practice sets that match the real SCS-C03 exam. See the <a href="exam-authoring-standard.html">Exam &amp; Question Authoring Standard</a> for question-writing rules.</p>
+
+    <h2>Question Set Structure</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Setting</th><th>Value</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Total questions per simulation</td><td>65</td><td>Real exam is 50 scored + 15 unscored (unannounced); we present a full 65-question set</td></tr>
+        <tr><td>Duration</td><td>170 minutes</td><td>Exact match to real exam</td></tr>
+        <tr><td>Passing threshold</td><td>750 / 1,000</td><td>Display as % equivalent: 75%</td></tr>
+        <tr><td>Scoring</td><td>Compensatory</td><td>No domain minimums — total score only</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Domain Distribution per Set</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Domain</th><th>Weight</th><th>Qs in 65-Q set</th></tr></thead>
+      <tbody>
+        <tr><td>D1 — Detection</td><td>16%</td><td>10</td></tr>
+        <tr><td>D2 — Incident Response</td><td>14%</td><td>9</td></tr>
+        <tr><td>D3 — Infrastructure Security</td><td>18%</td><td>12</td></tr>
+        <tr><td>D4 — Identity and Access Management</td><td>20%</td><td>13</td></tr>
+        <tr><td>D5 — Data Protection</td><td>18%</td><td>12</td></tr>
+        <tr><td>D6 — Security Foundations and Governance</td><td>14%</td><td>9</td></tr>
+        <tr class="hl"><td><strong>Total</strong></td><td><strong>100%</strong></td><td><strong>65</strong></td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Question Type Mix</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Type</th><th>Suggested % of set</th><th>Implementation priority</th></tr></thead>
+      <tbody>
+        <tr><td>Multiple choice (1-of-4)</td><td>~75%</td><td><span class="badge badge-green">High — launch with this</span></td></tr>
+        <tr><td>Multiple response (select N of 5–6)</td><td>~25%</td><td><span class="badge badge-green">High — common on exam</span></td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout callout-note">Free sample + Sim 1 (Foundational) are 100% multiple choice. Sim 2 (Architectural) and Sim 3 (Comparative) carry ~25% multiple response, matching the real exam's mix.</div>
+
+    <h2>Question Writing Rules (SCS-C03 specific)</h2>
+    <ul>
+      <li><strong>Scenario stems</strong> — "A security engineer must…" Establish the real constraint (threat, blast radius, compliance, least privilege, cost) before asking.</li>
+      <li><strong>Best-of-several-workable answers</strong> — most distractors are valid security services but lose on posture, scope, operational overhead, or one unmet requirement. Engineer the crux to be the trade-off.</li>
+      <li><strong>Least-privilege and defense-in-depth framing</strong> — the right answer is usually the most scoped, layered, purpose-fit control. Make overly broad or single-layer options the plausible-but-wrong choices.</li>
+      <li><strong>Cross-domain wiring</strong> — SCS scenarios routinely span detection, IAM, data protection, and governance. Let questions combine services as the real exam does.</li>
+      <li><strong>No cryptographic algorithm design, no packet-level analysis, no ML training</strong> — keep questions inside the in-scope service set; cut anything that hinges on out-of-scope depth.</li>
+    </ul>
+
+    <h2>Distractor Quality Guidelines</h2>
+    <ul>
+      <li>Use real security confusions as distractors: GuardDuty vs. Macie vs. Inspector vs. Detective; SCP Deny vs. identity-policy Allow; KMS vs. CloudHSM; WAF vs. Shield Advanced vs. Network Firewall.</li>
+      <li>For detection questions: make one distractor a service that does not see the signal in question, and one a control that detects too late or in the wrong layer.</li>
+      <li>For IAM questions: make one distractor an Allow that a higher-level Deny overrides, and one an overly broad grant that breaks least privilege.</li>
+      <li>For data-protection questions: make one distractor a weaker encryption mode, and one a control that does not meet the integrity, retention, or key-custody requirement.</li>
+    </ul>
+
+    <h2>AI Explanation Template</h2>
+    <p>Each question requires an explanation covering:</p>
+    <ul>
+      <li>Why the correct answer is right — the conceptual reason it best meets every stated constraint</li>
+      <li>Why each distractor is wrong — one sentence per option, naming the specific unmet constraint or excess exposure</li>
+      <li>Concept link — which domain/task statement this tests (e.g. "D4 · Task 4.2 — Authorization strategies")</li>
+      <li>Service context — if a service appears, one line on what it does and what distinguishes it from the similar services in the distractors</li>
+    </ul>
+  </div>
+
+</main>
+
+<button id="top-btn" title="Back to top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<script>
+  const topBtn = document.getElementById('top-btn');
+  window.addEventListener('scroll', () => {
+    topBtn.style.display = window.scrollY > 400 ? 'flex' : 'none';
+  });
+</script>
+</body>
+</html>
