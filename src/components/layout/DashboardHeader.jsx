@@ -8,7 +8,7 @@ const KNOWN_COURSE_SLUGS = ['aif-c01', 'clf-c02', 'saa-c03', 'dva-c02', 'mla-c01
 
 const CERT_OPTIONS = PROGRAMS.filter(p => KNOWN_COURSE_SLUGS.includes(p.slug))
 
-const LEVEL_ORDER = ['Foundational', 'Associate', 'Professional']
+const LEVEL_ORDER = ['Foundational', 'Associate', 'Professional', 'Specialty']
 const CERT_GROUPS = LEVEL_ORDER
   .map(level => ({ level, items: CERT_OPTIONS.filter(p => p.level === level) }))
   .filter(g => g.items.length > 0)
