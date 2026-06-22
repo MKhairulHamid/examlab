@@ -813,7 +813,7 @@ function ExamInterface() {
             <button
               onClick={async () => {
                 await saveCurrentProgress()
-                navigate(`/exam/${slug}`)
+                navigate('/dashboard?tab=practice')
               }}
               className="w-full mt-3 py-2.5 px-4 bg-white/10 text-[rgba(10,37,64,0.6)] hover:bg-white/20 border border-white/30 rounded-lg font-semibold cursor-pointer text-sm transition-all"
             >

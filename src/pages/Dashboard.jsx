@@ -272,6 +272,16 @@ function Dashboard() {
     [examResults, focusedSlug],
   )
 
+  // Most recent completed attempt per question set — drives the result summary
+  // shown on each Practice card. examResults is already ordered newest-first.
+  const latestResultBySet = useMemo(() => {
+    const map = {}
+    for (const r of examResults) {
+      if (r.questionSetId && !map[r.questionSetId]) map[r.questionSetId] = r
+    }
+    return map
+  }, [examResults])
+
   // Exam simulations (question sets) for the focused exam — drives the Practice tab.
   useEffect(() => {
     if (!featuredExam) { setPracticeSets([]); return }
@@ -562,7 +572,7 @@ function Dashboard() {
         title: 'Lock in your score with a practice exam',
         meta: 'All study sessions done',
         cta: 'Take a practice exam',
-        onClick: () => navigate(`/exam/${featuredExam?.slug}`),
+        onClick: () => setActiveTab('practice'),
       }
     }
 
@@ -695,7 +705,7 @@ function Dashboard() {
                   </div>
                   <div className="flex gap-2">
                     <Button variant="primary" size="sm" className="flex-1"
-                            onClick={() => { const e = exams.find(x => x.id === ed.exam_type_id); if (e) navigate(`/exam/${e.slug}`) }}>
+                            onClick={() => setActiveTab('practice')}>
                       Practice Now
                     </Button>
                     <Button variant="secondary" size="sm"
@@ -1025,6 +1035,7 @@ function Dashboard() {
                 const isFree = set.is_free_sample || set.price_cents === 0
                 const locked = !isFree && !hasAccess
                 const scheduled = examDates.find(d => d.exam_type_id === featuredExam.id)
+                const result = (isFree || hasAccess) ? latestResultBySet[set.id] : null
                 return (
                   <Card key={set.id} className="p-5 flex flex-col" style={{ opacity: locked ? 0.85 : 1 }}>
                     <div className="flex items-start justify-between gap-3 mb-2">
@@ -1046,6 +1057,29 @@ function Dashboard() {
                       <span>Set {set.set_number}</span>
                       {set.is_final_exam && (<><span>·</span><span className="text-[#00D4AA] font-semibold">Final exam</span></>)}
                     </div>
+                    {result && (
+                      <div className="mb-4 rounded-lg border border-gray-100 bg-gray-50 px-3 py-2.5">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg font-mono font-bold leading-none" style={{ color: result.passed ? '#10b981' : '#0A2540' }}>
+                              {result.percentageScore ?? 0}%
+                            </span>
+                            <span className={`text-[0.625rem] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full ${result.passed ? 'bg-[#10b981]/10 text-[#0d9668]' : 'bg-amber-100 text-amber-700'}`}>
+                              {result.passed ? 'Passed' : 'Not passed'}
+                            </span>
+                          </div>
+                          <button
+                            className="text-[0.7rem] font-semibold text-[#00A884] hover:underline underline-offset-2 shrink-0"
+                            onClick={() => navigate(`/exam/${featuredExam.slug}/results?resultId=${result.id}&set=${set.id}`)}
+                          >
+                            Review
+                          </button>
+                        </div>
+                        <p className="text-[0.65rem] text-gray-400 mt-1">
+                          Last attempt {new Date(result.completedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        </p>
+                      </div>
+                    )}
                     {(isFree || hasAccess) ? (
                       inProgressBySet[set.id] ? (
                         <div className="flex flex-col gap-2">
@@ -1060,9 +1094,9 @@ function Dashboard() {
                           </button>
                         </div>
                       ) : (
-                        <Button variant="primary" size="sm" className="w-full gap-1.5"
+                        <Button variant={result ? 'outline' : 'primary'} size="sm" className="w-full gap-1.5"
                                 onClick={() => navigate(`/exam/${featuredExam.slug}/take?set=${set.id}`)}>
-                          Start simulation <ArrowRight className="w-4 h-4" />
+                          {result ? 'Retake simulation' : 'Start simulation'} <ArrowRight className="w-4 h-4" />
                         </Button>
                       )
                     ) : (

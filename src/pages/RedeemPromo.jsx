@@ -94,7 +94,7 @@ function RedeemPromo() {
                   </p>
                 )}
                 <button
-                  onClick={() => navigate(result.exam_slug ? `/exam/${result.exam_slug}` : '/dashboard')}
+                  onClick={() => navigate('/dashboard?tab=practice')}
                   style={primaryBtn}
                 >
                   Start Practicing →

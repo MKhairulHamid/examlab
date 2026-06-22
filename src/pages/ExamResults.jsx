@@ -470,7 +470,7 @@ function ExamResults() {
               Study Weak Areas
             </button>
             <button
-              onClick={() => navigate(`/exam/${slug}`)}
+              onClick={() => navigate('/dashboard?tab=practice')}
               style={{
                 padding: '0.75rem 1.5rem',
                 background: 'rgba(255,255,255,0.1)',

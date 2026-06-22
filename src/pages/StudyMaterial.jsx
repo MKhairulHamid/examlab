@@ -693,7 +693,7 @@ function StudyMaterial() {
                     course={sessionCourse}
                     hasAccess={hasAccess}
                     onSubscribe={onSubscribe}
-                    onBack={() => navigate(`/exam/${slug}`)}
+                    onBack={() => navigate('/dashboard?tab=study')}
                 />
             ) : (
                 <LegacyStudyMaterial hasAccess={hasAccess} onSubscribe={onSubscribe} />
@@ -767,7 +767,7 @@ function LegacyStudyMaterial({ hasAccess = true, onSubscribe }) {
             <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '1.5rem' }}>
                 {/* Header */}
                 <div style={{ marginBottom: '1.5rem' }}>
-                    <BackLink to={`/exam/${slug}`} label="Exam details" tone="dark" />
+                    <BackLink to="/dashboard?tab=study" label="Study" tone="dark" />
                 </div>
 
                 {/* Title Section */}
