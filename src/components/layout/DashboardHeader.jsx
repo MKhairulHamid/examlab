@@ -8,6 +8,11 @@ const KNOWN_COURSE_SLUGS = ['aif-c01', 'clf-c02', 'saa-c03', 'dva-c02', 'mla-c01
 
 const CERT_OPTIONS = PROGRAMS.filter(p => KNOWN_COURSE_SLUGS.includes(p.slug))
 
+const LEVEL_ORDER = ['Foundational', 'Associate', 'Professional']
+const CERT_GROUPS = LEVEL_ORDER
+  .map(level => ({ level, items: CERT_OPTIONS.filter(p => p.level === level) }))
+  .filter(g => g.items.length > 0)
+
 function DashboardHeader() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -134,31 +139,39 @@ function DashboardHeader() {
                   <p className="flex items-center gap-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
                     <Target className="w-3 h-3" /> Focused certification
                   </p>
-                  <div className="flex flex-col gap-1">
-                    {CERT_OPTIONS.map(({ slug, shortName, level, color }) => {
-                      const active = slug === focusedSlug
-                      return (
-                        <button
-                          key={slug}
-                          role="menuitem"
-                          disabled={switching}
-                          onClick={() => handleFocusSwitch(slug)}
-                          className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors text-left ${
-                            active
-                              ? 'bg-[#0A2540]/[0.07] text-[#0A2540] font-semibold'
-                              : 'text-gray-600 hover:bg-gray-50 font-medium'
-                          } ${switching && !active ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        >
-                          <span
-                            className="w-2 h-2 rounded-full shrink-0"
-                            style={{ backgroundColor: color }}
-                          />
-                          <span className="flex-1 truncate">{shortName}</span>
-                          <span className="text-[10px] text-gray-400 shrink-0">{level}</span>
-                          {active && <Check className="w-3.5 h-3.5 text-[#00D4AA] shrink-0" />}
-                        </button>
-                      )
-                    })}
+                  <div className="max-h-[15rem] overflow-y-auto pr-0.5 -mr-0.5">
+                    {CERT_GROUPS.map(({ level, items }) => (
+                      <div key={level} className="mb-1.5 last:mb-0">
+                        <p className="px-3 pt-1 pb-1 text-[10px] font-bold text-gray-300 uppercase tracking-wider">
+                          {level}
+                        </p>
+                        <div className="flex flex-col gap-1">
+                          {items.map(({ slug, shortName, color }) => {
+                            const active = slug === focusedSlug
+                            return (
+                              <button
+                                key={slug}
+                                role="menuitem"
+                                disabled={switching}
+                                onClick={() => handleFocusSwitch(slug)}
+                                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors text-left ${
+                                  active
+                                    ? 'bg-[#0A2540]/[0.07] text-[#0A2540] font-semibold'
+                                    : 'text-gray-600 hover:bg-gray-50 font-medium'
+                                } ${switching && !active ? 'opacity-50 cursor-not-allowed' : ''}`}
+                              >
+                                <span
+                                  className="w-2 h-2 rounded-full shrink-0"
+                                  style={{ backgroundColor: color }}
+                                />
+                                <span className="flex-1 truncate">{shortName}</span>
+                                {active && <Check className="w-3.5 h-3.5 text-[#00D4AA] shrink-0" />}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
