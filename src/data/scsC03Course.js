@@ -591,6 +591,599 @@ const scsC03Course = {
       videos: [COMPANION_VIDEO],
     },
 
+    // ═══════════════════════════════════════════════════════════════
+    //  DOMAIN 3 — INFRASTRUCTURE SECURITY (18%)
+    // ═══════════════════════════════════════════════════════════════
+
+    {
+      id: 'd3-s6',
+      number: 6,
+      module: 'Domain 3 · Infrastructure Security',
+      domain: 'd3',
+      weight: '18%',
+      task: 'Task 3.1',
+      title: 'Edge Security — CloudFront, AWS WAF, Shield, and Stopping Threats at the Door',
+      duration: 30,
+      summary: 'The cheapest place to block an attack is before it reaches your origin. This session builds the edge-defense stack the exam expects: CloudFront as the front door, AWS WAF for Layer-7 filtering (OWASP Top 10, rate limiting, geo rules), Shield Advanced for DDoS, and the header and origin-access controls that keep traffic from bypassing the edge entirely.',
+      objectives: [
+        'Choose an edge protection strategy based on the threat — L7 application attacks, DDoS, bots, or geographic restriction',
+        'Configure AWS WAF managed and custom rules for OWASP Top 10, rate-based limiting, and geo-matching',
+        'Use CloudFront with origin access control and Shield Advanced to protect and front origins',
+        'Prevent origin bypass with secret headers, OAC, and signed URLs/cookies',
+      ],
+      preLearningCheck: {
+        question: 'A web application behind CloudFront is being hit by SQL-injection and cross-site-scripting attempts. Which service is designed to inspect and block these Layer-7 request patterns?',
+        options: [
+          'AWS Shield Standard, because it protects against all attacks',
+          'AWS WAF, because it inspects HTTP(S) requests and blocks malicious patterns like SQLi and XSS',
+          'A security group on the origin instances',
+          'Network ACLs on the public subnet',
+        ],
+        correct: 1,
+        note: 'No pressure — guessing first improves retention. The key idea: AWS WAF operates at Layer 7 and inspects the content of HTTP(S) requests, so it can match and block SQLi/XSS patterns. Shield handles DDoS (L3/L4 and some L7 volumetrics); security groups and NACLs work at L3/L4 and cannot read request payloads.',
+      },
+      sections: [
+        {
+          heading: 'Match the control to the threat',
+          body: 'Edge security questions almost always hinge on picking the control that operates at the right layer for the named threat:\n\nAWS WAF — Layer 7. Inspects HTTP(S) request components (URI, query string, headers, body, cookies) and blocks based on rules: AWS Managed Rule groups (Core rule set for OWASP Top 10, known-bad-inputs, SQLi, Linux/PHP, IP reputation), rate-based rules to throttle floods from a single IP, geo-match to allow/deny by country, and custom rules using regex or string match. Attach a WAF web ACL to CloudFront, Application Load Balancer, API Gateway, AppSync, or Cognito user pools.\n\nAWS Shield Standard — automatic, free DDoS protection at L3/L4 for all AWS customers. AWS Shield Advanced — paid; adds protection for higher-layer and larger volumetric attacks, near-real-time visibility, cost-protection credits for scaling during an attack, and access to the Shield Response Team (SRT).\n\nAmazon CloudFront — the CDN and front door. Terminating TLS at the edge, absorbing volumetric load, and giving WAF and Shield a single chokepoint to defend.',
+          bullets: [
+            'OWASP Top 10 / SQLi / XSS / bad bots → AWS WAF (often AWS Managed Rules).',
+            'Flood from a single source IP → WAF rate-based rule. Large-scale volumetric/DDoS → Shield Advanced.',
+            'Restrict access by country → WAF geo-match rule (or CloudFront geo restriction for simple allow/deny).',
+            'WAF attaches to CloudFront, ALB, API Gateway, AppSync, and Cognito — not directly to an EC2 instance.',
+          ],
+          callout: { type: 'note', text: 'Layer is the tell. "Inspect/blocks malicious HTTP requests" → WAF (L7). "Absorb a large DDoS" → Shield Advanced. "Allow/deny IP ranges or ports" → security group/NACL (L3/L4). A request-content threat is never solved by a security group.' },
+        },
+        {
+          heading: 'Designing WAF rules',
+          body: 'A WAF web ACL evaluates rules in priority order; each rule either allows, blocks, counts, or runs CAPTCHA/challenge. The exam favors layered, managed-first design:\n\nStart with AWS Managed Rules (Core rule set covers OWASP Top 10) so you inherit AWS-maintained signatures. Add a rate-based rule (e.g. block any IP exceeding N requests in 5 minutes) to blunt brute-force and HTTP floods. Add geo-match rules where the business only serves certain countries. Use Count mode first to observe what a new rule would block before switching it to Block — this avoids false positives taking down legitimate traffic. For bots, AWS WAF Bot Control and the CAPTCHA/challenge actions separate humans from automation. Logs go to CloudWatch Logs, S3, or Kinesis Data Firehose for analysis, and findings can be normalized to OCSF and ingested by Security Lake or a third-party tool.',
+          bullets: [
+            'Managed Rules first, custom rules to fill gaps; order matters because evaluation stops at the first terminating action.',
+            'Deploy new rules in Count mode, review, then promote to Block to avoid blocking legitimate users.',
+            'Rate-based rule = per-IP request throttling; Bot Control + CAPTCHA = automation defense.',
+            'WAF logs can be sent to Firehose/S3 and normalized (OCSF) for centralized analysis.',
+          ],
+          callout: { type: 'tip', text: 'When a question worries about a new WAF rule blocking real users, the answer is to run it in Count mode first and review the logs before enabling Block.' },
+        },
+        {
+          heading: 'Don’t let attackers bypass the edge',
+          body: 'All the edge defense in the world is useless if traffic can hit the origin directly. The exam tests the controls that force traffic through CloudFront and WAF:\n\nOrigin Access Control (OAC) — for an S3 origin, OAC (the successor to Origin Access Identity) lets only CloudFront read the bucket; the bucket itself stays private. For a custom (ALB/EC2) origin, inject a secret custom header at CloudFront and have the origin (or a WAF rule on the ALB) require that header, so requests that skip CloudFront are rejected. Signed URLs and signed cookies restrict access to specific content to authorized users for a limited time. Field-level encryption protects sensitive form fields end-to-end. CloudFront also enforces HTTPS (viewer protocol policy) and modern TLS, and lets you add security response headers (HSTS, CSP) via a response headers policy. S3 CORS configuration governs which web origins a browser may call the bucket from — a frequent source of "why is my cross-origin request blocked" troubleshooting.',
+          bullets: [
+            'S3 origin → OAC + private bucket; custom origin → secret header required at the origin/ALB WAF.',
+            'Signed URLs/cookies = time-limited, per-user access to private content through CloudFront.',
+            'Enforce HTTPS and add HSTS/CSP via CloudFront policies; S3 CORS controls cross-origin browser access.',
+          ],
+          callout: { type: 'warning', text: 'If WAF/Shield protect CloudFront but the ALB or S3 bucket is still publicly reachable, attackers simply skip the edge. Lock the origin to CloudFront with OAC or a required secret header.' },
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 1,
+          question: 'A team must add a new WAF rule to block a suspicious pattern but is worried it will accidentally block legitimate customers. What is the safest rollout?',
+          options: [
+            'Enable the rule in Block mode immediately and watch support tickets',
+            'Deploy the rule in Count mode first, review the matched requests in WAF logs, then switch it to Block',
+            'Apply the rule only to the management account',
+            'Disable all managed rules while testing',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — Count mode records what the rule would match without blocking, so you can validate against real traffic before promoting it to Block and risking false positives.',
+          elaborativePrompt: 'Why does Count mode reduce the risk of a new rule taking down legitimate traffic?',
+        },
+        {
+          afterSection: 2,
+          question: 'An application is fronted by CloudFront with AWS WAF, but attackers are reaching the Application Load Balancer origin directly and bypassing WAF entirely. What best prevents this?',
+          options: [
+            'Increase the WAF rate limit on CloudFront',
+            'Have CloudFront add a secret custom header and configure the ALB (or a WAF on the ALB) to require it, rejecting requests that lack it',
+            'Move the ALB to a private subnet only',
+            'Enable Shield Standard on the ALB',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — a secret header injected by CloudFront and required at the origin ensures only edge-routed traffic is accepted, closing the direct-to-origin bypass.',
+          elaborativePrompt: 'Why does edge protection lose its value if the origin remains directly reachable?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself: a public web app is seeing SQL-injection attempts, a request flood from a handful of IPs, and traffic from countries you do not serve — and you suspect some attackers are hitting the load balancer directly. Walk through which edge control addresses each threat and how you stop the origin bypass.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A company serves a global web application through Amazon CloudFront. It must block OWASP Top 10 attacks, throttle request floods from individual IPs, and ensure no one can reach the origin Application Load Balancer directly. Which combination meets all three requirements?',
+        options: [
+          'Attach security groups to the ALB and enable Shield Standard',
+          'Attach an AWS WAF web ACL (managed Core rule set + a rate-based rule) to CloudFront, and require a secret CloudFront-injected header at the ALB',
+          'Use only CloudFront geo restriction and S3 Object Lock',
+          'Enable AWS Config rules and Amazon Inspector on the ALB',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'AWS WAF managed Core rules cover the OWASP Top 10, a rate-based rule throttles per-IP floods, and a secret header that CloudFront injects (and the ALB requires) forces all traffic through the edge — addressing all three requirements together.',
+          perOption: [
+            'Security groups work at L3/L4 and cannot inspect HTTP for OWASP attacks; Shield Standard does not filter application-layer request content.',
+            'Correct — WAF managed rules + rate-based rule handle L7 attacks and floods, and the required secret header closes the direct-to-origin path.',
+            'Geo restriction and Object Lock address neither SQLi/XSS nor per-IP rate limiting.',
+            'Config and Inspector assess configuration and vulnerabilities; they do not block live malicious HTTP requests.',
+          ],
+        },
+      },
+      videos: [COMPANION_VIDEO],
+    },
+
+    {
+      id: 'd3-s7',
+      number: 7,
+      module: 'Domain 3 · Infrastructure Security',
+      domain: 'd3',
+      weight: '18%',
+      task: 'Task 3.2',
+      title: 'Compute Workload Security — Hardened Images, Patching, Inspector, and Roles',
+      duration: 30,
+      summary: 'Securing compute means hardening what you launch, keeping it patched, scanning it for vulnerabilities, and giving it credentials the right way. This session covers golden AMIs and hardened container images, Patch Manager, Amazon Inspector and GuardDuty runtime protection, agentless access with Session Manager, and the instance-profile/role model — the recurring "how does this workload get its permissions" question.',
+      objectives: [
+        'Build and maintain hardened AMIs and container images with EC2 Image Builder and Systems Manager',
+        'Keep workloads current with Patch Manager and validate continuously with Amazon Inspector',
+        'Choose agentless administrative access with Session Manager and EC2 Instance Connect over SSH bastions',
+        'Assign credentials to compute correctly with instance profiles, service roles, and execution roles',
+      ],
+      preLearningCheck: {
+        question: 'An application on EC2 needs to read from an S3 bucket. What is the most secure way to give the application its AWS credentials?',
+        options: [
+          'Store an IAM user’s access keys in a file on the instance',
+          'Attach an IAM role to the instance via an instance profile so the application uses automatically-rotated temporary credentials',
+          'Hard-code credentials in the application code',
+          'Pass the access keys as environment variables at launch',
+        ],
+        correct: 1,
+        note: 'No pressure — guessing first improves retention. The key idea: an IAM role attached through an instance profile delivers temporary, auto-rotated credentials via the instance metadata service — no long-lived keys to store, leak, or rotate manually.',
+      },
+      sections: [
+        {
+          heading: 'Harden what you launch',
+          body: 'A secure workload starts from a secure image. The exam expects a pipeline, not manual hardening:\n\nEC2 Image Builder automates building, hardening, testing, and distributing golden AMIs and container images on a schedule, applying CIS or STIG hardening components and the latest patches, then publishing a versioned, immutable image. Distributing one approved AMI across the org (and enforcing its use) means every instance starts from a known-good baseline. For containers, build hardened base images, scan them in Amazon ECR, and only promote images that pass.\n\nSystems Manager underpins much of this: State Manager enforces desired configuration (agent installed, baseline applied) and Run Command/Automation apply changes at scale without SSH.',
+          bullets: [
+            'EC2 Image Builder = automated, versioned golden AMIs/container images with CIS/STIG hardening baked in.',
+            'Immutable infrastructure: rebuild from a new hardened image rather than patching long-lived instances in place.',
+            'ECR image scanning gates which container images may be deployed.',
+          ],
+          callout: { type: 'note', text: '"Standardized, automatically rebuilt, hardened images across the organization" → EC2 Image Builder. It replaces hand-maintained AMIs and ad-hoc hardening scripts.' },
+        },
+        {
+          heading: 'Patch, scan, and detect at runtime',
+          body: 'Three distinct jobs the exam keeps separate:\n\nAWS Systems Manager Patch Manager defines patch baselines and patch groups and applies operating-system and application patches on a maintenance-window schedule across EC2 and on-premises servers — this is remediation/keeping current.\n\nAmazon Inspector continuously scans EC2 instances, container images in ECR, and Lambda functions for known CVEs and unintended network reachability, producing prioritized findings — this is vulnerability assessment. It is agentless-capable via the SSM agent and runs automatically as new CVEs are published.\n\nAmazon GuardDuty Runtime Monitoring adds runtime threat detection inside EC2, ECS, and EKS workloads (suspicious process/file/network behavior) — this is active-threat detection at runtime, complementing Inspector’s static CVE view.',
+          bullets: [
+            'Keep software current / apply patches → Patch Manager.',
+            'Find known CVEs and unintended exposure → Amazon Inspector (EC2, ECR, Lambda).',
+            'Detect malicious behavior inside a running workload → GuardDuty Runtime Monitoring.',
+            'CodeGuru Security and Amazon Q Developer shift this left, finding vulnerabilities in code during the pipeline.',
+          ],
+          callout: { type: 'warning', text: 'Don’t conflate Inspector and Patch Manager. Inspector tells you what is vulnerable; Patch Manager fixes it. A question about "identify vulnerabilities" is Inspector; "deploy the patches on a schedule" is Patch Manager.' },
+        },
+        {
+          heading: 'Access without SSH, and credentials done right',
+          body: 'Two recurring patterns:\n\nAdministrative access — prefer AWS Systems Manager Session Manager for shell access: no open inbound port 22, no bastion host, no SSH keys to manage, and every session is logged to CloudWatch Logs/S3 and authorized by IAM. EC2 Instance Connect provides short-lived SSH key push for occasional SSH needs. Both beat a permanently-open bastion.\n\nCredentials for compute — never embed long-lived keys. EC2 uses an instance profile (the container that passes an IAM role to the instance); ECS tasks use a task role; Lambda uses an execution role. Each delivers temporary, rotated credentials scoped to least privilege. For workloads that must call AWS from outside (on-prem/other cloud), IAM Roles Anywhere issues temporary credentials based on X.509 certificates.',
+          bullets: [
+            'Session Manager: no inbound 22, no bastion, IAM-authorized, fully logged — the exam’s preferred admin access.',
+            'EC2 → instance profile role; ECS task → task role; Lambda → execution role. All temporary, all rotated.',
+            'IAM Roles Anywhere = temporary AWS credentials for non-AWS workloads via certificates.',
+          ],
+          callout: { type: 'tip', text: '"Give shell access without opening SSH or running a bastion, and log every session" → Session Manager. "How should this instance/function get AWS permissions" → a role (instance profile / task role / execution role), never stored keys.' },
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 1,
+          question: 'A security team must continuously identify known CVEs in running EC2 instances and in container images stored in Amazon ECR, with findings updated automatically as new CVEs are published. Which service fits?',
+          options: [
+            'AWS Systems Manager Patch Manager',
+            'Amazon Inspector',
+            'AWS Config',
+            'Amazon Macie',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — Amazon Inspector continuously scans EC2, ECR images, and Lambda for known CVEs and network reachability, re-evaluating automatically as the CVE database changes.',
+          elaborativePrompt: 'How do Inspector (find vulnerabilities) and Patch Manager (apply patches) divide the work between them?',
+        },
+        {
+          afterSection: 2,
+          question: 'A company wants administrators to get a shell on private EC2 instances with no open inbound SSH port, no bastion host, IAM-based authorization, and a full audit log of every session. What should they use?',
+          options: [
+            'Open port 22 to the corporate IP range on the security group',
+            'AWS Systems Manager Session Manager',
+            'A public bastion host with SSH key pairs',
+            'EC2 user data that adds SSH keys at boot',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — Session Manager provides IAM-authorized, fully-logged shell access through the SSM agent with no inbound ports and no bastion, eliminating SSH key sprawl.',
+          elaborativePrompt: 'Why is Session Manager more secure and auditable than a traditional SSH bastion?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself: you own a fleet of EC2 instances and some Lambda functions. Walk through how you standardize a hardened image, keep everything patched, continuously find vulnerabilities, give admins shell access without SSH, and provide the application its AWS credentials — naming the AWS service for each.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'An application running on EC2 needs to call Amazon S3 and Amazon DynamoDB. Security policy forbids any long-lived credentials on instances and requires automatic credential rotation. What is the correct approach?',
+        options: [
+          'Create an IAM user, generate access keys, and place them in the application’s config file',
+          'Create an IAM role with least-privilege S3 and DynamoDB permissions and attach it to the instances via an instance profile',
+          'Store access keys in environment variables injected at launch time',
+          'Use the root account’s access keys with a restrictive bucket policy',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'An IAM role attached through an instance profile gives the application temporary, automatically-rotated credentials retrieved from the instance metadata service — no long-lived keys to store or rotate, scoped to least privilege.',
+          perOption: [
+            'Static access keys in a config file are long-lived credentials that can be leaked and must be rotated manually — exactly what the policy forbids.',
+            'Correct — an instance profile delivers a role’s temporary, auto-rotated credentials with least-privilege permissions and nothing stored on disk.',
+            'Injected static keys are still long-lived credentials that violate the no-stored-keys and rotation requirements.',
+            'Using root account keys is a severe violation of root-protection and least-privilege practices.',
+          ],
+        },
+      },
+      videos: [COMPANION_VIDEO],
+    },
+
+    {
+      id: 'd3-s8',
+      number: 8,
+      module: 'Domain 3 · Infrastructure Security',
+      domain: 'd3',
+      weight: '18%',
+      task: 'Task 3.3',
+      title: 'Network Security Controls — Security Groups, NACLs, Network Firewall, and Segmentation',
+      duration: 30,
+      summary: 'The VPC is where most network-security questions live. This session sharpens the controls and the order they apply: stateful security groups versus stateless NACLs, AWS Network Firewall for deep inspection, secure hybrid connectivity, segmentation patterns, and the tools that find unnecessary or unintended access — Network Access Analyzer, Inspector reachability, and Verified Access.',
+      objectives: [
+        'Distinguish stateful security groups from stateless NACLs and apply each correctly',
+        'Add deep traffic inspection and filtering with AWS Network Firewall and DNS Firewall',
+        'Design segmentation — north-south, east-west, and isolated subnets — and secure hybrid connectivity',
+        'Find unnecessary or unintended network access with Network Access Analyzer, Inspector reachability, and VPC Reachability Analyzer',
+      ],
+      preLearningCheck: {
+        question: 'You add an inbound allow rule to a security group but no matching outbound rule. Return traffic for an allowed inbound connection still flows. Why?',
+        options: [
+          'Security groups are stateless, so all traffic is allowed by default',
+          'Security groups are stateful — return traffic for an allowed connection is automatically permitted regardless of outbound rules',
+          'A NACL is overriding the security group',
+          'Outbound rules are ignored entirely',
+        ],
+        correct: 1,
+        note: 'No pressure — guessing first improves retention. The key idea: security groups are stateful. If inbound traffic is allowed, the response is automatically allowed back out (and vice versa). NACLs, by contrast, are stateless and need explicit rules in both directions, including the ephemeral port range for return traffic.',
+      },
+      sections: [
+        {
+          heading: 'Security groups vs NACLs — stateful vs stateless',
+          body: 'This distinction is tested constantly. Get the model exact:\n\nSecurity groups operate at the elastic network interface (instance) level, are stateful (return traffic for an allowed flow is automatically permitted), support allow rules only, and evaluate all rules before deciding. They are your primary instance-level firewall.\n\nNetwork ACLs operate at the subnet level, are stateless (you must allow both the inbound request and the outbound response, including the ephemeral port range), support both allow and deny rules, and evaluate rules in numbered order, stopping at the first match. NACLs are a coarse, subnet-wide backstop — useful for explicitly denying a specific IP/CIDR, which security groups cannot do.',
+          bullets: [
+            'Need to allow traffic and let responses flow automatically → security group (stateful).',
+            'Need to explicitly DENY a specific IP/CIDR at the subnet edge → NACL (only NACLs support deny).',
+            'NACLs are stateless: forgetting the ephemeral-port return rule is a classic "connection hangs" bug.',
+            'A security group can reference another security group as its source — clean for tier-to-tier rules.',
+          ],
+          callout: { type: 'note', text: 'Only NACLs can DENY. If a question requires blocking a specific malicious IP range across a whole subnet, that is a NACL deny rule — a security group can only allow.' },
+          interactive: 'network-control',
+        },
+        {
+          heading: 'Deeper inspection — Network Firewall and DNS Firewall',
+          body: 'Security groups and NACLs filter on IP/port; they cannot inspect deeply or filter by domain. For that:\n\nAWS Network Firewall is a managed, stateful firewall for the VPC supporting deep packet inspection, Suricata-compatible IPS rules, domain-name allow/deny lists, and protocol filtering — deployed in a dedicated firewall subnet and used for centralized egress/ingress filtering across a VPC or via a transit gateway. Route 53 Resolver DNS Firewall blocks DNS resolution of known-malicious or unapproved domains from within the VPC. AWS Firewall Manager centrally manages WAF, Shield Advanced, security groups, Network Firewall, and DNS Firewall policies across all accounts in the organization.',
+          bullets: [
+            'Need IPS / deep packet inspection / domain filtering at the VPC level → AWS Network Firewall.',
+            'Block DNS lookups of malicious domains → Route 53 Resolver DNS Firewall.',
+            'Enforce firewall/WAF/SG policies centrally across the org → AWS Firewall Manager.',
+          ],
+          callout: { type: 'tip', text: 'When the requirement exceeds IP/port filtering — domain-based egress control, intrusion prevention, payload inspection — the answer is AWS Network Firewall (or DNS Firewall for the DNS layer), not a bigger security-group ruleset.' },
+        },
+        {
+          heading: 'Segmentation and secure hybrid connectivity',
+          body: 'Segmentation limits blast radius. North-south (internet ↔ VPC) traffic is controlled at the edge and public subnets; east-west (workload ↔ workload) traffic is controlled with security-group references, separate subnets/VPCs, and a transit gateway with route-table segmentation; the most sensitive tiers sit in isolated subnets with no internet route, reaching AWS services only through VPC endpoints (PrivateLink). For hybrid links: AWS Site-to-Site VPN provides encrypted tunnels over the internet; AWS Direct Connect is a private, dedicated connection (not encrypted by itself — add a VPN or MACsec for encryption); MACsec adds Layer-2 encryption on supported Direct Connect links. AWS Verified Access provides VPN-less, identity- and device-aware access to internal applications, evaluating trust on every request.',
+          bullets: [
+            'Isolated subnet + VPC endpoints = sensitive workloads reach AWS services without any internet path.',
+            'Direct Connect is private but unencrypted — layer a VPN or MACsec for confidentiality.',
+            'Verified Access = zero-trust, per-request, identity/device-aware access to internal apps without a VPN.',
+          ],
+          callout: { type: 'warning', text: 'Direct Connect alone is private but NOT encrypted. If a question requires encryption in transit over the dedicated link, you still need a VPN over Direct Connect or MACsec.' },
+        },
+        {
+          heading: 'Find unnecessary and unintended access',
+          body: 'The exam expects proactive discovery of access you did not intend to grant. VPC Network Access Analyzer evaluates network reachability across your VPCs and reports paths to/from the internet or between segments that violate your defined access scopes. Amazon Inspector network reachability findings flag instances reachable from the internet on open ports. VPC Reachability Analyzer tests whether a specific source can reach a specific destination and pinpoints the blocking (or allowing) component — invaluable for troubleshooting why traffic is or isn’t flowing. Together they answer "is anything exposed that shouldn’t be, and what is allowing it."',
+          bullets: [
+            'Network Access Analyzer = org/VPC-wide "what paths exist that violate my intended access?"',
+            'Reachability Analyzer = point-to-point "can A reach B, and which control decides?"',
+            'Inspector reachability = "which instances are exposed to the internet on which ports?"',
+          ],
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 0,
+          question: 'A security team must block all traffic from a specific malicious /24 IP range to every instance in a subnet, overriding any allow rules. Which control can do this?',
+          options: [
+            'A security group inbound deny rule',
+            'A network ACL deny rule on the subnet',
+            'A route table entry',
+            'A larger security group rule set',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — only NACLs support explicit deny rules and apply at the subnet level, so a deny rule for the CIDR blocks it regardless of security-group allows. Security groups cannot express a deny.',
+          elaborativePrompt: 'Why can’t a security group accomplish an explicit block of a specific IP range?',
+        },
+        {
+          afterSection: 2,
+          question: 'A company connects on-premises to AWS over AWS Direct Connect and must guarantee that traffic on the link is encrypted. Direct Connect alone does not satisfy the auditor. What should they add?',
+          options: [
+            'Nothing — Direct Connect encrypts traffic by default',
+            'A Site-to-Site VPN over the Direct Connect link, or MACsec on a supported connection',
+            'A larger NACL rule set',
+            'Enable S3 encryption',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — Direct Connect is private but not encrypted; running an IPsec VPN over it or enabling MACsec on supported links provides encryption in transit.',
+          elaborativePrompt: 'Why is "private connection" not the same as "encrypted connection" for Direct Connect?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself: you are securing a three-tier VPC with a hybrid link to on-prem. Walk through where you use security groups versus NACLs, when you reach for Network Firewall, how you segment the tiers and isolate the database, how you encrypt the Direct Connect link, and which tool you run to confirm nothing is unintentionally reachable from the internet.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A VPC hosts sensitive workloads that must be able to call Amazon S3 and Amazon DynamoDB but must have no path to or from the internet, and the security team wants to verify continuously that no unintended internet path exists. Which combination meets the requirement?',
+        options: [
+          'Place the workloads in a public subnet with a restrictive security group, and check manually',
+          'Place the workloads in isolated private subnets reaching AWS services through VPC (gateway/interface) endpoints, and run VPC Network Access Analyzer to confirm no internet paths exist',
+          'Use a NAT gateway and rely on Inspector for patching',
+          'Attach an internet gateway and block port 80 with a NACL',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'Isolated private subnets with VPC endpoints let the workloads reach S3 and DynamoDB privately with no internet route at all, and Network Access Analyzer continuously evaluates reachability to prove no unintended internet path exists.',
+          perOption: [
+            'A public subnet gives the workloads an internet path, the opposite of the requirement, and manual checks don’t scale.',
+            'Correct — VPC endpoints provide private service access from isolated subnets, and Network Access Analyzer verifies the absence of internet paths org-wide.',
+            'A NAT gateway creates outbound internet access, which the requirement forbids; Inspector is for vulnerabilities, not network paths.',
+            'Attaching an internet gateway introduces an internet path; a single port block does not isolate the workloads.',
+          ],
+        },
+      },
+      videos: [COMPANION_VIDEO],
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    //  DOMAIN 4 — IDENTITY AND ACCESS MANAGEMENT (20%)
+    // ═══════════════════════════════════════════════════════════════
+
+    {
+      id: 'd4-s9',
+      number: 9,
+      module: 'Domain 4 · Identity and Access Management',
+      domain: 'd4',
+      weight: '20%',
+      task: 'Task 4.1',
+      title: 'Authentication — Identity Center, Cognito, MFA, and Temporary Credentials',
+      duration: 30,
+      summary: 'Authentication answers "who are you" — and the exam draws a hard line between human/workforce identity and application/customer identity. This session covers IAM Identity Center for workforce SSO, Amazon Cognito for application users, MFA and external IdP federation, and how STS issues the temporary credentials that should power almost everything.',
+      objectives: [
+        'Choose IAM Identity Center for workforce access and Amazon Cognito for application/customer users',
+        'Federate with external identity providers using SAML and OIDC, and enforce MFA',
+        'Issue and use temporary credentials with AWS STS, and generate S3 presigned URLs for scoped access',
+        'Troubleshoot authentication failures with CloudTrail, permission sets, and Directory Service',
+      ],
+      preLearningCheck: {
+        question: 'A company with 2,000 employees wants single sign-on to multiple AWS accounts using their existing corporate identity provider, with centrally managed permissions per account. Which service is purpose-built for this?',
+        options: [
+          'Amazon Cognito user pools',
+          'AWS IAM Identity Center (successor to AWS SSO), federated to the corporate IdP, using permission sets',
+          'An IAM user for each employee in every account',
+          'Amazon Verified Permissions',
+        ],
+        correct: 1,
+        note: 'No pressure — guessing first improves retention. The key idea: IAM Identity Center is the workforce SSO service — it federates to a corporate IdP (or its own directory) and assigns permission sets across many accounts in the org. Cognito is for application/customer users, not workforce console access.',
+      },
+      sections: [
+        {
+          heading: 'Workforce identity vs application identity',
+          body: 'The single most important authentication distinction on the exam:\n\nAWS IAM Identity Center — workforce/human access to AWS accounts and applications. It connects to an external IdP (Okta, Entra ID, Ping) via SAML 2.0 or to its own built-in directory or AWS Managed Microsoft AD, then grants access across all org accounts using permission sets (reusable collections of policies that become IAM roles in each account). Users get one sign-on portal and short-term credentials.\n\nAmazon Cognito — application/customer identity. User pools provide sign-up/sign-in and a user directory for your app (with OIDC/OAuth2, hosted UI, MFA, and social/enterprise federation); identity pools (federated identities) exchange a verified identity for temporary AWS credentials via STS so the app can call AWS services directly.\n\nIAM users/groups still exist but AWS steers you away from per-person IAM users toward federation and Identity Center.',
+          bullets: [
+            'Employees signing in to AWS accounts/CLI → IAM Identity Center + permission sets.',
+            'Customers signing in to your web/mobile app → Amazon Cognito user pool (authN) + identity pool (temporary AWS creds).',
+            'Permission set = the reusable role definition Identity Center deploys into each assigned account.',
+          ],
+          callout: { type: 'note', text: 'Workforce = IAM Identity Center. App/customer users = Cognito. Mixing these up is a top distractor. "Employees, SSO, multiple accounts" → Identity Center; "millions of app sign-ins, social login" → Cognito.' },
+        },
+        {
+          heading: 'Federation and MFA',
+          body: 'Federation lets users keep one identity. SAML 2.0 federation maps an external IdP’s assertions to IAM roles (or Identity Center permission sets) — used for enterprise workforce SSO. OIDC federation (web identity) is common for app and CI/CD use cases, including GitHub Actions assuming a role without stored keys. AWS Directory Service (AWS Managed Microsoft AD) provides a managed AD for workloads that need real Active Directory, and can be the identity source for Identity Center. MFA should be enforced everywhere it matters: on the root user (hardware MFA, then lock the credentials away), on privileged roles via an aws:MultiFactorAuthPresent condition in policies, and within Identity Center and Cognito sign-in flows.',
+          bullets: [
+            'SAML 2.0 → enterprise workforce SSO to roles/permission sets; OIDC → web/app and pipeline federation.',
+            'Enforce MFA on root and privileged actions; policies can require aws:MultiFactorAuthPresent = true.',
+            'AWS Managed Microsoft AD (Directory Service) backs workloads that need genuine Active Directory.',
+          ],
+          callout: { type: 'tip', text: 'GitHub Actions / external CI calling AWS "without stored long-lived keys" → OIDC federation to an IAM role. Enterprise employees → SAML to Identity Center.' },
+        },
+        {
+          heading: 'Temporary credentials with STS and presigned URLs',
+          body: 'AWS Security Token Service (STS) issues short-lived credentials and is the engine behind roles, federation, and Identity Center. AssumeRole returns temporary credentials for a role (optionally with an ExternalId for third-party cross-account access, or a session policy to further scope down); AssumeRoleWithSAML and AssumeRoleWithWebIdentity do the same from federated identities. Temporary credentials are the default-correct answer for almost any "how should X get access" question because they expire automatically and avoid stored secrets. For object-level sharing, an S3 presigned URL grants time-limited access to a specific object using the signer’s permissions — ideal for letting a user upload or download one object without giving them broader S3 access or AWS credentials.',
+          bullets: [
+            'Prefer STS temporary credentials (AssumeRole / federation) over any long-lived access key.',
+            'Cross-account third-party access → role with an ExternalId to prevent the confused-deputy problem.',
+            'Share one object briefly → S3 presigned URL (time-limited, scoped to that object, no AWS account needed).',
+          ],
+        },
+        {
+          heading: 'Troubleshooting authentication',
+          body: 'When sign-in or assume-role fails, work the evidence. CloudTrail records every authentication and AssumeRole event with the error — start there to see whether the request even arrived and why it was denied. For Identity Center issues, check that the user is assigned the permission set for that account and that the IdP attribute mapping is correct. For Cognito, check the app client settings, the user pool/identity pool trust, and token expiry. For AD-backed scenarios, confirm the Directory Service trust and that the user is in the right group. A federation failure is often a trust-policy or attribute-mapping mismatch rather than a permissions problem.',
+          callout: { type: 'warning', text: 'A "user can authenticate but can’t access the account" problem in Identity Center is usually a missing permission-set assignment or wrong attribute mapping — not a broken IdP. CloudTrail tells you which.' },
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 0,
+          question: 'A SaaS company needs sign-up, sign-in, social login, and a user directory for the millions of consumers using its mobile app, plus a way to grant those users temporary AWS credentials to upload to S3. Which service fits?',
+          options: [
+            'AWS IAM Identity Center',
+            'Amazon Cognito (user pool for sign-in, identity pool for temporary AWS credentials)',
+            'IAM users created per customer',
+            'AWS Directory Service',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — Cognito user pools handle consumer authentication and social federation, and identity pools exchange the verified identity for temporary AWS credentials via STS. Identity Center is for workforce access, not app customers.',
+          elaborativePrompt: 'Why is Cognito, not IAM Identity Center, the right choice for application customers?',
+        },
+        {
+          afterSection: 2,
+          question: 'A user must be able to download one specific private S3 object for the next 15 minutes, without an AWS account or any broader S3 permissions. What is the simplest secure mechanism?',
+          options: [
+            'Make the bucket public temporarily',
+            'Generate an S3 presigned URL scoped to that object with a 15-minute expiry',
+            'Create an IAM user with S3FullAccess',
+            'Email the object’s access keys',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — a presigned URL grants time-limited access to exactly one object using the signer’s permissions, with no AWS account or extra IAM grant for the recipient.',
+          elaborativePrompt: 'How does a presigned URL limit exposure compared with broadening the recipient’s IAM permissions?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself: a company has 1,500 employees who need SSO into 30 AWS accounts, a customer-facing app with millions of users who sign in with Google, a CI pipeline in GitHub that deploys to AWS, and a need to let a partner download a single report file. Walk through which authentication service and credential mechanism you use for each.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A company uses Okta as its corporate identity provider and wants employees to sign in once and access roles across all 25 of its AWS accounts, with permissions managed centrally and no per-account IAM users. Which solution best meets this?',
+        options: [
+          'Create matching IAM users in every account and sync passwords from Okta',
+          'Configure AWS IAM Identity Center with Okta as the external SAML identity source and assign permission sets to users/groups across the accounts',
+          'Use Amazon Cognito user pools federated to Okta for console access',
+          'Share a single cross-account IAM role’s access keys with all employees',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'IAM Identity Center federates to Okta via SAML and uses permission sets to grant centrally-managed, role-based access across all org accounts with a single sign-on — no per-account IAM users and no long-lived keys.',
+          perOption: [
+            'Per-account IAM users with synced passwords is unscalable, hard to audit, and the opposite of centralized federation.',
+            'Correct — Identity Center + Okta (SAML) + permission sets delivers central, role-based SSO across every account.',
+            'Cognito is for application/customer identities, not workforce console access across many AWS accounts.',
+            'Sharing a role’s access keys is insecure, non-auditable per user, and relies on long-lived credentials.',
+          ],
+        },
+      },
+      videos: [COMPANION_VIDEO],
+    },
+
+    {
+      id: 'd4-s10',
+      number: 10,
+      module: 'Domain 4 · Identity and Access Management',
+      domain: 'd4',
+      weight: '20%',
+      task: 'Task 4.2',
+      title: 'Authorization — Policy Evaluation, Least Privilege, Boundaries, and ABAC',
+      duration: 30,
+      summary: 'Authorization answers "what are you allowed to do" — and Domain 4 is the largest on the exam, with policy evaluation at its heart. This session locks in the IAM evaluation logic (explicit deny always wins), the policy types and how they combine, permission boundaries and SCPs, ABAC with tags, and the analysis tools that explain and fix unintended access.',
+      objectives: [
+        'Apply the IAM policy evaluation logic — explicit deny > explicit allow > implicit deny — across identity, resource, SCP, boundary, and session policies',
+        'Write least-privilege policies and constrain maximum permissions with permission boundaries and SCPs',
+        'Design ABAC with tags and choose between ABAC and RBAC',
+        'Diagnose and fix authorization failures with IAM Access Analyzer and the policy simulator',
+      ],
+      preLearningCheck: {
+        question: 'An identity-based policy allows s3:DeleteObject, but a Service Control Policy on the account explicitly denies s3:DeleteObject. Can the user delete the object?',
+        options: [
+          'Yes, because the identity policy grants it',
+          'No — an explicit deny anywhere in the evaluation (including an SCP) always overrides any allow',
+          'Only if they have MFA',
+          'Yes, because SCPs do not affect IAM users',
+        ],
+        correct: 1,
+        note: 'No pressure — guessing first improves retention. The key idea: explicit deny always wins. An SCP that denies an action removes it from the maximum permission set for the entire account, so no identity policy can grant it back. This single rule resolves a large share of Domain 4 questions.',
+      },
+      sections: [
+        {
+          heading: 'The evaluation logic — explicit deny always wins',
+          body: 'Every authorization question reduces to one decision flow. A request is allowed only if it survives every applicable policy type:\n\n1. Is there an explicit DENY in any policy (identity, resource, SCP, permission boundary, session policy)? If yes → denied, full stop.\n2. For cross-account, an allow is needed in BOTH the resource policy and the caller’s identity policy.\n3. Within an account, an explicit ALLOW in an identity or resource policy is required.\n4. SCPs and permission boundaries set the MAXIMUM permissions — they don’t grant anything; a permission must be allowed by an identity/resource policy AND not be excluded by any boundary/SCP.\n5. Default is implicit deny.\n\nThe practical hierarchy: explicit deny > (boundary/SCP must permit) > explicit allow > implicit deny.',
+          bullets: [
+            'Explicit deny in ANY policy type beats every allow — memorize this.',
+            'SCPs and permission boundaries are guardrails (max permissions), never grants.',
+            'Effective permissions = (what identity/resource policies allow) ∩ (what every boundary/SCP permits), minus any explicit deny.',
+            'Cross-account access needs an allow on both sides: the resource policy and the principal’s identity policy.',
+          ],
+          callout: { type: 'note', text: 'If a permission seems granted but the action still fails, look for an explicit deny or a boundary/SCP that doesn’t include it. "Allowed in the IAM policy but still denied" almost always means an SCP, permission boundary, or resource-policy deny.' },
+          interactive: 'policy-eval',
+        },
+        {
+          heading: 'The policy types and how they combine',
+          body: 'Six policy types appear on the exam, each with a job:\n\nIdentity-based policies attach to a user, group, or role and grant permissions to that principal. Resource-based policies attach to a resource (S3 bucket policy, KMS key policy, SQS, Lambda) and grant a principal access to that resource — and enable cross-account access without assuming a role. Permission boundaries cap the maximum permissions an identity can have (used to safely delegate IAM administration). Service Control Policies (and the newer Resource Control Policies) set the maximum permissions for accounts/OUs in an organization. Session policies are passed at AssumeRole time to further scope a session. ACLs (legacy S3/cross-account) are a coarse, mostly-discouraged option.',
+          bullets: [
+            'Resource-based policy (e.g. S3 bucket policy, KMS key policy) is how you grant cross-account access without role assumption.',
+            'Permission boundary = a ceiling on an identity, used so a junior admin can create roles but never exceed the boundary.',
+            'SCP/RCP = org-wide ceilings on accounts/OUs; they never grant, only restrict.',
+            'KMS key policy is the root of trust for a key — IAM alone cannot grant key use unless the key policy allows it.',
+          ],
+          callout: { type: 'warning', text: 'A KMS key’s key policy must allow access — an identity policy granting kms:Decrypt is not enough on its own unless the key policy delegates to IAM. This trips up many "why can’t this role decrypt" questions.' },
+        },
+        {
+          heading: 'Least privilege, boundaries, ABAC vs RBAC',
+          body: 'AWS wants the minimum permissions necessary. Start from zero and add only what is needed; use IAM Access Analyzer policy generation to build a policy from observed CloudTrail activity. Permission boundaries let you delegate role/user creation safely — the created principal can never exceed the boundary even if its policy says more. For scaling permissions, contrast two models: RBAC grants permissions by role/job function (predefined policies per role) and works well when roles are stable; ABAC (attribute-based access control) grants based on tags — a policy says "allow access to resources whose Project tag matches the principal’s Project tag," so you add new projects/teams without writing new policies. ABAC scales better in large, fast-changing orgs; RBAC is simpler when the set of roles is small and fixed. IAM Roles Anywhere and IAM path-based organization help structure principals at scale.',
+          bullets: [
+            'Generate least-privilege policies from real usage with IAM Access Analyzer policy generation.',
+            'Permission boundary = safe delegation of IAM admin; the principal can’t exceed the ceiling.',
+            'ABAC (tag-matching policies) scales to many teams/projects without new policies; RBAC fits a small, stable set of roles.',
+          ],
+          callout: { type: 'tip', text: 'When a question says "grant access that automatically scales as new projects/teams are added without writing new policies," that is ABAC — tag-based conditions like aws:PrincipalTag matching aws:ResourceTag.' },
+        },
+        {
+          heading: 'Analyze and fix unintended access',
+          body: 'The exam expects you to prove and repair access. IAM Access Analyzer identifies resources (S3 buckets, roles, KMS keys, etc.) shared with external principals — surfacing unintended public or cross-account exposure — and its unused-access analysis flags unused roles/permissions to right-size them. The IAM policy simulator evaluates whether a given policy set would allow or deny a specific action, so you can test before deploying. Last-accessed information (service and action last-accessed data) shows which permissions a principal actually uses, guiding removal of the rest. Combined, these let you detect over-permissioning, simulate the fix, and tighten to least privilege.',
+          bullets: [
+            'Find resources exposed externally / publicly → IAM Access Analyzer (external-access findings).',
+            'Test whether a policy allows/denies an action before deploying → IAM policy simulator.',
+            'Right-size permissions → last-accessed data + Access Analyzer unused-access findings.',
+          ],
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 0,
+          question: 'A role has an identity policy allowing ec2:* and the account’s SCP allows ec2:Describe* only. A resource has no relevant policy. Can the role call ec2:TerminateInstances?',
+          options: [
+            'Yes, the identity policy allows ec2:*',
+            'No — the SCP caps the account at ec2:Describe*, so TerminateInstances is outside the maximum permissions and is denied',
+            'Yes, if the user has MFA',
+            'Only in the management account',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — an SCP sets the maximum permissions for the account. Even though the identity policy allows ec2:*, the effective permission is the intersection with the SCP, which permits only ec2:Describe*. TerminateInstances is excluded.',
+          elaborativePrompt: 'Why does the SCP limit the result even though the identity policy is broader?',
+        },
+        {
+          afterSection: 3,
+          question: 'A security team must find every S3 bucket and IAM role in the account that is accessible by principals outside the organization, to remediate unintended sharing. Which tool is purpose-built for this?',
+          options: [
+            'IAM policy simulator',
+            'IAM Access Analyzer (external-access findings)',
+            'AWS Config rules only',
+            'Amazon Inspector',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — IAM Access Analyzer continuously analyzes resource policies and reports resources shared with external/public principals, exactly the unintended-exposure use case. The simulator tests a specific request rather than discovering external exposure.',
+          elaborativePrompt: 'How does Access Analyzer’s job differ from the policy simulator’s job?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself: a role’s IAM policy clearly allows an action, yet the action is denied. Walk through every place a deny or a missing ceiling could come from — explicit deny, SCP/RCP, permission boundary, session policy, resource-policy or KMS key-policy gap, cross-account both-sides rule — and which tool you would use to confirm the cause and then prove the fix.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A developer’s IAM role has a policy that allows s3:GetObject on a bucket, but every GetObject request is denied. The bucket is in the same account and has a bucket policy with an explicit Deny for any request where aws:SecureTransport is false. The developer’s tool is calling over HTTP. Why is the request denied, and what is the fix?',
+        options: [
+          'The identity policy is wrong; add s3:* to fix it',
+          'The bucket policy’s explicit deny (non-TLS requests) overrides the identity allow; the fix is to call S3 over HTTPS',
+          'SCPs always block S3; remove the SCP',
+          'The role needs MFA to read objects',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'An explicit deny always overrides an allow. The bucket policy denies any request not using TLS (aws:SecureTransport=false), so HTTP requests are denied regardless of the identity allow. Switching the client to HTTPS satisfies the condition and the request succeeds.',
+          perOption: [
+            'Broadening the identity policy to s3:* changes nothing — the explicit deny still wins, and it violates least privilege.',
+            'Correct — the explicit deny on non-TLS requests overrides the allow; calling over HTTPS makes aws:SecureTransport true and the request is permitted.',
+            'There is no SCP described here; the deny comes from the bucket policy’s TLS condition.',
+            'The deny is conditioned on transport security, not MFA; adding MFA would not satisfy aws:SecureTransport.',
+          ],
+        },
+      },
+      videos: [COMPANION_VIDEO],
+    },
+
   ],
 }
 
