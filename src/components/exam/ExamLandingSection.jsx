@@ -7,18 +7,18 @@ import {
 const TEAL = '#00D4AA'
 
 const glassCard = {
-  background: 'rgba(255,255,255,0.08)',
-  backdropFilter: 'blur(20px)',
+  background: '#fff',
   borderRadius: '1rem',
-  border: '1px solid rgba(255,255,255,0.15)',
+  border: '1px solid #e5e7eb',
+  boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
   padding: '1.5rem',
 }
 
 const statItem = {
-  background: 'rgba(255,255,255,0.06)',
+  background: '#f9fafb',
   borderRadius: '0.75rem',
   padding: '1rem 1.25rem',
-  border: '1px solid rgba(255,255,255,0.1)',
+  border: '1px solid #f3f4f6',
   display: 'flex',
   flexDirection: 'column',
   gap: '0.25rem',
@@ -38,14 +38,14 @@ const statLabel = {
 const statValue = {
   fontSize: '0.9375rem',
   fontWeight: '500',
-  color: 'rgba(255,255,255,0.9)',
+  color: '#374151',
   lineHeight: '1.4',
 }
 
 const sectionHeading = {
   fontSize: '1.125rem',
   fontWeight: '700',
-  color: 'white',
+  color: '#0A2540',
   marginBottom: '1rem',
   display: 'flex',
   alignItems: 'center',
@@ -57,7 +57,7 @@ function FAQItem({ question, answer }) {
 
   return (
     <div style={{
-      borderBottom: '1px solid rgba(255,255,255,0.08)',
+      borderBottom: '1px solid #f3f4f6',
       paddingBottom: open ? '1rem' : '0',
     }}>
       <button
@@ -75,7 +75,7 @@ function FAQItem({ question, answer }) {
           gap: '1rem',
         }}
       >
-        <span style={{ fontSize: '0.9375rem', fontWeight: '600', color: 'rgba(255,255,255,0.9)', lineHeight: '1.4' }}>
+        <span style={{ fontSize: '0.9375rem', fontWeight: '600', color: '#0A2540', lineHeight: '1.4' }}>
           {question}
         </span>
         <span style={{
@@ -90,7 +90,7 @@ function FAQItem({ question, answer }) {
         </span>
       </button>
       {open && (
-        <p style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.7)', lineHeight: '1.7', paddingBottom: '0.5rem' }}>
+        <p style={{ fontSize: '0.875rem', color: '#6b7280', lineHeight: '1.7', paddingBottom: '0.5rem' }}>
           {answer}
         </p>
       )}
@@ -138,13 +138,13 @@ function ExamLandingSection({ landing }) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          background: 'rgba(255,255,255,0.08)',
-          backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255,255,255,0.15)',
+          background: '#fff',
+          border: '1px solid #e5e7eb',
+          boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
           borderRadius: expanded ? '1rem 1rem 0 0' : '1rem',
           padding: '1rem 1.25rem',
           cursor: 'pointer',
-          color: 'white',
+          color: '#0A2540',
           marginBottom: expanded ? '0' : '0',
           transition: 'border-radius 0.2s',
         }}
@@ -176,8 +176,8 @@ function ExamLandingSection({ landing }) {
       {/* Collapsible Content */}
       {expanded && (
         <div style={{
-          background: 'rgba(255,255,255,0.04)',
-          border: '1px solid rgba(255,255,255,0.15)',
+          background: '#f9fafb',
+          border: '1px solid #e5e7eb',
           borderTop: 'none',
           borderRadius: '0 0 1rem 1rem',
           padding: '1.25rem',
@@ -201,7 +201,7 @@ function ExamLandingSection({ landing }) {
             </p>
           )}
           {overview && (
-            <p style={{ fontSize: '0.9375rem', color: 'rgba(255,255,255,0.8)', lineHeight: '1.7' }}>
+            <p style={{ fontSize: '0.9375rem', color: '#4b5563', lineHeight: '1.7' }}>
               {overview}
             </p>
           )}
@@ -261,7 +261,7 @@ function ExamLandingSection({ landing }) {
                     }}>
                       ✓
                     </span>
-                    <span style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.8)', lineHeight: '1.6' }}>
+                    <span style={{ fontSize: '0.875rem', color: '#4b5563', lineHeight: '1.6' }}>
                       {reason}
                     </span>
                   </li>
@@ -275,7 +275,7 @@ function ExamLandingSection({ landing }) {
               <h3 style={sectionHeading}>
                 <User size={20} color={TEAL} /> Who Should Take This?
               </h3>
-              <p style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.8)', lineHeight: '1.7' }}>
+              <p style={{ fontSize: '0.875rem', color: '#4b5563', lineHeight: '1.7' }}>
                 {who_should_take}
               </p>
             </div>

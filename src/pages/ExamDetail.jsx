@@ -278,24 +278,24 @@ function ExamDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-primary">
+    <div className="min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto px-4 py-4 sm:p-6">
 
         {/* Back button */}
-        <BackLink to="/dashboard" label="Dashboard" tone="dark" className="mb-4 sm:mb-6" />
+        <BackLink to="/dashboard" label="Dashboard" tone="light" className="mb-4 sm:mb-6" />
 
         {/* Resume an unfinished practice exam */}
         {inProgressExam && (
           <button
             onClick={() => navigate(`/exam/${slug}/take?set=${inProgressExam.questionSetId}`)}
-            className="w-full mb-4 sm:mb-6 flex items-center gap-3 sm:gap-4 text-left bg-[#00D4AA]/15 hover:bg-[#00D4AA]/25 border border-[#00D4AA]/40 rounded-2xl p-4 sm:p-5 transition-all duration-200 cursor-pointer"
+            className="w-full mb-4 sm:mb-6 flex items-center gap-3 sm:gap-4 text-left bg-[#00D4AA]/10 hover:bg-[#00D4AA]/15 border border-[#00D4AA]/30 rounded-2xl p-4 sm:p-5 transition-all duration-200 cursor-pointer"
           >
-            <div className="w-11 h-11 rounded-xl bg-[#00D4AA]/25 flex items-center justify-center shrink-0">
-              <PlayCircle className="w-6 h-6 text-[#00D4AA]" />
+            <div className="w-11 h-11 rounded-xl bg-[#00D4AA]/15 flex items-center justify-center shrink-0">
+              <PlayCircle className="w-6 h-6 text-[#00A884]" />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-white font-bold text-[0.9375rem]">Resume your practice exam</div>
-              <div className="text-white/70 text-[0.8125rem] truncate">
+              <div className="text-[#0A2540] font-bold text-[0.9375rem]">Resume your practice exam</div>
+              <div className="text-gray-500 text-[0.8125rem] truncate">
                 {inProgressExam.setName}
                 {inProgressExam.questionCount > 0 && ` · ${inProgressExam.answeredCount}/${inProgressExam.questionCount} answered`}
               </div>
@@ -331,10 +331,10 @@ function ExamDetail() {
 
         {/* Prep Readiness — only for exams with a guided session course */}
         {course && user && (
-          <div className="mt-6 bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 overflow-hidden">
+          <div className="mt-6 bg-white rounded-2xl border border-gray-200 shadow-[0_1px_4px_rgba(0,0,0,0.06)] overflow-hidden">
             <div className="p-5 sm:p-6">
               <div className="flex items-center justify-between gap-3 mb-5 flex-wrap">
-                <h2 className="text-white font-bold text-lg inline-flex items-center gap-2">
+                <h2 className="text-[#0A2540] font-bold text-lg inline-flex items-center gap-2">
                   <Target className="w-5 h-5 text-[#00D4AA]" /> Your Exam Prep
                 </h2>
                 <span
@@ -348,39 +348,39 @@ function ExamDetail() {
               {/* Three stats */}
               <div className="grid gap-3 sm:gap-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 160px), 1fr))' }}>
                 {/* Study */}
-                <div className="bg-white/[0.06] rounded-xl p-4 border border-white/10">
+                <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
                   <div className="text-[0.6875rem] font-semibold uppercase tracking-[0.05em] text-[#00D4AA] mb-1.5 inline-flex items-center gap-1.5">
                     <BookOpen className="w-3.5 h-3.5" /> Study Sessions
                   </div>
-                  <div className="text-white font-extrabold text-2xl tabular-nums">
-                    {studyStats.totalDone}<span className="text-white/40 text-base font-bold"> / {studyStats.totalSessions}</span>
+                  <div className="text-[#0A2540] font-extrabold text-2xl tabular-nums">
+                    {studyStats.totalDone}<span className="text-gray-300 text-base font-bold"> / {studyStats.totalSessions}</span>
                   </div>
-                  <div className="mt-2 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                  <div className="mt-2 h-1.5 bg-gray-200 rounded-full overflow-hidden">
                     <div className="h-full bg-[#00D4AA] rounded-full transition-all duration-500" style={{ width: `${studyStats.totalSessions ? (studyStats.totalDone / studyStats.totalSessions) * 100 : 0}%` }} />
                   </div>
                 </div>
 
                 {/* Practice attempts */}
-                <div className="bg-white/[0.06] rounded-xl p-4 border border-white/10">
+                <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
                   <div className="text-[0.6875rem] font-semibold uppercase tracking-[0.05em] text-[#00D4AA] mb-1.5 inline-flex items-center gap-1.5">
                     <BarChart2 className="w-3.5 h-3.5" /> Practice Attempts
                   </div>
-                  <div className="text-white font-extrabold text-2xl tabular-nums">{practiceStats.attempts}</div>
-                  <div className="text-white/55 text-[0.75rem] mt-2">
+                  <div className="text-[#0A2540] font-extrabold text-2xl tabular-nums">{practiceStats.attempts}</div>
+                  <div className="text-gray-500 text-[0.75rem] mt-2">
                     {practiceStats.best != null ? `Best score ${practiceStats.best}%` : 'No attempts yet'}
                   </div>
                 </div>
 
                 {/* Best score vs pass line */}
-                <div className="bg-white/[0.06] rounded-xl p-4 border border-white/10">
+                <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
                   <div className="text-[0.6875rem] font-semibold uppercase tracking-[0.05em] text-[#00D4AA] mb-1.5 inline-flex items-center gap-1.5">
                     <Target className="w-3.5 h-3.5" /> Best vs Pass
                   </div>
-                  <div className="text-white font-extrabold text-2xl tabular-nums">
+                  <div className="text-[#0A2540] font-extrabold text-2xl tabular-nums">
                     {practiceStats.best != null ? `${practiceStats.best}%` : '—'}
-                    <span className="text-white/40 text-base font-bold"> / {passThreshold}%</span>
+                    <span className="text-gray-300 text-base font-bold"> / {passThreshold}%</span>
                   </div>
-                  <div className="mt-2 h-1.5 bg-white/10 rounded-full overflow-hidden relative">
+                  <div className="mt-2 h-1.5 bg-gray-200 rounded-full overflow-hidden relative">
                     {practiceStats.best != null && (
                       <div
                         className="h-full rounded-full transition-all duration-500"
@@ -394,11 +394,11 @@ function ExamDetail() {
 
             {/* Recommended next action */}
             {nextAction && (
-              <div className="border-t border-white/10 bg-[#00D4AA]/[0.07] p-5 sm:p-6 flex items-center gap-4 flex-wrap">
-                <Sparkles className="w-5 h-5 text-[#00D4AA] shrink-0" />
+              <div className="border-t border-gray-100 bg-[#00D4AA]/[0.06] p-5 sm:p-6 flex items-center gap-4 flex-wrap">
+                <Sparkles className="w-5 h-5 text-[#00A884] shrink-0" />
                 <div className="flex-1 min-w-[180px]">
-                  <div className="text-white font-bold text-[0.9375rem]">{nextAction.title}</div>
-                  <div className="text-white/65 text-[0.8125rem]">{nextAction.sub}</div>
+                  <div className="text-[#0A2540] font-bold text-[0.9375rem]">{nextAction.title}</div>
+                  <div className="text-gray-500 text-[0.8125rem]">{nextAction.sub}</div>
                 </div>
                 <Button variant="primary" onClick={nextAction.onClick} className="shadow-teal gap-1.5 shrink-0">
                   {nextAction.label} <ArrowRight className="w-4 h-4" />
@@ -410,7 +410,7 @@ function ExamDetail() {
 
         {/* Earn your Proficiency credential */}
         {course && user && program && (
-          <div className="mt-6 bg-white/95 rounded-2xl border border-white/20 overflow-hidden p-5 sm:p-6">
+          <div className="mt-6 bg-white rounded-2xl border border-gray-200 shadow-[0_1px_4px_rgba(0,0,0,0.06)] overflow-hidden p-5 sm:p-6">
             <div className="grid gap-6 items-start" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))' }}>
               <CertificateCard
                 program={program}
@@ -457,13 +457,13 @@ function ExamDetail() {
         <ExamLandingSection landing={exam.landing_content} />
 
         {/* Study Material — a first-class offering, co-equal with the practice exams */}
-        <h2 className="section-title mt-8">Study Material</h2>
+        <h2 className="section-title mt-8 !text-[#0A2540]">Study Material</h2>
         {course && studyStats ? (
-          <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 p-5 sm:p-6">
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-[0_1px_4px_rgba(0,0,0,0.06)] p-5 sm:p-6">
             <div className="flex items-start justify-between gap-3 mb-5 flex-wrap">
               <div className="min-w-0">
-                <h3 className="text-white font-bold text-base">{course.title}</h3>
-                <p className="text-white/60 text-[0.8125rem] mt-0.5">{course.subtitle}</p>
+                <h3 className="text-[#0A2540] font-bold text-base">{course.title}</h3>
+                <p className="text-gray-500 text-[0.8125rem] mt-0.5">{course.subtitle}</p>
               </div>
               {hasAccess ? (
                 <span className="px-3 py-1 bg-[#00D4AA]/20 text-[#00D4AA] rounded-lg text-sm font-semibold shrink-0">
@@ -484,20 +484,20 @@ function ExamDetail() {
                     <div
                       className="w-5 h-5 rounded-full shrink-0 flex items-center justify-center border"
                       style={{
-                        background: complete ? '#10b981' : 'rgba(255,255,255,0.06)',
-                        borderColor: complete ? '#10b981' : 'rgba(255,255,255,0.2)',
+                        background: complete ? '#10b981' : '#f3f4f6',
+                        borderColor: complete ? '#10b981' : '#d1d5db',
                       }}
                     >
                       {complete && <CheckCircle2 className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-baseline gap-2 mb-1">
-                        <span className="text-white/85 text-[0.8125rem] truncate">
+                        <span className="text-gray-700 text-[0.8125rem] truncate">
                           {d.label}{d.weight && d.weight !== '—' ? ` · ${d.weight}` : ''}
                         </span>
-                        <span className="text-white/50 text-[0.75rem] tabular-nums shrink-0">{d.done}/{d.total}</span>
+                        <span className="text-gray-400 text-[0.75rem] tabular-nums shrink-0">{d.done}/{d.total}</span>
                       </div>
-                      <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                      <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
                         <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: complete ? '#10b981' : '#00D4AA' }} />
                       </div>
                     </div>
@@ -512,7 +512,7 @@ function ExamDetail() {
                 : studyStats.allDone ? 'Review Study Material →' : 'Continue Studying →'}
             </button>
             {!hasAccess && (
-              <p className="text-white/55 text-[0.75rem] text-center mt-2.5">
+              <p className="text-gray-500 text-[0.75rem] text-center mt-2.5">
                 First domain free · Subscribe to unlock the full course
               </p>
             )}
@@ -546,7 +546,7 @@ function ExamDetail() {
                 {hasAccess ? 'Continue Studying →' : 'Start Free Preview →'}
               </button>
               {!hasAccess && (
-                <p className="text-white/55 text-[0.75rem] text-center mt-2.5">
+                <p className="text-gray-500 text-[0.75rem] text-center mt-2.5">
                   First domain free · Subscribe to unlock the full course
                 </p>
               )}
@@ -555,17 +555,17 @@ function ExamDetail() {
         )}
 
         {/* Question Sets */}
-        <h2 className="section-title mt-8">Question Sets</h2>
+        <h2 className="section-title mt-8 !text-[#0A2540]">Question Sets</h2>
         <div className="question-sets-grid">
           {loadingQuestionSets ? (
             <div className="col-span-full empty-state">
               <div>Loading question sets...</div>
             </div>
           ) : paidSets.length > 0 && !freeSet && !hasAccess ? (
-            <div className="col-span-full bg-white/[0.08] backdrop-blur-xl rounded-2xl p-10 border border-white/15 text-center">
-              <div className="mb-4 flex justify-center"><Lock className="w-10 h-10 text-white/60" /></div>
-              <h3 className="text-xl font-bold text-white mb-2">Subscribe to Access Question Sets</h3>
-              <p className="text-white/70 text-[0.9375rem] mb-6 max-w-[400px] mx-auto">
+            <div className="col-span-full bg-white rounded-2xl p-10 border border-gray-200 shadow-[0_1px_4px_rgba(0,0,0,0.06)] text-center">
+              <div className="mb-4 flex justify-center"><Lock className="w-10 h-10 text-gray-300" /></div>
+              <h3 className="text-xl font-bold text-[#0A2540] mb-2">Subscribe to Access Question Sets</h3>
+              <p className="text-gray-500 text-[0.9375rem] mb-6 max-w-[400px] mx-auto">
                 Get full access to all practice exams and question sets with an active subscription.
               </p>
               <Button
@@ -632,7 +632,8 @@ function ExamDetail() {
 
         {/* Enrollment CTA */}
         {paidSets.length > 0 && !hasAccess && (
-          <div className="mt-12 bg-white/10 backdrop-blur-xl rounded-2xl p-8 border border-white/20 text-center">
+          <div className="mt-12 rounded-2xl p-8 text-center border border-white/10"
+               style={{ background: 'linear-gradient(135deg, #0A2540 0%, #1A3B5C 100%)', boxShadow: '0 4px 24px rgba(10,37,64,0.12)' }}>
             <h3 className="text-2xl font-bold text-white mb-4">Get Full Access</h3>
             <p className="text-white/80 text-base mb-6">
               Subscribe to unlock all {paidSets.length} question sets and every exam on the platform. Plans start at $5/month.
@@ -651,7 +652,7 @@ function ExamDetail() {
         {examResults.length > 0 && (
           <div className="mt-12">
             <div className="flex items-center justify-between gap-3 flex-wrap">
-              <h2 className="section-title !mb-0">Your Exam Attempts</h2>
+              <h2 className="section-title !mb-0 !text-[#0A2540]">Your Exam Attempts</h2>
               {practiceStats.trend != null && (
                 <span
                   className="inline-flex items-center gap-1.5 text-[0.8125rem] font-semibold"
@@ -673,7 +674,7 @@ function ExamDetail() {
                 return (
                   <div
                     key={result.id}
-                    className="bg-white/10 backdrop-blur-xl rounded-2xl p-[clamp(1rem,3vw,1.5rem)] border border-white/20 cursor-pointer transition-all duration-300 hover:bg-white/[0.15] hover:translate-x-1"
+                    className="bg-white rounded-2xl p-[clamp(1rem,3vw,1.5rem)] border border-gray-200 shadow-[0_1px_4px_rgba(0,0,0,0.06)] cursor-pointer transition-all duration-200 hover:shadow-[0_6px_24px_rgba(0,0,0,0.09)] hover:translate-x-1"
                     style={{ borderLeft: `4px solid ${passColor}` }}
                     onClick={() => navigate(`/exam/${slug}/results?resultId=${result.id}&set=${result.questionSetId}`)}
                   >
@@ -688,7 +689,7 @@ function ExamDetail() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1 flex-wrap">
-                            <h3 className="text-[0.9375rem] font-bold text-white truncate max-w-full">
+                            <h3 className="text-[0.9375rem] font-bold text-[#0A2540] truncate max-w-full">
                               {result.questionSetName || 'Practice Exam'}
                             </h3>
                             <span
@@ -702,7 +703,7 @@ function ExamDetail() {
                               {result.passed ? 'PASSED' : 'FAILED'}
                             </span>
                           </div>
-                          <div className="text-[0.8125rem] text-white/70 truncate">
+                          <div className="text-[0.8125rem] text-gray-500 truncate">
                             {new Date(result.completedAt).toLocaleDateString()} • {Math.floor(result.timeSpent / 60)} min
                           </div>
                         </div>
@@ -714,11 +715,11 @@ function ExamDetail() {
                           <div className="text-2xl font-bold" style={{ color: passColor }}>
                             {result.percentageScore}%
                           </div>
-                          <div className="text-[0.6875rem] text-white/70">
+                          <div className="text-[0.6875rem] text-gray-400">
                             {result.rawScore}/{result.totalQuestions}
                           </div>
                         </div>
-                        <div className="text-white/50 text-xl">→</div>
+                        <div className="text-gray-300 text-xl">→</div>
                       </div>
                     </div>
                   </div>
