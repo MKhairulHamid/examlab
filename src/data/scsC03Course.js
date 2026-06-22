@@ -1,8 +1,9 @@
 // AWS Certified Security – Specialty (SCS-C03) — Exam Prep Course
 // 16 sessions of ~30 minutes each, covering every domain and task statement.
 // Schema mirrors deaC01Course.js / dopC02Course.js — see study-materials-standard.html for authoring rules.
-// Build status: Step 1 of 5 — Domain 1 (Detection, s1–s3) + Domain 2 (Incident Response, s4–s5) authored.
-// D3–D6 land in Steps 2–3.
+// Build status: Course COMPLETE — all 16 sessions across all six domains authored
+// (D1 Detection s1–s3, D2 Incident Response s4–s5, D3 Infrastructure Security s6–s8,
+//  D4 IAM s9–s10, D5 Data Protection s11–s13, D6 Foundations & Governance s14–s16).
 
 // Verified companion video (oEmbed-checked, public) — appears on every session.
 const COMPANION_VIDEO = {
@@ -206,6 +207,7 @@ const scsC03Course = {
             'Transit gateway flow logs — cross-VPC/hybrid traffic metadata at the transit gateway.',
           ],
           callout: { type: 'tip', text: 'Map the question to a layer: "which IPs/ports and accept-or-reject" → VPC Flow Logs. "which domain names" → Resolver query logs. "which URLs/HTTP requests" → CloudFront/ALB logs. "which API calls" → CloudTrail.' },
+          interactive: 'log-source-selector',
         },
         {
           heading: 'Centralize and analyze — Security Lake, Athena, Logs Insights, OpenSearch',
@@ -1178,6 +1180,733 @@ const scsC03Course = {
             'Correct — the explicit deny on non-TLS requests overrides the allow; calling over HTTPS makes aws:SecureTransport true and the request is permitted.',
             'There is no SCP described here; the deny comes from the bucket policy’s TLS condition.',
             'The deny is conditioned on transport security, not MFA; adding MFA would not satisfy aws:SecureTransport.',
+          ],
+        },
+      },
+      videos: [COMPANION_VIDEO],
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    //  DOMAIN 5 — DATA PROTECTION (18%)
+    // ═══════════════════════════════════════════════════════════════
+
+    {
+      id: 'd5-s11',
+      number: 11,
+      module: 'Domain 5 · Data Protection',
+      domain: 'd5',
+      weight: '18%',
+      task: 'Task 5.1',
+      title: 'Data in Transit — Enforcing TLS, Private Connectivity, and Inter-Service Encryption',
+      duration: 30,
+      summary: 'Data on the wire must be encrypted and, where possible, kept off the public internet entirely. This session covers enforcing TLS at load balancers and on S3, using ACM to manage certificates, reaching AWS services privately with VPC endpoints and PrivateLink, and the encryption-in-transit options for analytics and container workloads the exam likes to test.',
+      objectives: [
+        'Enforce encryption in transit with ELB security policies, HTTPS listeners, and S3 aws:SecureTransport conditions',
+        'Manage and rotate TLS certificates with AWS Certificate Manager (ACM)',
+        'Keep traffic off the public internet using VPC endpoints, AWS PrivateLink, Client VPN, and Verified Access',
+        'Recognize the in-transit encryption controls for EMR, EKS, SageMaker, and Nitro-based instances',
+      ],
+      preLearningCheck: {
+        question: 'A team must guarantee that no client can read or write an S3 bucket over unencrypted HTTP — every request must use TLS. What is the cleanest way to enforce this?',
+        options: [
+          'Hope clients use HTTPS and monitor for HTTP requests',
+          'Add a bucket policy that denies any request where aws:SecureTransport is false',
+          'Enable default encryption on the bucket',
+          'Turn on S3 Block Public Access',
+        ],
+        correct: 1,
+        note: 'No pressure — guessing first improves retention. The key idea: default encryption protects data at rest, not in transit. To force TLS, a bucket policy with a Deny on aws:SecureTransport = false rejects any non-HTTPS request outright.',
+      },
+      sections: [
+        {
+          heading: 'Enforce encryption in transit',
+          body: 'The exam expects encryption in transit to be required, not optional. The controls:\n\nLoad balancers — configure an HTTPS/TLS listener and attach an ACM certificate; choose a modern ELB security policy that disallows weak protocols/ciphers (e.g. TLS 1.2+). Redirect HTTP to HTTPS so plaintext is never served.\n\nS3 — add a bucket policy that denies any request where aws:SecureTransport is false. This is the canonical "force TLS for S3" answer and a frequent troubleshooting scenario (an HTTP client gets AccessDenied because of this condition).\n\nAPIs and CloudFront — set the viewer protocol policy to redirect-to-HTTPS or HTTPS-only, and use minimum TLS versions. Many AWS service endpoints already require TLS.',
+          bullets: [
+            'Force TLS on S3 → bucket policy Deny when aws:SecureTransport = false.',
+            'ELB → HTTPS listener + ACM cert + a security policy that bans weak TLS versions/ciphers.',
+            'CloudFront → viewer protocol policy redirect-to-HTTPS and a minimum TLS version.',
+          ],
+          callout: { type: 'note', text: 'aws:SecureTransport is the condition key for "was this request made over TLS." A Deny when it is false is how you make HTTPS mandatory — and a classic reason an otherwise-allowed S3 request is denied.' },
+        },
+        {
+          heading: 'Certificates with ACM',
+          body: 'AWS Certificate Manager provisions, manages, and auto-renews TLS certificates for integrated services — Elastic Load Balancing, CloudFront, API Gateway, and more. Public ACM certificates are free and renew automatically (so expired-certificate outages disappear), but the private key never leaves AWS and cannot be exported, so ACM public certs only work with integrated services. For certificates you must install on EC2 or on-premises, or for an internal PKI, use AWS Private Certificate Authority (ACM Private CA) to issue private certificates. The exam tells: "automatically renewing public TLS certs for an ALB/CloudFront" → ACM; "issue private certificates for internal services / an internal CA" → AWS Private CA.',
+          bullets: [
+            'ACM public certs: free, auto-renewing, usable only with integrated services (ALB, CloudFront, API GW).',
+            'ACM-issued public cert private keys cannot be exported — they stay in AWS.',
+            'AWS Private CA issues private certificates for internal PKI and for installing on instances.',
+          ],
+          callout: { type: 'tip', text: 'If a question worries about certificate expiry causing an outage, ACM’s automatic renewal for integrated services is the answer — no manual rotation.' },
+        },
+        {
+          heading: 'Keep traffic private — VPC endpoints and PrivateLink',
+          body: 'Encryption is stronger when the traffic never touches the public internet. Two endpoint types: a gateway VPC endpoint provides private access to Amazon S3 and DynamoDB via a route-table entry (free); an interface VPC endpoint (powered by AWS PrivateLink) creates an ENI in your subnet with a private IP for most other AWS services and for your own/partner services. PrivateLink also lets you expose a service in your VPC privately to other VPCs/accounts without VPC peering or internet exposure. For user access: AWS Client VPN gives remote users an encrypted tunnel into the VPC, and AWS Verified Access provides VPN-less, identity-aware access to internal applications. Pairing private endpoints with a bucket-policy condition like aws:SourceVpce lets you require that S3 is reached only through your endpoint.',
+          bullets: [
+            'Gateway endpoint → S3 and DynamoDB (route-table based, no ENI, free).',
+            'Interface endpoint (PrivateLink) → most other services and private SaaS, via a private-IP ENI.',
+            'Restrict a bucket to your VPC endpoint with an aws:SourceVpce condition in the bucket policy.',
+          ],
+          callout: { type: 'warning', text: 'A gateway endpoint is only for S3 and DynamoDB. For any other service (KMS, Secrets Manager, SSM, etc.) you need an interface endpoint (PrivateLink). Choosing the wrong endpoint type is a common distractor.' },
+        },
+        {
+          heading: 'In-transit encryption for analytics and containers',
+          body: 'Specialty scenarios reach into data and container services. Amazon EMR supports in-transit encryption between cluster nodes (TLS) configured via a security configuration. Amazon EKS encrypts control-plane traffic and supports mTLS/service mesh (e.g. App Mesh) for pod-to-pod encryption. Amazon SageMaker can enable inter-container traffic encryption for distributed training jobs. AWS Nitro System instances provide encryption of traffic between supported Nitro instances automatically, and Nitro Enclaves isolate highly sensitive data processing. The point the exam makes: encryption in transit is configurable inside these managed services, not just at the load balancer.',
+          bullets: [
+            'EMR security configuration enables node-to-node TLS in the cluster.',
+            'SageMaker can encrypt inter-container traffic for distributed training.',
+            'Nitro-based instances encrypt traffic between supported instances; Nitro Enclaves isolate sensitive processing.',
+          ],
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 0,
+          question: 'An auditor requires that an S3 bucket reject every request not made over TLS. Which control enforces this directly?',
+          options: [
+            'Enable S3 default encryption (SSE-S3)',
+            'Add a bucket policy that denies requests where aws:SecureTransport is false',
+            'Turn on S3 Versioning',
+            'Enable S3 Block Public Access',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — the aws:SecureTransport=false Deny rejects any non-HTTPS request. Default encryption, versioning, and Block Public Access address other concerns (at-rest encryption, recovery, public exposure).',
+          elaborativePrompt: 'Why does default encryption not satisfy an in-transit (TLS) requirement?',
+        },
+        {
+          afterSection: 2,
+          question: 'Workloads in a private subnet must call AWS KMS without any internet path. Which connectivity option is required?',
+          options: [
+            'A gateway VPC endpoint',
+            'An interface VPC endpoint (AWS PrivateLink) for KMS',
+            'A NAT gateway',
+            'An internet gateway with a restrictive NACL',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — gateway endpoints only serve S3 and DynamoDB; every other service, including KMS, needs an interface endpoint (PrivateLink). NAT and internet gateways introduce an internet path.',
+          elaborativePrompt: 'When do you reach for a gateway endpoint versus an interface endpoint?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself: you must guarantee all traffic to an application is encrypted in transit, certificates never silently expire, and sensitive workloads reach S3 and KMS without crossing the internet. Walk through the ELB/S3 enforcement, how ACM handles certs, and which endpoint types you use for S3 versus KMS.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A company terminates TLS on an Application Load Balancer and must ensure only strong, modern TLS is negotiated, certificates renew without manual work, and HTTP requests are never served in plaintext. Which combination meets all three?',
+        options: [
+          'Self-signed certificates on the instances and an HTTP listener',
+          'An HTTPS listener with an ACM certificate, an ELB security policy that requires TLS 1.2+, and an HTTP-to-HTTPS redirect',
+          'A TCP listener with a network load balancer and no certificate',
+          'Store a purchased certificate in S3 and reference it from the listener',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'An HTTPS listener with an ACM-managed certificate gives automatic renewal, a modern ELB security policy enforces TLS 1.2+ and strong ciphers, and an HTTP-to-HTTPS redirect ensures plaintext is never served.',
+          perOption: [
+            'Self-signed certs and an HTTP listener provide neither trusted TLS nor encryption in transit.',
+            'Correct — ACM cert (auto-renew) + a TLS 1.2+ security policy + HTTP→HTTPS redirect satisfies all three requirements.',
+            'A plain TCP listener with no certificate does not enforce TLS at the load balancer.',
+            'ACM manages and renews the certificate for integrated services; stashing a static cert in S3 reintroduces manual rotation.',
+          ],
+        },
+      },
+      videos: [COMPANION_VIDEO],
+    },
+
+    {
+      id: 'd5-s12',
+      number: 12,
+      module: 'Domain 5 · Data Protection',
+      domain: 'd5',
+      weight: '18%',
+      task: 'Task 5.2',
+      title: 'Data at Rest — KMS, CloudHSM, Object Integrity, and Backup',
+      duration: 30,
+      summary: 'Encryption at rest on AWS runs through KMS, and the exam tests the envelope-encryption model, the KMS-vs-CloudHSM choice, and client-side vs server-side encryption. This session also covers data integrity and immutability (Object Lock, Vault Lock, versioning), lifecycle and retention, and the backup and replication strategy that defends against ransomware.',
+      objectives: [
+        'Explain envelope encryption and choose between SSE-S3, SSE-KMS, SSE-C, and client-side encryption',
+        'Decide between AWS KMS and AWS CloudHSM based on control, compliance, and single-tenancy needs',
+        'Ensure integrity and immutability with S3 Object Lock, S3 Versioning, Glacier Vault Lock, and code signing',
+        'Design backup, lifecycle, and replication with AWS Backup, DLM, and DataSync, including ransomware protection',
+      ],
+      preLearningCheck: {
+        question: 'A regulated workload requires a dedicated, single-tenant FIPS 140-2 Level 3 hardware security module that the customer fully controls, for managing its own encryption keys. Which service fits?',
+        options: [
+          'AWS KMS with an AWS managed key',
+          'AWS CloudHSM',
+          'AWS Secrets Manager',
+          'Amazon Macie',
+        ],
+        correct: 1,
+        note: 'No pressure — guessing first improves retention. The key idea: KMS is a multi-tenant managed service backed by HSMs and is the default for most workloads. CloudHSM gives a dedicated, single-tenant HSM under your exclusive control — the answer when a regulation demands single tenancy or you must own the HSM.',
+      },
+      sections: [
+        {
+          heading: 'KMS and the envelope-encryption model',
+          body: 'AWS KMS is the center of at-rest encryption. It holds customer master keys (KMS keys) and uses envelope encryption: KMS generates a data key, the service encrypts your data with that data key, and KMS encrypts the data key under the KMS key — so the plaintext data key is never stored. KMS keys come in three flavors: AWS managed keys (created and managed by services, e.g. aws/s3), customer managed keys (you control the policy, rotation, and grants), and AWS owned keys. Customer managed keys give you key policies, automatic annual rotation, grants, and CloudTrail visibility into every Decrypt call. Access to use a key is governed by the key policy (the root of trust) plus IAM and optional grants.',
+          bullets: [
+            'Envelope encryption: data encrypted with a data key; the data key encrypted by the KMS key — plaintext data key never persisted.',
+            'Customer managed key = full control: key policy, automatic rotation, grants, per-call CloudTrail.',
+            'The KMS key policy must allow access; an IAM allow for kms:Decrypt is insufficient unless the key policy delegates to IAM.',
+          ],
+          callout: { type: 'note', text: 'For cross-account or cross-service key use, the KMS key policy is decisive. Many "why can’t this role decrypt" problems are a key policy that never granted the principal — not a missing IAM permission.' },
+        },
+        {
+          heading: 'KMS vs CloudHSM, and where encryption happens',
+          body: 'Two decisions the exam loves:\n\nKMS vs CloudHSM — KMS is multi-tenant, fully managed, deeply integrated, and right for the vast majority of workloads. CloudHSM is a single-tenant, dedicated, FIPS 140-2 Level 3 HSM you control exclusively — choose it when a regulation mandates single tenancy, you must manage the HSM yourself, or you need specific cryptographic operations KMS doesn’t expose. KMS can even use a CloudHSM-backed custom key store to combine integration with dedicated hardware.\n\nServer-side vs client-side — SSE-S3 (S3-managed keys), SSE-KMS (KMS keys, auditable and controllable), and SSE-C (customer-provided keys) all encrypt on the server. Client-side encryption encrypts data before it ever reaches AWS, so AWS never sees plaintext — the choice when you cannot trust the cloud with plaintext at all.',
+          bullets: [
+            'Default to KMS; choose CloudHSM for single-tenant/dedicated-HSM/compliance mandates.',
+            'SSE-KMS gives auditable, controllable server-side encryption with CloudTrail on key use.',
+            'Client-side encryption = data encrypted before upload; AWS never handles plaintext.',
+          ],
+          callout: { type: 'tip', text: '"Dedicated, single-tenant, customer-controlled HSM / FIPS 140-2 Level 3" → CloudHSM. "Managed, integrated, auditable keys for S3/EBS/RDS" → SSE-KMS with a customer managed key.' },
+        },
+        {
+          heading: 'Integrity and immutability',
+          body: 'Confidentiality is not enough — the exam tests tamper-resistance. S3 Versioning preserves every version so an overwrite or delete can be rolled back. S3 Object Lock (WORM) makes objects immutable for a retention period or under a legal hold; compliance mode means not even the root user can delete them until the period expires (governance mode allows privileged override). S3 Glacier Vault Lock enforces a write-once-read-many policy on archives that, once locked, cannot be changed. For software supply chain integrity, AWS Signer code signing verifies that Lambda code or container artifacts have not been altered. CloudTrail log file validation provides a signed digest to prove logs are intact.',
+          bullets: [
+            'S3 Object Lock compliance mode = immutable even to root for the retention period — the strongest anti-tamper/anti-ransomware control for S3.',
+            'Versioning enables rollback; Object Lock prevents deletion outright.',
+            'Glacier Vault Lock locks an archive WORM policy permanently once set.',
+          ],
+          callout: { type: 'warning', text: 'Compliance mode vs governance mode on Object Lock is a tested distinction: compliance mode cannot be overridden by anyone (including root); governance mode permits override by principals with a special permission. Regulatory immutability → compliance mode.' },
+        },
+        {
+          heading: 'Lifecycle, backup, and ransomware defense',
+          body: 'Data protection includes keeping clean, recoverable copies. AWS Backup centrally manages and automates backups across EBS, RDS, DynamoDB, EFS, FSx, and more, with backup policies, cross-Region/cross-account copy, and a vault you can lock (AWS Backup Vault Lock) to make backups immutable. Amazon Data Lifecycle Manager automates EBS snapshot creation and retention. S3 Lifecycle rules transition objects to cheaper classes and expire them on schedule. AWS DataSync moves data efficiently between on-premises and AWS. The ransomware-resilient pattern the exam rewards: versioning + Object Lock or Backup Vault Lock + cross-account copies, so an attacker who compromises one account cannot encrypt or delete the only copy.',
+          bullets: [
+            'AWS Backup = centralized, policy-driven backups across many services, with cross-account/Region copy and Vault Lock immutability.',
+            'Ransomware resilience = immutable, versioned, cross-account copies the attacker cannot reach or alter.',
+            'DLM automates EBS snapshots; S3 Lifecycle automates tiering and expiration.',
+          ],
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 1,
+          question: 'A role’s IAM policy grants kms:Decrypt, but it still cannot decrypt objects encrypted with a customer managed KMS key in the same account. What is the most likely cause?',
+          options: [
+            'The S3 bucket is not versioned',
+            'The KMS key policy does not grant the role permission to use the key',
+            'The object is in Glacier',
+            'MFA is not enabled on the role',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — the KMS key policy is the root of trust. Unless it grants the principal (directly or by delegating to IAM), an IAM allow for kms:Decrypt is not sufficient.',
+          elaborativePrompt: 'Why must the key policy, not just the IAM policy, permit key use?',
+        },
+        {
+          afterSection: 2,
+          question: 'A compliance rule requires that audit objects in S3 cannot be deleted or overwritten by anyone — including administrators and the root user — for seven years. Which control enforces this?',
+          options: [
+            'S3 Versioning alone',
+            'S3 Object Lock in compliance mode with a seven-year retention period',
+            'A restrictive bucket policy',
+            'SSE-KMS encryption',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — Object Lock compliance mode makes objects immutable for the retention period and cannot be overridden by any principal, including root. Versioning alone allows deletion of versions; a bucket policy can be changed.',
+          elaborativePrompt: 'Why is compliance mode stronger than a bucket policy for guaranteeing immutability?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself: you must encrypt sensitive data at rest with auditable, customer-controlled keys, guarantee certain records cannot be altered or deleted for years, and keep backups that survive a ransomware attack on the primary account. Walk through your KMS key choice, the immutability control, and the backup design — and note when CloudHSM would be required instead of KMS.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A financial company must protect S3 backups against ransomware: even if an attacker gains admin access to the production account, the backups must not be deletable or alterable, and a clean copy must exist outside that account. Which design best meets this?',
+        options: [
+          'Enable SSE-KMS on the bucket and rely on IAM policies to block deletes',
+          'Use S3 Versioning plus Object Lock in compliance mode, and replicate the data to a separate account whose backup vault is locked',
+          'Store a single copy in S3 Glacier and restrict access with a bucket policy',
+          'Take EBS snapshots nightly in the same account',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'Object Lock in compliance mode makes the objects immutable even to an account admin or root, versioning preserves prior states, and replicating to a separate, vault-locked account ensures a clean copy the attacker cannot reach or destroy.',
+          perOption: [
+            'SSE-KMS protects confidentiality, and IAM policies can be changed by a compromised admin — neither guarantees immutability.',
+            'Correct — compliance-mode Object Lock + versioning + a cross-account locked vault delivers immutable, unreachable, recoverable copies.',
+            'A single copy with a mutable bucket policy is neither immutable nor isolated from a compromised admin.',
+            'Same-account nightly snapshots can be deleted by the same compromised admin — no isolation or immutability.',
+          ],
+        },
+      },
+      videos: [COMPANION_VIDEO],
+    },
+
+    {
+      id: 'd5-s13',
+      number: 13,
+      module: 'Domain 5 · Data Protection',
+      domain: 'd5',
+      weight: '18%',
+      task: 'Task 5.3',
+      title: 'Secrets, Credentials & Key Material — Secrets Manager, KMS Key Lifecycle, and Data Masking',
+      duration: 30,
+      summary: 'Long-lived secrets are a liability; the exam wants them stored, rotated, and scoped by AWS-native services. This session covers Secrets Manager versus Parameter Store, automatic rotation, KMS key material options (AWS-generated, imported, external key stores, multi-Region), masking sensitive data in logs and notifications, and issuing private certificates.',
+      objectives: [
+        'Store and automatically rotate secrets with AWS Secrets Manager, and know when SSM Parameter Store fits',
+        'Choose KMS key material: AWS-generated, imported (BYOK), external key store (XKS), and multi-Region keys',
+        'Mask sensitive data with CloudWatch Logs data protection policies and SNS message data protection',
+        'Issue and manage private certificates and key material with AWS Private CA',
+      ],
+      preLearningCheck: {
+        question: 'An application reads a database password from a config file that is rarely changed. Security wants the credential stored securely and rotated automatically every 30 days without code changes. Which service is purpose-built for this?',
+        options: [
+          'Store it in an environment variable',
+          'AWS Secrets Manager, which stores the secret and rotates it automatically via a Lambda rotation function',
+          'Hard-code it but encrypt the file',
+          'AWS Certificate Manager',
+        ],
+        correct: 1,
+        note: 'No pressure — guessing first improves retention. The key idea: Secrets Manager stores secrets encrypted with KMS and natively rotates them on a schedule using a managed/Lambda rotation function — with built-in integration for RDS, Redshift, and DocumentDB so the password changes in both the secret and the database.',
+      },
+      sections: [
+        {
+          heading: 'Secrets Manager vs Parameter Store',
+          body: 'Both store configuration securely with KMS encryption and IAM access control, but the exam draws a line:\n\nAWS Secrets Manager is built for secrets that must rotate. It supports automatic rotation via a Lambda function, with native integrations for Amazon RDS, Aurora, Redshift, and DocumentDB so a rotation updates both the stored secret and the database credential. It supports cross-account access via resource policies and fine-grained retrieval permissions. It carries a per-secret cost.\n\nAWS Systems Manager Parameter Store stores configuration data and secrets (SecureString parameters encrypted with KMS) for free at the standard tier, integrates everywhere, but does not rotate secrets natively. Use it for config values and simple secrets where automatic rotation isn’t required; use Secrets Manager when scheduled rotation and database integration matter.',
+          bullets: [
+            'Need automatic rotation and DB credential integration → Secrets Manager.',
+            'Plain config values / simple secrets, cost-sensitive, no rotation → Parameter Store SecureString.',
+            'Both encrypt with KMS and authorize access with IAM; only Secrets Manager rotates natively.',
+          ],
+          callout: { type: 'note', text: 'The fastest tell: if the requirement says "rotate automatically" (especially for an RDS/Aurora/Redshift password), it is Secrets Manager. If it is just "store a parameter securely," Parameter Store SecureString is the cheaper fit.' },
+        },
+        {
+          heading: 'KMS key material — generated, imported, external, multi-Region',
+          body: 'KMS keys differ by where the key material comes from and lives:\n\nAWS-generated material (the default) — KMS creates and stores the key material; supports automatic annual rotation. Imported key material (BYOK) — you generate key material elsewhere and import it; you are responsible for its source and re-import, and automatic rotation is not available for imported material. External key store (XKS) — the key material stays in a key manager you operate outside AWS, and KMS calls out to it for cryptographic operations, for organizations that must keep key material entirely off AWS. Custom key store (CloudHSM-backed) — KMS keys whose material lives in a CloudHSM cluster you control. Multi-Region keys — a primary key replicated to other Regions with the same key ID and material, so you can encrypt in one Region and decrypt in another (useful for cross-Region DR and global tables).',
+          bullets: [
+            'Imported key material (BYOK): you own the source; no automatic rotation; you must re-import before expiry.',
+            'External key store (XKS): key material never resides in AWS — it stays in your external key manager.',
+            'Multi-Region keys: same key material across Regions for cross-Region encrypt/decrypt and DR.',
+          ],
+          callout: { type: 'tip', text: '"Encrypt data in one Region and decrypt it in another with the same key" → KMS multi-Region keys. "Key material must never live in AWS" → external key store (XKS). "We must supply our own key material" → import key material (BYOK).' },
+        },
+        {
+          heading: 'Masking sensitive data in logs and messages',
+          body: 'Secrets often leak through telemetry, not databases. CloudWatch Logs data protection policies automatically detect and mask sensitive data (credentials, PII, financial identifiers) in log events using managed and custom data identifiers, so the raw values are redacted from anyone without an unmask permission. Amazon SNS message data protection applies similar data protection policies to message payloads to detect, redact, or block sensitive data flowing through topics. For S3 and broader stores, Amazon Macie discovers sensitive data so you can remediate. The exam point: prevent secrets and PII from being exposed in operational data, not just in primary storage.',
+          bullets: [
+            'CloudWatch Logs data protection policies mask sensitive values in log events; unmasking requires a specific permission.',
+            'SNS message data protection detects/redacts/blocks sensitive data in messages.',
+            'Macie finds sensitive data at rest in S3 for remediation.',
+          ],
+          callout: { type: 'warning', text: 'If a scenario worries that passwords or PII are being written into CloudWatch Logs, the targeted answer is a CloudWatch Logs data protection policy that masks them — not deleting the log group or turning off logging.' },
+        },
+        {
+          heading: 'Private certificates and key lifecycle',
+          body: 'Beyond passwords, the exam treats certificates and keys as managed material. AWS Private CA stands up a private certificate authority hierarchy to issue private TLS/mTLS certificates for internal services, containers, and IoT devices — with controlled issuance, revocation (CRL/OCSP), and audit. KMS key lifecycle matters too: enable automatic rotation for AWS-generated customer managed keys; disable or schedule deletion (with a mandatory waiting period, 7–30 days) when retiring a key; and use key policies plus grants to scope exactly who can use a key. Together these keep credential and key material short-lived, scoped, and revocable.',
+          bullets: [
+            'AWS Private CA issues and revokes private certificates for internal PKI (services, containers, IoT).',
+            'KMS key deletion has a mandatory 7–30 day waiting period — disable first if unsure, since deletion is irreversible.',
+            'Automatic rotation applies to AWS-generated customer managed keys, not to imported key material.',
+          ],
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 0,
+          question: 'A team must store an Amazon RDS master password and rotate it automatically every 30 days so the change applies to both the secret and the database, with no application code changes. Which service fits best?',
+          options: [
+            'SSM Parameter Store SecureString',
+            'AWS Secrets Manager with rotation enabled',
+            'A KMS-encrypted file in S3',
+            'AWS Certificate Manager',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — Secrets Manager rotates secrets on a schedule with native RDS integration, updating both the secret and the database credential. Parameter Store does not rotate natively.',
+          elaborativePrompt: 'Why is Secrets Manager preferred over Parameter Store when automatic rotation is required?',
+        },
+        {
+          afterSection: 1,
+          question: 'A company must encrypt data in us-east-1 and decrypt the same data in eu-west-1 using identical key material, without re-encrypting. Which KMS capability enables this?',
+          options: [
+            'Imported key material (BYOK)',
+            'KMS multi-Region keys',
+            'A separate independent key per Region',
+            'An external key store (XKS)',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — multi-Region keys replicate the same key ID and material across Regions, so ciphertext from one Region decrypts in another. Independent per-Region keys cannot decrypt each other’s ciphertext.',
+          elaborativePrompt: 'Why can’t two independent single-Region keys decrypt each other’s data?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself: you must store and auto-rotate database credentials, keep certain key material entirely outside AWS, encrypt-and-decrypt data across two Regions, and stop passwords from leaking into CloudWatch Logs. Walk through which AWS service and key option solves each requirement.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A security team discovers that an application intermittently logs database connection strings — including passwords — into Amazon CloudWatch Logs. They must prevent the credentials from being readable by operators viewing the logs, while keeping logging fully enabled. What should they implement?',
+        options: [
+          'Delete the affected log groups and stop logging the application',
+          'Apply a CloudWatch Logs data protection policy that detects and masks the sensitive data, restricting unmasking to authorized principals',
+          'Move the logs to S3 and encrypt the bucket with SSE-KMS',
+          'Lower the log retention period to one day',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'A CloudWatch Logs data protection policy uses managed and custom data identifiers to detect and mask sensitive values like credentials in log events, so operators see redacted data while logging continues; unmasking requires a specific permission.',
+          perOption: [
+            'Disabling logging destroys needed operational visibility and is an overreaction to a masking problem.',
+            'Correct — a data protection policy masks the credentials in place and limits who can unmask them, keeping logs intact.',
+            'At-rest encryption does not prevent an operator with log read access from seeing the plaintext credentials.',
+            'Shorter retention does not stop the credentials from being readable while the logs exist.',
+          ],
+        },
+      },
+      videos: [COMPANION_VIDEO],
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    //  DOMAIN 6 — SECURITY FOUNDATIONS AND GOVERNANCE (14%)
+    // ═══════════════════════════════════════════════════════════════
+
+    {
+      id: 'd6-s14',
+      number: 14,
+      module: 'Domain 6 · Security Foundations and Governance',
+      domain: 'd6',
+      weight: '14%',
+      task: 'Task 6.1',
+      title: 'Multi-Account Governance — Organizations, Control Tower, SCPs/RCPs, and Root Protection',
+      duration: 30,
+      summary: 'Security at scale is an organization problem. This session builds the multi-account governance model the exam expects: AWS Organizations as the structure, Control Tower as the guardrailed landing zone, SCPs and RCPs as the org-wide ceilings, delegated administration for security services, and disciplined protection of the root user.',
+      objectives: [
+        'Structure accounts with AWS Organizations and OUs, and stand up a governed landing zone with AWS Control Tower',
+        'Apply organization policies — SCPs, RCPs, and AI services opt-out / declarative policies — as guardrails',
+        'Delegate administration of security services to a dedicated security account',
+        'Protect and centralize the root user, and design break-glass access',
+      ],
+      preLearningCheck: {
+        question: 'A company wants to guarantee that no account in a specific OU can ever disable AWS CloudTrail or leave the organization, regardless of that account’s own IAM policies. What enforces this org-wide?',
+        options: [
+          'An IAM policy attached to every user',
+          'A Service Control Policy (SCP) attached to the OU that denies those actions',
+          'A permission boundary on each role',
+          'A resource-based policy on CloudTrail',
+        ],
+        correct: 1,
+        note: 'No pressure — guessing first improves retention. The key idea: SCPs set the maximum permissions for accounts/OUs in an organization. A Deny SCP on the OU removes those actions from every principal in those accounts — no local IAM policy can grant them back.',
+      },
+      sections: [
+        {
+          heading: 'Organizations and OUs',
+          body: 'AWS Organizations is the foundation: it groups accounts under a management account, arranges them into organizational units (OUs), and enables centralized billing and governance. The recommended structure separates concerns — a dedicated security/audit account, a log archive account, shared services, and workload accounts grouped into OUs by environment or business unit. The management account should hold almost no workloads; it is used for org administration only. This account separation is itself a security control: it bounds blast radius and lets you apply different guardrails per OU.',
+          bullets: [
+            'Group accounts into OUs (e.g. Security, Infrastructure, Workloads/Prod, Workloads/Dev) to apply tailored guardrails.',
+            'Keep the management account minimal — no workloads — to reduce its blast radius.',
+            'Dedicated security and log archive accounts isolate findings and evidence from workloads.',
+          ],
+          callout: { type: 'note', text: 'Account separation is a primary AWS security boundary. "Limit blast radius / isolate environments" at the org level points to separate accounts and OUs, not just IAM within one account.' },
+        },
+        {
+          heading: 'Control Tower — the governed landing zone',
+          body: 'AWS Control Tower automates setup of a secure, multi-account landing zone on top of Organizations: it provisions the management, log archive, and audit accounts, sets up centralized logging and an account factory for standardized account vending, and applies controls (guardrails). Controls come in types: preventive (implemented as SCPs — block disallowed actions), detective (implemented as Config rules — flag non-compliance), and proactive (block non-compliant resources before deployment via CloudFormation hooks). Controls also have a guidance level — mandatory (always on), strongly recommended, and elective. Control Tower is the fast path to a best-practice org; you can still add custom SCPs and Config rules beyond its built-in controls.',
+          bullets: [
+            'Control Tower = automated landing zone + account factory + built-in controls (guardrails).',
+            'Preventive control → SCP; detective control → Config rule; proactive control → CloudFormation hook.',
+            'Add custom/optional controls beyond the mandatory ones for your specific requirements.',
+          ],
+          callout: { type: 'tip', text: 'When a question wants a "standardized, guardrailed multi-account environment with centralized logging, set up quickly," that is AWS Control Tower — not building Organizations + Config + SCPs by hand.' },
+        },
+        {
+          heading: 'Organization policies — SCPs, RCPs, and more',
+          body: 'Organizations supports several policy types that act as guardrails, never grants:\n\nService Control Policies (SCPs) set the maximum permissions for principals in the attached accounts/OUs — a Deny SCP blocks actions org-wide regardless of local IAM. Resource Control Policies (RCPs) are the resource-side counterpart: they set the maximum access that can be granted on resources (e.g. S3 buckets, SQS) in the org, even to external principals — powerful for enforcing "only our org can access these resources." AI services opt-out policies control whether AWS may use your content for AI service improvement. Declarative policies enforce a desired configuration for a service (e.g. block public AMIs) that persists even as the service evolves. Backup policies centrally manage AWS Backup plans. All of these attach at the root, OU, or account level and inherit down.',
+          bullets: [
+            'SCP = ceiling on what principals can do; RCP = ceiling on what access resources can grant (incl. to external principals).',
+            'SCPs and RCPs never grant permissions — they only restrict the maximum.',
+            'Declarative policies enforce service configuration baselines; AI opt-out policies govern data use for AI improvement.',
+          ],
+          callout: { type: 'warning', text: 'SCPs limit principals; RCPs limit resource access. To stop a resource from being shared with anyone outside the organization regardless of its resource policy, the newer control is an RCP — an SCP alone governs principals, not resource-policy grants.' },
+        },
+        {
+          heading: 'Delegated administration and root protection',
+          body: 'Two governance essentials. Delegated administration lets you run security services (GuardDuty, Security Hub, Macie, IAM Access Analyzer, Detective, Firewall Manager, etc.) from a dedicated security account rather than the management account — least privilege at the org level. Root user protection: the management and member account root users are the most powerful identities, so enable hardware MFA on them, remove or lock away their access keys, and use the root only for the few tasks that require it. AWS now supports centralized root access management in Organizations — removing standing root credentials from member accounts and performing privileged root tasks centrally — plus break-glass procedures for emergency access that are tightly logged and alarmed.',
+          bullets: [
+            'Delegate security-service administration to a dedicated security account — keep the management account out of daily ops.',
+            'Root user: hardware MFA, no access keys, used only when strictly required.',
+            'Centralized root access management removes standing root credentials from member accounts; break-glass is logged and alarmed.',
+          ],
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 1,
+          question: 'A company wants a standardized multi-account environment quickly, with centralized logging, an audit account, automated account provisioning, and built-in preventive and detective guardrails. Which service delivers this fastest?',
+          options: [
+            'AWS Organizations alone',
+            'AWS Control Tower',
+            'AWS Config in each account',
+            'AWS IAM Identity Center',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — Control Tower automates the landing zone (management, log archive, audit accounts), an account factory, and preventive (SCP) and detective (Config) guardrails. Organizations alone is the substrate but requires manual assembly of the rest.',
+          elaborativePrompt: 'What does Control Tower add on top of plain AWS Organizations?',
+        },
+        {
+          afterSection: 2,
+          question: 'Security must guarantee that no S3 bucket anywhere in the organization can grant access to a principal outside the organization, even if a bucket owner writes a permissive bucket policy. Which control fits best?',
+          options: [
+            'An SCP denying s3:PutBucketPolicy',
+            'A Resource Control Policy (RCP) that restricts resource access to organization principals',
+            'A permission boundary on bucket owners',
+            'Enabling S3 Block Public Access only',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — RCPs set the maximum access resources can grant, including blocking access to external principals org-wide, regardless of individual resource policies. SCPs govern principals, not resource-policy grants.',
+          elaborativePrompt: 'Why is an RCP, not an SCP, the right tool for constraining resource-policy grants?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself: you are standing up governance for a 100-account organization. Walk through how you structure accounts and OUs, how you stand up the landing zone, which guardrails you use to cap principals versus resource access, how you run security services without the management account, and how you protect the root user.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'An organization must ensure that member accounts in the Production OU can never disable AWS Config or delete the organization CloudTrail, regardless of any IAM permissions an administrator in those accounts might grant. What is the correct mechanism?',
+        options: [
+          'Attach an IAM deny policy to every role in those accounts',
+          'Attach a Service Control Policy to the Production OU that explicitly denies config:Delete*/StopConfigurationRecorder and cloudtrail:Delete*/StopLogging',
+          'Use a permission boundary on each account’s administrators',
+          'Enable MFA on the root user of each account',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'An SCP attached to the OU sets the maximum permissions for every principal in those accounts. A Deny for the Config and CloudTrail disabling actions cannot be overridden by any local IAM policy, guaranteeing the controls stay on.',
+          perOption: [
+            'Per-role IAM deny policies are unenforceable at scale — a local admin can change or omit them; they are not an org-wide guarantee.',
+            'Correct — an SCP Deny on the OU removes those actions from every principal regardless of local IAM, which is exactly the guarantee required.',
+            'Permission boundaries cap a principal’s permissions but are set within the account and can be altered locally; they are not an org-level guarantee.',
+            'Root MFA protects the root credential but does not prevent other administrators from disabling Config or CloudTrail.',
+          ],
+        },
+      },
+      videos: [COMPANION_VIDEO],
+    },
+
+    {
+      id: 'd6-s15',
+      number: 15,
+      module: 'Domain 6 · Security Foundations and Governance',
+      domain: 'd6',
+      weight: '14%',
+      task: 'Task 6.2',
+      title: 'Secure & Consistent Deployment — IaC Guardrails, Firewall Manager, and Resource Sharing',
+      duration: 30,
+      summary: 'Consistency is a security property: drift and snowflake configurations are how gaps appear. This session covers securing infrastructure-as-code with CloudFormation StackSets, Guard, and linting; enforcing security policies centrally with AWS Firewall Manager; tagging for governance; and sharing resources safely with Service Catalog and AWS RAM.',
+      objectives: [
+        'Deploy consistently across accounts with CloudFormation StackSets and validate templates with cfn-lint and CloudFormation Guard',
+        'Use tags to group, attribute, and enforce policy on resources',
+        'Centrally enforce WAF, Shield, security group, and firewall policies with AWS Firewall Manager',
+        'Share resources securely with AWS Service Catalog and AWS Resource Access Manager (RAM)',
+      ],
+      preLearningCheck: {
+        question: 'A security team must guarantee that every account in the organization always has the same AWS WAF rules and security-group baseline applied — including on new accounts and newly created resources — managed from one place. Which service is built for this?',
+        options: [
+          'AWS Config in each account',
+          'AWS Firewall Manager',
+          'A CloudFormation template run manually per account',
+          'Amazon Inspector',
+        ],
+        correct: 1,
+        note: 'No pressure — guessing first improves retention. The key idea: AWS Firewall Manager centrally configures and enforces WAF rules, Shield Advanced, security group baselines, Network Firewall, and DNS Firewall policies across all accounts in an organization — automatically applying to existing and future accounts and resources.',
+      },
+      sections: [
+        {
+          heading: 'Secure infrastructure as code',
+          body: 'Repeatable, reviewed infrastructure is more secure than hand-built infrastructure. The exam’s IaC security toolkit:\n\nCloudFormation StackSets deploy and update the same stack across many accounts and Regions from the management or a delegated admin account — and with service-managed permissions, they auto-deploy to new accounts as they join. This is how you roll a security baseline everywhere consistently.\n\nCloudFormation Guard (cfn-guard) is a policy-as-code tool: you write rules (e.g. "every S3 bucket must have encryption enabled") and validate templates against them in the pipeline, blocking non-compliant infrastructure before deployment. cfn-lint catches template errors and best-practice violations early. CloudFormation hooks (proactive controls) can also reject non-compliant resources at deploy time.',
+          bullets: [
+            'StackSets = consistent multi-account/Region deployment, auto-enrolling new accounts (service-managed).',
+            'CloudFormation Guard = policy-as-code that fails the pipeline on non-compliant templates.',
+            'Shift security left: validate templates (Guard/lint/hooks) before resources are ever created.',
+          ],
+          callout: { type: 'note', text: '"Deploy the same baseline stack to every account including future ones" → CloudFormation StackSets (service-managed). "Enforce policy rules on templates in the pipeline" → CloudFormation Guard.' },
+        },
+        {
+          heading: 'Tags as a governance tool',
+          body: 'Tags are not just for billing — they drive security policy. Consistent tags (Owner, Environment, DataClassification, Project, CostCenter) let you group resources, attribute ownership during an incident, and write tag-based controls. ABAC policies grant access based on matching tags; tag policies (an Organizations policy type) enforce a standardized tag taxonomy across the org; and SCPs can require a tag on resource creation. Config rules can flag untagged or mis-tagged resources. The exam point: a disciplined tagging strategy is what makes attribute-based access control, cost attribution, and automated governance possible.',
+          bullets: [
+            'Tag policies (Organizations) enforce a consistent tag taxonomy across accounts.',
+            'ABAC and SCP conditions can require/match tags to grant or restrict access.',
+            'Config rules detect non-compliant or missing tags for remediation.',
+          ],
+        },
+        {
+          heading: 'Central enforcement with Firewall Manager',
+          body: 'AWS Firewall Manager is the organization-wide policy enforcer for network and edge protections. From a delegated admin account it centrally configures and continuously enforces: AWS WAF web ACLs and rule groups, AWS Shield Advanced protections, security group baselines and audits, AWS Network Firewall policies, and Route 53 Resolver DNS Firewall rules — across all accounts, automatically applying to existing and newly created resources. It both deploys the policy and remediates drift, so a developer who removes a required WAF rule has it reapplied. Firewall Manager requires AWS Organizations and AWS Config.',
+          bullets: [
+            'Firewall Manager centrally enforces WAF, Shield Advanced, SG baselines, Network Firewall, and DNS Firewall org-wide.',
+            'It auto-applies to new accounts/resources and remediates drift from the required policy.',
+            'Prerequisites: AWS Organizations (all features) and AWS Config enabled.',
+          ],
+          callout: { type: 'tip', text: 'Single-account, one-off rules → configure WAF/Shield directly. "Enforce the same protections across the whole organization, including future accounts, and auto-remediate drift" → AWS Firewall Manager.' },
+        },
+        {
+          heading: 'Sharing resources securely',
+          body: 'Two services govern controlled sharing. AWS Service Catalog lets a central team publish approved, versioned products (CloudFormation templates) that other teams launch through a self-service portal — with launch constraints so users provision standardized, compliant resources without holding the underlying broad permissions. AWS Resource Access Manager (RAM) shares specific resources (subnets, Transit Gateways, License Manager configs, Route 53 Resolver rules, etc.) across accounts in the organization without duplicating them or resorting to permissive policies. The exam contrast: Service Catalog = governed self-service provisioning of approved stacks; RAM = sharing actual existing resources across accounts.',
+          bullets: [
+            'Service Catalog = approved, governed products provisioned via self-service with launch constraints (least privilege for users).',
+            'AWS RAM = share specific existing resources (e.g. subnets, TGW) across accounts without broad policies.',
+            'Both reduce the need to grant broad permissions to enable cross-team/cross-account work.',
+          ],
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 0,
+          question: 'A security team wants to block any CloudFormation deployment whose template defines an S3 bucket without encryption, catching it in the CI pipeline before resources are created. Which tool fits?',
+          options: [
+            'AWS Config managed rules',
+            'CloudFormation Guard (policy-as-code validation in the pipeline)',
+            'Amazon Inspector',
+            'AWS Trusted Advisor',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — CloudFormation Guard evaluates templates against policy-as-code rules in the pipeline and fails the build on violations, preventing non-compliant infrastructure from ever deploying. Config evaluates resources after they exist.',
+          elaborativePrompt: 'How does pipeline-time validation (Guard) differ from post-deployment detection (Config)?',
+        },
+        {
+          afterSection: 2,
+          question: 'An organization must guarantee a standard set of AWS WAF rules is applied to every Application Load Balancer in every account, including future accounts, with drift automatically corrected. Which service should they use?',
+          options: [
+            'Configure AWS WAF separately in each account',
+            'AWS Firewall Manager',
+            'AWS Config conformance packs only',
+            'AWS Shield Standard',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — Firewall Manager centrally enforces WAF (and other) policies org-wide, auto-applies to new accounts/resources, and remediates drift. Per-account WAF configuration cannot guarantee consistency at scale.',
+          elaborativePrompt: 'Why does Firewall Manager scale better than configuring WAF in each account individually?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself: you must roll a security baseline to every account and keep it consistent, prevent non-compliant infrastructure from deploying, enforce WAF and security-group policy org-wide, and let teams provision approved stacks and share subnets without broad permissions. Walk through which service handles each.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A platform team must let dozens of application teams self-provision a standardized, compliant three-tier stack, without granting those teams the broad IAM permissions the stack’s resources normally require, and while keeping the template versioned and approved. Which service best meets this?',
+        options: [
+          'Give each team AdministratorAccess and a copy of the template',
+          'Publish the stack as an AWS Service Catalog product with a launch constraint, so teams provision it via self-service without the underlying permissions',
+          'Share the resources with AWS RAM',
+          'Email the CloudFormation template to each team to deploy manually',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'AWS Service Catalog publishes approved, versioned products that teams launch through self-service; a launch constraint runs the provisioning with a role that has the needed permissions, so users provision compliant stacks without holding broad permissions themselves.',
+          perOption: [
+            'Granting AdministratorAccess violates least privilege and removes all governance.',
+            'Correct — Service Catalog products plus a launch constraint deliver governed, least-privilege self-service of approved stacks.',
+            'RAM shares existing resources across accounts; it does not provide governed self-service provisioning of a templated stack.',
+            'Emailing templates for manual deployment provides no governance, versioning control, or permission isolation.',
+          ],
+        },
+      },
+      videos: [COMPANION_VIDEO],
+    },
+
+    {
+      id: 'd6-s16',
+      number: 16,
+      module: 'Domain 6 · Security Foundations and Governance',
+      domain: 'd6',
+      weight: '14%',
+      task: 'Task 6.3',
+      title: 'Evaluating Compliance — Config, Security Hub, Audit Manager, and Artifact',
+      duration: 30,
+      summary: 'The final session closes the loop: proving and maintaining compliance. It covers AWS Config rules for detecting and automatically remediating non-compliance, Security Hub standards for posture scoring, Audit Manager for collecting evidence against frameworks, Artifact for AWS’s own compliance reports, and the Well-Architected Tool for self-assessment.',
+      objectives: [
+        'Detect and automatically remediate non-compliant resources with AWS Config rules and SSM Automation',
+        'Score and track security posture against standards with AWS Security Hub',
+        'Collect audit evidence against compliance frameworks with AWS Audit Manager',
+        'Obtain AWS compliance reports with AWS Artifact and self-assess with the Well-Architected Tool',
+      ],
+      preLearningCheck: {
+        question: 'A company must continuously detect S3 buckets that become publicly accessible and automatically remediate them, with an audit trail of every change. Which combination is purpose-built for this?',
+        options: [
+          'Amazon Inspector with a weekly scan',
+          'An AWS Config rule that detects public buckets, with an SSM Automation remediation action',
+          'A manual monthly review',
+          'Amazon Macie',
+        ],
+        correct: 1,
+        note: 'No pressure — guessing first improves retention. The key idea: AWS Config evaluates resources against rules (e.g. s3-bucket-public-read-prohibited) and can trigger an automatic remediation (an SSM Automation document) when a resource drifts out of compliance, recording the whole timeline.',
+      },
+      sections: [
+        {
+          heading: 'Detect and remediate with AWS Config',
+          body: 'AWS Config is the compliance workhorse. It records the configuration of resources over time and evaluates them against Config rules — AWS-managed (e.g. encrypted-volumes, s3-bucket-public-read-prohibited, restricted-ssh) or custom (Lambda/Guard-backed). When a resource is non-compliant, Config can trigger an automatic remediation action — typically an SSM Automation document — to fix it (e.g. remove public access, enable encryption). Conformance packs bundle many rules and remediations into one deployable unit you can roll out org-wide. Config also gives you a full configuration timeline and relationships, answering "what changed, when, and was it compliant" for audits.',
+          bullets: [
+            'Config rule detects drift; an SSM Automation remediation fixes it automatically.',
+            'Conformance packs deploy a whole compliance baseline (rules + remediations) across the org.',
+            'Config’s configuration timeline answers "what was the state of this resource at this time" for auditors.',
+          ],
+          callout: { type: 'note', text: 'The canonical "detect and auto-fix" pattern is a Config rule + an SSM Automation remediation. "Who made the change" is CloudTrail; "is it compliant and fix it" is Config.' },
+        },
+        {
+          heading: 'Posture scoring with Security Hub',
+          body: 'AWS Security Hub aggregates findings (from GuardDuty, Inspector, Macie, Config, partners) and runs security standards — AWS Foundational Security Best Practices, CIS AWS Foundations Benchmark, PCI DSS, NIST — producing a compliance score and a prioritized list of failed controls across all accounts and Regions. Many of its controls are powered by Config rules under the hood. Security Hub supports automated response and remediation (sending findings to EventBridge for SSM/Lambda actions) and cross-Region aggregation. The exam framing: Security Hub is the single pane for "how compliant and secure is our posture, scored against a recognized standard, across the whole org."',
+          bullets: [
+            'Security Hub standards (FSBP, CIS, PCI, NIST) produce a posture score and failed-control list across accounts.',
+            'Findings can route through EventBridge to SSM/Lambda for automated remediation.',
+            'Cross-Region and cross-account aggregation gives one org-wide compliance view.',
+          ],
+          callout: { type: 'tip', text: '"One prioritized, scored view of security posture against a recognized standard across all accounts" → Security Hub. "Evaluate and remediate a specific resource-configuration rule" → AWS Config.' },
+        },
+        {
+          heading: 'Evidence collection with Audit Manager',
+          body: 'AWS Audit Manager automates the collection of audit evidence and maps it to the controls of compliance frameworks (SOC 2, PCI DSS, GDPR, HITRUST, CIS, and custom frameworks). It continuously gathers evidence from CloudTrail, Config, Security Hub, and AWS API calls, organizes it into assessment reports, and tracks control status — turning what used to be a manual evidence-gathering scramble into an ongoing, framework-aligned process. The distinction the exam tests: Config and Security Hub assess the technical state; Audit Manager packages the evidence of that state into auditor-ready assessments against a named framework.',
+          bullets: [
+            'Audit Manager maps automatically-collected evidence to framework controls (SOC 2, PCI, GDPR, custom).',
+            'It produces auditor-ready assessment reports, reducing manual evidence collection.',
+            'Use it when the requirement is "prepare evidence for an audit against framework X," not "detect a misconfiguration."',
+          ],
+          callout: { type: 'warning', text: 'Audit Manager collects and organizes evidence for an audit; it does not detect or fix misconfigurations. If the requirement is remediation, that is Config; if it is "produce evidence for SOC 2," that is Audit Manager.' },
+        },
+        {
+          heading: 'AWS Artifact and the Well-Architected Tool',
+          body: 'Two final pieces. AWS Artifact is the self-service portal for AWS’s own compliance documentation — SOC reports, ISO certifications, PCI attestations, and the like — used to demonstrate AWS’s side of the shared responsibility model to your auditors. It also hosts certain agreements (e.g. BAA). The AWS Well-Architected Tool lets you review workloads against the framework’s pillars (including the Security pillar), surfacing risks and improvement recommendations as a structured self-assessment. The shared responsibility model underlies all of this: AWS is responsible for security of the cloud (Artifact evidences this); you are responsible for security in the cloud (Config, Security Hub, Audit Manager, and the Well-Architected review evidence that).',
+          bullets: [
+            'AWS Artifact = download AWS’s compliance reports (SOC, ISO, PCI) and agreements — AWS’s side of shared responsibility.',
+            'Well-Architected Tool = structured self-assessment of a workload against the framework pillars, including Security.',
+            'Shared responsibility: Artifact covers "of the cloud"; your tools cover "in the cloud."',
+          ],
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 0,
+          question: 'A team needs unencrypted EBS volumes to be detected and automatically brought into compliance, with a recorded history of the change. Which approach fits best?',
+          options: [
+            'An Amazon Inspector vulnerability scan',
+            'An AWS Config rule (encrypted-volumes) with an automatic SSM Automation remediation',
+            'A CloudWatch alarm on volume metrics',
+            'A manual quarterly review',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — a Config rule detects the non-compliant volumes and an attached SSM Automation remediation fixes them, while Config records the configuration timeline. Inspector finds CVEs, not configuration compliance.',
+          elaborativePrompt: 'How do the detection and the remediation pieces work together in AWS Config?',
+        },
+        {
+          afterSection: 2,
+          question: 'An auditor requests evidence that the company’s controls satisfy SOC 2, collected continuously and mapped to the SOC 2 control set. Which service is purpose-built for assembling this evidence?',
+          options: [
+            'AWS Config rules',
+            'AWS Audit Manager',
+            'AWS Security Hub',
+            'AWS Artifact',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — Audit Manager continuously collects evidence and maps it to a framework’s controls (like SOC 2), producing auditor-ready assessments. Artifact provides AWS’s own reports; Config/Security Hub assess technical state but don’t package framework evidence.',
+          elaborativePrompt: 'How does Audit Manager’s job differ from what AWS Artifact provides?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself: you must continuously detect and auto-fix misconfigurations, score your posture against a recognized standard across all accounts, assemble evidence for a SOC 2 audit, and obtain AWS’s own ISO/SOC reports for the auditor. Walk through which service delivers each, and where the shared-responsibility line falls.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A company must continuously evaluate its accounts against the CIS AWS Foundations Benchmark, see a prioritized compliance score across all accounts and Regions, and automatically remediate the most common failures. Which combination best meets this?',
+        options: [
+          'AWS Artifact to download CIS reports and a manual remediation checklist',
+          'AWS Security Hub with the CIS standard enabled for scoring, backed by AWS Config rules, with failed findings routed through EventBridge to SSM Automation for remediation',
+          'Amazon Inspector scanning instances weekly',
+          'AWS Audit Manager assessments reviewed quarterly',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'Security Hub runs the CIS standard to produce a cross-account, cross-Region posture score and prioritized failed controls (many backed by Config rules), and routing findings through EventBridge to SSM Automation delivers automatic remediation — covering all three requirements.',
+          perOption: [
+            'Artifact provides AWS’s own compliance documents, not a continuous evaluation of your accounts; manual remediation does not scale.',
+            'Correct — Security Hub (CIS standard) + Config rules score posture across the org, and EventBridge→SSM Automation auto-remediates failures.',
+            'Inspector finds software CVEs and reachability, not CIS configuration-benchmark compliance scoring.',
+            'Audit Manager assembles audit evidence but does not provide continuous posture scoring or automatic remediation.',
           ],
         },
       },

@@ -1611,7 +1611,134 @@ function DatastoreSelectorWidget() {
   )
 }
 
+// ── SCS D1 (Session 1): which security service produces this signal ──────────
+function DetectiveServiceWidget() {
+  return (
+    <ScenarioSorter
+      title="The Detective-Service Map — Which Service Sees This?"
+      intro="A third of Domain 1 reduces to 'which service produces this signal?' Tag each requirement with the one service built for it."
+      cats={[
+        { id: 'guardduty', label: 'GuardDuty', color: '#dc2626', desc: 'Threat detection (logs, no agents)' },
+        { id: 'securityhub', label: 'Security Hub', color: '#2563eb', desc: 'Aggregate findings + standards score' },
+        { id: 'macie', label: 'Macie', color: '#7c3aed', desc: 'Sensitive-data discovery in S3' },
+        { id: 'inspector', label: 'Inspector', color: '#ea580c', desc: 'CVE + reachability scanning' },
+        { id: 'detective', label: 'Detective', color: '#0d9488', desc: 'Investigate / root-cause a finding' },
+        { id: 'config', label: 'AWS Config', color: '#65a30d', desc: 'Configuration state + compliance' },
+      ]}
+      items={[
+        { t: 'Detect a compromised EC2 instance communicating with a known malicious IP, with no agents to install', a: 'guardduty', why: 'GuardDuty analyzes CloudTrail, VPC Flow Logs, and DNS logs with managed threat intelligence — agentless threat detection.' },
+        { t: 'One normalized dashboard of findings across 40 accounts, scored against the AWS Foundational Security Best Practices standard', a: 'securityhub', why: 'Security Hub aggregates and normalizes findings (ASFF) and runs security standards — it is the posture layer, not a detector.' },
+        { t: 'Discover credit-card numbers and other PII sitting in S3 buckets', a: 'macie', why: 'Macie scans and classifies sensitive data in S3 and flags public/unencrypted buckets.' },
+        { t: 'Continuously scan EC2 instances and ECR container images for known CVEs', a: 'inspector', why: 'Inspector scans EC2, ECR images, and Lambda for CVEs and unintended network reachability.' },
+        { t: 'Build a linked behavior graph to trace the root cause and scope of a finding across accounts', a: 'detective', why: 'Detective investigates — it links CloudTrail/VPC/GuardDuty data into a graph for RCA. It explains; GuardDuty detects.' },
+        { t: 'Record whether an S3 bucket is public over time and evaluate it against a rule', a: 'config', why: 'Config records configuration state and evaluates compliance rules — "is this configured correctly," not "who is attacking."' },
+      ]}
+    />
+  )
+}
+
+// ── SCS D1 (Session 2): which log source holds the evidence ──────────────────
+function LogSourceSelectorWidget() {
+  return (
+    <ScenarioSorter
+      title="Choose the Right Log Source"
+      intro="Each log source sees a different layer. Tag each investigative question with the source that actually contains the evidence — a recurring, high-value exam pattern."
+      cats={[
+        { id: 'cloudtrail', label: 'CloudTrail', color: '#2563eb', desc: 'AWS API activity (who did what)' },
+        { id: 'flow', label: 'VPC Flow Logs', color: '#ea580c', desc: 'IP/port metadata, accept/reject' },
+        { id: 'resolver', label: 'Resolver query logs', color: '#7c3aed', desc: 'DNS names resolved in the VPC' },
+        { id: 'cloudfront', label: 'CloudFront/ALB logs', color: '#0d9488', desc: 'Layer-7 HTTP request detail' },
+      ]}
+      items={[
+        { t: 'Which external domain names did a compromised instance try to resolve (C2 detection)', a: 'resolver', why: 'Route 53 Resolver query logs record DNS names; Flow Logs only show IPs, not domains.' },
+        { t: 'Which source/destination IPs and ports were used, and was traffic accepted or rejected', a: 'flow', why: 'VPC Flow Logs capture IP-level metadata and ACCEPT/REJECT — but no payloads or domain names.' },
+        { t: 'Who made the API call that deleted the S3 bucket, and from where', a: 'cloudtrail', why: 'CloudTrail is the API system of record for control-plane actions.' },
+        { t: 'Which URLs and HTTP status codes were served at the edge', a: 'cloudfront', why: 'CloudFront/ALB access logs hold Layer-7 HTTP detail: URI, status, user agent, client IP.' },
+        { t: 'Object-level GetObject/PutObject reads and writes of a specific S3 bucket', a: 'cloudtrail', why: 'CloudTrail data events record object-level S3 access (off by default; enable selectively).' },
+        { t: 'How many bytes were exfiltrated between two private IP addresses', a: 'flow', why: 'Flow Logs include the bytes field for traffic-volume analysis between IPs.' },
+      ]}
+    />
+  )
+}
+
+// ── SCS D2 (Session 5): which incident-response phase does this action belong to
+function IrPhaseWidget() {
+  return (
+    <ScenarioSorter
+      title="Incident Response — Match the Action to the Phase"
+      intro="The exam rewards 'isolate and preserve before you destroy.' Tag each action with the response phase it belongs to."
+      cats={[
+        { id: 'contain', label: 'Contain', color: '#dc2626', desc: 'Isolate without destroying evidence' },
+        { id: 'capture', label: 'Capture', color: '#7c3aed', desc: 'Preserve forensic artifacts' },
+        { id: 'recover', label: 'Eradicate & recover', color: '#0d9488', desc: 'Remove threat, rebuild clean' },
+        { id: 'rca', label: 'Root cause', color: '#2563eb', desc: 'Find how and how far' },
+      ]}
+      items={[
+        { t: 'Swap the instance to a quarantine security group that blocks all traffic', a: 'contain', why: 'Network isolation stops spread/exfiltration without terminating the host.' },
+        { t: 'Take an EBS snapshot and copy memory to a locked-down forensics account', a: 'capture', why: 'Capture artifacts before any action that could erase evidence.' },
+        { t: 'Rebuild the workload from a known-good, patched golden AMI', a: 'recover', why: 'Recovery means restore-from-clean, never "clean in place."' },
+        { t: 'Use Amazon Detective to map the implicated role’s activity across accounts', a: 'rca', why: 'Detective’s behavior graph answers how the attacker got in and how far it spread.' },
+        { t: 'Detach the instance from its Auto Scaling group so it is not replaced mid-investigation', a: 'contain', why: 'Detaching stops traffic and prevents auto-replacement — part of containment.' },
+        { t: 'Revoke the compromised role’s active sessions and rotate the leaked access key', a: 'contain', why: 'Credential containment cuts off the attacker’s access path.' },
+        { t: 'Restore application data from a verified clean backup before returning to service', a: 'recover', why: 'Clean restore is the recovery phase, after eradication.' },
+      ]}
+    />
+  )
+}
+
+// ── SCS D3 (Session 8): which network control fits ───────────────────────────
+function NetworkControlWidget() {
+  return (
+    <ScenarioSorter
+      title="Network Security Control — Pick the Right One"
+      intro="Security group, NACL, Network Firewall, or Verified Access? Tag each requirement with the control that operates at the right layer."
+      cats={[
+        { id: 'sg', label: 'Security Group', color: '#2563eb', desc: 'Stateful, allow-only, at the ENI' },
+        { id: 'nacl', label: 'Network ACL', color: '#7c3aed', desc: 'Stateless, allow+deny, subnet' },
+        { id: 'nfw', label: 'Network Firewall', color: '#dc2626', desc: 'IPS, DPI, domain filtering' },
+        { id: 'va', label: 'Verified Access', color: '#0d9488', desc: 'Zero-trust app access, no VPN' },
+      ]}
+      items={[
+        { t: 'Automatically allow return traffic for any inbound flow you permit', a: 'sg', why: 'Security groups are stateful — responses to allowed traffic are permitted automatically.' },
+        { t: 'Explicitly deny a specific malicious /24 range across an entire subnet', a: 'nacl', why: 'Only NACLs support deny rules, and they act at the subnet boundary.' },
+        { t: 'Deep packet inspection with Suricata-compatible IPS rules in a dedicated firewall subnet', a: 'nfw', why: 'AWS Network Firewall does DPI/IPS and domain filtering beyond IP/port.' },
+        { t: 'VPN-less, identity- and device-aware access to internal apps, evaluated on every request', a: 'va', why: 'Verified Access is zero-trust per-request access to internal applications without a VPN.' },
+        { t: 'Reference another security group as the source for tier-to-tier traffic', a: 'sg', why: 'Security groups can reference each other — clean for app→db rules.' },
+        { t: 'Domain-name allow/deny lists for egress filtering at the VPC level', a: 'nfw', why: 'Network Firewall filters by domain and protocol; security groups and NACLs cannot.' },
+      ]}
+    />
+  )
+}
+
+// ── SCS D4 (Session 10): IAM policy evaluation — allowed or denied? ───────────
+function PolicyEvalWidget() {
+  return (
+    <ScenarioSorter
+      title="IAM Policy Evaluation — Allowed or Denied?"
+      intro="Explicit deny always wins; SCPs and boundaries set ceilings, never grant; cross-account needs both sides. Decide the outcome of each policy combination."
+      cats={[
+        { id: 'allow', label: 'Allowed', color: '#16a34a', desc: 'The request succeeds' },
+        { id: 'deny', label: 'Denied', color: '#dc2626', desc: 'The request is blocked' },
+      ]}
+      items={[
+        { t: 'Identity policy allows s3:DeleteObject, but an SCP on the account explicitly denies s3:DeleteObject', a: 'deny', why: 'An explicit deny anywhere — including an SCP — overrides any allow.' },
+        { t: 'Identity policy allows ec2:*, but the account SCP allows only ec2:Describe*. The action is ec2:TerminateInstances', a: 'deny', why: 'The SCP caps the account; TerminateInstances is outside the maximum permissions.' },
+        { t: 'Same-account: identity policy allows s3:GetObject, no deny anywhere, no boundary or SCP excludes it', a: 'allow', why: 'An explicit allow with no deny and within all ceilings = allowed.' },
+        { t: 'No identity or resource policy grants the action, and nothing explicitly denies it either', a: 'deny', why: 'The default is implicit deny — a permission must be explicitly allowed.' },
+        { t: 'Cross-account: the resource policy allows the principal, but the caller’s identity policy does not allow the action', a: 'deny', why: 'Cross-account access needs an allow on BOTH the resource policy and the caller’s identity policy.' },
+        { t: 'Identity policy allows kms:Decrypt, but the KMS key policy does not delegate access to IAM', a: 'deny', why: 'The KMS key policy is the root of trust — IAM alone cannot grant key use unless the key policy allows it.' },
+        { t: 'Identity policy allows the action, the permission boundary also permits it, and there is no deny', a: 'allow', why: 'Allowed by identity policy and within the boundary, with no explicit deny — the request succeeds.' },
+      ]}
+    />
+  )
+}
+
 const INTERACTIVE_WIDGETS = {
+  'detective-service': DetectiveServiceWidget,
+  'log-source-selector': LogSourceSelectorWidget,
+  'ir-phase': IrPhaseWidget,
+  'network-control': NetworkControlWidget,
+  'policy-eval': PolicyEvalWidget,
   'model-selector': ModelSelectorWidget,
   'vector-store-selector': VectorStoreSelectorWidget,
   'hybrid-search': HybridSearchWidget,
