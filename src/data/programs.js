@@ -412,6 +412,42 @@ export const PROGRAMS = [
     evergreenValue:
       'Even if you never sit the exam, you walk away able to reason about cloud security the way an attacker and a defender both do — least-privilege identity, layered network and data controls, detection and response, and governance across many accounts. That security judgment is among the most in-demand and durable skills in all of technology, whatever your job title.',
   },
+  {
+    code: 'ANS-C01',
+    slug: 'ans-c01',
+    name: 'AWS Certified Advanced Networking – Specialty',
+    shortName: 'Advanced Networking Specialty',
+    level: 'Specialty',
+    Icon: Network,
+    color: '#0891B2',
+    tagline: 'Design, build, operate, and secure AWS and hybrid networks at scale.',
+    heroLead: 'The cloud is just somebody else’s network.',
+    heroAccent: 'Learn to architect it end to end.',
+    blurb:
+      'ANS-C01 is AWS’s deepest networking credential. It teaches you to design global edge and DNS solutions, integrate load balancing for high availability, connect on-premises networks to AWS with Direct Connect, VPN, and BGP, route across many accounts, Regions, and VPCs with Transit Gateway and PrivateLink, automate it all with infrastructure as code, and secure every traffic flow from the internet edge to east-west traffic between VPCs.',
+    whyTopic:
+      'Networking is the substrate every cloud workload runs on — and it is where the hardest, least-forgiving problems live. A misjudged CIDR plan, a non-transitive peering mesh, or a resolver pointed the wrong way can quietly cap an entire platform’s growth. The valuable skill is not memorizing services; it is reasoning about how packets actually flow: when a Transit Gateway beats VPC peering, how BGP attributes steer traffic across redundant Direct Connect links, why an inbound Resolver endpoint solves one DNS problem and an outbound one solves the opposite, and where each security control belongs in a layered defense. This program trains exactly that judgment — connectivity that scales, DNS that resolves everywhere, and traffic that stays private and observable. It is the difference between using AWS networking services and engineering a network the whole business depends on.',
+    learnOutcomes: [
+      'Designing global edge and traffic management — CloudFront, Global Accelerator, and their integration with ELB and API Gateway',
+      'Architecting DNS and load balancing — Route 53 public/private/hybrid zones, resolver endpoints, routing policies, and ALB/NLB/GWLB selection across OSI layers 3, 4, and 7',
+      'Connecting on-premises to AWS — redundant Direct Connect and Site-to-Site VPN, BGP path control, Transit Gateway, and SD-WAN integration',
+      'Routing at scale — VPC peering vs. Transit Gateway vs. PrivateLink, VPC sharing, IP-overlap strategies, and multi-account connectivity with AWS RAM',
+      'Operating and securing the network — Reachability Analyzer and flow-log troubleshooting, performance and cost optimization, and securing flows with WAF, Shield, Network Firewall, and encryption in transit',
+    ],
+    careerBenefit:
+      'Advanced Networking Specialty is one of the most experience-intensive and least-saturated AWS certifications — low supply of certified candidates keeps salaries competitive. It is a recognized signal for senior network engineer, cloud network architect, and hybrid-connectivity roles, and it unlocks the complex landing-zone, multi-account, and hybrid work that large enterprises depend on.',
+    roles: ['Network engineers', 'Cloud network architects', 'Hybrid connectivity specialists', 'Network automation engineers'],
+    sessions: 16,
+    domains: [
+      { label: 'Network Design', weight: '30%' },
+      { label: 'Network Implementation', weight: '26%' },
+      { label: 'Network Management & Operation', weight: '20%' },
+      { label: 'Network Security, Compliance & Governance', weight: '24%' },
+    ],
+    facts: { questions: '65', time: '170 min', passing: '700 / 1000', cost: '$300' },
+    evergreenValue:
+      'Even if you never sit the exam, you walk away able to reason about networks the way a senior network architect does — connectivity that scales across accounts and Regions, DNS that resolves correctly everywhere, hybrid links that stay redundant, and traffic that stays private and observable. That networking judgment is among the most durable and least-commoditized skills in all of technology, whatever your job title.',
+  },
 ]
 
 export const PROGRAMS_BY_CODE = PROGRAMS.reduce((acc, p) => {

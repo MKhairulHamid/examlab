@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ANS-C01 Exam Guide — CloudExamLab Wiki</title>
+  <style>
+    :root {
+      --sidebar-w: 255px;
+      --sidebar-bg: #0f172a;
+      --sidebar-text: #94a3b8;
+      --sidebar-active-text: #22d3ee;
+      --sidebar-active-bg: rgba(34,211,238,0.08);
+      --sidebar-hover: #1e293b;
+      --accent: #0891b2;
+      --accent-light: #ecfeff;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --heading: #0f172a;
+      --code-bg: #1e293b;
+      --code-text: #e2e8f0;
+      --stripe: #f8fafc;
+      --warn-bg: #fef2f2;
+      --warn-border: #ef4444;
+      --tip-bg: #f0fdf4;
+      --tip-border: #22c55e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--text);
+      line-height: 1.65;
+      background: #fff;
+    }
+
+    /* ── Sidebar ── */
+    #sidebar {
+      position: fixed; top: 0; left: 0;
+      width: var(--sidebar-w); height: 100vh;
+      background: var(--sidebar-bg);
+      overflow-y: auto; z-index: 100;
+      display: flex; flex-direction: column;
+    }
+    #sidebar::-webkit-scrollbar { width: 4px; }
+    #sidebar::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+    .sb-header {
+      padding: 20px 16px 14px;
+      border-bottom: 1px solid #1e293b;
+    }
+    .sb-logo { font-size: 13px; font-weight: 700; color: #f1f5f9; letter-spacing: .06em; text-transform: uppercase; }
+    .sb-sub  { font-size: 11px; color: var(--sidebar-text); margin-top: 2px; }
+    .sb-group { padding: 10px 0 2px; }
+    .sb-group-label {
+      font-size: 10px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: #475569;
+      padding: 0 16px; margin-bottom: 3px;
+    }
+    .sb-item {
+      display: block; padding: 6px 16px;
+      font-size: 12.5px; color: var(--sidebar-text);
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: background .12s, color .12s;
+    }
+    .sb-item:hover { background: var(--sidebar-hover); color: #f1f5f9; }
+    .sb-item.active { color: var(--sidebar-active-text); border-left-color: var(--sidebar-active-text); background: var(--sidebar-active-bg); }
+    .sb-item.ext { color: #22d3ee; }
+    .sb-item.ext::after { content: ' ↗'; font-size: 10px; }
+
+    /* ── Main ── */
+    #main {
+      margin-left: var(--sidebar-w);
+      padding: 48px 64px 96px;
+      max-width: calc(var(--sidebar-w) + 880px);
+    }
+
+    /* ── Section ── */
+    .section { padding-top: 52px; border-top: 1px solid var(--border); margin-top: 28px; }
+    .section:first-of-type { border-top: none; margin-top: 0; padding-top: 0; }
+
+    /* ── Typography ── */
+    h1 { font-size: 27px; font-weight: 700; color: var(--heading); margin-bottom: 10px; }
+    h2 { font-size: 19px; font-weight: 700; color: var(--heading); margin-top: 38px; margin-bottom: 14px; }
+    h3 { font-size: 15px; font-weight: 600; color: var(--heading); margin-top: 24px; margin-bottom: 8px; }
+    p  { margin-bottom: 12px; }
+    a  { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ul, ol { padding-left: 22px; margin-bottom: 12px; }
+    li { margin-bottom: 4px; }
+    hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+    .section-meta { font-size: 14px; color: var(--text-muted); margin-bottom: 26px; margin-top: -4px; }
+
+    /* ── Chip label ── */
+    .chip {
+      display: inline-block; padding: 2px 9px; border-radius: 4px;
+      font-size: 10px; font-weight: 700; letter-spacing: .05em;
+      text-transform: uppercase; margin-bottom: 6px;
+    }
+    .chip-platform  { background: #eff6ff; color: #1d4ed8; }
+    .chip-technical { background: #f0fdf4; color: #15803d; }
+    .chip-reference { background: #fdf4ff; color: #7e22ce; }
+    .chip-exam      { background: #ecfeff; color: #0e7490; }
+
+    /* ── Tables ── */
+    .tw { overflow-x: auto; margin: 16px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    th {
+      background: #f1f5f9; padding: 7px 12px;
+      text-align: left; font-size: 11px; font-weight: 700;
+      color: var(--text-muted); border-bottom: 2px solid var(--border);
+      white-space: nowrap;
+    }
+    td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:nth-child(even) td { background: var(--stripe); }
+
+    /* ── Code ── */
+    code {
+      font-family: 'SF Mono','Fira Code','Cascadia Code',Consolas,monospace;
+      font-size: 12px; background: #f1f5f9; color: #0e7490;
+      padding: 2px 5px; border-radius: 3px;
+    }
+
+    /* ── Callouts ── */
+    .callout {
+      padding: 12px 16px; border-radius: 6px;
+      margin: 14px 0; font-size: 13.5px;
+    }
+    .callout-note    { background: var(--accent-light); border-left: 4px solid var(--accent); }
+    .callout-warning { background: var(--warn-bg);      border-left: 4px solid var(--warn-border); }
+    .callout-tip     { background: var(--tip-bg);       border-left: 4px solid var(--tip-border); }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 10px;
+      font-size: 11px; font-weight: 600;
+    }
+    .badge-green  { background: #dcfce7; color: #15803d; }
+    .badge-yellow { background: #fef3c7; color: #b45309; }
+    .badge-gray   { background: #f1f5f9; color: #475569; }
+    .badge-blue   { background: #dbeafe; color: #1d4ed8; }
+    .badge-red    { background: #fee2e2; color: #b91c1c; }
+
+    /* ── Numbered steps ── */
+    .steps { counter-reset: step; list-style: none; padding: 0; margin-bottom: 14px; }
+    .steps li {
+      counter-increment: step;
+      padding: 7px 0 7px 36px; position: relative;
+      border-left: 2px solid var(--border); margin-left: 11px;
+    }
+    .steps li::before {
+      content: counter(step);
+      position: absolute; left: -11px; top: 7px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--accent); color: #fff;
+      font-size: 10px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── Page title ── */
+    .page-title { margin-bottom: 36px; }
+    .page-title h1 { font-size: 30px; margin-bottom: 8px; }
+    .page-title p  { font-size: 15px; color: var(--text-muted); margin: 0; }
+
+    /* ── Domain bar ── */
+    .domain-bar { display: flex; gap: 6px; flex-wrap: wrap; margin: 18px 0 8px; }
+    .domain-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 12px; border-radius: 20px;
+      font-size: 12px; font-weight: 600;
+      border: 1px solid var(--border); background: #f8fafc;
+    }
+    .domain-pill .pct {
+      background: var(--accent); color: #fff;
+      border-radius: 10px; padding: 1px 6px;
+      font-size: 10px; font-weight: 700;
+    }
+
+    /* ── Highlight row ── */
+    .hl td { background: #ecfeff !important; font-weight: 600; }
+
+    /* ── Jump-to-top ── */
+    #top-btn {
+      position: fixed; bottom: 28px; right: 28px;
+      background: var(--accent); color: #fff;
+      border: none; border-radius: 50%; width: 38px; height: 38px;
+      font-size: 18px; cursor: pointer; display: none;
+      align-items: center; justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+      transition: opacity .2s;
+    }
+    #top-btn:hover { background: #0e7490; }
+  </style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<nav id="sidebar">
+  <div class="sb-header">
+    <div class="sb-logo">CloudExamLab</div>
+    <div class="sb-sub">Exam Guide Series</div>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">On this page</div>
+    <a class="sb-item active" href="#overview">Overview</a>
+    <a class="sb-item" href="#structure">Exam Structure</a>
+    <a class="sb-item" href="#domains">Content Domains</a>
+    <a class="sb-item" href="#domain1">D1 — Network Design</a>
+    <a class="sb-item" href="#domain2">D2 — Network Implementation</a>
+    <a class="sb-item" href="#domain3">D3 — Management &amp; Operation</a>
+    <a class="sb-item" href="#domain4">D4 — Security, Compliance &amp; Governance</a>
+    <a class="sb-item" href="#candidate-prep">Helping Candidates</a>
+    <a class="sb-item" href="#simulation">Simulation Design</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Wiki</div>
+    <a class="sb-item ext" href="index.html">Developer Wiki</a>
+    <a class="sb-item ext" href="new-program-playbook.html">New Program Playbook</a>
+    <a class="sb-item ext" href="exam-authoring-standard.html">Exam &amp; Question Authoring</a>
+    <a class="sb-item ext" href="aws-certification-roadmap.html">AWS Cert Roadmap</a>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Official</div>
+    <a class="sb-item ext" href="https://docs.aws.amazon.com/aws-certification/latest/advanced-networking-specialty-01/advanced-networking-specialty-01.html">AWS Exam Guide ↗</a>
+  </div>
+</nav>
+
+<!-- ══ MAIN ══ -->
+<main id="main">
+
+  <!-- OVERVIEW -->
+  <div class="page-title" id="overview">
+    <h1>AWS Certified Advanced Networking – Specialty (ANS-C01)</h1>
+    <p>Everything we need to know about this exam — structure, domains, candidate prep strategy, and simulation design.</p>
+  </div>
+
+  <h2>What This Exam Is</h2>
+  <p>The AWS Certified Advanced Networking – Specialty (ANS-C01) validates a candidate's ability to design, implement, manage, and secure AWS and hybrid network architectures at scale. It is a Specialty-level exam — the deepest networking credential AWS offers — testing whether a candidate can build hybrid and cloud-native connectivity, implement core networking services to best practice, operate and troubleshoot complex topologies, automate networking with infrastructure as code, and secure traffic end to end.</p>
+  <ul>
+    <li><strong>Target audience:</strong> Network engineers, cloud network architects, and hybrid-connectivity specialists who design and operate AWS networking at scale.</li>
+    <li><strong>Prerequisite experience:</strong> 5 or more years of networking experience with 2 or more years of cloud and hybrid networking experience — one of the most experience-intensive certifications in the catalog. Working knowledge of AWS networking nuances, AWS security best practices, and AWS compute and storage options is expected.</li>
+    <li><strong>Why candidates take it:</strong> To validate specialized, hands-on networking capability for senior network engineer and cloud network architect roles, and as the networking-focused capstone alongside the Solutions Architect and DevOps tracks.</li>
+  </ul>
+
+  <!-- STRUCTURE -->
+  <div class="section" id="structure">
+    <span class="chip chip-exam">Exam Format</span>
+    <h1>Question Format &amp; Scoring</h1>
+    <p class="section-meta">Exact parameters from the official exam guide — use these verbatim in the simulation design.</p>
+
+    <h2>Question Types</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>Multiple choice</td><td>One correct answer from four options (three distractors)</td></tr>
+        <tr><td>Multiple response</td><td>Two or more correct answers from five or more options</td></tr>
+        <tr><td>Matching</td><td>On the real exam only — we author MC and MR exclusively, as on every CloudExamLab program</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Scoring Model</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Setting</th><th>Value</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Total questions on exam</td><td>65</td><td>50 scored + 15 unscored pretest (unidentified)</td></tr>
+        <tr><td>Duration</td><td>170 minutes</td><td>Exact match to real exam</td></tr>
+        <tr><td>Passing score</td><td>700 / 1,000</td><td>Display as % equivalent: 70%</td></tr>
+        <tr><td>Scoring</td><td>Compensatory</td><td>No per-domain minimums — total score only</td></tr>
+        <tr><td>Result</td><td>Pass / Fail</td><td>Scaled scoring equalizes difficulty across exam forms</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Out-of-Scope Topics (Do NOT Test)</h2>
+    <p>The exam focuses on AWS and hybrid <em>networking</em>. Services and tasks outside the networking specialist's role are out of scope — any question that hinges on them should be cut. Representative out-of-scope areas:</p>
+    <ul>
+      <li>Application, analytics, and machine-learning services not central to networking (e.g. Amazon SageMaker AI, Amazon Rekognition, AWS Glue, Amazon QuickSight)</li>
+      <li>Designing cryptographic algorithms or performing packet payload decryption</li>
+      <li>Application-level software development beyond network automation</li>
+      <li>End-user compute and desktop management unrelated to connectivity</li>
+    </ul>
+    <div class="callout callout-tip"><strong>Exam tip:</strong> ANS-C01 tests <em>designing, building, operating, and securing networks on AWS</em> — DNS, load balancing, edge, hybrid connectivity (Direct Connect, VPN, Transit Gateway, BGP), multi-account/VPC routing, monitoring, and network security. The crux of most questions is "which connectivity service or configuration best meets the performance, availability, security, and cost requirement?"</div>
+  </div>
+
+  <!-- DOMAIN OVERVIEW -->
+  <div class="section" id="domains">
+    <span class="chip chip-platform">Domains</span>
+    <h1>Domain Breakdown</h1>
+    <p class="section-meta">Four domains. Network Design (30%) leads, with Network Implementation (26%) and Security, Compliance, and Governance (24%) close behind — design and connectivity dominate the exam.</p>
+
+    <div class="domain-bar">
+      <span class="domain-pill">D1 — Network Design <span class="pct">30%</span></span>
+      <span class="domain-pill">D2 — Network Implementation <span class="pct">26%</span></span>
+      <span class="domain-pill">D3 — Management &amp; Operation <span class="pct">20%</span></span>
+      <span class="domain-pill">D4 — Security, Compliance &amp; Governance <span class="pct">24%</span></span>
+    </div>
+
+    <div class="tw"><table>
+      <thead><tr><th>Domain</th><th>Weight</th><th>Task statements</th></tr></thead>
+      <tbody>
+        <tr><td>D1 — Network Design</td><td>30%</td><td>1.1 Edge network services · 1.2 DNS solutions · 1.3 Load balancing · 1.4 Logging &amp; monitoring requirements · 1.5 Hybrid routing &amp; connectivity · 1.6 Multi-account/Region/VPC routing</td></tr>
+        <tr><td>D2 — Network Implementation</td><td>26%</td><td>2.1 Implement hybrid routing &amp; connectivity · 2.2 Implement multi-account/Region/VPC connectivity · 2.3 Complex hybrid &amp; multi-account DNS · 2.4 Automate &amp; configure network infrastructure</td></tr>
+        <tr><td>D3 — Network Management and Operation</td><td>20%</td><td>3.1 Maintain routing &amp; connectivity · 3.2 Monitor &amp; analyze to troubleshoot · 3.3 Optimize for performance, reliability &amp; cost</td></tr>
+        <tr><td>D4 — Network Security, Compliance, and Governance</td><td>24%</td><td>4.1 Network security &amp; compliance features · 4.2 Validate &amp; audit via monitoring/logging · 4.3 Confidentiality of data &amp; communications</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <!-- DOMAIN 1 -->
+  <div class="section" id="domain1">
+    <span class="chip chip-platform">Domain 1 · 30%</span>
+    <h1>Network Design</h1>
+    <p class="section-meta">The largest domain. Designing edge acceleration, DNS, load balancing, observability, and the hybrid and multi-account routing topologies that connect on-premises networks, Regions, accounts, and VPCs.</p>
+
+    <h2>Task 1.1 — Design a solution that incorporates edge network services to optimize user performance and traffic management for global architectures</h2>
+    <p><strong>Knowledge of:</strong></p>
+    <ul>
+      <li>Design patterns for content distribution networks (e.g. Amazon CloudFront)</li>
+      <li>Design patterns for global traffic management (e.g. AWS Global Accelerator)</li>
+      <li>Integration patterns for CDNs and global traffic management with other services (e.g. ELB, Amazon API Gateway)</li>
+    </ul>
+    <p><strong>Skills in:</strong> Evaluating requirements of global inbound and outbound internet traffic to design an appropriate content distribution solution.</p>
+
+    <h2>Task 1.2 — Design DNS solutions that meet public, private, and hybrid requirements</h2>
+    <p><strong>Knowledge of:</strong></p>
+    <ul>
+      <li>DNS protocol (e.g. DNS records, TTL, DNSSEC, DNS delegation, zones)</li>
+      <li>DNS logging and monitoring</li>
+      <li>Amazon Route 53 features (e.g. alias records, traffic policies, resolvers, health checks)</li>
+      <li>Integration of Route 53 with other AWS networking services (e.g. Amazon VPC), and with hybrid, multi-account, and multi-Region options</li>
+      <li>Domain registration</li>
+    </ul>
+    <p><strong>Skills in:</strong> Using Route 53 public and private hosted zones, Resolver endpoints in hybrid and AWS architectures, Route 53 for global traffic management, and creating and managing domain registrations.</p>
+
+    <h2>Task 1.3 — Design solutions that integrate load balancing to meet high availability, scalability, and security requirements</h2>
+    <p><strong>Knowledge of:</strong></p>
+    <ul>
+      <li>How load balancing works at layer 3, layer 4, and layer 7 of the OSI model</li>
+      <li>Different types of load balancers and how they meet design, HA, and security requirements; internal vs. external patterns; scaling factors</li>
+      <li>Integrations with other AWS services (e.g. Global Accelerator, CloudFront, AWS WAF, Route 53, Amazon EKS, ACM)</li>
+      <li>Configuration options (e.g. proxy protocol, cross-zone, session affinity, routing algorithms) and target groups (TCP, GENEVE, IP vs. instance)</li>
+      <li>AWS Load Balancer Controller for Kubernetes clusters; encryption and authentication (TLS termination vs. TLS passthrough)</li>
+    </ul>
+    <p><strong>Skills in:</strong> Selecting an appropriate load balancer for the use case, integrating auto scaling, and integrating load balancers with existing application deployments.</p>
+
+    <h2>Task 1.4 — Define logging and monitoring requirements across AWS and hybrid networks</h2>
+    <p><strong>Knowledge of:</strong></p>
+    <ul>
+      <li>Amazon CloudWatch metrics, agents, logs, alarms, dashboards, and insights for visibility</li>
+      <li>AWS Transit Gateway Network Manager and VPC Reachability Analyzer for visibility</li>
+      <li>Flow logs and traffic mirroring; access logging (e.g. load balancers, CloudFront)</li>
+    </ul>
+    <p><strong>Skills in:</strong> Identifying logging and monitoring requirements, recommending metrics that show network status, and capturing baseline network performance.</p>
+
+    <h2>Task 1.5 — Design a routing strategy and connectivity architecture between on-premises networks and the AWS Cloud</h2>
+    <p><strong>Knowledge of:</strong></p>
+    <ul>
+      <li>Routing fundamentals (e.g. dynamic vs. static, BGP)</li>
+      <li>Layer 1 and layer 2 concepts for physical interconnects (e.g. VLAN, LAG, optics, jumbo frames)</li>
+      <li>Encapsulation and encryption technologies (e.g. GRE, IPsec); resource sharing across accounts; overlay networks</li>
+    </ul>
+    <p><strong>Skills in:</strong> Identifying hybrid connectivity requirements; designing redundant hybrid connectivity (Direct Connect, Site-to-Site VPN); designing BGP routing with attributes for load sharing and active/passive; designing SD-WAN integration (Transit Gateway Connect, overlay networks).</p>
+
+    <h2>Task 1.6 — Design a routing strategy and connectivity architecture that include multiple AWS accounts, Regions, and VPCs</h2>
+    <p><strong>Knowledge of:</strong></p>
+    <ul>
+      <li>Connectivity patterns and use cases (e.g. VPC peering, Transit Gateway, AWS PrivateLink)</li>
+      <li>Capabilities and advantages of VPC sharing</li>
+      <li>IP subnets and solutions for IP address overlaps</li>
+    </ul>
+    <p><strong>Skills in:</strong> Connecting multiple VPCs with the most appropriate services; using VPC sharing in a multi-account setup; managing IP overlaps (NAT, PrivateLink, Transit Gateway routing).</p>
+  </div>
+
+  <!-- DOMAIN 2 -->
+  <div class="section" id="domain2">
+    <span class="chip chip-technical">Domain 2 · 26%</span>
+    <h1>Network Implementation</h1>
+    <p class="section-meta">Building what Domain 1 designs. Implementing hybrid connectivity, multi-account and multi-VPC topologies, complex DNS, and automating network infrastructure with infrastructure as code.</p>
+
+    <h2>Task 2.1 — Implement routing and connectivity between on-premises networks and the AWS Cloud</h2>
+    <p><strong>Knowledge of:</strong></p>
+    <ul>
+      <li>Routing protocols (static, dynamic); VPNs (security, accelerated VPN)</li>
+      <li>Layer 1 hardware (LOA documents, colocation facilities, Direct Connect); layer 2/3 (VLANs, IP addressing, gateways, routing, switching)</li>
+      <li>Traffic management and SD-WAN (Transit Gateway Connect); DNS (conditional forwarding, hosted zones, resolvers); security appliances; load balancing (L4 vs. L7, reverse proxies)</li>
+      <li>Infrastructure automation; AWS Organizations and AWS RAM (multi-account Transit Gateway, Direct Connect, VPC, Route 53); connectivity testing (Route Analyzer, Reachability Analyzer); VPC networking services</li>
+    </ul>
+    <p><strong>Skills in:</strong> Configuring physical hybrid requirements; configuring static/dynamic routing; connecting on-premises networks and name resolution to AWS; configuring load balancing, monitoring, and logging; testing and validating connectivity between environments.</p>
+
+    <h2>Task 2.2 — Implement routing and connectivity across multiple AWS accounts, Regions, and VPCs</h2>
+    <p><strong>Knowledge of:</strong></p>
+    <ul>
+      <li>Inter-VPC and multi-account connectivity (VPC peering, Transit Gateway, VPN, third-party vendors, SD-WAN, MPLS); private application connectivity (PrivateLink)</li>
+      <li>Expanding connectivity (Organizations, AWS RAM); host and service name resolution (DNS); infrastructure automation</li>
+      <li>Authentication and authorization (SAML, Active Directory); security (security groups, network ACLs, AWS Network Firewall); connectivity testing (Route Analyzer, Reachability Analyzer)</li>
+    </ul>
+    <p><strong>Skills in:</strong> Configuring single- and multi-VPC architectures (DHCP, routing, security groups); configuring hybrid connectivity with third-party solutions; configuring hub-and-spoke (Transit Gateway, transit VPC); configuring DNS for hybrid connectivity; implementing security between network boundaries; configuring monitoring and logging.</p>
+
+    <h2>Task 2.3 — Implement complex hybrid and multi-account DNS architectures</h2>
+    <p><strong>Knowledge of:</strong></p>
+    <ul>
+      <li>When to use private vs. public hosted zones; traffic management methods (latency, geography, weighting)</li>
+      <li>DNS delegation and forwarding (conditional forwarding); record types (A, AAAA, TXT, PTR, alias); DNSSEC</li>
+      <li>Sharing DNS services between accounts (AWS RAM); requirements for inbound and outbound endpoints</li>
+    </ul>
+    <p><strong>Skills in:</strong> Configuring DNS zones and conditional forwarding; configuring traffic management with DNS; configuring DNS for hybrid networks; configuring appropriate records; configuring DNSSEC on Route 53; configuring DNS in centralized or distributed architectures; configuring DNS monitoring and logging.</p>
+
+    <h2>Task 2.4 — Automate and configure network infrastructure</h2>
+    <p><strong>Knowledge of:</strong></p>
+    <ul>
+      <li>Infrastructure as code (AWS CDK, CloudFormation, AWS CLI, AWS SDK, APIs)</li>
+      <li>Event-driven network automation</li>
+      <li>Common problems of hardcoded instructions in IaC templates when provisioning networking resources</li>
+    </ul>
+    <p><strong>Skills in:</strong> Creating repeatable network configurations; integrating event-driven networking functions; integrating hybrid automation with AWS native IaC; eliminating risk and achieving efficiency at the lowest cost; automating optimization of cloud network resources with IaC.</p>
+  </div>
+
+  <!-- DOMAIN 3 -->
+  <div class="section" id="domain3">
+    <span class="chip chip-reference">Domain 3 · 20%</span>
+    <h1>Network Management and Operation</h1>
+    <p class="section-meta">Keeping the network healthy. Maintaining routing and connectivity, monitoring and analyzing traffic to troubleshoot, and optimizing for performance, reliability, and cost.</p>
+
+    <h2>Task 3.1 — Maintain routing and connectivity on AWS and hybrid networks</h2>
+    <p><strong>Knowledge of:</strong></p>
+    <ul>
+      <li>Industry-standard routing protocols in hybrid networks (e.g. BGP over Direct Connect)</li>
+      <li>Connectivity methods (Direct Connect gateway, Transit Gateway, VIFs); how limits and quotas affect networking services (bandwidth, route limits)</li>
+      <li>Private and public access methods for custom services (PrivateLink, VPC peering); inter-Regional and intra-Regional communication patterns</li>
+    </ul>
+    <p><strong>Skills in:</strong> Managing routing protocols over Direct Connect and VPN; maintaining private access to custom services; using route tables and propagation to direct traffic; setting up private or public access to AWS services; optimizing routing (route summarization, CIDR overlap).</p>
+
+    <h2>Task 3.2 — Monitor and analyze network traffic to troubleshoot and optimize connectivity patterns</h2>
+    <p><strong>Knowledge of:</strong></p>
+    <ul>
+      <li>Network performance metrics and reachability constraints (e.g. routing, packet size)</li>
+      <li>Appropriate logs and metrics for performance and reachability issues (e.g. packet loss)</li>
+      <li>Tools to collect and analyze logs and metrics (CloudWatch, VPC Flow Logs, VPC Traffic Mirroring); tools to analyze routing (Reachability Analyzer, Transit Gateway Network Manager)</li>
+    </ul>
+    <p><strong>Skills in:</strong> Analyzing tool output to troubleshoot connectivity; mapping topology (Transit Gateway Network Manager); analyzing packets for shaping issues (Traffic Mirroring); troubleshooting misconfiguration and verifying design intent (Reachability Analyzer); automating verification of connectivity intent; resolving packet-size/MTU mismatches.</p>
+
+    <h2>Task 3.3 — Optimize AWS networks for performance, reliability, and cost-effectiveness</h2>
+    <p><strong>Knowledge of:</strong></p>
+    <ul>
+      <li>When a VPC peer vs. a transit gateway is appropriate; methods to reduce bandwidth (unicast vs. multicast, CloudFront)</li>
+      <li>Cost-effective data-transfer options between a VPC and on-premises; different network interface types; Route 53 high-availability features (health checks with latency/weighted records)</li>
+      <li>Load balancing and traffic distribution patterns; VPC subnet optimization; frame size optimization across connection types</li>
+    </ul>
+    <p><strong>Skills in:</strong> Optimizing throughput; selecting the right interface (ENI, ENA, EFA); choosing peering vs. proxy vs. transit gateway; implementing multicast in VPC and on-premises; using Route 53 zones/records for availability; optimizing subnets for auto scaling and to prevent IP depletion (secondary CIDR); configuring jumbo frames; using Global Accelerator to improve performance and availability.</p>
+  </div>
+
+  <!-- DOMAIN 4 -->
+  <div class="section" id="domain4">
+    <span class="chip chip-exam">Domain 4 · 24%</span>
+    <h1>Network Security, Compliance, and Governance</h1>
+    <p class="section-meta">Securing the network. Implementing security and compliance features, validating and auditing with monitoring and logging, and keeping data and communications confidential in transit.</p>
+
+    <h2>Task 4.1 — Implement and maintain network features to meet security and compliance needs</h2>
+    <p><strong>Knowledge of:</strong></p>
+    <ul>
+      <li>Different threat models based on application architecture; common security threats</li>
+      <li>Mechanisms to secure different application flows; AWS network architecture that meets security and compliance requirements</li>
+    </ul>
+    <p><strong>Skills in:</strong> Securing inbound flows (AWS WAF, AWS Shield, Network Firewall); securing outbound flows (Network Firewall, proxies, Gateway Load Balancers); securing inter-VPC traffic (security groups, network ACLs, VPC endpoint policies); implementing architectures (untrusted network, perimeter VPC, three-tier); developing threat models and mitigations; testing compliance (failover, resiliency); automating security incident reporting and alerting.</p>
+
+    <h2>Task 4.2 — Validate and audit security by using network monitoring and logging services</h2>
+    <p><strong>Knowledge of:</strong></p>
+    <ul>
+      <li>Monitoring and logging services (CloudWatch, AWS CloudTrail, VPC Traffic Mirroring, VPC Flow Logs, Transit Gateway Network Manager); alert mechanisms (CloudWatch alarms)</li>
+      <li>Log creation in different services (VPC flow logs, load balancer access logs, CloudFront access logs); log delivery (Amazon Kinesis, Route 53, CloudWatch)</li>
+      <li>Mechanisms to audit network security configurations (security groups, AWS Firewall Manager, AWS Trusted Advisor)</li>
+    </ul>
+    <p><strong>Skills in:</strong> Creating and analyzing VPC flow logs (base and extended fields); creating and analyzing traffic mirroring; implementing automated alarms and custom metrics in CloudWatch; correlating across single or multiple log sources; implementing log-delivery solutions; implementing a network audit strategy across services and accounts (Firewall Manager, security groups, network ACLs).</p>
+
+    <h2>Task 4.3 — Implement and maintain confidentiality of data and communications of the network</h2>
+    <p><strong>Knowledge of:</strong></p>
+    <ul>
+      <li>Network encryption options available on AWS; VPN connectivity over Direct Connect; encryption methods for data in transit (IPsec)</li>
+      <li>Network encryption under the AWS shared responsibility model; security methods for DNS communications (DNSSEC)</li>
+    </ul>
+    <p><strong>Skills in:</strong> Implementing network encryption to meet compliance (IPsec, TLS); securing data in transit (CloudFront, ALB/NLB, VPN over Direct Connect, managed databases, Amazon S3, custom EC2 solutions, Transit Gateway); implementing certificate management with a CA (ACM, AWS Private CA); implementing secure DNS communications.</p>
+  </div>
+
+  <!-- CANDIDATE PREP -->
+  <div class="section" id="candidate-prep">
+    <span class="chip chip-platform">Candidate Prep</span>
+    <h1>How We Help ANS-C01 Candidates</h1>
+    <p class="section-meta">Who takes this exam, where they struggle, and how to build a study path that gets them to 700+.</p>
+
+    <h2>Who Takes This Exam</h2>
+    <ul>
+      <li><strong>Network engineers</strong> — already running BGP, DNS, and load balancing on-premises who want to validate AWS and hybrid depth.</li>
+      <li><strong>Cloud network architects</strong> — designing multi-account, multi-Region landing zones with Transit Gateway, Direct Connect, and PrivateLink.</li>
+      <li><strong>Hybrid-connectivity specialists</strong> — building and operating Direct Connect, Site-to-Site VPN, and SD-WAN integrations at scale.</li>
+    </ul>
+
+    <h2>What Candidates Struggle With</h2>
+    <ul>
+      <li><strong>Hybrid connectivity choices</strong> — Direct Connect vs. Site-to-Site VPN vs. both for redundancy, public vs. private vs. transit VIFs, Direct Connect gateway, and MACsec.</li>
+      <li><strong>Transit Gateway vs. peering vs. PrivateLink</strong> — which to use for a given inter-VPC, multi-account, or service-exposure requirement, and how route tables and propagation behave.</li>
+      <li><strong>BGP routing control</strong> — influencing path selection with AS path prepending, local preference, MED, and longest-prefix match for active/passive and load-shared designs.</li>
+      <li><strong>Hybrid and multi-account DNS</strong> — Route 53 Resolver inbound/outbound endpoints, conditional forwarding, private hosted zones shared via RAM, and centralized vs. distributed DNS.</li>
+      <li><strong>Route 53 routing policies</strong> — simple, weighted, latency, failover, geolocation, geoproximity, and multivalue, plus alias records and health checks.</li>
+      <li><strong>Network security layering</strong> — WAF vs. Shield vs. Network Firewall vs. Gateway Load Balancer vs. security groups/NACLs, and where each belongs in inbound, outbound, and east-west flows.</li>
+      <li><strong>Troubleshooting</strong> — Reachability Analyzer, VPC Flow Logs, Traffic Mirroring, and MTU/jumbo-frame and packet-size mismatches.</li>
+    </ul>
+
+    <h2>Recommended Study Path</h2>
+    <ol class="steps">
+      <li><strong>Domain 1 — Network Design first.</strong> The largest domain (30%) and the foundation: edge, DNS, load balancing, observability, and hybrid and multi-account routing topologies.</li>
+      <li><strong>Domain 2 — Network Implementation.</strong> 26%. Turn the designs into working hybrid connectivity, multi-account/VPC topologies, complex DNS, and automation.</li>
+      <li><strong>Domain 4 — Security, Compliance, and Governance.</strong> 24%. Secure inbound/outbound/east-west flows, audit with monitoring and logging, and encrypt data in transit.</li>
+      <li><strong>Domain 3 — Management and Operation.</strong> 20%. Maintain routing, troubleshoot with the analysis tools, and optimize for performance, reliability, and cost.</li>
+    </ol>
+
+    <h2>AI Explanation Quality for This Exam</h2>
+    <p>ANS-C01 questions are scenario-based and frequently offer several connectivity options that "work," where one is the best fit on availability, performance, security, or cost. Every explanation must cover WHY a plausible option is inferior — not just "this is wrong." Common patterns to cover:</p>
+    <ul>
+      <li>For connectivity questions: explain why an option does not scale or meet HA (e.g. "VPC peering is non-transitive, so a full mesh of peers does not scale the way a Transit Gateway hub does").</li>
+      <li>For DNS questions: explain why a resolver direction is wrong (e.g. "an inbound endpoint lets on-premises resolve AWS records; resolving on-premises names from AWS needs an outbound endpoint with forwarding rules").</li>
+      <li>For security questions: explain why a control is in the wrong layer (e.g. "a security group cannot inspect HTTP request content for SQLi — that is AWS WAF at layer 7").</li>
+    </ul>
+  </div>
+
+  <!-- SIMULATION DESIGN -->
+  <div class="section" id="simulation">
+    <span class="chip chip-exam">Simulation Design</span>
+    <h1>How to Formulate the Exam Simulation</h1>
+    <p class="section-meta">Parameters for building practice sets that match the real ANS-C01 exam. See the <a href="exam-authoring-standard.html">Exam &amp; Question Authoring Standard</a> for question-writing rules.</p>
+
+    <h2>Question Set Structure</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Setting</th><th>Value</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Total questions per simulation</td><td>65</td><td>Real exam is 50 scored + 15 unscored (unannounced); we present a full 65-question set</td></tr>
+        <tr><td>Duration</td><td>170 minutes</td><td>Exact match to real exam</td></tr>
+        <tr><td>Passing threshold</td><td>700 / 1,000</td><td>Display as % equivalent: 70%</td></tr>
+        <tr><td>Scoring</td><td>Compensatory</td><td>No domain minimums — total score only</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Domain Distribution per Set</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Domain</th><th>Weight</th><th>Qs in 65-Q set</th></tr></thead>
+      <tbody>
+        <tr><td>D1 — Network Design</td><td>30%</td><td>20</td></tr>
+        <tr><td>D2 — Network Implementation</td><td>26%</td><td>17</td></tr>
+        <tr><td>D3 — Network Management and Operation</td><td>20%</td><td>13</td></tr>
+        <tr><td>D4 — Network Security, Compliance, and Governance</td><td>24%</td><td>15</td></tr>
+        <tr class="hl"><td><strong>Total</strong></td><td><strong>100%</strong></td><td><strong>65</strong></td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Question Type Mix</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Type</th><th>Suggested % of set</th><th>Implementation priority</th></tr></thead>
+      <tbody>
+        <tr><td>Multiple choice (1-of-4)</td><td>~75%</td><td><span class="badge badge-green">High — launch with this</span></td></tr>
+        <tr><td>Multiple response (select N of 5–6)</td><td>~25%</td><td><span class="badge badge-green">High — common on exam</span></td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout callout-note">Free sample + Sim 1 (Foundational) are 100% multiple choice. Sim 2 (Architectural) and Sim 3 (Comparative) carry ~25% multiple response, matching the real exam's mix.</div>
+
+    <h2>Question Writing Rules (ANS-C01 specific)</h2>
+    <ul>
+      <li><strong>Scenario stems</strong> — "A network engineer must…" Establish the real constraint (availability, throughput, latency, hybrid redundancy, security, cost) before asking.</li>
+      <li><strong>Best-of-several-workable answers</strong> — most distractors are valid networking services but lose on scalability, transitivity, layer, or one unmet requirement. Engineer the crux to be the trade-off.</li>
+      <li><strong>Topology and routing framing</strong> — the right answer is usually the most scalable, resilient, purpose-fit connectivity design. Make non-transitive, single-path, or wrong-layer options the plausible-but-wrong choices.</li>
+      <li><strong>Cross-domain wiring</strong> — ANS scenarios routinely span design, implementation, DNS, and security. Let questions combine services as the real exam does.</li>
+      <li><strong>No cryptographic algorithm design, no packet-payload analysis, no non-networking ML/analytics</strong> — keep questions inside the in-scope networking service set.</li>
+    </ul>
+
+    <h2>Distractor Quality Guidelines</h2>
+    <ul>
+      <li>Use real networking confusions as distractors: Transit Gateway vs. VPC peering vs. PrivateLink; Direct Connect vs. Site-to-Site VPN; inbound vs. outbound Resolver endpoints; WAF vs. Shield vs. Network Firewall; ALB vs. NLB vs. GWLB.</li>
+      <li>For connectivity questions: make one distractor a design that does not scale (full-mesh peering) and one that breaks on transitivity or overlapping CIDRs.</li>
+      <li>For DNS questions: make one distractor the wrong resolver direction and one the wrong routing policy for the requirement.</li>
+      <li>For security questions: make one distractor a control in the wrong OSI layer and one that leaves the origin or an east-west path exposed.</li>
+    </ul>
+
+    <h2>AI Explanation Template</h2>
+    <p>Each question requires an explanation covering:</p>
+    <ul>
+      <li>Why the correct answer is right — the conceptual reason it best meets every stated constraint</li>
+      <li>Why each distractor is wrong — one sentence per option, naming the specific unmet constraint or limitation</li>
+      <li>Concept link — which domain/task statement this tests (e.g. "D1 · Task 1.6 — Multi-account/Region/VPC routing")</li>
+      <li>Service context — if a service appears, one line on what it does and what distinguishes it from the similar services in the distractors</li>
+    </ul>
+  </div>
+
+</main>
+
+<button id="top-btn" title="Back to top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<script>
+  const topBtn = document.getElementById('top-btn');
+  window.addEventListener('scroll', () => {
+    topBtn.style.display = window.scrollY > 400 ? 'flex' : 'none';
+  });
+</script>
+</body>
+</html>
