@@ -10,6 +10,7 @@ import progressService from '../services/progressService'
 import studyProgressService from '../services/studyProgressService'
 import certificateService, { buildVerifyPath } from '../services/certificateService'
 import CertificateCard from '../components/certificate/CertificateCard'
+import HowToEarn from '../components/certificate/HowToEarn'
 import { PROGRAMS, getProgram, getProgramBySlug } from '../data/programs'
 import { getSessionCourse } from '../utils/sessionCourses'
 import supabase from '../services/supabase'
@@ -60,22 +61,37 @@ function Dashboard() {
   const [practiceSets, setPracticeSets] = useState([])   // exam simulations for the focused exam
   const [loadingSets, setLoadingSets] = useState(false)
   const [inProgressBySet, setInProgressBySet] = useState({}) // { [setId]: progressObj | null }
+  // Gates the whole dashboard behind a loader until subscription + focused-cert
+  // + activity data have resolved. Without this, a cold load briefly paints the
+  // logged-out default state ("Unlock Full Access", "No program selected") at a
+  // paying user — alarming and untrue. See the early return before the main render.
+  const [bootstrapped, setBootstrapped] = useState(false)
   const autoFocusedRef = useRef(false)
 
   const userName = profile?.full_name || user?.email?.split('@')[0] || 'Student'
 
   useEffect(() => {
-    fetchExams()
-    if (user) {
-      fetchSubscription(user.id)
-      fetchEnrollments(user.id)
-      fetchPromoAccess(user.id)
-      initializeStreak()
-      loadExamResults()
-      loadExamDates()
-      certificateService.listMine().then(setCertificates)
-      studyProgressService.loadAll(user.id).then(setStudyProgress)
-    }
+    let cancelled = false
+    ;(async () => {
+      const tasks = [fetchExams()]
+      if (user) {
+        tasks.push(
+          fetchSubscription(user.id),
+          fetchEnrollments(user.id),
+          fetchPromoAccess(user.id),
+          initializeStreak(),
+          loadExamResults(),
+          loadExamDates(),
+          certificateService.listMine().then(setCertificates),
+          studyProgressService.loadAll(user.id).then(setStudyProgress),
+        )
+      }
+      // Wait for the essentials before lifting the loader, so we never flash the
+      // unsubscribed/no-program default at a user whose data simply hasn't arrived.
+      await Promise.allSettled(tasks)
+      if (!cancelled) setBootstrapped(true)
+    })()
+    return () => { cancelled = true }
   }, [user])
 
   const loadExamResults = async () => {
@@ -258,6 +274,7 @@ function Dashboard() {
         color: DOMAIN_PALETTE[i % DOMAIN_PALETTE.length],
         total: domainSessions.length,
         done: domainSessions.filter(s => completedIds.includes(s.id)).length,
+        firstSessionId: domainSessions[0]?.id || null,
       }
     })
 
@@ -319,32 +336,31 @@ function Dashboard() {
     return () => { cancelled = true }
   }, [featuredExam, user])
 
-  // ── Resume: most recent in-progress practice exam ─────────────────
+  // ── Resume: most recent in-progress practice exam FOR THE FOCUSED CERT ──
+  // Scoped to the focused exam's question sets so "Resume" never jumps the user
+  // into a different certification's attempt (the dashboard is single-cert).
   useEffect(() => {
-    if (!user) { setResumeExam(null); return }
+    if (!user || !featuredExam || !practiceSets.length) { setResumeExam(null); return }
     let cancelled = false
     ;(async () => {
       try {
         const all = await progressService.getAllProgress(user.id)
-        const active = (all || []).find(p => p.status === 'in_progress')
+        const setIds = new Set(practiceSets.map(s => s.id))
+        const active = (all || []).find(p => p.status === 'in_progress' && setIds.has(p.questionSetId))
         if (!active) { if (!cancelled) setResumeExam(null); return }
-        const { data } = await supabase
-          .from('question_sets')
-          .select('name, exam_types(slug, name)')
-          .eq('id', active.questionSetId).single()
-        if (cancelled || !data?.exam_types?.slug) return
+        const setMeta = practiceSets.find(s => s.id === active.questionSetId)
         const answered = Object.keys(active.answers || {}).filter(k => active.answers[k]?.length).length
-        setResumeExam({
-          slug: data.exam_types.slug,
+        if (!cancelled) setResumeExam({
+          slug: featuredExam.slug,
           setId: active.questionSetId,
-          setName: data.name,
-          examName: data.exam_types.name,
+          setName: setMeta?.name || featuredExam.name,
+          examName: featuredExam.name,
           answered,
         })
       } catch { if (!cancelled) setResumeExam(null) }
     })()
     return () => { cancelled = true }
-  }, [user])
+  }, [user, featuredExam, practiceSets])
 
   // ── Quick Stats ───────────────────────────────────────────────────
   const renderQuickStats = () => {
@@ -438,15 +454,21 @@ function Dashboard() {
               <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 260px), 1fr))' }}>
                 {byDomain.map((d, i) => {
                   const dPct = d.total > 0 ? Math.round((d.done / d.total) * 100) : 0
+                  const goToDomain = () => {
+                    if (!studySlug) return
+                    navigate(`/exam/${studySlug}/study${d.firstSessionId ? `?session=${d.firstSessionId}` : ''}`)
+                  }
                   return (
-                    <div key={d.id} className="bg-white/[0.04] rounded-xl p-3.5 border border-white/[0.07]">
+                    <button key={d.id} type="button" onClick={goToDomain}
+                            title={`${d.label} — open in course`}
+                            className="text-left w-full bg-white/[0.04] hover:bg-white/[0.08] rounded-xl p-3.5 border border-white/[0.07] hover:border-white/[0.16] transition-colors cursor-pointer">
                       <div className="flex items-center gap-2.5 mb-2.5">
                         <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 font-mono font-bold text-[0.8rem]"
                              style={{ background: `${d.color}18`, color: d.color }}>
                           {i + 1}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[0.78rem] font-semibold text-white/85 leading-tight truncate">{d.label}</p>
+                          <p className="text-[0.78rem] font-semibold text-white/85 leading-tight truncate" title={d.label}>{d.label}</p>
                           <p className="text-[0.65rem] text-white/35 font-medium">{d.weight} of exam · {d.total} sessions</p>
                         </div>
                         <span className="text-[0.7rem] font-mono font-bold shrink-0" style={{ color: d.color }}>
@@ -457,7 +479,7 @@ function Dashboard() {
                         <div className="h-full rounded-full transition-all duration-500"
                              style={{ width: `${dPct}%`, background: d.color }} />
                       </div>
-                    </div>
+                    </button>
                   )
                 })}
               </div>
@@ -779,7 +801,9 @@ function Dashboard() {
           <div className="border-t border-gray-100 pt-4">
             <div className="flex justify-between items-baseline mb-2">
               <span className="text-sm font-semibold text-gray-600">Today</span>
-              <span className="text-sm font-bold text-[#00D4AA]">{questionsToday}/{dailyGoal}</span>
+              <span className="text-sm font-bold text-[#00D4AA]">
+                {questionsToday >= dailyGoal ? `${questionsToday} · goal met` : `${questionsToday}/${dailyGoal}`}
+              </span>
             </div>
             <div className="bg-gray-200 rounded-full h-1.5 overflow-hidden">
               <div className="h-full rounded-full transition-all duration-300"
@@ -867,10 +891,15 @@ function Dashboard() {
       : null
     const otherCerts = certificates.filter(c => c.credentialCode !== focusedCert?.credentialCode)
 
-    const bestScore = focusedResults.reduce((m, r) => Math.max(m, r.percentageScore || 0), 0)
     const studyDone = courseProgress?.done || 0
     const studyTotal = courseProgress?.total || 0
     const studyComplete = studyTotal > 0 && studyDone >= studyTotal
+    // The credential is gated on passing the FINAL mock exam (>=70%), not any
+    // practice set — mirror the exam-detail page so both surfaces agree.
+    const finalExamSet = practiceSets.find(s => s.is_final_exam)
+    const finalExamPassed = finalExamSet
+      ? examResults.some(r => r.passed && r.questionSetId === finalExamSet.id)
+      : false
 
     return (
       <section className="py-8 bg-white">
@@ -904,32 +933,16 @@ function Dashboard() {
                     </Button>
                   </div>
                 ) : (
-                  <div className="rounded-xl border border-gray-200 bg-gray-50 p-5 sm:p-6">
-                    <h3 className="text-[#0A2540] font-bold text-lg mb-1.5">Earn your {featuredProgram.shortName} credential</h3>
-                    <p className="text-gray-600 text-sm mb-4">
-                      Finish the study program and pass a practice exam to unlock a shareable Certificate of Readiness.
-                    </p>
-                    <div className="flex flex-col gap-2.5 mb-5">
-                      <div className="flex items-center gap-2.5 text-sm">
-                        <CheckCircle2 className="w-4 h-4 shrink-0" style={{ color: studyComplete ? '#10b981' : '#cbd5e1' }} />
-                        <span className={studyComplete ? 'text-gray-700' : 'text-gray-500'}>
-                          Complete all study sessions
-                        </span>
-                        <span className="ml-auto font-mono text-xs text-gray-400">{studyDone}/{studyTotal}</span>
-                      </div>
-                      <div className="flex items-center gap-2.5 text-sm">
-                        <CheckCircle2 className="w-4 h-4 shrink-0" style={{ color: bestScore >= 70 ? '#10b981' : '#cbd5e1' }} />
-                        <span className={bestScore >= 70 ? 'text-gray-700' : 'text-gray-500'}>
-                          Pass a practice exam (70%+)
-                        </span>
-                        <span className="ml-auto font-mono text-xs text-gray-400">{bestScore}%</span>
-                      </div>
-                    </div>
-                    <Button variant="primary" size="sm" className="gap-2"
-                            onClick={() => navigate(studyComplete ? `/exam/${featuredExam.slug}` : `/exam/${featuredExam.slug}/study`)}>
-                      {studyComplete ? 'Take a practice exam' : 'Continue studying'} <ArrowRight className="w-4 h-4" />
-                    </Button>
-                  </div>
+                  <HowToEarn
+                    program={featuredProgram}
+                    mode="live"
+                    studyDone={studyDone}
+                    studyTotal={studyTotal}
+                    examPassed={finalExamPassed}
+                    issued={false}
+                    onStudy={() => navigate(`/exam/${featuredExam.slug}/study`)}
+                    onExam={() => setActiveTab('practice')}
+                  />
                 )}
               </div>
             </div>
@@ -1009,7 +1022,7 @@ function Dashboard() {
                  style={{ background: 'linear-gradient(135deg, #0A2540, #1A3B5C)', border: '1px solid rgba(0,212,170,0.25)' }}>
               <div className="flex-1 min-w-0">
                 <p className="text-white font-display font-bold text-sm">Unlock every {featuredProgram?.code || ''} simulation</p>
-                <p className="text-white/60 text-xs mt-0.5">Get full access to all practice sets and study sessions. Plans from $8.25/month.</p>
+                <p className="text-white/60 text-xs mt-0.5">Get full access to all practice sets and study sessions. From $8.25/mo billed annually, or $20/mo.</p>
               </div>
               <Button variant="primary" size="sm" onClick={() => setShowEnrollmentModal(true)}>
                 View Plans
@@ -1149,6 +1162,23 @@ function Dashboard() {
   )
 
   // ── Main ──────────────────────────────────────────────────────────
+  // Hold everything behind a loader until the first data load resolves, so a
+  // paying learner never sees the unsubscribed/no-program default flash on a
+  // cold load or refresh.
+  if (!bootstrapped) {
+    return (
+      <>
+        <DashboardHeader />
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-4">
+            <div className="h-10 w-10 rounded-full border-2 border-gray-200 border-b-[#00D4AA] animate-spin" />
+            <p className="text-sm font-medium text-gray-400">Loading your dashboard…</p>
+          </div>
+        </div>
+      </>
+    )
+  }
+
   return (
     <>
       <DashboardHeader />

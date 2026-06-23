@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import useAuthStore from '../../stores/authStore'
 import studyProgressService from '../../services/studyProgressService'
 import TeachToLearn from './TeachToLearn'
@@ -2081,7 +2081,7 @@ function SampleQuestion({ sample }) {
                   fontWeight: isSel ? 600 : 400, transition: 'all 0.15s', lineHeight: 1.5,
                 }}
               >
-                {revealed && isCorr && '✅ '}{revealed && isSel && !isCorr && '❌ '}{opt}
+                {revealed && isCorr && <span style={{ marginRight: '0.4rem' }}>✅</span>}{revealed && isSel && !isCorr && <span style={{ marginRight: '0.4rem' }}>❌</span>}{opt}
               </button>
               {revealed && sample.explanation?.perOption?.[idx] && (
                 <p style={{
@@ -2403,7 +2403,7 @@ function PreLearningCheck({ check }) {
                 fontWeight: isSel ? 600 : 400, transition: 'all 0.15s', lineHeight: 1.5,
               }}
             >
-              {revealed && isCorr && '✅ '}{revealed && isSel && !isCorr && '❌ '}{opt}
+              {revealed && isCorr && <span style={{ marginRight: '0.4rem' }}>✅</span>}{revealed && isSel && !isCorr && <span style={{ marginRight: '0.4rem' }}>❌</span>}{opt}
             </button>
           )
         })}
@@ -2496,7 +2496,7 @@ function SpeedBump({ quiz, cleared, onClear }) {
                 fontWeight: isSel ? 600 : 400, transition: 'all 0.15s', lineHeight: 1.5,
               }}
             >
-              {checked && isCorr && '✅ '}{checked && isSel && !isCorr && '❌ '}{opt}
+              {checked && isCorr && <span style={{ marginRight: '0.4rem' }}>✅</span>}{checked && isSel && !isCorr && <span style={{ marginRight: '0.4rem' }}>❌</span>}{opt}
             </button>
           )
         })}
@@ -2663,6 +2663,7 @@ function LessonBody({ session, cleared, onClear }) {
 
 function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { user, profile, logout } = useAuthStore()
   const userId = user?.id
   const submitterName = profile?.full_name || user?.email?.split('@')[0] || 'Anonymous learner'
@@ -2696,6 +2697,17 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
   // Track whether the user manually picked a session so a cross-device DB
   // load doesn't override an intentional navigation.
   const userNavigatedRef   = useRef(false)
+
+  // Honour a ?session= deep-link (e.g. the dashboard's domain cards) on mount,
+  // and treat it as a deliberate navigation so the DB resume doesn't override it.
+  useEffect(() => {
+    const target = searchParams.get('session')
+    if (target && course.sessions.some(s => s.id === target)) {
+      userNavigatedRef.current = true
+      setActiveId(target)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const persistToDb = (completed, checkpoints) => {
     if (!userId) return
