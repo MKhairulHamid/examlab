@@ -1351,6 +1351,615 @@ const ansC01Course = {
       videos: [COMPANION_VIDEO],
     },
 
+    {
+      id: 'd3-s12',
+      number: 12,
+      module: 'Domain 3 · Network Management and Operation',
+      domain: 'd3',
+      weight: '20%',
+      task: 'Task 3.2',
+      title: 'Monitoring & Troubleshooting Traffic — Flow Logs, Reachability Analyzer, and MTU',
+      duration: 30,
+      summary: 'When the network misbehaves, you need the right lens fast. This session builds the troubleshooting toolkit the exam tests: VPC Flow Logs for metadata, Traffic Mirroring for packets, Reachability Analyzer for path analysis, Transit Gateway Network Manager for topology, and the packet-size/MTU diagnosis that quietly breaks connectivity.',
+      objectives: [
+        'Select the right analysis tool for a performance or reachability problem',
+        'Interpret VPC Flow Log fields to find packet loss, rejects, and top talkers',
+        'Use Reachability Analyzer and Transit Gateway Network Manager to find the break',
+        'Diagnose and fix MTU/packet-size mismatches that cause intermittent failures',
+      ],
+      preLearningCheck: {
+        question: 'Large file transfers and some HTTPS sessions hang or fail across a VPN, while small pings succeed. What is the most likely networking cause?',
+        options: [
+          'A DNS misconfiguration',
+          'A maximum transmission unit (MTU)/packet-size mismatch causing fragmentation issues for large packets',
+          'An IAM permission problem',
+          'A Route 53 health check failure',
+        ],
+        correct: 1,
+        note: 'No pressure — guessing first improves retention. The key idea: small packets succeed while large transfers hang is the classic signature of an MTU mismatch — large packets need fragmentation or path MTU discovery, and when ICMP is blocked or MTU differs across the path (e.g. lower over VPN/TGW), they are silently dropped.',
+      },
+      sections: [
+        {
+          heading: 'Pick the lens for the symptom',
+          body: 'Map the symptom to the tool that holds the evidence:\n\nVPC Flow Logs — connection metadata (5-tuple, bytes, packets, ACCEPT/REJECT, and in extended format TCP flags, flow direction, and packet/byte counts). Use to spot rejected connections, asymmetric traffic, top talkers, and unusual volumes. Flow Logs can record packet loss indirectly via byte/packet counts but not payloads.\n\nCloudWatch metrics — per-service counters (NAT gateway bytes/ports, NLB/ALB flows and errors, VPN tunnel state, TGW data). Use for throughput, saturation, and trends against a baseline.\n\nTraffic Mirroring — actual packets to an analysis appliance for deep inspection of shaping, retransmits, and protocol issues.\n\nReachability Analyzer — configuration-based "can A reach B and what blocks it."\n\nTransit Gateway Network Manager / Route Analyzer — topology view and path tracing across the TGW/hybrid network.',
+          bullets: [
+            'Rejects, top talkers, asymmetric flows → VPC Flow Logs (use extended fields for TCP flags/direction).',
+            'Throughput, saturation, tunnel/NAT health → CloudWatch metrics.',
+            'Retransmits, packet shaping, protocol-level issues → Traffic Mirroring.',
+            'Can A reach B / where is it blocked → Reachability Analyzer; topology + path trace → TGW Network Manager / Route Analyzer.',
+          ],
+          callout: { type: 'note', text: 'Flow Logs answer "who talked, was it allowed, how much" (metadata). Traffic Mirroring answers "what exactly is in the packets." Reachability Analyzer answers "should this path even work, and what blocks it." Pick by the question.' },
+        },
+        {
+          heading: 'Reading Flow Logs effectively',
+          body: 'VPC Flow Logs deliver to CloudWatch Logs, S3, or Kinesis Data Firehose. Base fields cover the 5-tuple, bytes, packets, start/end, action (ACCEPT/REJECT), and log status. Custom/extended fields add value: flow-direction (ingress/egress), TCP flags, traffic-path, pkt-srcaddr/pkt-dstaddr (the real source/destination behind NAT or an intermediary), and instance/subnet/VPC IDs. To troubleshoot, query with Athena (over S3) or CloudWatch Logs Insights: filter REJECT to find blocked flows, compare byte counts to spot loss or asymmetry, and use pkt-srcaddr to see the true endpoint when traffic traverses NAT or a gateway. A REJECT in Flow Logs points at a security group or NACL; no log at all points at routing or a missing path.',
+          bullets: [
+            'Add extended fields (TCP flags, flow-direction, pkt-srcaddr/dstaddr) for real troubleshooting power.',
+            'REJECT entries = a security group/NACL blocked it; missing entries = routing/no-path problem.',
+            'Query with Athena (S3) or Logs Insights (CloudWatch) — filter by action, IP, port to isolate the issue.',
+          ],
+          callout: { type: 'tip', text: 'No Flow Log entry for an expected flow is itself a clue: if traffic never reaches the ENI, suspect a routing/route-table or gateway problem, not a security group (which would log a REJECT).' },
+        },
+        {
+          heading: 'Verifying paths and topology',
+          body: 'Reachability Analyzer is the fastest way to answer "why can\'t A reach B" without sending traffic: it evaluates security groups, NACLs, route tables, peering, TGW, gateways, and endpoints, and reports the path or the exact blocking component. Run it after changes to verify intent, and automate it to catch regressions. Transit Gateway Network Manager gives a global topology view of TGWs, attachments, and on-premises sites, with route analysis (Route Analyzer) to trace and validate paths across the hub and CloudWatch metrics/events for monitoring. Together they replace guesswork with deterministic answers.',
+          bullets: [
+            'Reachability Analyzer = deterministic path verification + blocker identification, no traffic sent.',
+            'TGW Network Manager = global topology + events + metrics for the TGW/hybrid network.',
+            'Route Analyzer (in Network Manager) traces a route across the TGW and flags where it would drop.',
+          ],
+        },
+        {
+          heading: 'Diagnosing MTU and packet size',
+          body: 'Packet-size/MTU issues are a signature ANS topic. Within a VPC, the MTU is up to 9001 (jumbo frames). Over an internet gateway, traffic to the internet is limited to 1500 bytes. Over a VPN, the path MTU is lower (around 1500 minus IPsec overhead, often ~1399). Over a Transit Gateway, the max is 8500. Over Direct Connect, jumbo frames up to 9001 are supported if both ends agree. When large packets are dropped (small packets fine, big transfers hang), the fix is to align MTU across the path and ensure Path MTU Discovery works — which requires allowing ICMP "fragmentation needed" (type 3, code 4) through security groups and NACLs. TCP MSS clamping on the edge device also avoids oversized segments.',
+          bullets: [
+            'MTU ceilings: VPC 9001, internet gateway 1500, Transit Gateway 8500, VPN ~1500-overhead, Direct Connect up to 9001.',
+            'Symptom of MTU mismatch: small packets succeed, large transfers stall/fail.',
+            'Allow ICMP type 3 code 4 so Path MTU Discovery works; consider TCP MSS clamping.',
+          ],
+          callout: { type: 'warning', text: 'Blocking all ICMP breaks Path MTU Discovery, causing large packets to be silently dropped while pings (small) still work. Allow ICMP "fragmentation needed" or align MTU end to end.' },
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 1,
+          question: 'An expected connection from an instance to a database produces no entry at all in VPC Flow Logs — not even a REJECT. What is the most likely cause?',
+          options: [
+            'A security group is blocking it',
+            'A routing problem or missing route means the traffic never reaches the interface to be logged',
+            'The database is encrypted',
+            'DNSSEC is disabled',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — a security group/NACL block would appear as a REJECT. No entry at all means traffic is not reaching the ENI, pointing to a route-table/path problem.',
+          elaborativePrompt: 'Why does the absence of any Flow Log entry implicate routing rather than a security group?',
+        },
+        {
+          afterSection: 3,
+          question: 'Across a Site-to-Site VPN, small requests work but large file uploads hang. ICMP is fully blocked on the path. What is the best fix?',
+          options: [
+            'Increase the security group rule count',
+            'Allow ICMP type 3 code 4 (fragmentation needed) so Path MTU Discovery works, and/or clamp TCP MSS to the path MTU',
+            'Switch DNS to Route 53',
+            'Add a second NAT gateway',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — large-packet hangs with small packets working is an MTU problem; PMTUD needs ICMP type 3 code 4, and MSS clamping prevents oversized segments over the lower VPN MTU.',
+          elaborativePrompt: 'How does blocking ICMP cause large packets specifically to fail while small ones succeed?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself: users report intermittent failures on large transfers, one app cannot reach another at all, and you suspect a path or MTU issue. Walk through which tool you use to confirm the path, how you read Flow Logs for the symptom, and how you diagnose and fix an MTU mismatch.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'After enabling a new Site-to-Site VPN, users find that small web requests and pings succeed, but large file downloads and some HTTPS sessions stall and time out. Security groups allow the traffic. What is the most likely cause and fix?',
+        options: [
+          'A DNS failure; switch to Route 53 Resolver',
+          'An MTU/packet-size mismatch over the VPN; allow ICMP fragmentation-needed messages for Path MTU Discovery and/or clamp TCP MSS to the lower path MTU',
+          'A missing IAM permission; attach an admin policy',
+          'The NLB is misconfigured; enable cross-zone load balancing',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'Small packets succeeding while large transfers stall is the classic MTU-mismatch signature. A VPN path has a lower MTU than the VPC; large packets need fragmentation or PMTUD, which requires ICMP type 3 code 4. Allowing that ICMP and/or clamping TCP MSS resolves it.',
+          perOption: [
+            'DNS resolves names; it does not cause large packets specifically to fail while small ones succeed.',
+            'Correct — the symptom is an MTU mismatch over the VPN; enabling PMTUD (ICMP frag-needed) and/or MSS clamping aligns packet sizes to the path.',
+            'IAM governs API permissions, not in-path packet delivery sizes.',
+            'Cross-zone load balancing affects target distribution, not large-packet delivery over a VPN.',
+          ],
+        },
+      },
+      videos: [COMPANION_VIDEO],
+    },
+
+    {
+      id: 'd3-s13',
+      number: 13,
+      module: 'Domain 3 · Network Management and Operation',
+      domain: 'd3',
+      weight: '20%',
+      task: 'Task 3.3',
+      title: 'Optimizing for Performance, Reliability & Cost — Interfaces, Jumbo Frames, and Data Transfer',
+      duration: 30,
+      summary: 'A working network is not always an optimal one. This session covers the optimization levers the exam tests: choosing the right network interface (ENI vs. ENA vs. EFA), jumbo frames, multicast, secondary CIDRs to prevent IP exhaustion, Route 53 for reliability, Global Accelerator for performance, and the data-transfer cost choices that quietly dominate the bill.',
+      objectives: [
+        'Select the right network interface — ENI, ENA, or EFA — for a performance requirement',
+        'Apply jumbo frames, multicast, and Global Accelerator to improve throughput and performance',
+        'Prevent IP exhaustion with secondary CIDRs and optimize subnets for auto scaling',
+        'Reduce data-transfer cost and choose peering vs. transit gateway on cost and reliability',
+      ],
+      preLearningCheck: {
+        question: 'An HPC workload needs the lowest possible inter-node latency and high throughput for tightly coupled MPI traffic between EC2 instances. Which network interface should be used?',
+        options: [
+          'A standard elastic network interface (ENI)',
+          'An Elastic Fabric Adapter (EFA), because it enables OS-bypass for low-latency, high-throughput HPC/ML communication',
+          'A NAT gateway',
+          'A Gateway Load Balancer endpoint',
+        ],
+        correct: 1,
+        note: 'No pressure — guessing first improves retention. The key idea: the EFA adds OS-bypass capabilities for tightly coupled HPC and distributed ML, giving much lower and more consistent latency than a standard ENI or even the ENA. The ENA gives high throughput (enhanced networking) but EFA is the HPC/MPI choice.',
+      },
+      sections: [
+        {
+          heading: 'Choosing the network interface',
+          body: 'Three interface types serve different performance needs:\n\nElastic Network Interface (ENI) — the standard virtual NIC; fine for general traffic.\n\nElastic Network Adapter (ENA) — enhanced networking that delivers high bandwidth (up to 100+ Gbps on supported instances) and low latency via SR-IOV; the default for high-throughput workloads. ENA Express adds even higher single-flow throughput and lower tail latency.\n\nElastic Fabric Adapter (EFA) — an ENA with added OS-bypass for tightly coupled HPC and distributed machine learning (MPI, NCCL). It dramatically lowers inter-node latency for scale-out compute. Pick ENI for normal traffic, ENA for high throughput, EFA for HPC/ML inter-node communication.',
+          bullets: [
+            'General traffic → ENI. High throughput / enhanced networking → ENA.',
+            'Tightly coupled HPC/ML (MPI, NCCL), lowest inter-node latency → EFA (OS-bypass).',
+            'Placement groups (cluster) plus ENA/EFA maximize throughput and minimize latency between instances.',
+          ],
+          callout: { type: 'note', text: 'EFA is the tell for HPC/ML inter-node latency; ENA is the tell for raw throughput/enhanced networking; ENI is the default. Distinguishing ENA vs. EFA is a common exam point.' },
+        },
+        {
+          heading: 'Throughput levers — jumbo frames, multicast, Global Accelerator',
+          body: 'Several levers improve performance: jumbo frames (MTU 9001 in-VPC, 8500 over TGW) reduce per-packet overhead for bulk transfer — both ends must support it. Multicast (one-to-many) is supported within a VPC via Transit Gateway multicast domains, useful for market-data and streaming workloads that previously needed overlays; reducing redundant unicast traffic cuts bandwidth. Global Accelerator improves performance and availability by routing user traffic over the AWS backbone to the nearest healthy endpoint with fast failover. CloudFront reduces bandwidth and latency by caching at the edge. Placement groups co-locate instances for low-latency, high-throughput intra-cluster traffic.',
+          bullets: [
+            'Jumbo frames cut overhead for bulk transfer (9001 in-VPC, 8500 over TGW) — both ends must agree.',
+            'Transit Gateway multicast domains provide native one-to-many delivery in/across VPCs.',
+            'Global Accelerator (backbone routing, fast failover) and CloudFront (edge caching) improve global performance.',
+          ],
+        },
+        {
+          heading: 'Reliability and IP-space optimization',
+          body: 'Reliability levers: Route 53 health checks with failover, latency, weighted, and multivalue records distribute and recover traffic across AZs and Regions; private zonal DNS entries can route to multiple AZs. Global Accelerator and multi-AZ/multi-Region designs add resilience. For IP space, a VPC running low on addresses can add secondary CIDR blocks (expanding without re-creating the VPC), and subnets should be sized for peak auto scaling so scale-out events do not exhaust available IPs. Right-sizing subnets and reserving space for growth prevents the painful "out of IPs" failure during a scale event.',
+          bullets: [
+            'Route 53 health checks + failover/latency/weighted/multivalue records = HA and graceful recovery.',
+            'Add secondary CIDR blocks to extend a VPC that is running out of addresses — no re-creation.',
+            'Size subnets for peak auto scaling so scale-out does not deplete the subnet\'s IP pool.',
+          ],
+          callout: { type: 'tip', text: 'When auto scaling fails to launch instances with an "insufficient IP addresses" error, the fix is larger or additional subnets and/or a secondary CIDR — not a quota increase on EC2.' },
+        },
+        {
+          heading: 'Data-transfer cost optimization',
+          body: 'Networking cost is dominated by data transfer, and the exam tests cost-aware design. Key facts: data transfer within the same AZ (using private IPs) is free; cross-AZ traffic is charged in both directions; data to the internet via internet gateway is charged egress; NAT gateway adds per-GB processing plus hourly cost (consolidate or use VPC endpoints to avoid routing AWS-service traffic through NAT); VPC gateway endpoints for S3/DynamoDB are free and keep that traffic off NAT/internet; PrivateLink/interface endpoints have hourly + per-GB cost but keep traffic private. Direct Connect lowers per-GB egress cost versus the internet at scale. For inter-VPC, peering avoids per-GB processing charges that a Transit Gateway adds (TGW charges per attachment-hour and per-GB), so for a small number of high-volume VPC pairs, peering can be cheaper; for many VPCs, TGW\'s manageability usually wins.',
+          bullets: [
+            'Same-AZ private-IP traffic is free; cross-AZ and internet egress are charged — design to minimize them.',
+            'Use S3/DynamoDB gateway endpoints (free) to keep that traffic off NAT and the internet.',
+            'Transit Gateway adds per-GB + per-attachment cost; peering avoids the per-GB TGW charge for a few high-volume pairs.',
+            'Direct Connect reduces egress cost at scale versus internet/VPN.',
+          ],
+          callout: { type: 'warning', text: 'Routing S3 or DynamoDB traffic through a NAT gateway incurs avoidable per-GB charges. A gateway VPC endpoint for S3/DynamoDB is free and keeps the traffic on the AWS network — a frequent cost-optimization answer.' },
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 2,
+          question: 'An Auto Scaling group fails to launch new instances during peak load with an error about insufficient available IP addresses in the subnet. What is the best remedy?',
+          options: [
+            'Request an EC2 instance quota increase',
+            'Add larger subnets and/or a secondary CIDR block to the VPC so there are enough addresses for scale-out',
+            'Enable cross-zone load balancing',
+            'Switch to a NAT gateway',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — the constraint is subnet IP space; larger subnets or a secondary CIDR provide the addresses scale-out needs. An EC2 quota increase does not add IPs.',
+          elaborativePrompt: 'Why is subnet/CIDR sizing, not an EC2 quota, the fix for an "insufficient IPs" scaling failure?',
+        },
+        {
+          afterSection: 3,
+          question: 'EC2 instances in private subnets generate large volumes of traffic to Amazon S3, currently routed through a NAT gateway, driving high data-processing charges. What is the most cost-effective fix?',
+          options: [
+            'Add a second NAT gateway',
+            'Create a gateway VPC endpoint for S3 so the traffic bypasses the NAT gateway at no per-GB cost',
+            'Move the instances to public subnets',
+            'Enable jumbo frames',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — an S3 gateway endpoint is free and routes S3 traffic privately off the NAT gateway, eliminating the per-GB NAT processing charges.',
+          elaborativePrompt: 'How does an S3 gateway endpoint remove both the cost and the internet exposure of NAT-routed S3 traffic?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself: you must speed up HPC inter-node traffic, stop a scaling failure caused by IP exhaustion, and cut the cost of heavy S3 traffic from private subnets. Walk through the interface choice, the IP-space fix, and the endpoint that removes the NAT cost.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A company runs private-subnet EC2 instances that send terabytes of data to Amazon S3 each month, currently via a NAT gateway, and the NAT data-processing charges are now the largest line on the bill. The traffic must stay off the public internet. What is the most cost-effective change?',
+        options: [
+          'Provision additional NAT gateways across AZs',
+          'Create a gateway VPC endpoint for Amazon S3 so the S3 traffic uses the endpoint at no per-GB cost and never traverses NAT or the internet',
+          'Move the instances to public subnets with public IPs',
+          'Enable Global Accelerator for the S3 traffic',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'A gateway VPC endpoint for S3 is free, routes S3 traffic privately within the AWS network, and removes it from the NAT gateway entirely — eliminating the per-GB NAT processing charges while keeping traffic off the internet.',
+          perOption: [
+            'More NAT gateways increase cost; they do not remove the per-GB processing charge for S3 traffic.',
+            'Correct — an S3 gateway endpoint bypasses NAT at no per-GB cost and keeps traffic private, directly cutting the dominant charge.',
+            'Public subnets expose instances and still incur internet data-transfer charges — worse on cost and security.',
+            'Global Accelerator is for inbound user traffic acceleration, not for outbound S3 data-transfer cost.',
+          ],
+        },
+      },
+      videos: [COMPANION_VIDEO],
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    //  DOMAIN 4 — NETWORK SECURITY, COMPLIANCE, AND GOVERNANCE (24%)
+    // ═══════════════════════════════════════════════════════════════
+
+    {
+      id: 'd4-s14',
+      number: 14,
+      module: 'Domain 4 · Network Security, Compliance, and Governance',
+      domain: 'd4',
+      weight: '24%',
+      task: 'Task 4.1',
+      title: 'Network Security Features — Inbound, Outbound, and East-West Protection',
+      duration: 30,
+      summary: 'Securing a network means putting the right control on the right flow. This session builds the layered-defense model the exam tests: WAF, Shield, and Network Firewall for inbound; Network Firewall, proxies, and Gateway Load Balancer for outbound; security groups, NACLs, and endpoint policies for east-west; and the perimeter-VPC and three-tier architectures that put it all together.',
+      objectives: [
+        'Secure inbound flows with AWS WAF, AWS Shield, and AWS Network Firewall at the right layer',
+        'Secure outbound flows with Network Firewall, proxies, and Gateway Load Balancer',
+        'Secure east-west (inter-VPC) traffic with security groups, NACLs, and VPC endpoint policies',
+        'Apply perimeter-VPC, three-tier, and untrusted-network architectures and develop a threat model',
+      ],
+      preLearningCheck: {
+        question: 'A public web application behind an Application Load Balancer is being targeted with SQL-injection and cross-site-scripting payloads in HTTP requests. Which control blocks these?',
+        options: [
+          'A network ACL on the public subnet',
+          'AWS WAF with managed rules on the ALB, inspecting and blocking malicious Layer-7 request patterns',
+          'A security group allowing only port 443',
+          'AWS Shield Standard',
+        ],
+        correct: 1,
+        note: 'No pressure — guessing first improves retention. The key idea: SQLi/XSS are Layer-7 request-content attacks. Only AWS WAF inspects HTTP request components and blocks these patterns. Security groups and NACLs work at L3/L4 (IP/port) and cannot read request payloads; Shield handles DDoS.',
+      },
+      sections: [
+        {
+          heading: 'Securing inbound traffic',
+          body: 'Inbound protection layers from the edge in:\n\nAWS Shield — DDoS protection. Standard is automatic and free (L3/L4); Advanced adds higher-layer protection, cost protection, and the Shield Response Team.\n\nAWS WAF — Layer-7 web ACLs that inspect HTTP(S) requests and block SQLi, XSS, bad bots, and rate-exceeding IPs; attaches to CloudFront, ALB, API Gateway, AppSync, and Cognito.\n\nAWS Network Firewall — managed, stateful VPC firewall for L3–L7 filtering (domain allow/deny, Suricata IPS signatures) on traffic entering the VPC, deployed in dedicated firewall subnets.\n\nSecurity groups and NACLs gate by IP/port. The exam rewards matching the layer to the threat: request-content → WAF, volumetric DDoS → Shield, deep packet/domain/IPS filtering → Network Firewall, IP/port → SG/NACL.',
+          bullets: [
+            'Volumetric DDoS → Shield (Advanced for higher layers + SRT + cost protection).',
+            'SQLi/XSS/bots/rate limiting on HTTP → AWS WAF (managed rules).',
+            'Domain filtering + IPS signatures at the VPC boundary → AWS Network Firewall.',
+            'IP/port allow (SG) and subnet allow/deny (NACL) for coarse L3/L4 control.',
+          ],
+          callout: { type: 'note', text: 'Match control to layer: request content (L7) → WAF; volumetric attack → Shield; domain/IPS deep inspection → Network Firewall; IP/port → security group/NACL. A request-payload threat is never solved by a security group.' },
+          interactive: 'security-flow',
+        },
+        {
+          heading: 'Securing outbound traffic',
+          body: 'Egress control prevents data exfiltration and enforces allow-lists. AWS Network Firewall is the primary tool: in a centralized inspection VPC (reached via Transit Gateway), it filters outbound traffic by destination domain (FQDN allow-listing) and applies IPS rules, so workloads can only reach approved destinations. Outbound (forward) proxies (self-managed or partner) provide URL filtering and logging for egress. Gateway Load Balancer transparently inserts third-party firewall/IPS appliance fleets into the egress path using GENEVE. Restricting and inspecting egress — rather than allowing 0.0.0.0/0 outbound — is the secure pattern the exam expects.',
+          bullets: [
+            'Centralized egress filtering by domain/FQDN + IPS → AWS Network Firewall in an inspection VPC via TGW.',
+            'URL filtering/logging for egress → forward proxy fleet.',
+            'Insert third-party inline appliances on egress → Gateway Load Balancer (GENEVE).',
+            'Avoid blanket 0.0.0.0/0 egress; allow-list and inspect outbound destinations.',
+          ],
+        },
+        {
+          heading: 'Securing east-west traffic',
+          body: 'Traffic between VPCs and between tiers (east-west) needs its own controls. Security groups referencing other security groups create tier-to-tier rules (e.g. the app tier SG allows only the web tier SG on the app port) — the cleanest microsegmentation. Network ACLs add subnet-level deny rules. VPC endpoint policies restrict which principals and resources an interface/gateway endpoint can reach, controlling east-west access to AWS services. For inter-VPC inspection, route east-west traffic through a central inspection VPC (Network Firewall or GWLB) via the Transit Gateway, applying the same deep inspection between VPCs as on the perimeter.',
+          bullets: [
+            'Security-group referencing = clean tier-to-tier microsegmentation (web→app→db on specific ports).',
+            'VPC endpoint policies restrict which principals/resources an endpoint can access.',
+            'Inspect inter-VPC (east-west) traffic by routing it through a central inspection VPC via TGW.',
+          ],
+          callout: { type: 'tip', text: 'For tier isolation, have each tier\'s security group allow only the previous tier\'s security group as source (not CIDRs) — it adapts automatically as instances scale and is the least-privilege east-west pattern.' },
+        },
+        {
+          heading: 'Architectures and threat modeling',
+          body: 'The exam tests recognizing secure reference architectures. A perimeter (or inspection) VPC centralizes ingress/egress inspection for many spoke VPCs through a Transit Gateway. A three-tier architecture isolates public (web), private (app), and data (db) subnets with security groups and routing so the database has no internet path. An untrusted-network pattern treats certain segments as hostile and inspects everything crossing the boundary. Threat modeling means identifying the assets, the likely threats per flow (inbound exploitation, exfiltration, lateral movement), and the mitigations (WAF, egress filtering, segmentation, encryption) — then testing them with failover and resiliency tests. Automate security incident reporting (e.g. GuardDuty/Security Hub findings to EventBridge to SNS/Lambda).',
+          bullets: [
+            'Perimeter/inspection VPC + TGW = centralized ingress/egress inspection for all spokes.',
+            'Three-tier: public web, private app, isolated data subnets — no internet route to the database.',
+            'Threat model per flow (inbound exploit, exfiltration, lateral movement) → matched mitigation; test with failover/resiliency.',
+          ],
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 1,
+          question: 'A company must ensure private workloads can only reach an approved list of external domains for software updates and nothing else, with central management. Which control fits best?',
+          options: [
+            'A security group allowing outbound 443 to 0.0.0.0/0',
+            'AWS Network Firewall in a central inspection VPC, filtering egress by allowed domain (FQDN)',
+            'A network ACL denying inbound traffic',
+            'AWS Shield Advanced',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — Network Firewall does domain/FQDN-based egress filtering and IPS; placed in a central inspection VPC reached via TGW, it enforces the allow-list for all workloads. Security groups cannot filter by domain.',
+          elaborativePrompt: 'Why can a security group not enforce an outbound domain allow-list the way Network Firewall can?',
+        },
+        {
+          afterSection: 2,
+          question: 'In a three-tier app, the app tier should accept traffic only from the web tier on port 8080, even as both tiers scale. What is the cleanest implementation?',
+          options: [
+            'Allow the web subnet CIDR on the app security group',
+            'Have the app-tier security group allow the web-tier security group as the source on port 8080',
+            'Open port 8080 to 0.0.0.0/0',
+            'Use a NACL allowing all traffic',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — referencing the web-tier security group as the source is least-privilege microsegmentation that adapts automatically as instances are added or removed.',
+          elaborativePrompt: 'Why is referencing a security group better than a CIDR for tier-to-tier rules in an auto-scaling environment?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself: you must block SQLi at the edge, allow-list outbound domains centrally, isolate a database tier from the internet, and let the app tier accept only web-tier traffic. Walk through which control secures each flow and why each belongs at its layer.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A company needs a layered network security design: block SQL-injection against its public web app, restrict all outbound traffic from private workloads to approved domains, and ensure the database tier has no path to the internet. Which combination meets all three requirements?',
+        options: [
+          'Security groups on every tier and AWS Shield Standard only',
+          'AWS WAF on the ALB for SQLi, AWS Network Firewall in a central inspection VPC for domain-based egress filtering, and a three-tier design with no internet route from the database subnets',
+          'A single network ACL with deny rules on all subnets',
+          'Global Accelerator with a WAF web ACL on the database tier',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'Each requirement maps to the right layer: WAF blocks Layer-7 SQLi on the ALB, Network Firewall in an inspection VPC enforces outbound domain allow-listing, and a three-tier design with no internet route keeps the database isolated.',
+          perOption: [
+            'Security groups cannot block SQLi (L7) or filter egress by domain, and Shield Standard only covers DDoS.',
+            'Correct — WAF (L7 SQLi) + Network Firewall (domain egress filtering) + isolated database subnets cover all three requirements at the correct layers.',
+            'A NACL works at L3/L4 and cannot inspect request content or filter by domain.',
+            'WAF does not attach to a database tier, and Global Accelerator is not a security inspection control.',
+          ],
+        },
+      },
+      videos: [COMPANION_VIDEO],
+    },
+
+    {
+      id: 'd4-s15',
+      number: 15,
+      module: 'Domain 4 · Network Security, Compliance, and Governance',
+      domain: 'd4',
+      weight: '24%',
+      task: 'Task 4.2',
+      title: 'Validating & Auditing Security — Flow Logs, CloudWatch, and Firewall Manager',
+      duration: 30,
+      summary: 'Security you cannot prove is not compliant. This session covers validating and auditing the network: VPC Flow Logs (base and extended fields) and Traffic Mirroring for evidence, CloudWatch alarms and custom metrics for alerting, log delivery via Kinesis, and auditing configurations centrally with AWS Firewall Manager and Trusted Advisor across accounts.',
+      objectives: [
+        'Create and analyze VPC Flow Logs (base and extended fields) and Traffic Mirroring for audit evidence',
+        'Implement CloudWatch alarms and custom metrics for security alerting',
+        'Build log-delivery solutions with Kinesis, CloudWatch, and S3 and correlate across sources',
+        'Audit network security configurations across accounts with AWS Firewall Manager and Trusted Advisor',
+      ],
+      preLearningCheck: {
+        question: 'A security team must enforce a consistent AWS WAF rule group and audit security group rules across all accounts in an organization from one place. Which service is built for this?',
+        options: [
+          'AWS Config in each account separately',
+          'AWS Firewall Manager, which centrally deploys and audits WAF, Shield, security group, and Network Firewall policies across the organization',
+          'A security group in the management account',
+          'Amazon CloudWatch dashboards',
+        ],
+        correct: 1,
+        note: 'No pressure — guessing first improves retention. The key idea: AWS Firewall Manager centrally manages and audits WAF rules, Shield Advanced protections, security group policies, and Network Firewall across all accounts in an organization — the single-pane tool for org-wide network security policy and audit.',
+      },
+      sections: [
+        {
+          heading: 'Evidence: Flow Logs and Traffic Mirroring',
+          body: 'Auditing starts with capturing what happened. VPC Flow Logs record connection metadata; the base fields cover the 5-tuple, bytes, packets, and ACCEPT/REJECT, while extended (custom) fields add TCP flags, flow-direction, traffic-path, pkt-srcaddr/pkt-dstaddr, and resource IDs — choose extended fields when an audit needs to see true source/destination behind NAT or the direction of a flow. Deliver Flow Logs to S3 (for Athena queries and long retention), CloudWatch Logs (for Logs Insights and alarms), or Kinesis Data Firehose (for streaming to a SIEM). VPC Traffic Mirroring copies actual packets to an analysis appliance when payload-level evidence is required (e.g. confirming what data crossed a boundary).',
+          bullets: [
+            'Base fields = 5-tuple + bytes/packets + action; extended fields add TCP flags, direction, pkt-src/dst, IDs.',
+            'Choose extended fields when the audit must show the real endpoint behind NAT or the flow direction.',
+            'Flow Logs → S3 (Athena/retention), CloudWatch Logs (Insights/alarms), or Firehose (SIEM streaming).',
+            'Traffic Mirroring = packet-level evidence for deep audit/forensics.',
+          ],
+          callout: { type: 'note', text: 'Flow Logs prove who connected to whom and whether it was allowed (metadata); Traffic Mirroring proves what was actually transmitted (payload). Pick by the evidence the audit demands.' },
+        },
+        {
+          heading: 'Alerting with CloudWatch',
+          body: 'Turn evidence into alerts. CloudWatch alarms watch a metric (or a metric filter over a log group) and notify via SNS or trigger automation when a threshold is crossed — e.g. a metric filter over Flow Logs counting REJECTs to a sensitive subnet, or a custom metric for unexpected egress volume. Custom metrics (published via the CloudWatch agent or PutMetricData) capture security signals the default metrics miss. Dashboards aggregate the network security posture, and EventBridge routes security findings (GuardDuty, Security Hub) to remediation. A metric filter that does not match the log format produces no data points, so its alarm never fires — test patterns against real log lines.',
+          bullets: [
+            'Metric filter over Flow Logs/log groups → metric → CloudWatch alarm → SNS/automation.',
+            'Custom metrics (agent or PutMetricData) capture security signals beyond default metrics.',
+            'A non-matching metric-filter pattern yields no data and a silent alarm — validate against real logs.',
+          ],
+          callout: { type: 'tip', text: 'To alert on rejected traffic to a sensitive subnet, build a CloudWatch metric filter over the Flow Log group matching REJECT to that destination, then alarm on the resulting metric.' },
+        },
+        {
+          heading: 'Log delivery and correlation',
+          body: 'A robust audit pipeline centralizes and correlates logs. Amazon Kinesis Data Firehose streams logs (Flow Logs, WAF logs, Resolver query logs, load balancer access logs) to S3, OpenSearch, or a third-party SIEM with buffering and transformation. CloudWatch Logs subscriptions can fan logs out in near real time. Correlating across sources — Flow Logs (network), CloudTrail (API), WAF logs (L7), Resolver logs (DNS) — reconstructs an incident or proves a control worked. Centralize delivery into a logging account (often via Firehose or cross-account log destinations) so evidence is consolidated and tamper-resistant.',
+          bullets: [
+            'Kinesis Data Firehose = managed streaming of logs to S3/OpenSearch/SIEM with buffering and transforms.',
+            'Correlate Flow Logs + CloudTrail + WAF + Resolver logs to reconstruct events and prove controls.',
+            'Centralize delivery to a logging account for consolidated, tamper-resistant evidence.',
+          ],
+        },
+        {
+          heading: 'Auditing configurations centrally',
+          body: 'Org-wide audit needs central tooling. AWS Firewall Manager applies and audits security policies across all accounts in an organization: WAF web ACLs, Shield Advanced protections, security group rules (audit and remediate non-compliant ones), Network Firewall policies, and Route 53 Resolver DNS Firewall rules — automatically covering new accounts and resources. AWS Trusted Advisor flags risky configurations (e.g. security groups open to the world on sensitive ports). AWS Config records configuration and evaluates rules for drift and compliance, with auto-remediation. Together they give continuous, organization-wide verification that the network security baseline holds.',
+          bullets: [
+            'Firewall Manager = central WAF/Shield/security-group/Network Firewall/DNS Firewall policy + audit across accounts.',
+            'Trusted Advisor surfaces risky security group exposure and other checks.',
+            'AWS Config rules + auto-remediation detect and fix network-config drift continuously.',
+          ],
+          callout: { type: 'warning', text: 'Per-account, manual security group audits do not scale and drift. For org-wide enforcement and audit of WAF, security groups, and Network Firewall, the exam answer is AWS Firewall Manager.' },
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 0,
+          question: 'An audit must show the true original source IP of flows that traverse a NAT gateway, not just the NAT\'s address. What should be configured on the VPC Flow Logs?',
+          options: [
+            'Nothing — base fields already show it',
+            'Enable extended/custom fields including pkt-srcaddr (and pkt-dstaddr) to capture the real source behind NAT',
+            'Switch to CloudTrail',
+            'Enable DNSSEC',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — the pkt-srcaddr/pkt-dstaddr custom fields capture the actual packet-level source/destination behind an intermediary like NAT, which the base srcaddr/dstaddr may not show.',
+          elaborativePrompt: 'Why do the base address fields sometimes hide the real endpoint, and how do the pkt-* fields fix that?',
+        },
+        {
+          afterSection: 3,
+          question: 'A company needs to enforce the same WAF rule set and continuously audit security group rules across 50 accounts, including accounts created in the future. Which service fits?',
+          options: [
+            'AWS Trusted Advisor only',
+            'AWS Firewall Manager',
+            'A security group in each account',
+            'Amazon Inspector',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — Firewall Manager centrally deploys and audits WAF, security group, Shield, and Network Firewall policies across all current and future accounts in the organization.',
+          elaborativePrompt: 'Why does Firewall Manager scale to org-wide enforcement where per-account configuration does not?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself: an auditor needs proof of who connected where (including real source behind NAT), alerts on rejected traffic to a sensitive subnet, centralized logs for correlation, and org-wide enforcement of WAF and security group rules. Walk through the Flow Log fields, the alarm, the delivery pipeline, and the central audit tool.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A security organization must continuously enforce a standard AWS WAF rule group on all internet-facing ALBs and automatically detect security groups that allow unrestricted SSH, across every account in the organization including new accounts. Which service should they use?',
+        options: [
+          'Configure AWS WAF and audit security groups separately in each account',
+          'Use AWS Firewall Manager to centrally deploy the WAF rule group and audit/remediate non-compliant security group rules across all accounts',
+          'Rely on Amazon CloudWatch dashboards in the management account',
+          'Enable VPC Flow Logs in every account',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'AWS Firewall Manager centrally applies WAF rule groups and security group audit/remediation policies across all accounts in an organization, automatically including new accounts — exactly the org-wide enforcement and audit requirement.',
+          perOption: [
+            'Per-account configuration does not scale to 50+ accounts and will not automatically cover future accounts.',
+            'Correct — Firewall Manager centrally enforces WAF and audits/remediates security groups org-wide, including new accounts.',
+            'Dashboards visualize metrics; they do not enforce WAF rules or audit/remediate security groups.',
+            'Flow Logs record traffic but do not enforce WAF rules or audit security group configuration.',
+          ],
+        },
+      },
+      videos: [COMPANION_VIDEO],
+    },
+
+    {
+      id: 'd4-s16',
+      number: 16,
+      module: 'Domain 4 · Network Security, Compliance, and Governance',
+      domain: 'd4',
+      weight: '24%',
+      task: 'Task 4.3',
+      title: 'Confidentiality & Encryption — TLS, IPsec, VPN over Direct Connect, and Certificates',
+      duration: 30,
+      summary: 'The final session keeps data confidential in transit. It covers the network encryption options the exam tests: TLS for application traffic, IPsec for VPN, VPN over Direct Connect and MACsec for private-link encryption, certificate management with ACM and ACM Private CA, DNSSEC for DNS integrity, and where each fits under the shared responsibility model.',
+      objectives: [
+        'Choose encryption methods for data in transit across AWS services (TLS, IPsec, MACsec)',
+        'Add encryption to Direct Connect with VPN over DX or MACsec',
+        'Manage certificates with ACM and AWS Private Certificate Authority',
+        'Apply DNSSEC for DNS integrity and reason about the shared responsibility model',
+      ],
+      preLearningCheck: {
+        question: 'A company uses Direct Connect for private connectivity but a compliance mandate requires that all data in transit be encrypted. The connection must remain private and high-bandwidth. What is an appropriate solution?',
+        options: [
+          'Direct Connect already encrypts traffic, so nothing is needed',
+          'Run an IPsec Site-to-Site VPN over the Direct Connect connection, or enable MACsec on supported Direct Connect connections',
+          'Switch to a NAT gateway',
+          'Disable BGP',
+        ],
+        correct: 1,
+        note: 'No pressure — guessing first improves retention. The key idea: Direct Connect is private but not encrypted. Add encryption by running a VPN over the DX (IPsec) or by enabling MACsec (Layer 2 encryption) on supported DX connections and locations — keeping the private, high-bandwidth path.',
+      },
+      sections: [
+        {
+          heading: 'Encryption methods for data in transit',
+          body: 'The exam expects you to match the encryption method to the layer and use case:\n\nTLS — application-layer encryption for HTTP and many protocols; terminate at CloudFront, ALB, or API Gateway (with ACM certificates), or pass through to the backend (NLB) for end-to-end TLS. The default for client-to-application confidentiality.\n\nIPsec — network-layer encryption; the basis of AWS Site-to-Site VPN and Client VPN, securing site-to-site and remote-access traffic over untrusted networks.\n\nMACsec — Layer-2 encryption for Direct Connect on supported connections, encrypting the link itself.\n\nMany managed services support encryption in transit natively (S3 over HTTPS, RDS/Aurora TLS, EMR/EKS in-transit encryption, Redshift). The shared responsibility model: AWS secures the global network backbone, but you are responsible for enabling and configuring encryption for your traffic and endpoints.',
+          bullets: [
+            'Client/app traffic → TLS (terminate at CloudFront/ALB/API GW with ACM, or passthrough via NLB).',
+            'Site-to-site / remote access over the internet → IPsec (Site-to-Site VPN, Client VPN).',
+            'Encrypt the Direct Connect link itself → MACsec (Layer 2, supported connections).',
+            'Shared responsibility: AWS secures the backbone; you enable/configure encryption for your flows.',
+          ],
+          callout: { type: 'note', text: 'Layer is the tell: application confidentiality → TLS; tunnel over untrusted network → IPsec VPN; encrypt a private DX link → MACsec; encrypt + private + high bandwidth → VPN over Direct Connect or DX with MACsec.' },
+        },
+        {
+          heading: 'Encrypting Direct Connect',
+          body: 'Direct Connect provides a private path but no encryption by default — a frequent exam trap. Two ways to add it: VPN over Direct Connect runs an IPsec Site-to-Site VPN across a Direct Connect public VIF (or, with Transit Gateway, over the DX), giving encryption with DX\'s consistent bandwidth — though IPsec adds overhead and a tunnel-bandwidth ceiling. MACsec encrypts at Layer 2 on supported dedicated DX connections at MACsec-capable locations, with higher throughput and lower overhead than IPsec, but it only protects the DX link segment. Choose MACsec for line-rate encryption on a single DX link, and VPN over DX when you need IPsec semantics or MACsec is unavailable end to end.',
+          bullets: [
+            'VPN over Direct Connect = IPsec encryption + DX bandwidth; adds tunnel overhead and a bandwidth ceiling.',
+            'MACsec = Layer-2 line-rate encryption on supported DX connections/locations; lower overhead than IPsec.',
+            'Plain Direct Connect is private but NOT encrypted — always add VPN-over-DX or MACsec for compliance.',
+          ],
+          callout: { type: 'warning', text: '"Direct Connect is private, therefore encrypted" is wrong and a classic distractor. Private ≠ encrypted; you must add VPN over DX or MACsec to meet an encryption-in-transit mandate.' },
+        },
+        {
+          heading: 'Certificate management',
+          body: 'TLS needs certificates, and the exam tests where they come from. AWS Certificate Manager (ACM) provisions, manages, and auto-renews public TLS certificates for use with CloudFront, ALB, API Gateway, and other integrated services at no cost — the default for public-facing TLS. AWS Private Certificate Authority (ACM Private CA / ACM PCA) issues private certificates for internal services, mutual TLS, and IoT, building a private PKI for an organization. ACM-managed certs cannot be exported for use on EC2 directly (use ACM PCA or import for those cases). Auto-renewal of ACM certificates avoids expiry-driven outages — a common operational benefit the exam highlights.',
+          bullets: [
+            'Public TLS on CloudFront/ALB/API Gateway → ACM (free, auto-renewing).',
+            'Internal/private PKI, mutual TLS, IoT → AWS Private Certificate Authority (ACM PCA).',
+            'ACM public certs are not exportable to arbitrary servers; use ACM PCA or imported certs there.',
+          ],
+        },
+        {
+          heading: 'DNS integrity and putting it together',
+          body: 'Confidentiality of communications also covers DNS. DNSSEC protects DNS integrity (not confidentiality) by signing responses so resolvers detect tampering and cache poisoning — enable DNSSEC signing on Route 53 public hosted zones and DNSSEC validation on the Resolver. For a complete design: terminate client TLS at CloudFront/ALB with ACM, encrypt hybrid links with VPN over DX or MACsec, use IPsec for site-to-site and remote access, issue internal certs from ACM PCA, and sign public DNS with DNSSEC — all while remembering that under shared responsibility you must enable these controls; AWS secures only the underlying infrastructure.',
+          bullets: [
+            'DNSSEC = integrity/authenticity of DNS responses (not encryption) — signing on R53 public zones, validation on the Resolver.',
+            'Complete in-transit design: TLS (client), IPsec (VPN), MACsec/VPN-over-DX (hybrid), ACM/ACM PCA (certs), DNSSEC (DNS).',
+            'Shared responsibility: enabling and configuring in-transit encryption is the customer\'s responsibility.',
+          ],
+        },
+      ],
+      microQuizzes: [
+        {
+          afterSection: 1,
+          question: 'A company needs line-rate encryption on a single dedicated Direct Connect connection with minimal overhead, at a MACsec-capable location. Which option fits best?',
+          options: [
+            'Rely on Direct Connect being private',
+            'Enable MACsec on the Direct Connect connection',
+            'Use a public-internet VPN instead',
+            'Disable jumbo frames',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — MACsec provides Layer-2, line-rate encryption on supported Direct Connect connections with lower overhead than IPsec, meeting the requirement without sacrificing throughput.',
+          elaborativePrompt: 'When would you choose MACsec over running a VPN over Direct Connect?',
+        },
+        {
+          afterSection: 2,
+          question: 'A team needs free, auto-renewing public TLS certificates for an Application Load Balancer and CloudFront. Which service provides them?',
+          options: [
+            'AWS Private Certificate Authority',
+            'AWS Certificate Manager (ACM)',
+            'AWS KMS',
+            'AWS Secrets Manager',
+          ],
+          correct: 1,
+          explainCorrect: 'Correct — ACM issues and auto-renews public TLS certificates at no cost for integrated services like ALB and CloudFront. ACM PCA is for private/internal certificates.',
+          elaborativePrompt: 'Why is ACM, rather than ACM PCA, the right choice for public-facing TLS on an ALB?',
+        },
+      ],
+      selfExplanationPrompt: 'Before the practice question, explain to yourself: you must encrypt client traffic to a public app, add encryption to an existing Direct Connect link for compliance, issue internal certificates for mutual TLS, and protect public DNS from tampering. Walk through TLS/ACM, VPN-over-DX or MACsec, ACM PCA, and DNSSEC, and note what is your responsibility versus AWS\'s.',
+      sample: {
+        type: 'multiple-choice',
+        stem: 'A regulated company uses AWS Direct Connect for hybrid connectivity. An auditor requires that all data in transit over the hybrid link be encrypted, while keeping the connection private and high-bandwidth. The team also needs public TLS certificates for its internet-facing Application Load Balancer. Which combination meets these requirements?',
+        options: [
+          'Rely on Direct Connect for encryption and self-sign the ALB certificate',
+          'Run an IPsec Site-to-Site VPN over the Direct Connect connection (or enable MACsec) for hybrid encryption, and use AWS Certificate Manager for the ALB\'s public TLS certificates',
+          'Use a public-internet VPN only and import certificates manually',
+          'Enable DNSSEC and use AWS KMS to encrypt the Direct Connect link',
+        ],
+        correct: 1,
+        explanation: {
+          summary: 'Direct Connect is private but not encrypted, so VPN over DX (IPsec) or MACsec adds the required hybrid in-transit encryption while preserving the private high-bandwidth path; ACM provides free, auto-renewing public TLS certificates for the ALB.',
+          perOption: [
+            'Direct Connect does not encrypt traffic, and self-signed ALB certificates are not trusted by clients.',
+            'Correct — VPN-over-DX or MACsec encrypts the hybrid link, and ACM supplies the ALB\'s public TLS certificates.',
+            'A public-internet VPN abandons the private, high-bandwidth DX path the requirement keeps, and manual cert management is unnecessary for an ALB.',
+            'DNSSEC protects DNS integrity, not link data, and KMS does not encrypt a Direct Connect link.',
+          ],
+        },
+      },
+      videos: [COMPANION_VIDEO],
+    },
+
   ],
 }
 

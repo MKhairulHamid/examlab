@@ -21,7 +21,7 @@ import {
 
 // Every session-based program slug we ship a course for. Used to detect a
 // returning learner who has local study progress but no formal enrollment yet.
-const KNOWN_COURSE_SLUGS = ['aif-c01', 'clf-c02', 'saa-c03', 'dva-c02', 'mla-c01', 'sap-c02', 'aip-c01', 'soa-c03', 'dop-c02', 'dea-c01', 'scs-c03']
+const KNOWN_COURSE_SLUGS = ['aif-c01', 'clf-c02', 'saa-c03', 'dva-c02', 'mla-c01', 'sap-c02', 'aip-c01', 'soa-c03', 'dop-c02', 'dea-c01', 'scs-c03', 'ans-c01']
 const DOMAIN_PALETTE = ['#0EA5E9', '#8B5CF6', '#00D4AA', '#F59E0B', '#EF4444', '#6366F1']
 
 const TABS = [

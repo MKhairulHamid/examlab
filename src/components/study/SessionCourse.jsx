@@ -1733,7 +1733,175 @@ function PolicyEvalWidget() {
   )
 }
 
+// ── ANS D1 (Session 1): Edge service — CloudFront vs Global Accelerator ───────
+function EdgeServiceWidget() {
+  return (
+    <ScenarioSorter
+      title="CloudFront or Global Accelerator?"
+      intro="Both put a global front in front of regional resources, but one caches HTTP content and the other accelerates the network path. Tag each requirement with the right edge service."
+      cats={[
+        { id: 'cf', label: 'CloudFront', color: '#2563eb', desc: 'CDN — caches HTTP(S) content at the edge' },
+        { id: 'ga', label: 'Global Accelerator', color: '#0891b2', desc: 'Static anycast IPs; accelerates TCP/UDP over the backbone' },
+      ]}
+      items={[
+        { t: 'Cache a global static website and large media files close to users', a: 'cf', why: 'Cacheable HTTP(S) content is the CDN use case — CloudFront.' },
+        { t: 'Provide two static IP addresses for firewall allow-listing', a: 'ga', why: 'Global Accelerator gives two static anycast IPs; CloudFront does not.' },
+        { t: 'Lowest-latency UDP game traffic to the nearest healthy Region', a: 'ga', why: 'Non-HTTP TCP/UDP acceleration over the AWS backbone is Global Accelerator.' },
+        { t: 'Near-instant regional failover that does not wait for DNS TTL', a: 'ga', why: 'Failover is at the network layer behind fixed IPs — far faster than DNS-based failover.' },
+        { t: 'Add WAF and edge TLS termination in front of an HTTP API', a: 'cf', why: 'CloudFront integrates WAF and terminates TLS at the edge for HTTP(S).' },
+        { t: 'Offload the origin by serving repeated requests from cache', a: 'cf', why: 'Caching to offload the origin is a CloudFront capability; Global Accelerator does not cache.' },
+      ]}
+    />
+  )
+}
+
+// ── ANS D1 (Session 2): Route 53 routing policy selector ──────────────────────
+function Route53PolicyWidget() {
+  return (
+    <ScenarioSorter
+      title="Pick the Route 53 Routing Policy"
+      intro="Each policy returns DNS answers by a different rule. Match each requirement to the routing policy that fits — the card confirms instantly."
+      cats={[
+        { id: 'lat', label: 'Latency', color: '#0891b2', desc: 'Lowest-latency Region for the user' },
+        { id: 'geo', label: 'Geolocation', color: '#7c3aed', desc: 'Answer by the user’s location' },
+        { id: 'wt', label: 'Weighted', color: '#d97706', desc: 'Split traffic by assigned weights' },
+        { id: 'fail', label: 'Failover', color: '#dc2626', desc: 'Active-passive with health checks' },
+      ]}
+      items={[
+        { t: 'Send users to the Region that gives them the best response time', a: 'lat', why: 'Optimizing for response time across Regions is latency-based routing.' },
+        { t: 'Serve country-specific content to satisfy data-residency rules', a: 'geo', why: 'Answering by the user’s country/continent is geolocation routing.' },
+        { t: 'Send 10% of traffic to a new version for a canary release', a: 'wt', why: 'Percentage splits for canary/blue-green are weighted routing.' },
+        { t: 'Route to a standby site only when the primary fails its health check', a: 'fail', why: 'Active-passive DR with health checks is failover routing.' },
+        { t: 'Gradually shift traffic between two stacks by tuning percentages', a: 'wt', why: 'Adjustable percentage distribution is weighted routing.' },
+        { t: 'Block or localize answers based on where the query originates', a: 'geo', why: 'Location-based answers (not performance) are geolocation routing.' },
+      ]}
+    />
+  )
+}
+
+// ── ANS D1 (Session 3): Load balancer selector (ALB/NLB/GWLB) ─────────────────
+function LbSelectorWidget() {
+  return (
+    <ScenarioSorter
+      title="Choose the Load Balancer"
+      intro="The load balancer is decided by the OSI layer you operate at. Match each requirement to ALB (L7), NLB (L4), or GWLB (L3)."
+      cats={[
+        { id: 'alb', label: 'ALB', color: '#2563eb', desc: 'Layer 7 — HTTP/HTTPS routing' },
+        { id: 'nlb', label: 'NLB', color: '#0891b2', desc: 'Layer 4 — TCP/UDP, extreme performance' },
+        { id: 'gwlb', label: 'GWLB', color: '#7c3aed', desc: 'Layer 3 — inline appliance insertion' },
+      ]}
+      items={[
+        { t: 'Route requests by URL path and host header to microservices', a: 'alb', why: 'Content-based HTTP routing is a Layer-7 ALB feature.' },
+        { t: 'Balance UDP traffic at millions of requests per second with a static IP', a: 'nlb', why: 'TCP/UDP, extreme performance, and static/Elastic IPs are NLB.' },
+        { t: 'Transparently insert a fleet of third-party firewall appliances', a: 'gwlb', why: 'Inline appliance insertion via GENEVE is the Gateway Load Balancer.' },
+        { t: 'Back an AWS PrivateLink endpoint service for your application', a: 'nlb', why: 'PrivateLink endpoint services are backed by an NLB (or GWLB), not an ALB.' },
+        { t: 'Authenticate users with OpenID Connect at the load balancer', a: 'alb', why: 'Built-in OIDC/Cognito authentication is an ALB Layer-7 capability.' },
+        { t: 'Preserve the client source IP for a high-throughput TCP service', a: 'nlb', why: 'The NLB preserves client source IP at Layer 4.' },
+      ]}
+    />
+  )
+}
+
+// ── ANS D1 (Session 5): Hybrid connectivity selector ──────────────────────────
+function HybridConnectivityWidget() {
+  return (
+    <ScenarioSorter
+      title="Direct Connect, VPN, or Both?"
+      intro="Hybrid connectivity trades performance against speed and cost. Match each requirement to the connectivity option that fits."
+      cats={[
+        { id: 'dx', label: 'Direct Connect', color: '#0891b2', desc: 'Dedicated, private, consistent — not encrypted' },
+        { id: 'vpn', label: 'Site-to-Site VPN', color: '#d97706', desc: 'Encrypted, quick, cheap — over the internet' },
+        { id: 'both', label: 'VPN over Direct Connect', color: '#16a34a', desc: 'Encrypted AND private/consistent' },
+      ]}
+      items={[
+        { t: 'Consistent low-latency, high-bandwidth private connectivity for bulk data', a: 'dx', why: 'Dedicated private bandwidth with predictable performance is Direct Connect.' },
+        { t: 'Encrypted connectivity that can be deployed in hours at low cost', a: 'vpn', why: 'Quick, cheap, encrypted over the internet is Site-to-Site VPN.' },
+        { t: 'Private high-bandwidth path that also encrypts data in transit for compliance', a: 'both', why: 'DX is private but not encrypted — run a VPN over it (or use MACsec) for encryption.' },
+        { t: 'A fast-to-stand-up backup path that fails over from the primary private link', a: 'vpn', why: 'VPN is the common encrypted backup to a Direct Connect primary.' },
+        { t: 'Predictable performance that does not depend on the public internet', a: 'dx', why: 'Internet-independent, consistent performance is Direct Connect.' },
+        { t: 'Meet an encryption mandate without giving up dedicated bandwidth', a: 'both', why: 'VPN over Direct Connect keeps the dedicated path while adding IPsec encryption.' },
+      ]}
+    />
+  )
+}
+
+// ── ANS D1/D2 (Sessions 6, 8): VPC connectivity pattern selector ──────────────
+function VpcConnectivityWidget() {
+  return (
+    <ScenarioSorter
+      title="Peering, Transit Gateway, or PrivateLink?"
+      intro="The connectivity pattern depends on scale, transitivity, and whether you expose a network or just a service. Tag each requirement."
+      cats={[
+        { id: 'peer', label: 'VPC Peering', color: '#d97706', desc: 'Two VPCs, simple, non-transitive' },
+        { id: 'tgw', label: 'Transit Gateway', color: '#0891b2', desc: 'Many VPCs + hybrid, transitive hub' },
+        { id: 'pl', label: 'PrivateLink', color: '#7c3aed', desc: 'Expose one service; works with overlapping CIDRs' },
+      ]}
+      items={[
+        { t: 'Connect 50 VPCs across accounts plus on-premises with transitive routing', a: 'tgw', why: 'A scalable, transitive hub for many VPCs and hybrid links is Transit Gateway.' },
+        { t: 'Expose a single internal API to consumers whose CIDRs overlap yours', a: 'pl', why: 'PrivateLink exposes one service with no routable coupling, so overlaps do not matter.' },
+        { t: 'Simple low-cost link between exactly two VPCs', a: 'peer', why: 'Two VPCs with a direct, low-cost link is VPC peering.' },
+        { t: 'Replace an unmanageable full mesh of connections between many VPCs', a: 'tgw', why: 'A hub-and-spoke Transit Gateway replaces the O(n²) peering mesh.' },
+        { t: 'Give consumers access to just a service without network-level reach into your VPC', a: 'pl', why: 'Service-only exposure with no network coupling is PrivateLink.' },
+        { t: 'Segment which spokes can reach which using multiple route tables', a: 'tgw', why: 'Route-table segmentation across attachments is a Transit Gateway capability.' },
+      ]}
+    />
+  )
+}
+
+// ── ANS D2 (Session 9): Route 53 Resolver endpoint direction ──────────────────
+function ResolverEndpointWidget() {
+  return (
+    <ScenarioSorter
+      title="Inbound or Outbound Resolver Endpoint?"
+      intro="Hybrid DNS direction decides the endpoint. Inbound lets on-premises resolve AWS names; outbound lets AWS resolve on-premises names. Tag each requirement."
+      cats={[
+        { id: 'in', label: 'Inbound endpoint', color: '#0891b2', desc: 'On-premises → AWS resolution' },
+        { id: 'out', label: 'Outbound endpoint', color: '#7c3aed', desc: 'AWS → on-premises (forwarding rules)' },
+      ]}
+      items={[
+        { t: 'On-premises servers must resolve names in a Route 53 private hosted zone', a: 'in', why: 'On-premises querying AWS needs an inbound endpoint as the forward target.' },
+        { t: 'EC2 instances must resolve names in the on-premises corp.example.com domain', a: 'out', why: 'AWS resolving on-premises names needs an outbound endpoint with a forwarding rule.' },
+        { t: 'Configure conditional forwarding rules pointing at on-premises DNS servers', a: 'out', why: 'Conditional forwarding rules attach to outbound endpoints.' },
+        { t: 'Point the on-premises DNS forwarder at IP addresses inside the VPC', a: 'in', why: 'The inbound endpoint provides in-VPC IPs that on-premises forwards to.' },
+        { t: 'Let AWS workloads resolve a partner’s internal domain via the corporate resolver', a: 'out', why: 'Forwarding AWS queries outward to another resolver uses an outbound endpoint.' },
+        { t: 'Enable the data center to look up an internal AWS application record', a: 'in', why: 'Data-center-to-AWS lookups require an inbound endpoint.' },
+      ]}
+    />
+  )
+}
+
+// ── ANS D4 (Session 14): Network security control by flow ─────────────────────
+function SecurityFlowWidget() {
+  return (
+    <ScenarioSorter
+      title="Match the Security Control to the Flow"
+      intro="Securing a network means putting the right control at the right layer and direction. Tag each requirement with the control that fits."
+      cats={[
+        { id: 'waf', label: 'AWS WAF', color: '#2563eb', desc: 'Layer-7 inbound HTTP filtering' },
+        { id: 'shield', label: 'AWS Shield', color: '#0891b2', desc: 'DDoS protection' },
+        { id: 'nfw', label: 'Network Firewall', color: '#7c3aed', desc: 'VPC domain/IPS filtering (inbound + egress)' },
+        { id: 'sg', label: 'SG / NACL', color: '#16a34a', desc: 'L3/L4 IP and port control' },
+      ]}
+      items={[
+        { t: 'Block SQL-injection and XSS payloads in HTTP requests to a public app', a: 'waf', why: 'Request-content (L7) attacks are blocked by AWS WAF.' },
+        { t: 'Restrict outbound traffic to an approved list of destination domains', a: 'nfw', why: 'Domain/FQDN egress filtering is AWS Network Firewall.' },
+        { t: 'Absorb a large volumetric DDoS attack against the application', a: 'shield', why: 'Volumetric DDoS protection is AWS Shield (Advanced for higher layers).' },
+        { t: 'Allow the app tier to accept traffic only from the web tier on one port', a: 'sg', why: 'Instance/tier-level IP/port control (referencing another SG) is a security group.' },
+        { t: 'Apply Suricata-style IPS signatures to traffic entering the VPC', a: 'nfw', why: 'Stateful IPS signature filtering at the VPC boundary is Network Firewall.' },
+        { t: 'Add a subnet-level explicit deny for a malicious IP range', a: 'sg', why: 'Subnet-level deny rules are network ACLs (the SG/NACL L3/L4 category).' },
+      ]}
+    />
+  )
+}
+
 const INTERACTIVE_WIDGETS = {
+  'edge-service': EdgeServiceWidget,
+  'route53-policy': Route53PolicyWidget,
+  'lb-selector': LbSelectorWidget,
+  'hybrid-connectivity': HybridConnectivityWidget,
+  'vpc-connectivity': VpcConnectivityWidget,
+  'resolver-endpoint': ResolverEndpointWidget,
+  'security-flow': SecurityFlowWidget,
   'detective-service': DetectiveServiceWidget,
   'log-source-selector': LogSourceSelectorWidget,
   'ir-phase': IrPhaseWidget,

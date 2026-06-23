@@ -4,7 +4,7 @@ import useAuthStore from '../../stores/authStore'
 import { PROGRAMS } from '../../data/programs'
 import { LayoutDashboard, Wrench, LogOut, ChevronDown, Target, Check } from 'lucide-react'
 
-const KNOWN_COURSE_SLUGS = ['aif-c01', 'clf-c02', 'saa-c03', 'dva-c02', 'mla-c01', 'sap-c02', 'aip-c01', 'soa-c03', 'dop-c02', 'dea-c01', 'scs-c03']
+const KNOWN_COURSE_SLUGS = ['aif-c01', 'clf-c02', 'saa-c03', 'dva-c02', 'mla-c01', 'sap-c02', 'aip-c01', 'soa-c03', 'dop-c02', 'dea-c01', 'scs-c03', 'ans-c01']
 
 const CERT_OPTIONS = PROGRAMS.filter(p => KNOWN_COURSE_SLUGS.includes(p.slug))
 
