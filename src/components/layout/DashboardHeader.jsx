@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import useAuthStore from '../../stores/authStore'
 import { PROGRAMS } from '../../data/programs'
-import { LayoutDashboard, Wrench, LogOut, ChevronDown, Target, Check } from 'lucide-react'
+import { LayoutDashboard, Wrench, LogOut, ChevronDown, Target, Check, CreditCard } from 'lucide-react'
 
 const KNOWN_COURSE_SLUGS = ['aif-c01', 'clf-c02', 'saa-c03', 'dva-c02', 'mla-c01', 'sap-c02', 'aip-c01', 'soa-c03', 'dop-c02', 'dea-c01', 'scs-c03', 'ans-c01']
 
@@ -131,6 +131,15 @@ function DashboardHeader() {
                     {label}
                   </button>
                 ))}
+
+                <button
+                  role="menuitem"
+                  onClick={() => { setMenuOpen(false); navigate('/account') }}
+                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  <CreditCard className="w-4 h-4 text-gray-400 shrink-0" />
+                  Account &amp; Billing
+                </button>
 
                 <div className="h-px bg-gray-100 my-1" />
 

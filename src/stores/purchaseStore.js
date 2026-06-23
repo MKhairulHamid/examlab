@@ -47,12 +47,38 @@ const usePurchaseStore = create((set, get) => ({
       if (result.success) {
         set({
           subscription: result.subscription,
-          isSubscribed: result.subscription?.status === 'active'
+          // A cancelled subscription still grants access until its paid-through
+          // period ends — see paymentService.subscriptionGrantsAccess.
+          isSubscribed: paymentService.subscriptionGrantsAccess(result.subscription)
         })
       }
     } catch (error) {
       console.error('Error fetching subscription:', error)
     }
+  },
+
+  /**
+   * Cancel the user's active subscription. Access is retained until the end of
+   * the already-paid period, so isSubscribed stays true until then. Returns the
+   * service result so the caller can handle the manual-grant (comp) case.
+   */
+  cancelSubscription: async (reason) => {
+    set({ loading: true, error: null })
+    const result = await paymentService.cancelSubscription(reason)
+    if (result.success) {
+      const { subscription } = get()
+      const updated = subscription
+        ? { ...subscription, status: 'cancelled', cancelled_at: new Date().toISOString() }
+        : subscription
+      set({
+        subscription: updated,
+        isSubscribed: paymentService.subscriptionGrantsAccess(updated),
+        loading: false,
+      })
+    } else {
+      set({ loading: false, error: result.manualGrant ? null : (result.error || null) })
+    }
+    return result
   },
 
   /**

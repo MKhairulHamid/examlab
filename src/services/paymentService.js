@@ -7,6 +7,29 @@ import supabase from './supabase'
 // ===== SUBSCRIPTION FUNCTIONS =====
 
 /**
+ * A subscription grants access while it is active, OR while it has been
+ * cancelled but the already-paid-through period has not yet elapsed. This is
+ * the single source of truth for "does this subscription unlock content?".
+ */
+export const subscriptionGrantsAccess = (subscription) => {
+  if (!subscription) return false
+  if (subscription.status === 'active') return true
+  if (subscription.status === 'cancelled' && subscription.current_period_end) {
+    return new Date(subscription.current_period_end).getTime() > Date.now()
+  }
+  return false
+}
+
+/**
+ * True for comp / manually-granted or dev-mock subscriptions that are not
+ * backed by a real PayPal subscription (and therefore can't be self-cancelled).
+ */
+export const isManualGrantSubscription = (subscription) => {
+  const id = subscription?.paypal_subscription_id
+  return !id || id.startsWith('manual_grant_') || id.startsWith('mock_sub_')
+}
+
+/**
  * Get available subscription plans
  */
 export const getSubscriptionPlans = async () => {
@@ -62,7 +85,12 @@ export const createSubscription = async (planSlug, userId, email) => {
 }
 
 /**
- * Get user's active subscription
+ * Get the user's most recent subscription record (any status).
+ *
+ * We intentionally return the latest row regardless of status — a cancelled
+ * subscription whose period hasn't elapsed still grants access (see
+ * subscriptionGrantsAccess), and the Account page needs to render cancelled /
+ * expired states too. Access is derived from the row, not from this filter.
  */
 export const getUserSubscription = async (userId) => {
   try {
@@ -73,7 +101,6 @@ export const getUserSubscription = async (userId) => {
         subscription_plans:plan_id (*)
       `)
       .eq('user_id', userId)
-      .in('status', ['active', 'pending'])
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle()
@@ -83,6 +110,38 @@ export const getUserSubscription = async (userId) => {
   } catch (error) {
     console.error('Error fetching subscription:', error)
     return { success: false, subscription: null, error: error.message }
+  }
+}
+
+/**
+ * Cancel the calling user's PayPal subscription via the edge function.
+ * Returns { success, manualGrant, accessUntil, error }.
+ *  - manualGrant=true means there was no real PayPal subscription to cancel
+ *    (comp account) and the caller should be directed to support instead.
+ */
+export const cancelSubscription = async (reason) => {
+  try {
+    const { data, error } = await supabase.functions.invoke('cancel-paypal-subscription', {
+      body: { reason: reason || 'Cancelled by customer' },
+    })
+
+    if (error) {
+      console.error('Cancel edge function error:', error)
+      throw error
+    }
+
+    if (data?.manualGrant) {
+      return { success: false, manualGrant: true }
+    }
+
+    if (data?.error) {
+      throw new Error(data.error)
+    }
+
+    return { success: true, accessUntil: data?.access_until || null }
+  } catch (error) {
+    console.error('Subscription cancellation error:', error)
+    return { success: false, error: error.message || 'Unknown error occurred' }
   }
 }
 
@@ -217,6 +276,9 @@ export default {
   getUserSubscription,
   hasActiveSubscription,
   mockSubscription,
+  cancelSubscription,
+  subscriptionGrantsAccess,
+  isManualGrantSubscription,
   // Enrollment
   enrollInExam,
   getUserEnrollments,

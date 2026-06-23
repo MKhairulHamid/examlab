@@ -16,6 +16,7 @@ const ExamInterface = lazy(() => import('./pages/ExamInterface'))
 const ExamResults = lazy(() => import('./pages/ExamResults'))
 const ResetPassword = lazy(() => import('./pages/ResetPassword'))
 const PaymentSuccess = lazy(() => import('./pages/PaymentSuccess'))
+const Account = lazy(() => import('./pages/Account'))
 const StudyMaterial = lazy(() => import('./pages/StudyMaterial'))
 const AdminPage = lazy(() => import('./pages/AdminPage'))
 const AwsAiPractitioner = lazy(() => import('./pages/AwsAiPractitioner'))
@@ -168,6 +169,14 @@ function App() {
           element={
             <ProtectedRoute>
               <PaymentSuccess />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/account"
+          element={
+            <ProtectedRoute>
+              <Account />
             </ProtectedRoute>
           }
         />
