@@ -99,57 +99,99 @@ export const useExamStore = create((set, get) => ({
   },
 
   /**
-   * Load question set with full questions from question_items table.
+   * Fetch question set metadata (no questions). Safe, non-sensitive fields.
    */
-  loadQuestionSet: async (questionSetId) => {
+  fetchQuestionSetMeta: async (questionSetId) => {
+    const { data, error } = await supabase
+      .from('question_sets')
+      .select('*, exam_types(name, provider, total_questions, duration_minutes, passing_score, max_score)')
+      .eq('id', questionSetId)
+      .eq('is_active', true)
+      .single()
+    if (error) throw error
+    return data
+  },
+
+  /**
+   * Assemble + normalize a question set from RPC rows.
+   * Rows from get_exam_questions carry NO correct answers (so the in-exam
+   * client genuinely cannot know them); rows from get_attempt_review do.
+   */
+  assembleQuestionSet: (questionSet, rows) => {
+    const assembledData = {
+      ...questionSet,
+      questions_json: (rows || []).map(item => ({
+        id: item.question_number,
+        question_item_id: item.question_item_id,
+        question: item.question_text,
+        type: item.question_type,
+        domain: item.domain || '',
+        options: item.options,
+        correct_answers: item.correct_answers || [],
+        tags: item.tags || [],
+        ai_cache: item.ai_cache || {}
+      }))
+    }
+    return get().normalizeQuestionSet(assembledData)
+  },
+
+  /**
+   * Load a question set for TAKING an exam. Questions come from the
+   * get_exam_questions RPC, which strips correct answers and answer-revealing
+   * explanations server-side — the payload sent to the browser never contains
+   * the answer key.
+   */
+  loadExamQuestions: async (questionSetId) => {
     try {
       set({ loading: true, error: null })
 
-      // Fetch question set metadata
-      const { data: questionSet, error: setError } = await supabase
-        .from('question_sets')
-        .select('*, exam_types(name, provider, total_questions, duration_minutes, passing_score, max_score)')
-        .eq('id', questionSetId)
-        .eq('is_active', true)
-        .single()
+      const questionSet = await get().fetchQuestionSetMeta(questionSetId)
 
-      if (setError) throw setError
+      const { data: rows, error: rpcError } = await supabase
+        .rpc('get_exam_questions', { p_set_id: questionSetId })
 
-      // Fetch individual question rows
-      const { data: items, error: itemsError } = await supabase
-        .from('question_items')
-        .select('id, question_number, question_text, question_type, domain, options, correct_answers, tags, ai_cache')
-        .eq('question_set_id', questionSetId)
-        .order('question_number', { ascending: true })
+      if (rpcError) throw rpcError
 
-      if (itemsError) throw itemsError
-
-      if (!items || items.length === 0) {
-        console.error('❌ No questions found in question_items for set', questionSetId)
+      if (!rows || rows.length === 0) {
+        console.error('❌ No questions returned for set', questionSetId)
         throw new Error('No questions available for this exam.')
       }
 
-      const assembledData = {
-        ...questionSet,
-        questions_json: items.map(item => ({
-          id: item.question_number,
-          question_item_id: item.id,
-          question: item.question_text,
-          type: item.question_type,
-          domain: item.domain || '',
-          options: item.options,
-          correct_answers: item.correct_answers,
-          tags: item.tags || [],
-          ai_cache: item.ai_cache || {}
-        }))
-      }
-
-      const normalized = get().normalizeQuestionSet(assembledData)
-
+      const normalized = get().assembleQuestionSet(questionSet, rows)
       set({ currentQuestionSet: normalized, loading: false })
       return normalized
     } catch (error) {
-      console.error('Error loading question set:', error)
+      console.error('Error loading exam questions:', error)
+      set({ error: error.message, loading: false })
+      return null
+    }
+  },
+
+  /**
+   * Load a completed attempt for REVIEW. Questions + correct answers +
+   * explanations come from get_attempt_review, which only returns data for the
+   * caller's own completed attempt.
+   */
+  loadAttemptReview: async (attemptId, questionSetId) => {
+    try {
+      set({ loading: true, error: null })
+
+      const questionSet = await get().fetchQuestionSetMeta(questionSetId)
+
+      const { data: rows, error: rpcError } = await supabase
+        .rpc('get_attempt_review', { p_attempt_id: attemptId })
+
+      if (rpcError) throw rpcError
+
+      if (!rows || rows.length === 0) {
+        throw new Error('No review available for this attempt.')
+      }
+
+      const normalized = get().assembleQuestionSet(questionSet, rows)
+      set({ currentQuestionSet: normalized, loading: false })
+      return normalized
+    } catch (error) {
+      console.error('Error loading attempt review:', error)
       set({ error: error.message, loading: false })
       return null
     }

@@ -16,7 +16,7 @@ import supabase from '../services/supabase'
 import { Button, Card, Badge, Container, SectionHeader } from '../design-system'
 import {
   BookOpen, ClipboardList, CheckCircle2, CalendarDays, BarChart2,
-  Flame, LayoutGrid, Award, PlayCircle, ArrowRight, Rocket, GraduationCap, Lock,
+  Flame, LayoutGrid, Award, PlayCircle, ArrowRight, Rocket, GraduationCap, Lock, AlertTriangle,
 } from 'lucide-react'
 
 // Every session-based program slug we ship a course for. Used to detect a
@@ -1057,6 +1057,12 @@ function Dashboard() {
                       <span>Set {set.set_number}</span>
                       {set.is_final_exam && (<><span>·</span><span className="text-[#00D4AA] font-semibold">Final exam</span></>)}
                     </div>
+                    {set.is_final_exam && (
+                      <div className="flex items-start gap-1.5 mb-3 px-2.5 py-1.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-[0.7rem] leading-snug">
+                        <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                        <span><strong>One attempt only</strong> — this result defines your certificate and can't be retaken.</span>
+                      </div>
+                    )}
                     {result && (
                       <div className="mb-4 rounded-lg border border-gray-100 bg-gray-50 px-3 py-2.5">
                         <div className="flex items-center justify-between gap-2">
@@ -1093,10 +1099,17 @@ function Dashboard() {
                             Start over
                           </button>
                         </div>
+                      ) : (set.is_final_exam && result) ? (
+                        <Button variant="outline" size="sm" disabled className="w-full gap-1.5 !opacity-70 !cursor-default">
+                          <CheckCircle2 className="w-4 h-4" /> Completed — one attempt only
+                        </Button>
                       ) : (
                         <Button variant={result ? 'outline' : 'primary'} size="sm" className="w-full gap-1.5"
-                                onClick={() => navigate(`/exam/${featuredExam.slug}/take?set=${set.id}`)}>
-                          {result ? 'Retake simulation' : 'Start simulation'} <ArrowRight className="w-4 h-4" />
+                                onClick={() => {
+                                  if (set.is_final_exam && !window.confirm('This is your final exam. You can take it only once — the result defines your certificate and cannot be retaken. Start now?')) return
+                                  navigate(`/exam/${featuredExam.slug}/take?set=${set.id}`)
+                                }}>
+                          {set.is_final_exam ? 'Start final exam' : (result ? 'Retake simulation' : 'Start simulation')} <ArrowRight className="w-4 h-4" />
                         </Button>
                       )
                     ) : (

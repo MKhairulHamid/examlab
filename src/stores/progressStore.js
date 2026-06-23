@@ -216,65 +216,54 @@ export const useProgressStore = create((set, get) => ({
   /**
    * Complete exam
    */
-  completeExam: async (results) => {
+  completeExam: async (meta = {}) => {
     const state = get()
-    
+
+    // Ensure the attempt row + latest answers are persisted first (kept
+    // in_progress so the grading RPC will accept it). The score columns are
+    // NOT writable from the client — only grade_exam_attempt sets them.
+    await progressService.saveProgress({ ...state, status: 'in_progress' })
+
+    // Server-authoritative grading. The database reads the correct answers,
+    // computes the score, enforces the no-retake rule for final exams, and
+    // writes raw_score / percentage_score / scaled_score / passed itself.
+    const { data, error } = await supabase.rpc('grade_exam_attempt', {
+      p_attempt_id: state.attemptId,
+      p_answers: state.answers,
+      p_time_spent: state.timeElapsed
+    })
+
+    if (error) {
+      console.error('Error grading exam:', error)
+      throw error
+    }
+
+    // Reflect completion locally and sync user_progress status.
     const completedState = {
       ...state,
       status: 'completed',
       completedAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     }
-    
     set(completedState)
-    
-    // Save final progress state to Supabase
     await progressService.saveProgress(completedState)
-    
-    // Save exam results to exam_attempts table
-    // Use the attemptId as the id (it's already a UUID from user_progress)
-    const result = {
-      id: state.attemptId,
-      user_id: state.userId,
-      question_set_id: state.questionSetId,
-      started_at: state.startedAt,
-      completed_at: completedState.completedAt,
-      time_spent_seconds: state.timeElapsed,
-      answers_json: state.answers,
-      raw_score: results.correctCount,
-      percentage_score: results.percentage,
-      scaled_score: results.scaledScore,
-      passed: results.passed,
-      status: 'completed',
-      updated_at: new Date().toISOString()
-    }
-    
-    // Save result to Supabase exam_attempts table (use upsert in case record exists)
-    const { error } = await supabase
-      .from('exam_attempts')
-      .upsert(result)
-    
-    if (error) {
-      console.error('Error saving exam result:', error)
-      throw error
-    }
-    
+
     return {
-      id: result.id,
-      userId: result.user_id,
-      questionSetId: result.question_set_id,
-      attemptId: result.id,
-      startedAt: result.started_at,
-      completedAt: result.completed_at,
-      timeSpent: result.time_spent_seconds,
-      answers: result.answers_json,
-      rawScore: result.raw_score,
-      percentageScore: result.percentage_score,
-      scaledScore: result.scaled_score,
-      passed: result.passed,
-      totalQuestions: results.totalQuestions,
-      examName: results.examName || 'Exam',
-      examSlug: results.examSlug || ''
+      id: state.attemptId,
+      userId: state.userId,
+      questionSetId: state.questionSetId,
+      attemptId: state.attemptId,
+      startedAt: state.startedAt,
+      completedAt: completedState.completedAt,
+      timeSpent: state.timeElapsed,
+      answers: state.answers,
+      rawScore: data.correctCount,
+      percentageScore: data.percentage,
+      scaledScore: data.scaledScore,
+      passed: data.passed,
+      totalQuestions: data.totalQuestions,
+      examName: meta.examName || 'Exam',
+      examSlug: meta.examSlug || ''
     }
   },
 

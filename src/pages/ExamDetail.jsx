@@ -18,7 +18,7 @@ import { getProgram } from '../data/programs'
 import { getOfficialResourceUrl } from '../utils/officialResources'
 import {
   FileText, Clock, Target, BookOpen, ExternalLink, Lock, BarChart2,
-  GraduationCap, TrendingUp, TrendingDown, CheckCircle2, PlayCircle, Sparkles, ArrowRight,
+  GraduationCap, TrendingUp, TrendingDown, CheckCircle2, PlayCircle, Sparkles, ArrowRight, AlertTriangle,
 } from 'lucide-react'
 
 function ExamDetail() {
@@ -609,13 +609,40 @@ function ExamDetail() {
                     <span>Set {set.set_number}</span>
                   </div>
 
+                  {set.is_final_exam && (
+                    <div className="flex items-start gap-2 mb-3 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-[0.8125rem] leading-snug">
+                      <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                      <span>Final exam — <strong>one attempt only</strong>. This result defines your certificate and cannot be retaken.</span>
+                    </div>
+                  )}
+
                   {(isFree || hasAccess) ? (
-                    <button
-                      onClick={() => navigate(`/exam/${slug}/take?set=${set.id}`)}
-                      className="start-exam-button"
-                    >
-                      Start Practice Exam →
-                    </button>
+                    (() => {
+                      const completedFinal = set.is_final_exam
+                        ? examResults.find(r => r.questionSetId === set.id)
+                        : null
+                      if (completedFinal) {
+                        return (
+                          <button
+                            onClick={() => navigate(`/exam/${slug}/results?resultId=${completedFinal.id}&set=${set.id}`)}
+                            className="w-full py-3 bg-gray-100 text-[#0A2540] border border-gray-300 rounded-lg font-semibold cursor-pointer text-sm hover:bg-gray-200 transition-all duration-200 inline-flex items-center justify-center gap-1.5"
+                          >
+                            <CheckCircle2 className="w-4 h-4" /> Completed ({completedFinal.percentageScore}%) — View Result
+                          </button>
+                        )
+                      }
+                      return (
+                        <button
+                          onClick={() => {
+                            if (set.is_final_exam && !window.confirm('This is your final exam. You can take it only once — the result defines your certificate and cannot be retaken. Start now?')) return
+                            navigate(`/exam/${slug}/take?set=${set.id}`)
+                          }}
+                          className="start-exam-button"
+                        >
+                          {set.is_final_exam ? 'Start Final Exam →' : 'Start Practice Exam →'}
+                        </button>
+                      )
+                    })()
                   ) : (
                     <button
                       onClick={() => setShowPurchaseModal(true)}

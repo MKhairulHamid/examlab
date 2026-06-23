@@ -22,7 +22,7 @@ function ExamResults() {
   const setId = searchParams.get('set')
   
   const { user } = useAuthStore()
-  const { currentQuestionSet, loadQuestionSet } = useExamStore()
+  const { currentQuestionSet, loadAttemptReview } = useExamStore()
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(true)
   const [questions, setQuestions] = useState([])
@@ -48,9 +48,10 @@ function ExamResults() {
             return
           }
           
-          // Load question set first so we can report the true total question
-          // count (not just how many the user answered).
-          const questionSet = await loadQuestionSet(examAttempt.question_set_id)
+          // Load the questions for review via the attempt-review RPC, which
+          // returns correct answers + explanations only for this user's own
+          // completed attempt.
+          const questionSet = await loadAttemptReview(examAttempt.id, examAttempt.question_set_id)
 
           let questionsList = []
           if (questionSet) {
@@ -105,7 +106,7 @@ function ExamResults() {
     }
     
     loadResultData()
-  }, [resultId, user, loadQuestionSet, navigate, slug])
+  }, [resultId, user, loadAttemptReview, navigate, slug])
 
   if (loading) {
     return (

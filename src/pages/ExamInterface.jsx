@@ -23,7 +23,7 @@ function ExamInterface() {
   const isMatchingQuestion = (t) => t === 'Matching' || t === 'matching'
   
   const { user } = useAuthStore()
-  const { loadQuestionSet, currentQuestionSet, getExamBySlug } = useExamStore()
+  const { loadExamQuestions, currentQuestionSet, getExamBySlug } = useExamStore()
   const { isSubscribed, fetchSubscription, fetchPromoAccess } = usePurchaseStore()
   const { 
     startExam,
@@ -61,8 +61,8 @@ function ExamInterface() {
           await fetchSubscription(user.id)
           await fetchPromoAccess(user.id)
 
-          // SECURITY: Step 2 - Load question set metadata
-          const questionSet = await loadQuestionSet(setId)
+          // SECURITY: Step 2 - Load question set (answers stripped server-side)
+          const questionSet = await loadExamQuestions(setId)
           
           if (!questionSet) {
             setAccessDenied(true)
@@ -141,7 +141,7 @@ function ExamInterface() {
     }
     
     initialize()
-  }, [setId, user, loadQuestionSet, startOrResumeExam, fetchSubscription])
+  }, [setId, user, loadExamQuestions, startOrResumeExam, fetchSubscription])
 
   // Timer interval - only runs when not paused
   const timerRef = useRef(null)
@@ -455,55 +455,6 @@ function ExamInterface() {
     await recordFirstAnswer()
   }
 
-  const calculateResults = () => {
-    let correctCount = 0
-
-    questions.forEach((question, index) => {
-      const userAnswer = answers[index] || []
-      const correctAnswers = question.correctAnswers || []
-      const norm = (arr) => arr.map(s => String(s).trim()).filter(s => s)
-
-      if (isOrderingQuestion(question.type)) {
-        // Sequence must match exactly — do NOT sort
-        if (norm(userAnswer).length > 0 &&
-            JSON.stringify(norm(userAnswer)) === JSON.stringify(norm(correctAnswers))) {
-          correctCount++
-        }
-      } else {
-        // MC, Multiple Response, Matching — sort both sides and compare
-        if (JSON.stringify(norm(userAnswer).sort()) === JSON.stringify(norm(correctAnswers).sort())) {
-          correctCount++
-        }
-      }
-    })
-    
-    const percentage = Math.round((correctCount / questions.length) * 100)
-    
-    // Get max score from exam type (default to 1000)
-    const maxScore = currentQuestionSet.exam_types?.max_score || 1000
-
-    // Scaled score is a performance measure (percent correct mapped onto the
-    // exam's scoring scale), so it is independent of how many questions the set
-    // has. Free samples and full exams use the same formula — scoring a perfect
-    // sample yields a perfect scaled score.
-    const scaledScore = Math.round((correctCount / questions.length) * maxScore)
-
-    // Determine if passed (typically 70% or higher)
-    // Note: Pass/fail is based on percentage of questions answered correctly,
-    // not the scaled score. This ensures fair evaluation for both free samples and full exams.
-    // Example: 8/10 correct = 80% = PASSED (even though scaled score might be lower)
-    const passingScore = 70
-    const passed = percentage >= passingScore
-    
-    return {
-      correctCount,
-      totalQuestions: questions.length,
-      percentage,
-      scaledScore,
-      passed
-    }
-  }
-
   const handleFinishExam = async () => {
     // Guard against double-submission (e.g. clicking Finish exactly as the timer
     // expires, which would also trigger the auto-submit effect).
@@ -511,16 +462,13 @@ function ExamInterface() {
     finishingRef.current = true
 
     try {
-      const results = calculateResults()
-
-      const resultsWithMetadata = {
-        ...results,
+      // Grading is performed server-side (grade_exam_attempt RPC). The browser
+      // never receives the answer key, and the score / passed flag are written
+      // authoritatively by the database — they cannot be forged from the client.
+      const result = await useProgressStore.getState().completeExam({
         examName: currentQuestionSet.name,
         examSlug: slug
-      }
-
-      // Complete the exam and save results
-      const result = await useProgressStore.getState().completeExam(resultsWithMetadata)
+      })
 
       // Navigate to results page
       navigate(`/exam/${slug}/results?resultId=${result.id}&set=${setId}`)
@@ -528,7 +476,14 @@ function ExamInterface() {
       console.error('Error finishing exam:', error)
       // Allow the user to retry rather than being stranded on the exam screen.
       finishingRef.current = false
-      setFinishError('We couldn\'t submit your exam. Please check your connection and try again.')
+      const code = error?.message || ''
+      if (code.includes('RETAKE_NOT_ALLOWED')) {
+        setFinishError('This final exam has already been completed and cannot be retaken.')
+      } else if (code.includes('ALREADY_COMPLETED')) {
+        setFinishError('This attempt was already submitted.')
+      } else {
+        setFinishError('We couldn\'t submit your exam. Please check your connection and try again.')
+      }
     }
   }
 
