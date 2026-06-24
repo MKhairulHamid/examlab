@@ -5,7 +5,7 @@ import useAuthStore from '../stores/authStore'
 import usePurchaseStore from '../stores/purchaseStore'
 import EnrollmentModal from '../components/enrollment/EnrollmentModal'
 import ExamLandingSection from '../components/exam/ExamLandingSection'
-import { Button } from '../design-system'
+import { Button, Badge } from '../design-system'
 import supabase from '../services/supabase'
 import studyProgressService from '../services/studyProgressService'
 import progressService from '../services/progressService'
@@ -719,16 +719,9 @@ function ExamDetail() {
                             <h3 className="text-[0.9375rem] font-bold text-[#0A2540] truncate max-w-full">
                               {result.questionSetName || 'Practice Exam'}
                             </h3>
-                            <span
-                              className="px-2 py-0.5 rounded text-[0.6875rem] font-semibold shrink-0 border"
-                              style={{
-                                background: result.passed ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)',
-                                borderColor: passColor,
-                                color: passColor,
-                              }}
-                            >
+                            <Badge color={result.passed ? 'green' : 'red'} className="shrink-0">
                               {result.passed ? 'PASSED' : 'FAILED'}
-                            </span>
+                            </Badge>
                           </div>
                           <div className="text-[0.8125rem] text-gray-500 truncate">
                             {new Date(result.completedAt).toLocaleDateString()} • {Math.floor(result.timeSpent / 60)} min

@@ -1055,11 +1055,11 @@ function Dashboard() {
                     <div className="flex items-start justify-between gap-3 mb-2">
                       <h3 className="text-sm font-bold text-[#0A2540] leading-snug">{set.name}</h3>
                       {isFree ? (
-                        <span className="shrink-0 text-[0.625rem] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-[#00D4AA]/10 text-[#00A884]">Free</span>
+                        <Badge color="teal" className="shrink-0">Free</Badge>
                       ) : hasAccess ? (
-                        <span className="shrink-0 text-[0.625rem] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-[#00D4AA]/10 text-[#00A884]">Included</span>
+                        <Badge color="teal" className="shrink-0">Included</Badge>
                       ) : (
-                        <span className="shrink-0 inline-flex items-center gap-1 text-[0.625rem] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-gray-100 text-gray-500"><Lock className="w-3 h-3" /> Locked</span>
+                        <Badge color="gray" className="shrink-0 gap-1"><Lock className="w-3 h-3" /> Locked</Badge>
                       )}
                     </div>
                     {set.description && (
@@ -1084,9 +1084,9 @@ function Dashboard() {
                             <span className="text-lg font-mono font-bold leading-none" style={{ color: result.passed ? '#10b981' : '#0A2540' }}>
                               {result.percentageScore ?? 0}%
                             </span>
-                            <span className={`text-[0.625rem] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full ${result.passed ? 'bg-[#10b981]/10 text-[#059669]' : 'bg-amber-100 text-amber-700'}`}>
+                            <Badge color={result.passed ? 'green' : 'amber'}>
                               {result.passed ? 'Passed' : 'Not passed'}
-                            </span>
+                            </Badge>
                           </div>
                           <button
                             className="text-[0.7rem] font-semibold text-[#00A884] hover:underline underline-offset-2 shrink-0"
