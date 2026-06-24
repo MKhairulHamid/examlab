@@ -60,7 +60,7 @@ export default function TeachToLearn({ session, courseSlug, examCode, officialVi
 
       {/* ── Step 1: Explain it first ─────────────────────────────────────────── */}
       {session.selfExplanationPrompt && (
-        <div style={{ background: 'rgba(59,130,246,0.05)', border: '1.5px solid rgba(59,130,246,0.2)', borderRadius: '0.875rem', padding: '1rem 1.25rem', marginBottom: '1.75rem' }}>
+        <div style={{ background: 'rgba(59,130,246,0.05)', border: '1.5px solid rgba(59,130,246,0.2)', borderRadius: '0.75rem', padding: '1rem 1.25rem', marginBottom: '1.75rem' }}>
           <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#1d4ed8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.35rem' }}>
             1 · Explain it first
           </div>
@@ -155,7 +155,7 @@ function SubmissionArea({ session, courseSlug, examCode, userId, submitterName, 
     return (
       <div style={{ marginTop: '1rem', background: 'white', border: '1.5px solid #e5e7eb', borderRadius: '0.75rem', padding: '0.9rem 1.1rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.4rem' }}>
-          <span style={{ fontSize: '0.6875rem', fontWeight: 800, color: s.color, background: s.bg, padding: '0.2rem 0.6rem', borderRadius: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+          <span style={{ fontSize: '0.6875rem', fontWeight: 800, color: s.color, background: s.bg, padding: '0.2rem 0.6rem', borderRadius: '0.375rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
             {s.label}
           </span>
           <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: NAVY }}>{existing.title}</span>
@@ -293,7 +293,7 @@ function YouTubePostHelper({ session, examCode, onUseTitle }) {
   const sug = useMemo(() => buildYouTubeSuggestion(session, examCode), [session, examCode])
 
   return (
-    <div style={{ marginBottom: '0.85rem', border: '1.5px dashed #d1d5db', borderRadius: '0.7rem', padding: open ? '0.85rem 1rem' : '0.6rem 1rem', background: '#fbfdff' }}>
+    <div style={{ marginBottom: '0.85rem', border: '1.5px dashed #d1d5db', borderRadius: '0.75rem', padding: open ? '0.85rem 1rem' : '0.6rem 1rem', background: '#fbfdff' }}>
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
@@ -324,16 +324,16 @@ const miniLink = {
   background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline',
 }
 const inputStyle = {
-  width: '100%', boxSizing: 'border-box', borderRadius: '0.6rem', border: '1.5px solid #e5e7eb',
+  width: '100%', boxSizing: 'border-box', borderRadius: '0.5rem', border: '1.5px solid #e5e7eb',
   padding: '0.6rem 0.75rem', fontSize: '0.875rem', fontFamily: 'inherit',
 }
 const primaryBtn = {
-  padding: '0.6rem 1.25rem', borderRadius: '0.6rem', fontWeight: 700, fontSize: '0.875rem',
+  padding: '0.6rem 1.25rem', borderRadius: '0.5rem', fontWeight: 700, fontSize: '0.875rem',
   cursor: 'pointer', background: `linear-gradient(135deg, ${TEAL}, ${TEAL_DARK})`, color: 'white',
   border: 'none', boxShadow: '0 3px 12px rgba(0,212,170,0.3)',
 }
 const secondaryBtn = {
-  padding: '0.6rem 1.25rem', borderRadius: '0.6rem', fontWeight: 700, fontSize: '0.875rem',
+  padding: '0.6rem 1.25rem', borderRadius: '0.5rem', fontWeight: 700, fontSize: '0.875rem',
   cursor: 'pointer', background: 'white', color: '#6b7280', border: '1.5px solid #e5e7eb',
 }
 const linkBtn = {

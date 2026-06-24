@@ -396,7 +396,7 @@ function TopicItem({ item, isBookmarked, onToggleBookmark, onStartQuiz }) {
                                 background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
                                 color: 'white',
                                 border: 'none',
-                                borderRadius: '0.625rem',
+                                borderRadius: '0.5rem',
                                 fontSize: '0.8125rem',
                                 fontWeight: '700',
                                 cursor: 'pointer',
@@ -425,7 +425,7 @@ function TopicItem({ item, isBookmarked, onToggleBookmark, onStartQuiz }) {
                                 background: '#0A2540',
                                 color: 'white',
                                 border: 'none',
-                                borderRadius: '0.625rem',
+                                borderRadius: '0.5rem',
                                 fontSize: '0.8125rem',
                                 fontWeight: '700',
                                 cursor: 'pointer',
@@ -453,7 +453,7 @@ function TopicItem({ item, isBookmarked, onToggleBookmark, onStartQuiz }) {
                                 background: progress >= 100 ? 'white' : 'rgba(0,212,170,0.1)',
                                 color: progress >= 100 ? '#00D4AA' : '#00A884',
                                 border: `2px solid ${progress >= 100 ? '#00D4AA' : 'rgba(0,212,170,0.3)'}`,
-                                borderRadius: '0.625rem',
+                                borderRadius: '0.5rem',
                                 fontSize: '0.8125rem',
                                 fontWeight: '700',
                                 cursor: 'pointer',
@@ -777,7 +777,7 @@ function LegacyStudyMaterial({ hasAccess = true, onSubscribe }) {
                     padding: '2rem',
                     background: 'rgba(255,255,255,0.05)',
                     backdropFilter: 'blur(20px)',
-                    borderRadius: '1.5rem',
+                    borderRadius: '1rem',
                     border: '1px solid rgba(255,255,255,0.1)'
                 }}>
                     <h1 style={{

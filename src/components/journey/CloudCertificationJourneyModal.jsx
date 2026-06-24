@@ -473,7 +473,7 @@ function ResultScreen({ path, timeline, answers, onStartFree, onSubscribe, onBac
             { label: 'Certs',         value: `${timeline.count}` },
             { label: 'Journey',       value: `~${timeline.months} mo` },
           ].map((stat, i) => (
-            <div key={i} style={{ background: 'rgba(255,255,255,0.08)', borderRadius: '0.625rem', padding: '0.625rem 0.75rem', textAlign: 'center' }}>
+            <div key={i} style={{ background: 'rgba(255,255,255,0.08)', borderRadius: '0.5rem', padding: '0.625rem 0.75rem', textAlign: 'center' }}>
               <div style={{ fontSize: '1rem', fontWeight: '800', color: '#00D4AA', lineHeight: 1, marginBottom: '0.2rem' }}>{stat.value}</div>
               <div style={{ fontSize: '0.6875rem', color: 'rgba(255,255,255,0.55)', fontWeight: '500' }}>{stat.label}</div>
             </div>
@@ -519,7 +519,7 @@ function ResultScreen({ path, timeline, answers, onStartFree, onSubscribe, onBac
           style={{
             width: '100%', padding: '1rem',
             background: 'linear-gradient(135deg, #00D4AA 0%, #00A884 100%)',
-            color: 'white', border: 'none', borderRadius: '0.875rem',
+            color: 'white', border: 'none', borderRadius: '0.75rem',
             fontWeight: '800', fontSize: '1.0625rem', cursor: 'pointer',
             boxShadow: '0 6px 20px rgba(0,212,170,0.35)', transition: 'all 0.2s', marginBottom: '0.75rem',
           }}
@@ -621,7 +621,7 @@ export default function CloudCertificationJourneyModal({ isOpen, onClose, onStar
       <div
         onClick={e => e.stopPropagation()}
         style={{
-          background: 'white', borderRadius: '1.25rem',
+          background: 'white', borderRadius: '1rem',
           maxWidth: isResultStep ? '520px' : '480px',
           width: '100%', maxHeight: '92vh', overflow: 'auto',
           boxShadow: '0 24px 80px rgba(0,0,0,0.4)', position: 'relative',

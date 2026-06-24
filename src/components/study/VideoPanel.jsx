@@ -52,7 +52,7 @@ export default function VideoPanel({ videos, showHeader = true }) {
               onClick={() => { setActiveIdx(i); setPlaying(false) }}
               style={{
                 fontSize: '0.75rem', fontWeight: 700, padding: '0.3rem 0.75rem',
-                borderRadius: '0.4rem', cursor: 'pointer',
+                borderRadius: '0.375rem', cursor: 'pointer',
                 background: i === activeIdx ? NAVY : 'white',
                 color: i === activeIdx ? 'white' : '#6b7280',
                 border: `1.5px solid ${i === activeIdx ? NAVY : '#e5e7eb'}`,
@@ -115,7 +115,7 @@ export default function VideoPanel({ videos, showHeader = true }) {
                   position: 'absolute', top: '0.75rem', right: '0.75rem',
                   background: 'rgba(0,0,0,0.75)', color: 'white',
                   fontSize: '0.6875rem', fontWeight: 700, padding: '0.25rem 0.6rem',
-                  borderRadius: '0.35rem', backdropFilter: 'blur(4px)',
+                  borderRadius: '0.375rem', backdropFilter: 'blur(4px)',
                 }}>
                   {v.startSeconds != null
                     ? `${Math.floor(v.startSeconds / 60)}:${String(v.startSeconds % 60).padStart(2, '0')}`

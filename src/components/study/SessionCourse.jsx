@@ -139,7 +139,7 @@ function PrecisionRecallWidget() {
         <span style={{
           fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase',
           letterSpacing: '0.06em', color: 'white', background: TEAL_DARK,
-          padding: '0.2rem 0.6rem', borderRadius: '0.35rem',
+          padding: '0.2rem 0.6rem', borderRadius: '0.375rem',
         }}>Try it</span>
         <span style={{ fontSize: '0.875rem', fontWeight: 700, color: NAVY }}>
           Precision &amp; Recall — Interactive
@@ -233,7 +233,7 @@ function PrecisionRecallWidget() {
       {/* Live coaching banner */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: '0.5rem',
-        background: hint.bg, border: `1.5px solid ${hint.bd}`, borderRadius: '0.6rem',
+        background: hint.bg, border: `1.5px solid ${hint.bd}`, borderRadius: '0.5rem',
         padding: '0.55rem 0.75rem', marginBottom: '0.875rem',
       }}>
         {hint.badge && (
@@ -257,7 +257,7 @@ function PrecisionRecallWidget() {
         ].map(({ label, count, color, note }) => (
           <div key={label} style={{
             flex: '1 1 80px', textAlign: 'center',
-            background: 'white', border: '1.5px solid #e5e7eb', borderRadius: '0.6rem',
+            background: 'white', border: '1.5px solid #e5e7eb', borderRadius: '0.5rem',
             padding: '0.5rem 0.25rem',
           }}>
             <div style={{ fontSize: '1.375rem', fontWeight: 800, color, lineHeight: 1 }}>{count}</div>
@@ -369,7 +369,7 @@ function InferenceParametersWidget() {
         <span style={{
           fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase',
           letterSpacing: '0.06em', color: 'white', background: TEAL_DARK,
-          padding: '0.2rem 0.6rem', borderRadius: '0.35rem',
+          padding: '0.2rem 0.6rem', borderRadius: '0.375rem',
         }}>Try it</span>
         <span style={{ fontSize: '0.875rem', fontWeight: 700, color: NAVY }}>
           Inference Parameters — Interactive
@@ -383,7 +383,7 @@ function InferenceParametersWidget() {
 
       {/* Prompt */}
       <div style={{
-        background: 'white', border: '1.5px solid #e5e7eb', borderRadius: '0.6rem',
+        background: 'white', border: '1.5px solid #e5e7eb', borderRadius: '0.5rem',
         padding: '0.6rem 0.85rem', marginBottom: '0.875rem', fontSize: '0.9rem', color: NAVY,
       }}>
         <span style={{ fontFamily: 'ui-monospace, monospace' }}>{PROMPT} </span>
@@ -446,7 +446,7 @@ function InferenceParametersWidget() {
 
       {/* Coaching banner */}
       <div style={{
-        background: regime.bg, border: `1.5px solid ${regime.bd}`, borderRadius: '0.6rem',
+        background: regime.bg, border: `1.5px solid ${regime.bd}`, borderRadius: '0.5rem',
         padding: '0.55rem 0.75rem', margin: '0.5rem 0 0.875rem',
         fontSize: '0.75rem', lineHeight: 1.5, color: regime.fg, fontWeight: 600,
       }}>
@@ -458,7 +458,7 @@ function InferenceParametersWidget() {
 
       {/* Sampled outputs */}
       <div style={{
-        background: 'white', border: '1.5px solid #e5e7eb', borderRadius: '0.6rem', padding: '0.7rem 0.85rem',
+        background: 'white', border: '1.5px solid #e5e7eb', borderRadius: '0.5rem', padding: '0.7rem 0.85rem',
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
           <span style={{ fontSize: '0.75rem', fontWeight: 700, color: NAVY, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
@@ -468,7 +468,7 @@ function InferenceParametersWidget() {
             onClick={() => setSeed(s => s + 1)}
             style={{
               fontSize: '0.72rem', fontWeight: 700, color: 'white', background: TEAL_DARK,
-              border: 'none', borderRadius: '0.4rem', padding: '0.3rem 0.7rem', cursor: 'pointer',
+              border: 'none', borderRadius: '0.375rem', padding: '0.3rem 0.7rem', cursor: 'pointer',
             }}
           >Re-roll</button>
         </div>
@@ -479,7 +479,7 @@ function InferenceParametersWidget() {
               background: w === dist[0].w ? '#f0fdfa' : '#fef3f2',
               color: w === dist[0].w ? TEAL_DARK : '#b91c1c',
               border: `1px solid ${w === dist[0].w ? 'rgba(0,168,132,0.3)' : 'rgba(220,38,38,0.25)'}`,
-              borderRadius: '0.35rem', padding: '0.2rem 0.55rem',
+              borderRadius: '0.375rem', padding: '0.2rem 0.55rem',
             }}>{w}</span>
           ))}
         </div>
@@ -502,7 +502,7 @@ function WidgetShell({ title, intro, children }) {
         <span style={{
           fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase',
           letterSpacing: '0.06em', color: 'white', background: TEAL_DARK,
-          padding: '0.2rem 0.6rem', borderRadius: '0.35rem',
+          padding: '0.2rem 0.6rem', borderRadius: '0.375rem',
         }}>Try it</span>
         <span style={{ fontSize: '0.875rem', fontWeight: 700, color: NAVY }}>{title}</span>
       </div>
@@ -547,7 +547,7 @@ function LearningTypesWidget() {
         const chosen = picks[i]
         const correct = chosen === it.a
         return (
-          <div key={i} style={{ background: 'white', border: '1.5px solid #e5e7eb', borderRadius: '0.6rem', padding: '0.6rem 0.7rem', marginBottom: '0.6rem' }}>
+          <div key={i} style={{ background: 'white', border: '1.5px solid #e5e7eb', borderRadius: '0.5rem', padding: '0.6rem 0.7rem', marginBottom: '0.6rem' }}>
             <div style={{ fontSize: '0.82rem', color: NAVY, marginBottom: '0.5rem', lineHeight: 1.45 }}>{it.t}</div>
             <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
               {CATS.map(c => {
@@ -555,7 +555,7 @@ function LearningTypesWidget() {
                 return (
                   <button key={c.id} onClick={() => setPicks(p => ({ ...p, [i]: c.id }))}
                     style={{
-                      fontSize: '0.72rem', fontWeight: 700, padding: '0.34rem 0.65rem', borderRadius: '0.4rem', cursor: 'pointer',
+                      fontSize: '0.72rem', fontWeight: 700, padding: '0.34rem 0.65rem', borderRadius: '0.375rem', cursor: 'pointer',
                       border: `1.5px solid ${sel ? c.color : '#d1d5db'}`,
                       background: sel ? c.color : 'white', color: sel ? 'white' : '#4b5563',
                     }}>{c.label}</button>
@@ -607,14 +607,14 @@ function TokenizerWidget() {
       intro="Models can't read words — they break text into subword tokens, each mapped to an integer ID. Token count drives both cost and context limits. Type below and watch it split."
     >
       <textarea value={text} onChange={e => setText(e.target.value)} rows={2}
-        style={{ width: '100%', boxSizing: 'border-box', fontSize: '0.9rem', padding: '0.6rem 0.7rem', border: '1.5px solid #d1d5db', borderRadius: '0.6rem', resize: 'vertical', fontFamily: 'inherit', marginBottom: '0.75rem' }} />
+        style={{ width: '100%', boxSizing: 'border-box', fontSize: '0.9rem', padding: '0.6rem 0.7rem', border: '1.5px solid #d1d5db', borderRadius: '0.5rem', resize: 'vertical', fontFamily: 'inherit', marginBottom: '0.75rem' }} />
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem', marginBottom: '0.75rem' }}>
         {tokens.length === 0 && <span style={{ color: '#9ca3af', fontSize: '0.8rem' }}>Type something…</span>}
         {tokens.map((tk, i) => (
           <span key={i} style={{
             fontFamily: 'ui-monospace, monospace', fontSize: '0.78rem',
             background: TINTS[tk.wi % 2], color: TEXTS[tk.wi % 2],
-            borderRadius: '0.3rem', padding: '0.12rem 0.4rem', whiteSpace: 'pre',
+            borderRadius: '0.375rem', padding: '0.12rem 0.4rem', whiteSpace: 'pre',
           }}>{tk.t}<sub style={{ fontSize: '0.62em', opacity: 0.65 }}> {id(tk.t)}</sub></span>
         ))}
       </div>
@@ -625,7 +625,7 @@ function TokenizerWidget() {
           { k: 'Chars / token', v: ratio.toFixed(1), c: NAVY },
           { k: 'Cost / 10K calls', v: `$${costPer10k.toFixed(2)}`, c: '#b45309' },
         ].map(s => (
-          <div key={s.k} style={{ flex: '1 1 90px', textAlign: 'center', background: 'white', border: '1.5px solid #e5e7eb', borderRadius: '0.6rem', padding: '0.5rem 0.25rem' }}>
+          <div key={s.k} style={{ flex: '1 1 90px', textAlign: 'center', background: 'white', border: '1.5px solid #e5e7eb', borderRadius: '0.5rem', padding: '0.5rem 0.25rem' }}>
             <div style={{ fontSize: '1.2rem', fontWeight: 800, color: s.c }}>{s.v}</div>
             <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{s.k}</div>
           </div>
@@ -669,7 +669,7 @@ function RagVsFineTuneWidget() {
       intro="The exam rewards decision rules, not trivia. Answer these three and the guide names the right adaptation approach — and why."
     >
       {QS.map(q => (
-        <div key={q.id} style={{ background: 'white', border: '1.5px solid #e5e7eb', borderRadius: '0.6rem', padding: '0.6rem 0.7rem', marginBottom: '0.6rem' }}>
+        <div key={q.id} style={{ background: 'white', border: '1.5px solid #e5e7eb', borderRadius: '0.5rem', padding: '0.6rem 0.7rem', marginBottom: '0.6rem' }}>
           <div style={{ fontSize: '0.82rem', color: NAVY, marginBottom: '0.5rem', lineHeight: 1.45 }}>{q.q}</div>
           <div style={{ display: 'flex', gap: '0.5rem' }}>
             {[['Yes', true], ['No', false]].map(([lab, val]) => {
@@ -677,7 +677,7 @@ function RagVsFineTuneWidget() {
               return (
                 <button key={lab} onClick={() => setA(p => ({ ...p, [q.id]: val }))}
                   style={{
-                    flex: 1, fontSize: '0.78rem', fontWeight: 700, padding: '0.42rem', borderRadius: '0.4rem', cursor: 'pointer',
+                    flex: 1, fontSize: '0.78rem', fontWeight: 700, padding: '0.42rem', borderRadius: '0.375rem', cursor: 'pointer',
                     border: `1.5px solid ${sel ? (val ? '#16a34a' : '#dc2626') : '#d1d5db'}`,
                     background: sel ? (val ? '#16a34a' : '#dc2626') : 'white', color: sel ? 'white' : '#4b5563',
                   }}>{lab}</button>
@@ -687,7 +687,7 @@ function RagVsFineTuneWidget() {
         </div>
       ))}
       {rec ? (
-        <div style={{ background: 'white', border: `2px solid ${rec.color}`, borderRadius: '0.7rem', padding: '0.85rem', marginTop: '0.4rem' }}>
+        <div style={{ background: 'white', border: `2px solid ${rec.color}`, borderRadius: '0.75rem', padding: '0.85rem', marginTop: '0.4rem' }}>
           <div style={{ fontSize: '0.66rem', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Recommended approach</div>
           <div style={{ fontSize: '1.15rem', fontWeight: 800, color: rec.color, margin: '0.15rem 0 0.4rem' }}>{rec.pick}</div>
           <div style={{ fontSize: '0.8rem', color: '#4b5563', lineHeight: 1.55 }}>{rec.why}</div>
@@ -751,14 +751,14 @@ function NgramOverlapWidget() {
       title="ROUGE & BLEU — Word-Overlap Scoring"
       intro="Automated text metrics score a generated answer by how much its words and n-grams overlap a human reference. Edit the candidate — or try a preset — and watch the scores. Notice a perfect paraphrase still scores near zero."
     >
-      <div style={{ background: 'white', border: '1.5px solid #e5e7eb', borderRadius: '0.6rem', padding: '0.55rem 0.7rem', marginBottom: '0.6rem' }}>
+      <div style={{ background: 'white', border: '1.5px solid #e5e7eb', borderRadius: '0.5rem', padding: '0.55rem 0.7rem', marginBottom: '0.6rem' }}>
         <span style={{ fontSize: '0.62rem', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Human reference</span>
         <div style={{ fontFamily: 'ui-monospace, monospace', fontSize: '0.85rem', color: NAVY }}>{REFERENCE}</div>
       </div>
       <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
         {PRESETS.map(p => (
           <button key={p.label} onClick={() => setCand(p.text)}
-            style={{ fontSize: '0.68rem', fontWeight: 600, padding: '0.26rem 0.55rem', borderRadius: '0.35rem', cursor: 'pointer',
+            style={{ fontSize: '0.68rem', fontWeight: 600, padding: '0.26rem 0.55rem', borderRadius: '0.375rem', cursor: 'pointer',
               border: `1.5px solid ${cand === p.text ? TEAL_DARK : '#d1d5db'}`, background: cand === p.text ? '#f0fdfa' : 'white', color: cand === p.text ? TEAL_DARK : '#4b5563' }}>{p.label}</button>
         ))}
       </div>
@@ -766,7 +766,7 @@ function NgramOverlapWidget() {
         style={{ width: '100%', boxSizing: 'border-box', fontSize: '0.85rem', padding: '0.5rem 0.6rem', border: '1.5px solid #d1d5db', borderRadius: '0.5rem', marginBottom: '0.6rem', fontFamily: 'ui-monospace, monospace' }} />
       <div style={{ marginBottom: '0.7rem', fontSize: '0.85rem', lineHeight: 1.8 }}>
         {m.c.length ? m.c.map((w, i) => (
-          <span key={i} style={{ background: m.hl[i] ? 'rgba(0,168,132,0.18)' : 'transparent', color: m.hl[i] ? TEAL_DARK : '#9ca3af', fontWeight: m.hl[i] ? 700 : 400, borderRadius: '0.25rem', padding: '0.05rem 0.2rem', fontFamily: 'ui-monospace, monospace' }}>{w} </span>
+          <span key={i} style={{ background: m.hl[i] ? 'rgba(0,168,132,0.18)' : 'transparent', color: m.hl[i] ? TEAL_DARK : '#9ca3af', fontWeight: m.hl[i] ? 700 : 400, borderRadius: '0.375rem', padding: '0.05rem 0.2rem', fontFamily: 'ui-monospace, monospace' }}>{w} </span>
         )) : <span style={{ color: '#9ca3af' }}>Type a candidate…</span>}
         <div style={{ fontSize: '0.66rem', color: '#9ca3af', marginTop: '0.25rem' }}>Green = word also in the reference (the only thing these metrics can see).</div>
       </div>
@@ -810,7 +810,7 @@ function InterpretabilityTradeoffWidget() {
       </div>
       <div style={{ textAlign: 'center', marginBottom: '0.75rem' }}>
         <div style={{ fontSize: '1.05rem', fontWeight: 800, color: NAVY }}>{mdl.name}</div>
-        <span style={{ display: 'inline-block', marginTop: '0.25rem', fontSize: '0.64rem', fontWeight: 700, color: 'white', background: boxColor, padding: '0.15rem 0.55rem', borderRadius: '0.35rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{mdl.box}</span>
+        <span style={{ display: 'inline-block', marginTop: '0.25rem', fontSize: '0.64rem', fontWeight: 700, color: 'white', background: boxColor, padding: '0.15rem 0.55rem', borderRadius: '0.375rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{mdl.box}</span>
       </div>
       {[
         { label: 'Accuracy', v: mdl.acc, c: '#2563eb' },
@@ -824,7 +824,7 @@ function InterpretabilityTradeoffWidget() {
           <span style={{ width: 38, textAlign: 'right', fontSize: '0.8rem', fontWeight: 800, color: NAVY }}>{Math.round(b.v * 100)}%</span>
         </div>
       ))}
-      <div style={{ background: '#f9fafb', border: `1.5px solid ${boxColor}`, borderRadius: '0.6rem', padding: '0.55rem 0.75rem', margin: '0.6rem 0', fontSize: '0.75rem', lineHeight: 1.5, color: '#374151', fontWeight: 600 }}>
+      <div style={{ background: '#f9fafb', border: `1.5px solid ${boxColor}`, borderRadius: '0.5rem', padding: '0.55rem 0.75rem', margin: '0.6rem 0', fontSize: '0.75rem', lineHeight: 1.5, color: '#374151', fontWeight: 600 }}>
         {banner}
       </div>
       <div style={{ fontSize: '0.74rem', color: '#4b5563', lineHeight: 1.5 }}><strong style={{ color: NAVY }}>Best when:</strong> {mdl.use}</div>
@@ -852,7 +852,7 @@ function ScenarioSorter({ title, intro, cats, items }) {
         const chosen = picks[i]
         const correct = chosen === it.a
         return (
-          <div key={i} style={{ background: 'white', border: '1.5px solid #e5e7eb', borderRadius: '0.6rem', padding: '0.6rem 0.7rem', marginBottom: '0.6rem' }}>
+          <div key={i} style={{ background: 'white', border: '1.5px solid #e5e7eb', borderRadius: '0.5rem', padding: '0.6rem 0.7rem', marginBottom: '0.6rem' }}>
             <div style={{ fontSize: '0.82rem', color: NAVY, marginBottom: '0.5rem', lineHeight: 1.45 }}>{it.t}</div>
             <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
               {cats.map(c => {
@@ -860,7 +860,7 @@ function ScenarioSorter({ title, intro, cats, items }) {
                 return (
                   <button key={c.id} onClick={() => setPicks(p => ({ ...p, [i]: c.id }))}
                     style={{
-                      fontSize: '0.72rem', fontWeight: 700, padding: '0.34rem 0.65rem', borderRadius: '0.4rem', cursor: 'pointer',
+                      fontSize: '0.72rem', fontWeight: 700, padding: '0.34rem 0.65rem', borderRadius: '0.375rem', cursor: 'pointer',
                       border: `1.5px solid ${sel ? c.color : '#d1d5db'}`,
                       background: sel ? c.color : 'white', color: sel ? 'white' : '#4b5563',
                     }}>{c.label}</button>
@@ -997,7 +997,7 @@ function DdbCapacityWidget() {
           return (
             <button key={m.id} onClick={() => setMode(m.id)}
               style={{
-                fontSize: '0.72rem', fontWeight: 700, padding: '0.34rem 0.65rem', borderRadius: '0.4rem', cursor: 'pointer',
+                fontSize: '0.72rem', fontWeight: 700, padding: '0.34rem 0.65rem', borderRadius: '0.375rem', cursor: 'pointer',
                 border: `1.5px solid ${sel ? TEAL_DARK : '#d1d5db'}`,
                 background: sel ? TEAL_DARK : 'white', color: sel ? 'white' : '#4b5563',
               }}>{m.label}</button>
@@ -1010,7 +1010,7 @@ function DdbCapacityWidget() {
           { k: 'RCU / sec', v: rcu, c: TEAL_DARK },
           { k: 'WCU / sec', v: wcu, c: '#b45309' },
         ].map(s => (
-          <div key={s.k} style={{ flex: '1 1 90px', textAlign: 'center', background: 'white', border: '1.5px solid #e5e7eb', borderRadius: '0.6rem', padding: '0.5rem 0.25rem' }}>
+          <div key={s.k} style={{ flex: '1 1 90px', textAlign: 'center', background: 'white', border: '1.5px solid #e5e7eb', borderRadius: '0.5rem', padding: '0.5rem 0.25rem' }}>
             <div style={{ fontSize: '1.2rem', fontWeight: 800, color: s.c }}>{s.v}</div>
             <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{s.k}</div>
           </div>
@@ -1065,7 +1065,7 @@ function LambdaConcurrencyWidget() {
           { k: 'Cold starts', v: `${cold} (${coldPct}%)`, c: cold ? '#b45309' : '#059669' },
           { k: 'Throttled', v: throttled, c: throttled ? '#b91c1c' : '#059669' },
         ].map(s => (
-          <div key={s.k} style={{ flex: '1 1 100px', textAlign: 'center', background: 'white', border: '1.5px solid #e5e7eb', borderRadius: '0.6rem', padding: '0.5rem 0.25rem' }}>
+          <div key={s.k} style={{ flex: '1 1 100px', textAlign: 'center', background: 'white', border: '1.5px solid #e5e7eb', borderRadius: '0.5rem', padding: '0.5rem 0.25rem' }}>
             <div style={{ fontSize: '1.15rem', fontWeight: 800, color: s.c }}>{s.v}</div>
             <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{s.k}</div>
           </div>
@@ -2048,7 +2048,7 @@ function SampleQuestion({ sample }) {
         <span style={{
           fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase',
           letterSpacing: '0.06em', color: 'white', background: NAVY,
-          padding: '0.25rem 0.7rem', borderRadius: '0.4rem',
+          padding: '0.25rem 0.7rem', borderRadius: '0.375rem',
         }}>Exam Sample</span>
         <span style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: 600 }}>
           {isMulti ? `Select ${correctSet.size} answers` : 'Single best answer'}
@@ -2076,7 +2076,7 @@ function SampleQuestion({ sample }) {
                 disabled={revealed}
                 style={{
                   width: '100%', textAlign: 'left', padding: '0.875rem 1.125rem',
-                  background: bg, border, borderRadius: '0.6rem', color,
+                  background: bg, border, borderRadius: '0.5rem', color,
                   cursor: revealed ? 'default' : 'pointer', fontSize: '0.9375rem',
                   fontWeight: isSel ? 600 : 400, transition: 'all 0.15s', lineHeight: 1.5,
                 }}
@@ -2104,7 +2104,7 @@ function SampleQuestion({ sample }) {
             padding: '0.7rem 1.5rem',
             background: selected.length ? `linear-gradient(135deg, ${TEAL}, ${TEAL_DARK})` : '#e5e7eb',
             color: selected.length ? 'white' : '#9ca3af',
-            border: 'none', borderRadius: '0.6rem', fontWeight: 700,
+            border: 'none', borderRadius: '0.5rem', fontWeight: 700,
             fontSize: '0.9375rem', cursor: selected.length ? 'pointer' : 'not-allowed',
           }}
         >
@@ -2191,7 +2191,7 @@ function LockedSession({ onSubscribe, freeModuleLabel }) {
   return (
     <div style={{
       background: `linear-gradient(135deg, rgba(0,212,170,0.08), rgba(0,168,132,0.06))`,
-      border: `2px solid rgba(0,212,170,0.3)`, borderRadius: '1.25rem',
+      border: `2px solid rgba(0,212,170,0.3)`, borderRadius: '1rem',
       padding: 'clamp(1.75rem, 5vw, 3rem)', textAlign: 'center', marginTop: '0.5rem',
     }}>
       <div style={{ fontSize: '2.75rem', marginBottom: '0.75rem' }}>🔒</div>
@@ -2240,7 +2240,7 @@ function ConceptList({ bullets }) {
         return (
           <div key={i} style={{
             background: '#f9fafb', border: '1px solid #eef2f7', borderLeft: `3px solid ${TEAL}`,
-            borderRadius: '0.6rem', padding: '0.65rem 0.85rem',
+            borderRadius: '0.5rem', padding: '0.65rem 0.85rem',
           }}>
             <div style={{ fontWeight: 700, color: NAVY, fontSize: '0.875rem', marginBottom: '0.2rem' }}>
               {b.slice(0, sep)}
@@ -2273,7 +2273,7 @@ function EnhancedSection({ section, index, anchorId }) {
 
   return (
     <div id={anchorId} style={{
-      marginBottom: '1rem', borderRadius: '0.9rem', background: 'white', overflow: 'hidden',
+      marginBottom: '1rem', borderRadius: '0.75rem', background: 'white', overflow: 'hidden',
       scrollMarginTop: '4rem',
       border: `1.5px solid ${open ? 'rgba(0,212,170,0.45)' : '#e8edf3'}`,
       boxShadow: open ? '0 6px 22px rgba(10,37,64,0.08)' : '0 1px 3px rgba(0,0,0,0.04)',
@@ -2290,7 +2290,7 @@ function EnhancedSection({ section, index, anchorId }) {
         }}
       >
         <span style={{
-          width: '1.85rem', height: '1.85rem', minWidth: '1.85rem', borderRadius: '0.55rem',
+          width: '1.85rem', height: '1.85rem', minWidth: '1.85rem', borderRadius: '0.5rem',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: '0.8125rem', fontWeight: 800, color: 'white', marginTop: '0.1rem',
           background: `linear-gradient(135deg, ${TEAL}, ${TEAL_DARK})`,
@@ -2369,7 +2369,7 @@ function PreLearningCheck({ check }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
         <span style={{
           fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em',
-          color: 'white', background: NAVY, padding: '0.2rem 0.65rem', borderRadius: '0.35rem',
+          color: 'white', background: NAVY, padding: '0.2rem 0.65rem', borderRadius: '0.375rem',
         }}>
           Before you read
         </span>
@@ -2398,7 +2398,7 @@ function PreLearningCheck({ check }) {
               disabled={revealed}
               style={{
                 width: '100%', textAlign: 'left', padding: '0.7rem 1rem',
-                background: bg, border, borderRadius: '0.6rem', color,
+                background: bg, border, borderRadius: '0.5rem', color,
                 cursor: revealed ? 'default' : 'pointer', fontSize: '0.875rem',
                 fontWeight: isSel ? 600 : 400, transition: 'all 0.15s', lineHeight: 1.5,
               }}
@@ -2417,7 +2417,7 @@ function PreLearningCheck({ check }) {
             padding: '0.55rem 1.25rem',
             background: selected !== null ? NAVY : '#e5e7eb',
             color: selected !== null ? 'white' : '#9ca3af',
-            border: 'none', borderRadius: '0.6rem', fontWeight: 700,
+            border: 'none', borderRadius: '0.5rem', fontWeight: 700,
             fontSize: '0.875rem', cursor: selected !== null ? 'pointer' : 'not-allowed',
           }}
         >
@@ -2491,7 +2491,7 @@ function SpeedBump({ quiz, cleared, onClear }) {
               disabled={checked}
               style={{
                 width: '100%', textAlign: 'left', padding: '0.75rem 1rem',
-                background: bg, border, borderRadius: '0.6rem', color,
+                background: bg, border, borderRadius: '0.5rem', color,
                 cursor: checked ? 'default' : 'pointer', fontSize: '0.9rem',
                 fontWeight: isSel ? 600 : 400, transition: 'all 0.15s', lineHeight: 1.5,
               }}
@@ -2510,7 +2510,7 @@ function SpeedBump({ quiz, cleared, onClear }) {
             padding: '0.6rem 1.35rem',
             background: selected !== null ? `linear-gradient(135deg, ${TEAL}, ${TEAL_DARK})` : '#e5e7eb',
             color: selected !== null ? 'white' : '#9ca3af',
-            border: 'none', borderRadius: '0.6rem', fontWeight: 700,
+            border: 'none', borderRadius: '0.5rem', fontWeight: 700,
             fontSize: '0.875rem', cursor: selected !== null ? 'pointer' : 'not-allowed',
           }}
         >
@@ -2542,7 +2542,7 @@ function SpeedBump({ quiz, cleared, onClear }) {
               onClick={onClear}
               style={{
                 padding: '0.6rem 1.35rem', background: NAVY, color: 'white',
-                border: 'none', borderRadius: '0.6rem', fontWeight: 700, fontSize: '0.875rem', cursor: 'pointer',
+                border: 'none', borderRadius: '0.5rem', fontWeight: 700, fontSize: '0.875rem', cursor: 'pointer',
               }}
             >
               Continue →
@@ -2573,7 +2573,7 @@ function LockedSection({ heading, onJump }) {
       onClick={onJump}
       style={{
         display: 'flex', alignItems: 'center', gap: '0.75rem', width: '100%', textAlign: 'left',
-        background: '#f9fafb', border: '1.5px dashed #d1d5db', borderRadius: '0.85rem',
+        background: '#f9fafb', border: '1.5px dashed #d1d5db', borderRadius: '0.75rem',
         padding: '0.85rem 1rem', margin: '0.5rem 0', cursor: 'pointer',
       }}
     >
@@ -2873,7 +2873,7 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
                   <span style={{
                     fontSize: '0.625rem', fontWeight: 700, color: TEAL_DARK,
                     background: 'rgba(0,212,170,0.12)', padding: '0.15rem 0.45rem',
-                    borderRadius: '0.3rem', flexShrink: 0,
+                    borderRadius: '0.375rem', flexShrink: 0,
                   }}>
                     {mod.weight}
                   </span>
@@ -3085,20 +3085,20 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
                   <span style={{
                     fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase',
                     letterSpacing: '0.05em', color: 'white', background: NAVY,
-                    padding: '0.25rem 0.65rem', borderRadius: '0.35rem',
+                    padding: '0.25rem 0.65rem', borderRadius: '0.375rem',
                   }}>
                     Session {activeSession.number}
                   </span>
                   <span style={{
                     fontSize: '0.6875rem', fontWeight: 700, color: TEAL_DARK,
-                    background: 'rgba(0,212,170,0.12)', padding: '0.25rem 0.65rem', borderRadius: '0.35rem',
+                    background: 'rgba(0,212,170,0.12)', padding: '0.25rem 0.65rem', borderRadius: '0.375rem',
                   }}>
                     {activeSession.duration} min
                   </span>
                   {activeSession.task && (
                     <span style={{
                       fontSize: '0.6875rem', fontWeight: 700, color: '#6b7280',
-                      background: '#f3f4f6', padding: '0.25rem 0.65rem', borderRadius: '0.35rem',
+                      background: '#f3f4f6', padding: '0.25rem 0.65rem', borderRadius: '0.375rem',
                     }}>
                       {activeSession.task}
                     </span>
@@ -3106,7 +3106,7 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
                   {activeSession.weight && activeSession.weight !== '—' && (
                     <span style={{
                       fontSize: '0.6875rem', fontWeight: 700, color: '#b45309',
-                      background: 'rgba(245,158,11,0.12)', padding: '0.25rem 0.65rem', borderRadius: '0.35rem',
+                      background: 'rgba(245,158,11,0.12)', padding: '0.25rem 0.65rem', borderRadius: '0.375rem',
                     }}>
                       {activeSession.weight} of exam
                     </span>
@@ -3258,7 +3258,7 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
                 <div style={{
                   background: isCompleted ? 'rgba(16,185,129,0.06)' : '#f9fafb',
                   border: `1.5px solid ${isCompleted ? 'rgba(16,185,129,0.3)' : '#e5e7eb'}`,
-                  borderRadius: '0.875rem', padding: '1rem 1.25rem',
+                  borderRadius: '0.75rem', padding: '1rem 1.25rem',
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                   gap: '1rem', marginBottom: '1.25rem', flexWrap: 'wrap',
                 }}>
@@ -3275,7 +3275,7 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
                   <button
                     onClick={() => toggleComplete(activeId)}
                     style={{
-                      padding: '0.6rem 1.25rem', borderRadius: '0.6rem', fontWeight: 700,
+                      padding: '0.6rem 1.25rem', borderRadius: '0.5rem', fontWeight: 700,
                       fontSize: '0.875rem', cursor: 'pointer', transition: 'all 0.2s',
                       flexShrink: 0, whiteSpace: 'nowrap',
                       background: isCompleted ? 'white' : `linear-gradient(135deg, ${TEAL}, ${TEAL_DARK})`,
@@ -3345,7 +3345,7 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
                 <div style={{
                   marginTop: '2rem', textAlign: 'center', padding: '2rem',
                   background: `linear-gradient(135deg, rgba(0,212,170,0.12), rgba(0,168,132,0.08))`,
-                  border: `2px solid rgba(0,212,170,0.3)`, borderRadius: '1.25rem',
+                  border: `2px solid rgba(0,212,170,0.3)`, borderRadius: '1rem',
                 }}>
                   <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🎓</div>
                   <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: NAVY, marginBottom: '0.5rem' }}>

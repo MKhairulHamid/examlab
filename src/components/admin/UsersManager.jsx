@@ -90,7 +90,7 @@ export default function UsersManager() {
         placeholder="Search by name or email…"
         style={{
           width: '100%', boxSizing: 'border-box', marginBottom: '1.25rem',
-          padding: '0.6rem 0.85rem', borderRadius: '0.6rem',
+          padding: '0.6rem 0.85rem', borderRadius: '0.5rem',
           background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)',
           color: '#e5e7eb', fontSize: '0.875rem',
         }}
@@ -118,7 +118,7 @@ export default function UsersManager() {
                       {u.full_name || '(no name)'}
                     </span>
                     {u.is_admin && (
-                      <span style={{ fontSize: '0.6rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#00D4AA', background: 'rgba(0,212,170,0.12)', padding: '0.1rem 0.4rem', borderRadius: '0.3rem' }}>Admin</span>
+                      <span style={{ fontSize: '0.6rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#00D4AA', background: 'rgba(0,212,170,0.12)', padding: '0.1rem 0.4rem', borderRadius: '0.375rem' }}>Admin</span>
                     )}
                   </div>
                   <div style={{ fontSize: '0.8rem', color: 'rgba(231,238,246,0.55)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -126,7 +126,7 @@ export default function UsersManager() {
                   </div>
                 </div>
 
-                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: badge.color, background: badge.bg, padding: '0.2rem 0.55rem', borderRadius: '0.4rem', whiteSpace: 'nowrap' }}>
+                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: badge.color, background: badge.bg, padding: '0.2rem 0.55rem', borderRadius: '0.375rem', whiteSpace: 'nowrap' }}>
                   {badge.text}
                 </span>
 
@@ -256,7 +256,7 @@ export default function UsersManager() {
                               <dt style={{ color: 'rgba(231,238,246,0.5)' }}>Expires</dt>
                               <dd style={{ margin: 0, color: '#e5e7eb' }}>
                                 {fmtDate(v.expires_at)}
-                                <span style={{ marginLeft: '0.5rem', fontSize: '0.65rem', fontWeight: 700, color: activeBadge.color, background: activeBadge.bg, padding: '0.1rem 0.4rem', borderRadius: '0.3rem' }}>
+                                <span style={{ marginLeft: '0.5rem', fontSize: '0.65rem', fontWeight: 700, color: activeBadge.color, background: activeBadge.bg, padding: '0.1rem 0.4rem', borderRadius: '0.375rem' }}>
                                   {activeBadge.text}
                                 </span>
                               </dd>

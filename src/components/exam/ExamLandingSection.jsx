@@ -295,7 +295,7 @@ function ExamLandingSection({ landing }) {
                 padding: '0.375rem 0.875rem',
                 background: 'rgba(0,212,170,0.1)',
                 border: '1px solid rgba(0,212,170,0.3)',
-                borderRadius: '2rem',
+                borderRadius: '9999px',
                 fontSize: '0.8125rem',
                 fontWeight: '500',
                 color: '#00D4AA',

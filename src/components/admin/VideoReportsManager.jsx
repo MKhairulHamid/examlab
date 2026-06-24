@@ -95,7 +95,7 @@ export default function VideoReportsManager() {
           return (
             <div key={r.id} className="admin-card">
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center', marginBottom: '0.4rem' }}>
-                <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', color: '#b91c1c', background: 'rgba(239,68,68,0.12)', padding: '0.15rem 0.5rem', borderRadius: '0.35rem' }}>
+                <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', color: '#b91c1c', background: 'rgba(239,68,68,0.12)', padding: '0.15rem 0.5rem', borderRadius: '0.375rem' }}>
                   {REASON_LABELS[r.reason] || r.reason}
                 </span>
                 <span style={{ fontSize: '0.7rem', color: '#9ca3af' }}>{new Date(r.created_at).toLocaleString()}</span>

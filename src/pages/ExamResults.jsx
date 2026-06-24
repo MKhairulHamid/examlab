@@ -569,7 +569,7 @@ function ExamResults() {
                         Explanations
                       </div>
                       {question.ai_cache.explanations.overview && (
-                        <div style={{ padding: '0.75rem 1rem', background: 'rgba(255,255,255,0.04)', borderRadius: '0.625rem', border: '1px solid rgba(255,255,255,0.08)', marginBottom: '0.5rem' }}>
+                        <div style={{ padding: '0.75rem 1rem', background: 'rgba(255,255,255,0.04)', borderRadius: '0.5rem', border: '1px solid rgba(255,255,255,0.08)', marginBottom: '0.5rem' }}>
                           <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.8125rem', lineHeight: '1.6', margin: 0 }}>
                             {question.ai_cache.explanations.overview}
                           </p>
@@ -584,7 +584,7 @@ function ExamResults() {
                                 padding: '0.625rem 0.875rem',
                                 background: item.correct ? 'rgba(16,185,129,0.07)' : 'rgba(239,68,68,0.05)',
                                 border: `1px solid ${item.correct ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.15)'}`,
-                                borderRadius: '0.625rem'
+                                borderRadius: '0.5rem'
                               }}
                             >
                               <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start', marginBottom: '0.25rem' }}>

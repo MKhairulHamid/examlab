@@ -167,7 +167,7 @@ export default function SlideDeck({ session, onClose }) {
           <Corner pos="tl" /><Corner pos="tr" /><Corner pos="bl" /><Corner pos="br" />
 
           {/* Ambient on-theme motion, clipped to the frame */}
-          <div aria-hidden="true" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden', borderRadius: '0.4rem' }}>
+          <div aria-hidden="true" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden', borderRadius: '0.375rem' }}>
             <span style={orb('-12%', '-10%', '38%', 'rgba(0,212,170,0.16)', 0)} />
             <span style={orb('72%', '58%', '42%', 'rgba(59,130,246,0.14)', 3)} />
             <span style={{ ...gridStyle }} />

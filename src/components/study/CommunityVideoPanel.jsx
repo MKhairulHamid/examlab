@@ -54,7 +54,7 @@ export default function CommunityVideoPanel({ videos, currentUserId }) {
               onClick={() => { setActiveIdx(i); setPlaying(false) }}
               style={{
                 fontSize: '0.75rem', fontWeight: 700, padding: '0.3rem 0.75rem',
-                borderRadius: '0.4rem', cursor: 'pointer',
+                borderRadius: '0.375rem', cursor: 'pointer',
                 background: i === activeIdx ? NAVY : 'white',
                 color: i === activeIdx ? 'white' : '#6b7280',
                 border: `1.5px solid ${i === activeIdx ? NAVY : '#e5e7eb'}`,
@@ -198,7 +198,7 @@ function ReportModal({ video, currentUserId, onClose }) {
               onChange={e => setDetail(e.target.value)}
               placeholder="Add any detail (optional)"
               rows={3}
-              style={{ width: '100%', boxSizing: 'border-box', borderRadius: '0.6rem', border: '1.5px solid #e5e7eb', padding: '0.6rem 0.75rem', fontSize: '0.875rem', fontFamily: 'inherit', resize: 'vertical', marginBottom: '0.75rem' }}
+              style={{ width: '100%', boxSizing: 'border-box', borderRadius: '0.5rem', border: '1.5px solid #e5e7eb', padding: '0.6rem 0.75rem', fontSize: '0.875rem', fontFamily: 'inherit', resize: 'vertical', marginBottom: '0.75rem' }}
             />
 
             {status === 'error' && (
@@ -219,10 +219,10 @@ function ReportModal({ video, currentUserId, onClose }) {
 }
 
 const primaryBtn = {
-  padding: '0.55rem 1.25rem', borderRadius: '0.6rem', fontWeight: 700, fontSize: '0.875rem',
+  padding: '0.55rem 1.25rem', borderRadius: '0.5rem', fontWeight: 700, fontSize: '0.875rem',
   cursor: 'pointer', background: NAVY, color: 'white', border: 'none',
 }
 const secondaryBtn = {
-  padding: '0.55rem 1.25rem', borderRadius: '0.6rem', fontWeight: 700, fontSize: '0.875rem',
+  padding: '0.55rem 1.25rem', borderRadius: '0.5rem', fontWeight: 700, fontSize: '0.875rem',
   cursor: 'pointer', background: 'white', color: '#6b7280', border: '1.5px solid #e5e7eb',
 }

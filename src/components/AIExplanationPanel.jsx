@@ -137,7 +137,7 @@ function inlineFormat(text) {
         <code key={key++} style={{
           background: 'rgba(0,212,170,0.15)',
           color: '#00D4AA',
-          borderRadius: '0.25rem',
+          borderRadius: '0.375rem',
           padding: '0.1rem 0.3rem',
           fontSize: '0.8rem',
           fontFamily: 'monospace'
@@ -370,7 +370,7 @@ export default function AIExplanationPanel({ question, onClose }) {
               href={link.url}
               target="_blank"
               rel="noopener noreferrer"
-              style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', padding: '0.75rem 1rem', background: 'rgba(96,165,250,0.08)', border: '1px solid rgba(96,165,250,0.2)', borderRadius: '0.625rem', color: '#93c5fd', textDecoration: 'none', fontSize: '0.875rem', fontWeight: '500', transition: 'all 0.2s', animation: 'lgFadeIn 0.3s ease' }}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', padding: '0.75rem 1rem', background: 'rgba(96,165,250,0.08)', border: '1px solid rgba(96,165,250,0.2)', borderRadius: '0.5rem', color: '#93c5fd', textDecoration: 'none', fontSize: '0.875rem', fontWeight: '500', transition: 'all 0.2s', animation: 'lgFadeIn 0.3s ease' }}
               onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(96,165,250,0.15)'; e.currentTarget.style.borderColor = 'rgba(96,165,250,0.4)' }}
               onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(96,165,250,0.08)'; e.currentTarget.style.borderColor = 'rgba(96,165,250,0.2)' }}
             >

@@ -144,7 +144,7 @@ function StatusBadge({ status }) {
   }
   const s = map[status] || map.pending
   return (
-    <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', color: s.c, background: s.b, padding: '0.15rem 0.5rem', borderRadius: '0.35rem' }}>
+    <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', color: s.c, background: s.b, padding: '0.15rem 0.5rem', borderRadius: '0.375rem' }}>
       {status}
     </span>
   )
