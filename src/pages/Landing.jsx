@@ -12,7 +12,7 @@ import AuthModal from '../components/auth/AuthModal'
 import { Button } from '../design-system'
 import { PROGRAMS } from '../data/programs'
 import SocialLinks from '../components/layout/SocialLinks'
-import { SessionDemo, TeachDemo, ExamDemo, ReadinessDemo, SyncDemo } from '../components/landing/LandingDemos'
+import { SessionDemo, TeachDemo, ExamDemo, ReadinessDemo, SyncDemo, FullFlowDemo } from '../components/landing/LandingDemos'
 
 const LEARNING_FEATURES = [
   {
@@ -256,6 +256,26 @@ function Landing() {
                 </span>
               ))}
             </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* FULL FLOW SHOWCASE — the whole journey, in a real device */}
+      <section className="px-6 pb-24 pt-4 bg-gradient-to-b from-[#0A2540] to-[#0d2d4a] relative overflow-hidden">
+        <div className="absolute inset-0 grid-texture pointer-events-none" />
+        <div className="aurora-blob w-[34rem] h-[34rem] bg-[#00D4AA]/[0.07] top-10 left-1/2 -translate-x-1/2" />
+        <div className="max-w-[72rem] mx-auto relative z-10">
+          <Reveal className="text-center mb-14">
+            <p className="text-[0.8125rem] font-bold text-[#00D4AA] uppercase tracking-[0.08em] mb-3">SEE IT IN ACTION</p>
+            <h2 className="text-[clamp(1.75rem,4vw,2.5rem)] font-extrabold text-white tracking-tight mb-3">
+              The whole journey, in one app
+            </h2>
+            <p className="text-white/60 text-base max-w-[42rem] mx-auto">
+              From your dashboard to a verified credential — learn, teach it back, practise, and pass. The same app on your laptop and your phone, always in sync.
+            </p>
+          </Reveal>
+          <Reveal delay={120}>
+            <FullFlowDemo />
           </Reveal>
         </div>
       </section>

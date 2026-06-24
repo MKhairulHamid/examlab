@@ -125,6 +125,32 @@ footer { width: 100%; box-sizing: border-box; }
   .demo-wave-bar, .demo-caret, .demo-ping, .demo-travel { animation: none !important; }
 }
 
+/* ─── Full-flow device showcase (laptop + phone frames) ─────────────── */
+.flow-stage { position: relative; max-width: 680px; margin: 0 auto; padding-bottom: 36px; }
+.laptop-bezel {
+  background: #0b1220; border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 16px 16px 7px 7px; padding: 11px 11px 0;
+  box-shadow: 0 36px 80px rgba(0,0,0,0.5);
+}
+.laptop-screen { position: relative; border-radius: 7px; overflow: hidden; background: #fff; aspect-ratio: 16 / 10; }
+.laptop-base { height: 13px; margin: 7px -30px 0; background: linear-gradient(180deg, #cdd5df, #98a4b3); border-radius: 0 0 13px 13px; }
+.laptop-base::after { content: ''; display: block; width: 92px; height: 6px; margin: 0 auto; background: #7c8794; border-radius: 0 0 7px 7px; }
+.flow-phone {
+  position: absolute; right: -10px; bottom: 0; width: 152px; z-index: 4;
+  background: #0b1220; border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 24px; padding: 7px; box-shadow: 0 26px 56px rgba(0,0,0,0.55);
+}
+.flow-phone-screen { position: relative; border-radius: 18px; overflow: hidden; background: #fff; aspect-ratio: 9 / 18; }
+.flow-phone-notch { position: absolute; top: 7px; left: 50%; transform: translateX(-50%); width: 44px; height: 5px; background: #0b1220; border-radius: 99px; z-index: 6; }
+.flow-screen-layer { position: absolute; inset: 0; transition: opacity 0.55s ease; }
+@media (max-width: 620px) {
+  .flow-phone { position: static; width: 138px; margin: -30px auto 0; right: auto; bottom: auto; }
+  .flow-stage { padding-bottom: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .flow-screen-layer { transition: none !important; }
+}
+
 /* ─── Landing Page: Modern Effects ──────────────────────────────── */
 /* Scroll reveal — toggled by IntersectionObserver in Landing.jsx */
 .reveal {

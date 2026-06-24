@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react'
 import {
-  Clock, Check, X, Mic, FileCheck, Play, Smartphone, Laptop,
+  Clock, Check, Mic, FileCheck, Play, Smartphone, Laptop,
   RefreshCw, BookOpen, Sparkles, ChevronRight, ExternalLink, Award,
+  Lock, ShieldCheck, BadgeCheck, Cloud,
 } from 'lucide-react'
 
 /* ────────────────────────────────────────────────────────────────────────────
@@ -606,6 +607,321 @@ export function SyncDemo() {
           A few free minutes on the train — pick up exactly where you stopped.
         </p>
       </Frame>
+    </div>
+  )
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// FULL FLOW SHOWCASE — one continuous journey playing inside a realistic
+// laptop + phone frame, like a screen recording of the actual app.
+// ════════════════════════════════════════════════════════════════════════════
+
+const JOURNEY = [
+  { key: 'home',  label: 'Your hub',  path: '/dashboard' },
+  { key: 'learn', label: 'Learn',     path: '/study/saa-c03/iam-policies' },
+  { key: 'teach', label: 'Teach',     path: '/study/saa-c03/iam-policies#teach' },
+  { key: 'exam',  label: 'Practice',  path: '/practice/saa-c03' },
+  { key: 'pass',  label: 'Pass',      path: '/results' },
+  { key: 'cert',  label: 'Certified', path: '/verify/saa-c03' },
+]
+
+// little circular progress ring used on the dashboard screen
+function Ring({ pct, size = 54, stroke = 6, label }) {
+  const r = (size - stroke) / 2
+  const c = 2 * Math.PI * r
+  return (
+    <div style={{ position: 'relative', width: size, height: size }}>
+      <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#eef2f7" strokeWidth={stroke} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={TEAL_DARK} strokeWidth={stroke}
+          strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - pct / 100)}
+          style={{ transition: 'stroke-dashoffset 0.8s ease' }} />
+      </svg>
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
+        <span style={{ fontSize: size * 0.28, fontWeight: 800, color: NAVY, lineHeight: 1 }}>{pct}<span style={{ fontSize: size * 0.16 }}>%</span></span>
+        {label && <span style={{ fontSize: size * 0.13, color: '#94a3b8', fontWeight: 600 }}>{label}</span>}
+      </div>
+    </div>
+  )
+}
+
+// browser chrome wrapper for laptop screens
+function Browser({ path, children }) {
+  return (
+    <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', background: '#fff' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 9px', background: '#f1f5f9', borderBottom: '1px solid #e2e8f0' }}>
+        <span style={{ display: 'flex', gap: 4 }}>
+          {['#ff5f57', '#febc2e', '#28c840'].map((c) => <span key={c} style={{ width: 7, height: 7, borderRadius: 99, background: c, opacity: 0.6 }} />)}
+        </span>
+        <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: '0.625rem', color: '#64748b', background: '#fff', border: '1px solid #e2e8f0', borderRadius: 99, padding: '2px 12px', maxWidth: '78%', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+            <Lock size={9} color="#94a3b8" /> cloudexamlab.com{path}
+          </span>
+        </div>
+      </div>
+      <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>{children}</div>
+    </div>
+  )
+}
+
+const pill = (text, bg, color) => (
+  <span style={{ fontSize: '0.625rem', fontWeight: 700, color, background: bg, padding: '3px 9px', borderRadius: 99 }}>{text}</span>
+)
+
+// ─── Laptop app screens (index matches JOURNEY) ─────────────────────────────
+function LaptopScreen({ i }) {
+  const pad = { padding: '16px 18px', height: '100%', boxSizing: 'border-box' }
+  switch (i) {
+    case 0: return ( // Dashboard
+      <div style={{ ...pad, background: '#f8fafc' }}>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
+          <span style={{ fontSize: '0.9rem', fontWeight: 800, color: NAVY }}>Welcome back, Sam</span>
+          <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+            {pill('12-day streak', 'rgba(217,119,6,0.12)', '#b45309')}
+          </span>
+        </div>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center', background: '#fff', border: '1px solid #e8edf3', borderRadius: 12, padding: '14px 16px', boxShadow: '0 6px 18px rgba(10,37,64,0.05)' }}>
+          <Ring pct={64} size={62} label="ready" />
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#0EA5E9', letterSpacing: '0.04em' }}>FOCUSED · SAA-C03</div>
+            <div style={{ fontSize: '0.85rem', fontWeight: 700, color: NAVY, margin: '2px 0 4px' }}>Solutions Architect Associate</div>
+            <div style={{ fontSize: '0.65rem', color: '#64748b' }}>7 of 15 sessions · 2 practice exams left</div>
+          </div>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: '0.72rem', fontWeight: 700, color: '#fff', background: `linear-gradient(${TEAL},${TEAL_DARK})`, padding: '8px 13px', borderRadius: 9 }}>
+            Continue <ChevronRight size={13} />
+          </span>
+        </div>
+        <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+          {[['#0EA5E9', 'Resilient', 92], ['#8B5CF6', 'Performance', 84], ['#F59E0B', 'Security', 61], ['#00D4AA', 'Cost', 79]].map(([c, n, p]) => (
+            <div key={n} style={{ flex: 1, background: '#fff', border: '1px solid #e8edf3', borderRadius: 9, padding: '8px 9px' }}>
+              <div style={{ fontSize: '0.55rem', color: '#94a3b8', fontWeight: 600, marginBottom: 4 }}>{n}</div>
+              <div style={{ height: 4, borderRadius: 99, background: '#eef2f7', overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${p}%`, background: c, borderRadius: 99 }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+    case 1: return ( // Learn
+      <div style={{ ...pad }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 7 }}>
+          <BookOpen size={14} color={TEAL_DARK} />
+          <span style={{ fontSize: '0.82rem', fontWeight: 800, color: NAVY }}>Session 7 · IAM Policies</span>
+          <span style={{ marginLeft: 'auto', fontSize: '0.6rem', color: '#94a3b8', fontWeight: 600 }}>Step 3 of 6</span>
+        </div>
+        <div style={{ height: 5, borderRadius: 99, background: '#eef2f7', overflow: 'hidden', marginBottom: 13 }}>
+          <div style={{ height: '100%', width: '50%', background: `linear-gradient(90deg,${TEAL},${TEAL_DARK})`, borderRadius: 99 }} />
+        </div>
+        <div style={{ fontSize: '0.58rem', fontWeight: 700, color: TEAL_DARK, marginBottom: 6 }}>THE WHY BEFORE THE WHAT</div>
+        <p style={{ fontSize: '0.72rem', color: '#475569', lineHeight: 1.6, margin: '0 0 11px' }}>
+          An IAM policy is JSON that grants or denies actions on resources. <b style={{ color: NAVY }}>Explicit deny</b> always wins — even over an allow. That single rule explains most "why can't I access this?" puzzles.
+        </p>
+        <div style={{ background: '#f0fdf9', border: '1px solid rgba(16,185,129,0.25)', borderRadius: 9, padding: '9px 11px', display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+          <Sparkles size={13} color={TEAL_DARK} style={{ marginTop: 1 }} />
+          <span style={{ fontSize: '0.66rem', color: '#0f766e', lineHeight: 1.5 }}><b>Key point:</b> evaluation order is Deny → Allow → implicit deny.</span>
+        </div>
+      </div>
+    )
+    case 2: return ( // Teach
+      <div style={{ ...pad, textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <div style={{ fontSize: '0.58rem', fontWeight: 700, color: '#7c3aed', marginBottom: 12 }}>TEACH TO LEARN · RECORD YOUR EXPLANATION</div>
+        <div style={{ position: 'relative', width: 56, height: 56, margin: '0 auto 14px' }}>
+          <span className="demo-ping" style={{ position: 'absolute', inset: 0, borderRadius: 99, background: 'rgba(220,38,38,0.35)' }} />
+          <span style={{ position: 'absolute', inset: 0, borderRadius: 99, background: DANGER, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Mic size={24} color="#fff" />
+          </span>
+        </div>
+        <div style={{ display: 'flex', gap: 3, alignItems: 'flex-end', justifyContent: 'center', height: 26, marginBottom: 10 }}>
+          {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((b) => (
+            <span key={b} className="demo-wave-bar" style={{ width: 4, height: 24, borderRadius: 99, background: '#8B5CF6', animationDelay: `${b * 0.08}s` }} />
+          ))}
+        </div>
+        <span style={{ fontSize: '0.66rem', color: '#64748b' }}>"IAM policies are evaluated deny-first, so…"</span>
+      </div>
+    )
+    case 3: return ( // Exam
+      <div style={{ ...pad }}>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 9 }}>
+          <span style={{ fontSize: '0.6rem', fontWeight: 700, color: '#94a3b8' }}>Question 12 of 65</span>
+          <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: '0.66rem', fontWeight: 700, color: NAVY, background: '#f1f5f9', padding: '3px 9px', borderRadius: 99, fontVariantNumeric: 'tabular-nums' }}>
+            <Clock size={12} /> 1:18
+          </span>
+        </div>
+        <p style={{ fontSize: '0.72rem', fontWeight: 600, color: NAVY, margin: '0 0 10px', lineHeight: 1.45 }}>
+          Which statement type takes precedence when an IAM policy has both?
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {[['Explicit Deny', true], ['Explicit Allow', false], ['Implicit Deny', false], ['Resource policy', false]].map(([opt, ok], idx) => (
+            <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px', borderRadius: 8, border: `1.5px solid ${ok ? SUCCESS : '#e2e8f0'}`, background: ok ? 'rgba(16,185,129,0.08)' : '#fff' }}>
+              <span style={{ width: 15, height: 15, borderRadius: 99, flexShrink: 0, border: `2px solid ${ok ? SUCCESS : '#cbd5e1'}`, background: ok ? SUCCESS : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {ok && <Check size={9} color="#fff" strokeWidth={3} />}
+              </span>
+              <span style={{ fontSize: '0.68rem', color: ok ? '#047857' : '#475569', fontWeight: ok ? 700 : 500 }}>{opt}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+    case 4: return ( // Results / Pass
+      <div style={{ ...pad, background: 'linear-gradient(160deg,#0A2540,#1A3B5C)', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center', color: '#fff' }}>
+        <Ring pct={88} size={84} stroke={8} />
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, margin: '12px auto 6px', background: 'rgba(16,185,129,0.18)', border: '1px solid rgba(16,185,129,0.5)', padding: '4px 14px', borderRadius: 99 }}>
+          <BadgeCheck size={14} color={SUCCESS} />
+          <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#6ee7b7', letterSpacing: '0.04em' }}>PASSED</span>
+        </div>
+        <div style={{ fontSize: '0.78rem', fontWeight: 700 }}>You're exam-ready</div>
+        <div style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.6)', marginTop: 3 }}>Scaled score 824 · pass mark 720</div>
+      </div>
+    )
+    default: return ( // Certificate / verify
+      <div style={{ ...pad, background: '#f8fafc', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <div style={{ background: '#fff', border: '1px solid #e8edf3', borderRadius: 12, padding: '16px 18px', boxShadow: '0 12px 30px rgba(10,37,64,0.08)', textAlign: 'center' }}>
+          <span style={{ width: 44, height: 44, borderRadius: 12, background: `linear-gradient(135deg,${TEAL},${TEAL_DARK})`, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 9 }}>
+            <Award size={24} color="#fff" />
+          </span>
+          <div style={{ fontSize: '0.58rem', fontWeight: 700, color: TEAL_DARK, letterSpacing: '0.05em' }}>PROOF OF PROFICIENCY</div>
+          <div style={{ fontSize: '0.92rem', fontWeight: 800, color: NAVY, margin: '4px 0 2px' }}>Solutions Architect Associate</div>
+          <div style={{ fontSize: '0.64rem', color: '#64748b', marginBottom: 10 }}>Sam Carter · SAA-C03 · Jun 2026</div>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: '0.6rem', fontWeight: 700, color: '#047857', background: 'rgba(16,185,129,0.1)', padding: '4px 11px', borderRadius: 99 }}>
+            <ShieldCheck size={12} /> Verified · shareable link
+          </div>
+        </div>
+      </div>
+    )
+  }
+}
+
+// ─── Phone app screens (compact mirror of the same phase) ───────────────────
+function PhoneScreen({ i }) {
+  const Bar = ({ children, color = TEAL_DARK }) => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '7px 9px 6px', borderBottom: '1px solid #f1f5f9' }}>
+      <Cloud size={11} color={color} />
+      <span style={{ fontSize: '0.5rem', fontWeight: 800, color: NAVY }}>CloudExamLab</span>
+    </div>
+  )
+  const body = { padding: '9px 10px' }
+  const screens = [
+    // home
+    <div key="h"><Bar />
+      <div style={body}>
+        <div style={{ fontSize: '0.5rem', color: '#94a3b8', fontWeight: 600, marginBottom: 6 }}>FOCUSED · SAA-C03</div>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}><Ring pct={64} size={50} label="ready" /></div>
+        <div style={{ fontSize: '0.55rem', textAlign: 'center', color: '#fff', fontWeight: 700, background: `linear-gradient(${TEAL},${TEAL_DARK})`, padding: '6px', borderRadius: 7 }}>Continue Session 7</div>
+      </div>
+    </div>,
+    // learn
+    <div key="l"><Bar />
+      <div style={body}>
+        <div style={{ fontSize: '0.55rem', fontWeight: 800, color: NAVY, marginBottom: 5 }}>IAM Policies</div>
+        <div style={{ height: 4, borderRadius: 99, background: '#eef2f7', marginBottom: 8, overflow: 'hidden' }}><div style={{ height: '100%', width: '50%', background: TEAL }} /></div>
+        <div style={{ fontSize: '0.5rem', color: '#475569', lineHeight: 1.5 }}>Explicit deny always wins over allow — the rule behind most access puzzles.</div>
+      </div>
+    </div>,
+    // teach
+    <div key="t"><Bar color="#8B5CF6" />
+      <div style={{ ...body, textAlign: 'center', paddingTop: 18 }}>
+        <div style={{ position: 'relative', width: 34, height: 34, margin: '0 auto 10px' }}>
+          <span className="demo-ping" style={{ position: 'absolute', inset: 0, borderRadius: 99, background: 'rgba(220,38,38,0.3)' }} />
+          <span style={{ position: 'absolute', inset: 0, borderRadius: 99, background: DANGER, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Mic size={15} color="#fff" /></span>
+        </div>
+        <div style={{ display: 'flex', gap: 2, justifyContent: 'center', alignItems: 'flex-end', height: 16 }}>
+          {[0, 1, 2, 3, 4, 5].map((b) => <span key={b} className="demo-wave-bar" style={{ width: 3, height: 14, background: '#8B5CF6', borderRadius: 99, animationDelay: `${b * 0.09}s` }} />)}
+        </div>
+        <div style={{ fontSize: '0.45rem', color: '#94a3b8', marginTop: 8 }}>Recording…</div>
+      </div>
+    </div>,
+    // exam
+    <div key="e"><Bar />
+      <div style={body}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+          <span style={{ fontSize: '0.45rem', color: '#94a3b8', fontWeight: 600 }}>Q12 / 65</span>
+          <span style={{ fontSize: '0.45rem', color: NAVY, fontWeight: 700 }}>1:18</span>
+        </div>
+        {['Explicit Deny', 'Explicit Allow', 'Implicit Deny'].map((o, k) => (
+          <div key={k} style={{ fontSize: '0.5rem', padding: '5px 7px', marginBottom: 4, borderRadius: 6, border: `1.5px solid ${k === 0 ? SUCCESS : '#e2e8f0'}`, background: k === 0 ? 'rgba(16,185,129,0.08)' : '#fff', color: k === 0 ? '#047857' : '#475569', fontWeight: k === 0 ? 700 : 500 }}>{o}</div>
+        ))}
+      </div>
+    </div>,
+    // pass
+    <div key="p" style={{ height: '100%', background: 'linear-gradient(160deg,#0A2540,#1A3B5C)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+      <Ring pct={88} size={58} stroke={6} />
+      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 9, background: 'rgba(16,185,129,0.18)', border: '1px solid rgba(16,185,129,0.5)', padding: '3px 10px', borderRadius: 99 }}>
+        <BadgeCheck size={11} color={SUCCESS} /><span style={{ fontSize: '0.55rem', fontWeight: 800, color: '#6ee7b7' }}>PASSED</span>
+      </div>
+    </div>,
+    // cert
+    <div key="c"><Bar />
+      <div style={{ ...body, textAlign: 'center', paddingTop: 14 }}>
+        <span style={{ width: 30, height: 30, borderRadius: 8, background: `linear-gradient(135deg,${TEAL},${TEAL_DARK})`, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 7 }}><Award size={16} color="#fff" /></span>
+        <div style={{ fontSize: '0.55rem', fontWeight: 800, color: NAVY, lineHeight: 1.3 }}>Solutions Architect Associate</div>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: '0.45rem', fontWeight: 700, color: '#047857', background: 'rgba(16,185,129,0.1)', padding: '3px 8px', borderRadius: 99, marginTop: 7 }}><ShieldCheck size={9} /> Verified</div>
+      </div>
+    </div>,
+  ]
+  return screens[i]
+}
+
+// Active screen fades IN on top (z 2); the outgoing screen holds fully opaque
+// underneath, then snaps away after the fade — so only one screen is ever
+// visible, never a translucent blend of two.
+const flowLayer = (active) => ({
+  opacity: active ? 1 : 0,
+  zIndex: active ? 2 : 1,
+  background: '#fff',
+  transition: active ? 'opacity 0.5s ease' : 'opacity 0s linear 0.5s',
+  pointerEvents: 'none',
+})
+
+export function FullFlowDemo() {
+  const reduced = useReducedMotion()
+  const [ref, inView] = useInView(0.3)
+  const step = useSteps([3200, 3400, 3000, 3200, 3000, 3400], inView, reduced)
+
+  return (
+    <div ref={ref}>
+      <div className="flow-stage">
+        {/* Laptop */}
+        <div className="laptop-bezel">
+          <div className="laptop-screen">
+            {JOURNEY.map((s, i) => (
+              <div key={s.key} className="flow-screen-layer" style={flowLayer(step === i)}>
+                <Browser path={s.path}><LaptopScreen i={i} /></Browser>
+              </div>
+            ))}
+          </div>
+          <div className="laptop-base" />
+        </div>
+
+        {/* Phone */}
+        <div className="flow-phone">
+          <div className="flow-phone-notch" />
+          <div className="flow-phone-screen">
+            {JOURNEY.map((s, i) => (
+              <div key={s.key} className="flow-screen-layer" style={flowLayer(step === i)}>
+                <PhoneScreen i={i} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Stepper */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 6, marginTop: 30 }}>
+        {JOURNEY.map((s, i) => (
+          <span key={s.key} style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            fontSize: '0.6875rem', fontWeight: 700,
+            color: step === i ? '#fff' : 'rgba(255,255,255,0.4)',
+            background: step === i ? 'rgba(0,212,170,0.18)' : 'transparent',
+            border: `1px solid ${step === i ? 'rgba(0,212,170,0.4)' : 'rgba(255,255,255,0.12)'}`,
+            padding: '5px 12px', borderRadius: 99, transition: 'all 0.4s ease',
+          }}>
+            <span style={{ width: 6, height: 6, borderRadius: 99, background: step >= i ? TEAL : 'rgba(255,255,255,0.25)' }} />
+            {s.label}
+          </span>
+        ))}
+      </div>
     </div>
   )
 }
