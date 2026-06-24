@@ -4,7 +4,7 @@ import { ASSET_SPECS, BRAND } from '../../data/brand'
 import { buildAssetSvg, emailSignatureHtml } from './brand/assetTemplates'
 import { downloadSvg, downloadPng, downloadText } from '../../utils/downloadAsset'
 
-const GROUP_ORDER = ['Logo', 'Google Ads', 'Instagram', 'Social', 'Favicon']
+const GROUP_ORDER = ['Logo', 'Logo options', 'Google Ads', 'Instagram', 'Social', 'Favicon']
 
 function AssetCard({ id, spec }) {
   const svg = useMemo(() => buildAssetSvg(id), [id])

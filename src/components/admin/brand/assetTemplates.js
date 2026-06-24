@@ -11,6 +11,7 @@ import {
 import {
   brandDefs, logoSquare, logoIconSvg, logoHorizontalSvg, logoStackedSvg,
 } from './logo'
+import { conceptIconSvg } from './logoConcepts'
 
 const FONT = TYPOGRAPHY.svgFontFamily
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -199,6 +200,13 @@ export function buildAssetSvg(id) {
     case 'logoHorizontalDark':  return logoHorizontalSvg({ width: spec.width, height: spec.height, onDark: true })
     case 'logoHorizontalLight': return logoHorizontalSvg({ width: spec.width, height: spec.height, onDark: false })
     case 'logoStackedDark':     return logoStackedSvg({ width: spec.width, height: spec.height, onDark: true })
+
+    case 'optCloudSym':
+    case 'optCloudCheck':
+    case 'optGradCap':
+    case 'optFlask':
+    case 'optBook':
+      return conceptIconSvg(id, { size: spec.width, background: COLORS.navy.hex })
 
     case 'igPost1': return igPostSvg(1)
     case 'igPost2': return igPostSvg(2)

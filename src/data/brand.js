@@ -108,6 +108,15 @@ export const ASSET_SPECS = {
   logoHorizontalLight: { label: 'Horizontal lockup · light', width: 900, height: 260,  group: 'Logo' },
   logoStackedDark:     { label: 'Stacked lockup · dark',   width: 600,  height: 520,  group: 'Logo' },
 
+  // Logo options — rotation-safe alternative icon marks (same brand colours).
+  // The live "Cloud" glyph is asymmetric; each of these is mirror-symmetric so
+  // no rotation produces an unfortunate silhouette. Pick one to replace the mark.
+  optCloudSym:   { label: 'Option 1 · Symmetric cloud', width: 512, height: 512, group: 'Logo options' },
+  optCloudCheck: { label: 'Option 2 · Cloud + check',   width: 512, height: 512, group: 'Logo options' },
+  optGradCap:    { label: 'Option 3 · Graduation cap',  width: 512, height: 512, group: 'Logo options' },
+  optFlask:      { label: 'Option 4 · Lab flask',       width: 512, height: 512, group: 'Logo options' },
+  optBook:       { label: 'Option 5 · Open book',       width: 512, height: 512, group: 'Logo options' },
+
   // Google Ads — standard high-performing display sizes
   adMediumRectangle:   { label: 'Medium Rectangle',  width: 300,  height: 250,  group: 'Google Ads' },
   adLargeRectangle:    { label: 'Large Rectangle',   width: 336,  height: 280,  group: 'Google Ads' },
