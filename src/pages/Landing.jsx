@@ -12,6 +12,7 @@ import AuthModal from '../components/auth/AuthModal'
 import { Button } from '../design-system'
 import { PROGRAMS } from '../data/programs'
 import SocialLinks from '../components/layout/SocialLinks'
+import { SessionDemo, TeachDemo, ExamDemo, ReadinessDemo, SyncDemo } from '../components/landing/LandingDemos'
 
 const LEARNING_FEATURES = [
   {
@@ -51,19 +52,22 @@ const HOW_IT_WORKS = [
     step: '01',
     Icon: BookOpen,
     title: 'Learn every domain',
-    desc: 'Work through structured 30-minute sessions — one per topic. Each builds real understanding from first principles: key concepts, the AWS services that matter, and exam-style checks to lock it in.',
+    desc: 'Work through structured 30-minute sessions — one per topic. Each builds real understanding from first principles: key concepts, the AWS services that matter, hands-on interactive widgets, and exam-style checks to lock it in.',
+    Demo: SessionDemo,
   },
   {
     step: '02',
     Icon: Mic,
     title: 'Teach it to prove it',
     desc: 'Explain each topic in your own words and record yourself teaching it. This is the single most effective study technique there is — and it leaves you with a portfolio that proves what you know.',
+    Demo: TeachDemo,
   },
   {
     step: '03',
     Icon: GraduationCap,
     title: 'Practice, then pass',
     desc: 'Sit full-length timed exams, review every explanation, and watch your scores climb. Walk into the real exam already knowing you are ready — or simply walk away genuinely skilled.',
+    Demo: ExamDemo,
   },
 ]
 
@@ -375,29 +379,62 @@ function Landing() {
         <div className="absolute inset-0 grid-texture pointer-events-none" />
         <div className="aurora-blob w-80 h-80 bg-[#00D4AA]/[0.08] top-0 left-1/4" />
         <div className="max-w-[72rem] mx-auto relative z-10">
-          <Reveal className="text-center mb-14">
+          <Reveal className="text-center mb-16">
             <p className="text-[0.8125rem] font-bold text-[#00D4AA] uppercase tracking-[0.08em] mb-3">HOW IT WORKS</p>
-            <h2 className="text-[clamp(1.75rem,4vw,2.5rem)] font-extrabold text-white tracking-tight">
+            <h2 className="text-[clamp(1.75rem,4vw,2.5rem)] font-extrabold text-white tracking-tight mb-3">
               Learn it. Teach it. Pass it.
             </h2>
+            <p className="text-white/55 text-base max-w-[40rem] mx-auto">
+              This is the real product — not a screenshot. Here is exactly what each step looks like.
+            </p>
           </Reveal>
 
-          <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))' }}>
-            {HOW_IT_WORKS.map((item, index) => (
-              <Reveal key={index} delay={index * 120} className={`p-8 relative ${index > 0 ? 'md:border-l border-white/[0.08]' : ''}`}>
-                <div className="text-[4.5rem] font-black text-[#00D4AA]/[0.12] leading-none mb-3.5 tracking-tighter tabular-nums">
-                  {item.step}
+          {/* Alternating text + live-UI rows */}
+          <div className="flex flex-col gap-16 md:gap-20">
+            {HOW_IT_WORKS.map((item, index) => {
+              const flip = index % 2 === 1
+              return (
+                <div
+                  key={index}
+                  className="grid gap-8 md:gap-12 items-center"
+                  style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))' }}
+                >
+                  <Reveal className={flip ? 'md:order-2' : ''}>
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-12 h-12 rounded-xl bg-[#00D4AA]/15 flex items-center justify-center border border-[#00D4AA]/25 shrink-0">
+                        <item.Icon size={24} className="text-[#00D4AA]" strokeWidth={2.2} />
+                      </div>
+                      <span className="text-[3rem] font-black text-[#00D4AA]/[0.16] leading-none tracking-tighter tabular-nums">
+                        {item.step}
+                      </span>
+                    </div>
+                    <h3 className="text-[1.5rem] font-bold text-white mb-3">{item.title}</h3>
+                    <p className="text-white/65 leading-[1.7] text-[0.9375rem] max-w-[30rem]">{item.desc}</p>
+                  </Reveal>
+
+                  <Reveal delay={100} className={`${flip ? 'md:order-1' : ''} max-w-[26rem] w-full mx-auto`}>
+                    <item.Demo />
+                  </Reveal>
                 </div>
-                <div className="w-12 h-12 rounded-xl bg-[#00D4AA]/15 flex items-center justify-center mb-3.5 border border-[#00D4AA]/25">
-                  <item.Icon size={24} className="text-[#00D4AA]" strokeWidth={2.2} />
-                </div>
-                <h3 className="text-xl font-bold text-white mb-3">{item.title}</h3>
-                <p className="text-white/65 leading-[1.65] text-[0.9375rem]">{item.desc}</p>
-              </Reveal>
-            ))}
+              )
+            })}
           </div>
 
-          <div className="text-center mt-14">
+          {/* Track + sync band */}
+          <Reveal className="text-center mt-20 mb-10">
+            <h3 className="text-[clamp(1.375rem,3vw,1.875rem)] font-extrabold text-white tracking-tight mb-2.5">
+              See yourself getting ready — on any device
+            </h3>
+            <p className="text-white/55 text-base max-w-[40rem] mx-auto">
+              Watch your readiness climb domain by domain, and pick up exactly where you left off whether you have an hour or five minutes.
+            </p>
+          </Reveal>
+          <div className="grid gap-8 md:gap-10 items-start" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))' }}>
+            <Reveal className="max-w-[26rem] w-full mx-auto"><ReadinessDemo /></Reveal>
+            <Reveal delay={100} className="max-w-[26rem] w-full mx-auto"><SyncDemo /></Reveal>
+          </div>
+
+          <div className="text-center mt-16">
             <Button
               variant="primary"
               onClick={openSignup}
