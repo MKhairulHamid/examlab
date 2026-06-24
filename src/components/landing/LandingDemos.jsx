@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef } from 'react'
 import {
   Clock, Check, Mic, FileCheck, Play, Smartphone, Laptop,
   RefreshCw, BookOpen, Sparkles, ChevronRight, ExternalLink, Award,
-  Lock, ShieldCheck, BadgeCheck, Cloud,
+  Lock, ShieldCheck, BadgeCheck, Cloud, PlayCircle, ArrowRight,
 } from 'lucide-react'
+import { CertificateCard } from '../certificate/CertificateCard'
 
 /* ────────────────────────────────────────────────────────────────────────────
  * Live UI demos for the landing page "How It Works" section.
@@ -618,11 +619,23 @@ export function SyncDemo() {
 
 const JOURNEY = [
   { key: 'home',  label: 'Your hub',  path: '/dashboard' },
-  { key: 'learn', label: 'Learn',     path: '/study/saa-c03/iam-policies' },
-  { key: 'teach', label: 'Teach',     path: '/study/saa-c03/iam-policies#teach' },
-  { key: 'exam',  label: 'Practice',  path: '/practice/saa-c03' },
-  { key: 'pass',  label: 'Pass',      path: '/results' },
+  { key: 'learn', label: 'Learn',     path: '/exam/saa-c03/study' },
+  { key: 'teach', label: 'Teach',     path: '/exam/saa-c03/study' },
+  { key: 'exam',  label: 'Practice',  path: '/exam/saa-c03/take' },
+  { key: 'pass',  label: 'Pass',      path: '/exam/saa-c03/results' },
   { key: 'cert',  label: 'Certified', path: '/verify/saa-c03' },
+]
+
+// Real SAA-C03 program data (src/data/programs.js) — the cert reuses the live
+// CertificateCard so it is pixel-identical to the app.
+const SAA_PROGRAM = { name: 'AWS Certified Solutions Architect – Associate', code: 'SAA-C03', color: '#6366F1' }
+const INDIGO = '#6366F1'   // SAA program accent
+const BLUE = '#3b82f6'     // exam "selected option" colour (blue-500), matches the live exam
+const DOMAINS_SAA = [
+  { n: 'Design Secure Architectures',          w: '30%', c: '#0EA5E9', done: 5, total: 5 },
+  { n: 'Design Resilient Architectures',       w: '26%', c: '#8B5CF6', done: 2, total: 4 },
+  { n: 'Design High-Performing Architectures', w: '24%', c: '#00D4AA', done: 0, total: 4 },
+  { n: 'Design Cost-Optimized Architectures',  w: '20%', c: '#F59E0B', done: 0, total: 3 },
 ]
 
 // little circular progress ring used on the dashboard screen
@@ -669,194 +682,236 @@ const pill = (text, bg, color) => (
 )
 
 // ─── Laptop app screens (index matches JOURNEY) ─────────────────────────────
+// ─── Laptop app screens (faithful to the live app; index matches JOURNEY) ────
+// Emoji in the real app (⏱️ timer, 🎉 results) are swapped for lucide icons to
+// honour the landing-page no-emoji rule; everything else mirrors the source.
 function LaptopScreen({ i }) {
-  const pad = { padding: '16px 18px', height: '100%', boxSizing: 'border-box' }
   switch (i) {
-    case 0: return ( // Dashboard
-      <div style={{ ...pad, background: '#f8fafc' }}>
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
-          <span style={{ fontSize: '0.9rem', fontWeight: 800, color: NAVY }}>Welcome back, Sam</span>
-          <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-            {pill('12-day streak', 'rgba(217,119,6,0.12)', '#b45309')}
-          </span>
-        </div>
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center', background: '#fff', border: '1px solid #e8edf3', borderRadius: 12, padding: '14px 16px', boxShadow: '0 6px 18px rgba(10,37,64,0.05)' }}>
-          <Ring pct={64} size={62} label="ready" />
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#0EA5E9', letterSpacing: '0.04em' }}>FOCUSED · SAA-C03</div>
-            <div style={{ fontSize: '0.85rem', fontWeight: 700, color: NAVY, margin: '2px 0 4px' }}>Solutions Architect Associate</div>
-            <div style={{ fontSize: '0.65rem', color: '#64748b' }}>7 of 15 sessions · 2 practice exams left</div>
+    case 0: return ( // Dashboard — the dark "featured course" hub card
+      <div style={{ padding: '14px 16px', height: '100%', background: '#f7f8fa', overflow: 'hidden' }}>
+        <div style={{ borderRadius: 16, border: '1px solid rgba(0,212,170,0.2)', background: 'linear-gradient(135deg,#0A2540 0%,#1A3B5C 100%)', boxShadow: '0 4px 24px rgba(0,0,0,0.12)', overflow: 'hidden' }}>
+          <div style={{ padding: '13px 16px 10px', display: 'flex', justifyContent: 'space-between', gap: 10, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: '0.58rem', fontWeight: 700, color: TEAL, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 3 }}>SAA-C03 Preparation</div>
+              <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#fff', marginBottom: 2, lineHeight: 1.25 }}>AWS Certified Solutions Architect – Associate</div>
+              <div style={{ fontSize: '0.64rem', color: 'rgba(255,255,255,0.5)' }}>7 of 16 sessions complete</div>
+            </div>
+            <span style={{ alignSelf: 'flex-start', whiteSpace: 'nowrap', fontSize: '0.64rem', fontWeight: 700, color: '#fff', background: 'linear-gradient(135deg,#00D4AA,#00A884)', padding: '7px 12px', borderRadius: 10, boxShadow: '0 4px 14px rgba(0,212,170,0.3)' }}>Continue →</span>
           </div>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: '0.72rem', fontWeight: 700, color: '#fff', background: `linear-gradient(${TEAL},${TEAL_DARK})`, padding: '8px 13px', borderRadius: 9 }}>
-            Continue <ChevronRight size={13} />
-          </span>
+          <div style={{ padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+              <span style={{ fontSize: '0.6rem', fontWeight: 600, color: 'rgba(255,255,255,0.6)' }}>Overall Progress</span>
+              <span style={{ fontSize: '0.6rem', fontWeight: 700, color: TEAL, fontFamily: 'monospace' }}>44%</span>
+            </div>
+            <div style={{ height: 8, background: 'rgba(255,255,255,0.1)', borderRadius: 99, overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: '44%', background: 'linear-gradient(90deg,#00D4AA,#00A884)', borderRadius: 99 }} />
+            </div>
+            <div style={{ fontSize: '0.58rem', color: 'rgba(255,255,255,0.35)', marginTop: 6 }}>Next: Session 8 — Designing for High Availability</div>
+          </div>
+          <div style={{ padding: '12px 16px' }}>
+            <div style={{ fontSize: '0.58rem', fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: 9 }}>Exam Domains</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              {DOMAINS_SAA.map((d, idx) => {
+                const pct = d.total > 0 ? Math.round(d.done / d.total * 100) : 0
+                return (
+                  <div key={d.n} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 10, padding: '9px 10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 7 }}>
+                      <span style={{ width: 18, height: 18, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'monospace', fontWeight: 700, fontSize: '0.6rem', background: `${d.c}28`, color: d.c, flexShrink: 0 }}>{idx + 1}</span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: '0.6rem', fontWeight: 600, color: 'rgba(255,255,255,0.85)', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{d.n}</div>
+                        <div style={{ fontSize: '0.5rem', color: 'rgba(255,255,255,0.35)' }}>{d.w} of exam · {d.total} sessions</div>
+                      </div>
+                      <span style={{ fontSize: '0.55rem', fontFamily: 'monospace', fontWeight: 700, color: d.c, flexShrink: 0 }}>{d.done}/{d.total}</span>
+                    </div>
+                    <div style={{ height: 5, background: 'rgba(255,255,255,0.1)', borderRadius: 99, overflow: 'hidden' }}>
+                      <div style={{ height: '100%', width: `${pct}%`, background: d.c, borderRadius: 99 }} />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-          {[['#0EA5E9', 'Resilient', 92], ['#8B5CF6', 'Performance', 84], ['#F59E0B', 'Security', 61], ['#00D4AA', 'Cost', 79]].map(([c, n, p]) => (
-            <div key={n} style={{ flex: 1, background: '#fff', border: '1px solid #e8edf3', borderRadius: 9, padding: '8px 9px' }}>
-              <div style={{ fontSize: '0.55rem', color: '#94a3b8', fontWeight: 600, marginBottom: 4 }}>{n}</div>
-              <div style={{ height: 4, borderRadius: 99, background: '#eef2f7', overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${p}%`, background: c, borderRadius: 99 }} />
+      </div>
+    )
+    case 1: return ( // Learn — session reading view
+      <div style={{ padding: '16px 20px', height: '100%', background: '#fff', overflow: 'hidden' }}>
+        <div style={{ display: 'flex', gap: 6, marginBottom: 11, flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '0.58rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#fff', background: NAVY, padding: '3px 9px', borderRadius: 6 }}>Session 8</span>
+          <span style={{ fontSize: '0.58rem', fontWeight: 700, color: TEAL_DARK, background: 'rgba(0,212,170,0.12)', padding: '3px 9px', borderRadius: 6 }}>30 min</span>
+          <span style={{ fontSize: '0.58rem', fontWeight: 700, color: '#b45309', background: 'rgba(245,158,11,0.12)', padding: '3px 9px', borderRadius: 6 }}>26% of exam</span>
+        </div>
+        <div style={{ fontSize: '1.3rem', fontWeight: 800, color: NAVY, lineHeight: 1.2, marginBottom: 8 }}>Designing for High Availability</div>
+        <p style={{ fontSize: '0.8rem', color: '#6b7280', lineHeight: 1.6, margin: '0 0 14px' }}>Spread workloads across Availability Zones so a single failure never takes the system down — the core of resilient AWS architecture.</p>
+        <div style={{ height: 2, background: 'linear-gradient(90deg, rgba(0,212,170,0.4), transparent)', marginBottom: 14 }} />
+        <div style={{ background: 'rgba(0,212,170,0.06)', border: '1.5px solid rgba(0,212,170,0.25)', borderRadius: 14, padding: '12px 15px' }}>
+          <div style={{ fontSize: '0.58rem', fontWeight: 700, color: TEAL_DARK, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>What you'll learn</div>
+          <ul style={{ paddingLeft: '1.1rem', margin: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {['Why Multi-AZ deployments survive zone failures', 'How Elastic Load Balancing distributes across AZs', 'When to add Auto Scaling for fault tolerance'].map((o, k) => (
+              <li key={k} style={{ fontSize: '0.72rem', color: '#1f2937', lineHeight: 1.5 }}>{o}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    )
+    case 2: return ( // Teach — Teach it to learn it
+      <div style={{ padding: '14px 18px', height: '100%', background: '#fff', overflow: 'hidden' }}>
+        <div style={{ textAlign: 'center', marginBottom: 12 }}>
+          <div style={{ fontSize: '0.95rem', fontWeight: 800, color: NAVY }}>Teach it to learn it</div>
+          <div style={{ fontSize: '0.66rem', color: '#4b5563', lineHeight: 1.5, marginTop: 3 }}>Explain it, watch how others explain it, then record your own.</div>
+        </div>
+        <div style={{ background: 'rgba(59,130,246,0.05)', border: '1.5px solid rgba(59,130,246,0.2)', borderRadius: 12, padding: '10px 13px', marginBottom: 11 }}>
+          <div style={{ fontSize: '0.58rem', fontWeight: 700, color: '#1d4ed8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 5 }}>1 · Explain it first</div>
+          <p style={{ fontSize: '0.72rem', color: '#1f2937', lineHeight: 1.55, margin: 0 }}>In your own words, why does spreading across Availability Zones improve availability?</p>
+        </div>
+        <div style={{ marginBottom: 11 }}>
+          <div style={{ fontSize: '0.58rem', fontWeight: 700, color: TEAL_DARK, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 7 }}>2 · Watch</div>
+          <div style={{ display: 'flex', gap: 7 }}>
+            {[['#0EA5E9', 'Maya R.'], ['#F59E0B', 'Devon K.'], ['#00D4AA', 'Priya S.']].map(([c, n]) => (
+              <div key={n} style={{ flex: 1, borderRadius: 9, overflow: 'hidden', border: '1px solid #e2e8f0' }}>
+                <div style={{ height: 34, background: `linear-gradient(135deg,${c}33,${c}11)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ width: 18, height: 18, borderRadius: 99, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Play size={9} color={c} fill={c} /></span>
+                </div>
+                <div style={{ padding: '3px 6px', fontSize: '0.52rem', fontWeight: 600, color: '#64748b' }}>{n}</div>
               </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    )
-    case 1: return ( // Learn
-      <div style={{ ...pad }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 7 }}>
-          <BookOpen size={14} color={TEAL_DARK} />
-          <span style={{ fontSize: '0.82rem', fontWeight: 800, color: NAVY }}>Session 7 · IAM Policies</span>
-          <span style={{ marginLeft: 'auto', fontSize: '0.6rem', color: '#94a3b8', fontWeight: 600 }}>Step 3 of 6</span>
-        </div>
-        <div style={{ height: 5, borderRadius: 99, background: '#eef2f7', overflow: 'hidden', marginBottom: 13 }}>
-          <div style={{ height: '100%', width: '50%', background: `linear-gradient(90deg,${TEAL},${TEAL_DARK})`, borderRadius: 99 }} />
-        </div>
-        <div style={{ fontSize: '0.58rem', fontWeight: 700, color: TEAL_DARK, marginBottom: 6 }}>THE WHY BEFORE THE WHAT</div>
-        <p style={{ fontSize: '0.72rem', color: '#475569', lineHeight: 1.6, margin: '0 0 11px' }}>
-          An IAM policy is JSON that grants or denies actions on resources. <b style={{ color: NAVY }}>Explicit deny</b> always wins — even over an allow. That single rule explains most "why can't I access this?" puzzles.
-        </p>
-        <div style={{ background: '#f0fdf9', border: '1px solid rgba(16,185,129,0.25)', borderRadius: 9, padding: '9px 11px', display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-          <Sparkles size={13} color={TEAL_DARK} style={{ marginTop: 1 }} />
-          <span style={{ fontSize: '0.66rem', color: '#0f766e', lineHeight: 1.5 }}><b>Key point:</b> evaluation order is Deny → Allow → implicit deny.</span>
-        </div>
-      </div>
-    )
-    case 2: return ( // Teach
-      <div style={{ ...pad, textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-        <div style={{ fontSize: '0.58rem', fontWeight: 700, color: '#7c3aed', marginBottom: 12 }}>TEACH TO LEARN · RECORD YOUR EXPLANATION</div>
-        <div style={{ position: 'relative', width: 56, height: 56, margin: '0 auto 14px' }}>
-          <span className="demo-ping" style={{ position: 'absolute', inset: 0, borderRadius: 99, background: 'rgba(220,38,38,0.35)' }} />
-          <span style={{ position: 'absolute', inset: 0, borderRadius: 99, background: DANGER, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Mic size={24} color="#fff" />
-          </span>
-        </div>
-        <div style={{ display: 'flex', gap: 3, alignItems: 'flex-end', justifyContent: 'center', height: 26, marginBottom: 10 }}>
-          {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((b) => (
-            <span key={b} className="demo-wave-bar" style={{ width: 4, height: 24, borderRadius: 99, background: '#8B5CF6', animationDelay: `${b * 0.08}s` }} />
-          ))}
-        </div>
-        <span style={{ fontSize: '0.66rem', color: '#64748b' }}>"IAM policies are evaluated deny-first, so…"</span>
-      </div>
-    )
-    case 3: return ( // Exam
-      <div style={{ ...pad }}>
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 9 }}>
-          <span style={{ fontSize: '0.6rem', fontWeight: 700, color: '#94a3b8' }}>Question 12 of 65</span>
-          <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: '0.66rem', fontWeight: 700, color: NAVY, background: '#f1f5f9', padding: '3px 9px', borderRadius: 99, fontVariantNumeric: 'tabular-nums' }}>
-            <Clock size={12} /> 1:18
-          </span>
-        </div>
-        <p style={{ fontSize: '0.72rem', fontWeight: 600, color: NAVY, margin: '0 0 10px', lineHeight: 1.45 }}>
-          Which statement type takes precedence when an IAM policy has both?
-        </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {[['Explicit Deny', true], ['Explicit Allow', false], ['Implicit Deny', false], ['Resource policy', false]].map(([opt, ok], idx) => (
-            <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px', borderRadius: 8, border: `1.5px solid ${ok ? SUCCESS : '#e2e8f0'}`, background: ok ? 'rgba(16,185,129,0.08)' : '#fff' }}>
-              <span style={{ width: 15, height: 15, borderRadius: 99, flexShrink: 0, border: `2px solid ${ok ? SUCCESS : '#cbd5e1'}`, background: ok ? SUCCESS : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                {ok && <Check size={9} color="#fff" strokeWidth={3} />}
-              </span>
-              <span style={{ fontSize: '0.68rem', color: ok ? '#047857' : '#475569', fontWeight: ok ? 700 : 500 }}>{opt}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    )
-    case 4: return ( // Results / Pass
-      <div style={{ ...pad, background: 'linear-gradient(160deg,#0A2540,#1A3B5C)', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center', color: '#fff' }}>
-        <Ring pct={88} size={84} stroke={8} />
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, margin: '12px auto 6px', background: 'rgba(16,185,129,0.18)', border: '1px solid rgba(16,185,129,0.5)', padding: '4px 14px', borderRadius: 99 }}>
-          <BadgeCheck size={14} color={SUCCESS} />
-          <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#6ee7b7', letterSpacing: '0.04em' }}>PASSED</span>
-        </div>
-        <div style={{ fontSize: '0.78rem', fontWeight: 700 }}>You're exam-ready</div>
-        <div style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.6)', marginTop: 3 }}>Scaled score 824 · pass mark 720</div>
-      </div>
-    )
-    default: return ( // Certificate / verify
-      <div style={{ ...pad, background: '#f8fafc', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-        <div style={{ background: '#fff', border: '1px solid #e8edf3', borderRadius: 12, padding: '16px 18px', boxShadow: '0 12px 30px rgba(10,37,64,0.08)', textAlign: 'center' }}>
-          <span style={{ width: 44, height: 44, borderRadius: 12, background: `linear-gradient(135deg,${TEAL},${TEAL_DARK})`, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 9 }}>
-            <Award size={24} color="#fff" />
-          </span>
-          <div style={{ fontSize: '0.58rem', fontWeight: 700, color: TEAL_DARK, letterSpacing: '0.05em' }}>PROOF OF PROFICIENCY</div>
-          <div style={{ fontSize: '0.92rem', fontWeight: 800, color: NAVY, margin: '4px 0 2px' }}>Solutions Architect Associate</div>
-          <div style={{ fontSize: '0.64rem', color: '#64748b', marginBottom: 10 }}>Sam Carter · SAA-C03 · Jun 2026</div>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: '0.6rem', fontWeight: 700, color: '#047857', background: 'rgba(16,185,129,0.1)', padding: '4px 11px', borderRadius: 99 }}>
-            <ShieldCheck size={12} /> Verified · shareable link
+            ))}
           </div>
+        </div>
+        <div style={{ background: 'linear-gradient(135deg, rgba(0,212,170,0.08), rgba(0,168,132,0.04))', border: '1.5px solid rgba(0,212,170,0.3)', borderRadius: 14, padding: '11px 14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <span style={{ fontSize: '0.58rem', fontWeight: 700, color: TEAL_DARK, textTransform: 'uppercase', letterSpacing: '0.05em' }}>3 · Teach it &amp; share</span>
+            <span style={{ fontSize: '0.55rem', fontWeight: 800, color: '#059669', background: 'rgba(16,185,129,0.12)', padding: '2px 7px', borderRadius: 6, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Live</span>
+          </div>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.7rem', fontWeight: 700, color: '#fff', background: 'linear-gradient(135deg,#00D4AA,#00A884)', padding: '7px 13px', borderRadius: 9 }}><Play size={11} fill="#fff" /> Open slides to present</span>
+        </div>
+      </div>
+    )
+    case 3: return ( // Exam — live practice exam (blue selection, no inline grading)
+      <div style={{ padding: '12px 14px', height: '100%', background: 'linear-gradient(135deg,#0A2540 0%,#1A3B5C 100%)', overflow: 'hidden' }}>
+        <div style={{ textAlign: 'center', marginBottom: 9 }}>
+          <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#fff', marginBottom: 5 }}>Solutions Architect — Practice Exam 2</div>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: '0.66rem', fontWeight: 600, color: '#fff', background: 'rgba(255,255,255,0.1)', padding: '3px 10px', borderRadius: 8 }}><Clock size={11} /> Time Remaining: 1:18:42</span>
+        </div>
+        <div style={{ height: 6, background: 'rgba(255,255,255,0.2)', borderRadius: 99, overflow: 'hidden', marginBottom: 9 }}>
+          <div style={{ height: '100%', width: '78%', background: TEAL, borderRadius: 99 }} />
+        </div>
+        <div style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.8)', marginBottom: 9 }}>Questions: 12/65</div>
+        <div style={{ background: '#fff', borderRadius: 14, padding: '13px 14px', boxShadow: '0 8px 24px rgba(0,0,0,0.16)' }}>
+          <span style={{ display: 'inline-block', background: NAVY, color: '#fff', padding: '3px 10px', borderRadius: 99, fontSize: '0.6rem', fontWeight: 600, marginBottom: 9 }}>Question 12 • Multiple Choice — select one</span>
+          <p style={{ fontSize: '0.74rem', fontWeight: 600, color: '#1f2937', lineHeight: 1.5, margin: '0 0 10px' }}>A company needs its web tier to stay available if one Availability Zone fails. Which approach best meets this?</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+            {[['Deploy instances across multiple AZs behind an ALB', true], ['Run a larger instance in a single Availability Zone', false], ['Attach an Elastic IP to one instance', false], ['Schedule manual failover with a script', false]].map(([opt, sel], k) => (
+              <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '8px 10px', borderRadius: 10, border: `2px solid ${sel ? BLUE : '#e5e7eb'}`, background: sel ? '#eff6ff' : '#f9fafb' }}>
+                <span style={{ width: 17, height: 17, borderRadius: 99, flexShrink: 0, border: `2px solid ${sel ? BLUE : '#9ca3af'}`, background: sel ? BLUE : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: '0.6rem' }}>{sel ? '✓' : ''}</span>
+                <span style={{ fontSize: '0.7rem', color: '#1f2937', lineHeight: 1.4 }}>{opt}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+    case 4: return ( // Results — pass screen
+      <div style={{ padding: '12px 14px', height: '100%', background: 'linear-gradient(135deg,#0A2540 0%,#1A3B5C 100%)', overflow: 'hidden' }}>
+        <div style={{ background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 16, padding: '16px', textAlign: 'center' }}>
+          <div style={{ marginBottom: 8 }}><BadgeCheck size={34} color={SUCCESS} /></div>
+          <div style={{ fontSize: '1rem', fontWeight: 700, color: '#fff', marginBottom: 4 }}>Exam Results</div>
+          <div style={{ fontSize: '0.78rem', fontWeight: 600, color: SUCCESS, marginBottom: 14 }}>Congratulations! You passed!</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 9 }}>
+            {[['Score', '88%', SUCCESS, '57 / 65 correct'], ['Time Spent', '1:42:18', TEAL, 'Jun 24, 2026'], ['Status', 'PASSED', SUCCESS, 'Scaled: 824']].map(([lab, val, col, sub]) => (
+              <div key={lab} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '11px 8px' }}>
+                <div style={{ fontSize: '0.56rem', color: 'rgba(255,255,255,0.7)', marginBottom: 5 }}>{lab}</div>
+                <div style={{ fontSize: '1.1rem', fontWeight: 700, color: col, lineHeight: 1 }}>{val}</div>
+                <div style={{ fontSize: '0.52rem', color: 'rgba(255,255,255,0.6)', marginTop: 4 }}>{sub}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+    default: return ( // Certificate — reuse the real CertificateCard for exact fidelity
+      <div style={{ padding: '14px 18px', height: '100%', background: '#f7f8fa', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+        <div style={{ width: '100%', maxWidth: '94%' }}>
+          <CertificateCard program={SAA_PROGRAM} state="earned" name="Sam Carter" score={88} credentialCode="CXL-SAA-7F3A2C" issuedAt="2026-06-24" />
         </div>
       </div>
     )
   }
 }
 
-// ─── Phone app screens (compact mirror of the same phase) ───────────────────
+// ─── Phone app screens (same screens, mobile-narrow — the app is responsive) ──
 function PhoneScreen({ i }) {
-  const Bar = ({ children, color = TEAL_DARK }) => (
+  const Bar = ({ color = TEAL_DARK }) => (
     <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '7px 9px 6px', borderBottom: '1px solid #f1f5f9' }}>
-      <Cloud size={11} color={color} />
-      <span style={{ fontSize: '0.5rem', fontWeight: 800, color: NAVY }}>CloudExamLab</span>
+      <Cloud size={11} color={color} /><span style={{ fontSize: '0.5rem', fontWeight: 800, color: NAVY }}>CloudExamLab</span>
     </div>
   )
-  const body = { padding: '9px 10px' }
+  const body = { padding: '8px 9px' }
   const screens = [
-    // home
-    <div key="h"><Bar />
+    <div key="h" style={{ height: '100%', background: '#f7f8fa' }}><Bar />
       <div style={body}>
-        <div style={{ fontSize: '0.5rem', color: '#94a3b8', fontWeight: 600, marginBottom: 6 }}>FOCUSED · SAA-C03</div>
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}><Ring pct={64} size={50} label="ready" /></div>
-        <div style={{ fontSize: '0.55rem', textAlign: 'center', color: '#fff', fontWeight: 700, background: `linear-gradient(${TEAL},${TEAL_DARK})`, padding: '6px', borderRadius: 7 }}>Continue Session 7</div>
+        <div style={{ borderRadius: 11, background: 'linear-gradient(135deg,#0A2540,#1A3B5C)', padding: '9px 10px', border: '1px solid rgba(0,212,170,0.2)' }}>
+          <div style={{ fontSize: '0.44rem', fontWeight: 700, color: TEAL, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 3 }}>SAA-C03 Preparation</div>
+          <div style={{ fontSize: '0.52rem', fontWeight: 700, color: '#fff', lineHeight: 1.25, marginBottom: 5 }}>Solutions Architect – Associate</div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
+            <span style={{ fontSize: '0.42rem', color: 'rgba(255,255,255,0.6)' }}>Overall Progress</span>
+            <span style={{ fontSize: '0.42rem', color: TEAL, fontFamily: 'monospace', fontWeight: 700 }}>44%</span>
+          </div>
+          <div style={{ height: 4, background: 'rgba(255,255,255,0.1)', borderRadius: 99, overflow: 'hidden', marginBottom: 7 }}><div style={{ height: '100%', width: '44%', background: 'linear-gradient(90deg,#00D4AA,#00A884)' }} /></div>
+          <div style={{ fontSize: '0.44rem', textAlign: 'center', color: '#fff', fontWeight: 700, background: 'linear-gradient(135deg,#00D4AA,#00A884)', padding: '5px', borderRadius: 6 }}>Continue →</div>
+        </div>
       </div>
     </div>,
-    // learn
-    <div key="l"><Bar />
+    <div key="l" style={{ height: '100%', background: '#fff' }}><Bar />
       <div style={body}>
-        <div style={{ fontSize: '0.55rem', fontWeight: 800, color: NAVY, marginBottom: 5 }}>IAM Policies</div>
-        <div style={{ height: 4, borderRadius: 99, background: '#eef2f7', marginBottom: 8, overflow: 'hidden' }}><div style={{ height: '100%', width: '50%', background: TEAL }} /></div>
-        <div style={{ fontSize: '0.5rem', color: '#475569', lineHeight: 1.5 }}>Explicit deny always wins over allow — the rule behind most access puzzles.</div>
+        <div style={{ display: 'flex', gap: 3, marginBottom: 6 }}>
+          <span style={{ fontSize: '0.42rem', fontWeight: 700, color: '#fff', background: NAVY, padding: '2px 5px', borderRadius: 4 }}>Session 8</span>
+          <span style={{ fontSize: '0.42rem', fontWeight: 700, color: TEAL_DARK, background: 'rgba(0,212,170,0.12)', padding: '2px 5px', borderRadius: 4 }}>30 min</span>
+        </div>
+        <div style={{ fontSize: '0.6rem', fontWeight: 800, color: NAVY, lineHeight: 1.2, marginBottom: 6 }}>Designing for High Availability</div>
+        <div style={{ background: 'rgba(0,212,170,0.06)', border: '1px solid rgba(0,212,170,0.25)', borderRadius: 8, padding: '7px 8px' }}>
+          <div style={{ fontSize: '0.42rem', fontWeight: 700, color: TEAL_DARK, textTransform: 'uppercase', marginBottom: 4 }}>What you'll learn</div>
+          <div style={{ fontSize: '0.45rem', color: '#1f2937', lineHeight: 1.6 }}>• Multi-AZ survives zone failures<br />• ELB spreads load across AZs</div>
+        </div>
       </div>
     </div>,
-    // teach
-    <div key="t"><Bar color="#8B5CF6" />
-      <div style={{ ...body, textAlign: 'center', paddingTop: 18 }}>
-        <div style={{ position: 'relative', width: 34, height: 34, margin: '0 auto 10px' }}>
-          <span className="demo-ping" style={{ position: 'absolute', inset: 0, borderRadius: 99, background: 'rgba(220,38,38,0.3)' }} />
-          <span style={{ position: 'absolute', inset: 0, borderRadius: 99, background: DANGER, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Mic size={15} color="#fff" /></span>
+    <div key="t" style={{ height: '100%', background: '#fff' }}><Bar color="#8B5CF6" />
+      <div style={body}>
+        <div style={{ fontSize: '0.55rem', fontWeight: 800, color: NAVY, textAlign: 'center', marginBottom: 7 }}>Teach it to learn it</div>
+        <div style={{ background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: 7, padding: '6px 7px', marginBottom: 7 }}>
+          <div style={{ fontSize: '0.4rem', fontWeight: 700, color: '#1d4ed8', textTransform: 'uppercase', marginBottom: 3 }}>1 · Explain it first</div>
+          <div style={{ fontSize: '0.44rem', color: '#1f2937', lineHeight: 1.4 }}>Why do multiple AZs improve availability?</div>
         </div>
-        <div style={{ display: 'flex', gap: 2, justifyContent: 'center', alignItems: 'flex-end', height: 16 }}>
-          {[0, 1, 2, 3, 4, 5].map((b) => <span key={b} className="demo-wave-bar" style={{ width: 3, height: 14, background: '#8B5CF6', borderRadius: 99, animationDelay: `${b * 0.09}s` }} />)}
+        <div style={{ background: 'linear-gradient(135deg,rgba(0,212,170,0.08),rgba(0,168,132,0.04))', border: '1px solid rgba(0,212,170,0.3)', borderRadius: 8, padding: '6px 7px' }}>
+          <div style={{ fontSize: '0.4rem', fontWeight: 700, color: TEAL_DARK, textTransform: 'uppercase', marginBottom: 4 }}>3 · Teach it &amp; share</div>
+          <div style={{ fontSize: '0.42rem', textAlign: 'center', fontWeight: 700, color: '#fff', background: 'linear-gradient(135deg,#00D4AA,#00A884)', padding: '4px', borderRadius: 5 }}>Open slides to present</div>
         </div>
-        <div style={{ fontSize: '0.45rem', color: '#94a3b8', marginTop: 8 }}>Recording…</div>
       </div>
     </div>,
-    // exam
-    <div key="e"><Bar />
-      <div style={body}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-          <span style={{ fontSize: '0.45rem', color: '#94a3b8', fontWeight: 600 }}>Q12 / 65</span>
-          <span style={{ fontSize: '0.45rem', color: NAVY, fontWeight: 700 }}>1:18</span>
-        </div>
-        {['Explicit Deny', 'Explicit Allow', 'Implicit Deny'].map((o, k) => (
-          <div key={k} style={{ fontSize: '0.5rem', padding: '5px 7px', marginBottom: 4, borderRadius: 6, border: `1.5px solid ${k === 0 ? SUCCESS : '#e2e8f0'}`, background: k === 0 ? 'rgba(16,185,129,0.08)' : '#fff', color: k === 0 ? '#047857' : '#475569', fontWeight: k === 0 ? 700 : 500 }}>{o}</div>
+    <div key="e" style={{ height: '100%', background: 'linear-gradient(135deg,#0A2540,#1A3B5C)', padding: '7px 7px' }}>
+      <div style={{ fontSize: '0.42rem', color: '#fff', textAlign: 'center', marginBottom: 4, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 3 }}><Clock size={8} /> Time Remaining 1:18:42</div>
+      <div style={{ height: 4, background: 'rgba(255,255,255,0.2)', borderRadius: 99, marginBottom: 6, overflow: 'hidden' }}><div style={{ height: '100%', width: '78%', background: TEAL }} /></div>
+      <div style={{ background: '#fff', borderRadius: 8, padding: '7px 7px' }}>
+        <span style={{ display: 'inline-block', background: NAVY, color: '#fff', fontSize: '0.38rem', fontWeight: 600, padding: '2px 5px', borderRadius: 99, marginBottom: 5 }}>Question 12</span>
+        <div style={{ fontSize: '0.45rem', fontWeight: 600, color: '#1f2937', lineHeight: 1.35, marginBottom: 6 }}>Stay available if one AZ fails — best approach?</div>
+        {[['Across AZs behind an ALB', true], ['Bigger instance, one AZ', false], ['Elastic IP on one host', false]].map(([o, sel], k) => (
+          <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 5px', marginBottom: 3, borderRadius: 5, border: `1.5px solid ${sel ? BLUE : '#e5e7eb'}`, background: sel ? '#eff6ff' : '#f9fafb' }}>
+            <span style={{ width: 9, height: 9, borderRadius: 99, flexShrink: 0, border: `1.5px solid ${sel ? BLUE : '#9ca3af'}`, background: sel ? BLUE : 'transparent' }} />
+            <span style={{ fontSize: '0.42rem', color: '#1f2937' }}>{o}</span>
+          </div>
         ))}
       </div>
     </div>,
-    // pass
-    <div key="p" style={{ height: '100%', background: 'linear-gradient(160deg,#0A2540,#1A3B5C)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
-      <Ring pct={88} size={58} stroke={6} />
-      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 9, background: 'rgba(16,185,129,0.18)', border: '1px solid rgba(16,185,129,0.5)', padding: '3px 10px', borderRadius: 99 }}>
-        <BadgeCheck size={11} color={SUCCESS} /><span style={{ fontSize: '0.55rem', fontWeight: 800, color: '#6ee7b7' }}>PASSED</span>
+    <div key="p" style={{ height: '100%', background: 'linear-gradient(135deg,#0A2540,#1A3B5C)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '10px' }}>
+      <div style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 10, padding: '12px 9px', textAlign: 'center', width: '100%' }}>
+        <BadgeCheck size={22} color={SUCCESS} />
+        <div style={{ fontSize: '0.5rem', fontWeight: 700, color: '#fff', margin: '4px 0 2px' }}>Exam Results</div>
+        <div style={{ fontSize: '0.42rem', color: SUCCESS, fontWeight: 600, marginBottom: 8 }}>You passed!</div>
+        <div style={{ fontSize: '1rem', fontWeight: 800, color: SUCCESS, lineHeight: 1 }}>88%</div>
+        <div style={{ fontSize: '0.42rem', color: 'rgba(255,255,255,0.7)', marginTop: 3 }}>PASSED · Scaled 824</div>
       </div>
     </div>,
-    // cert
-    <div key="c"><Bar />
-      <div style={{ ...body, textAlign: 'center', paddingTop: 14 }}>
-        <span style={{ width: 30, height: 30, borderRadius: 8, background: `linear-gradient(135deg,${TEAL},${TEAL_DARK})`, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 7 }}><Award size={16} color="#fff" /></span>
-        <div style={{ fontSize: '0.55rem', fontWeight: 800, color: NAVY, lineHeight: 1.3 }}>Solutions Architect Associate</div>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: '0.45rem', fontWeight: 700, color: '#047857', background: 'rgba(16,185,129,0.1)', padding: '3px 8px', borderRadius: 99, marginTop: 7 }}><ShieldCheck size={9} /> Verified</div>
-      </div>
+    <div key="c" style={{ height: '100%', background: '#f7f8fa', display: 'flex', alignItems: 'center', padding: '8px' }}>
+      <div style={{ width: '100%' }}><CertificateCard program={SAA_PROGRAM} state="earned" name="Sam Carter" score={88} credentialCode="CXL-SAA-7F3A2C" issuedAt="2026-06-24" /></div>
     </div>,
   ]
   return screens[i]
