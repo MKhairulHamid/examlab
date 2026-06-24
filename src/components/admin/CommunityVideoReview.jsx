@@ -110,10 +110,10 @@ export default function CommunityVideoReview() {
               </div>
 
               <p style={{ fontSize: '1rem', fontWeight: 700, margin: '0 0 0.25rem', color: '#0A2540' }}>{v.title}</p>
-              <p style={{ fontSize: '0.8125rem', color: '#64748b', margin: '0 0 0.5rem' }}>
+              <p style={{ fontSize: '0.8125rem', color: '#6b7280', margin: '0 0 0.5rem' }}>
                 {v.submitter_name} · {v.course_slug} / {v.session_id} · {new Date(v.created_at).toLocaleDateString()}
               </p>
-              {v.note && <p style={{ fontSize: '0.8125rem', color: '#475569', margin: '0 0 0.5rem', lineHeight: 1.5 }}>{v.note}</p>}
+              {v.note && <p style={{ fontSize: '0.8125rem', color: '#4b5563', margin: '0 0 0.5rem', lineHeight: 1.5 }}>{v.note}</p>}
               <a href={watchUrl(v)} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.75rem', color: '#00A884', fontWeight: 600 }}>Open original ↗</a>
 
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.9rem' }}>
@@ -138,9 +138,9 @@ export default function CommunityVideoReview() {
 function StatusBadge({ status }) {
   const map = {
     pending: { c: '#b45309', b: 'rgba(245,158,11,0.15)' },
-    approved: { c: '#15803d', b: 'rgba(34,197,94,0.15)' },
+    approved: { c: '#059669', b: 'rgba(16,185,129,0.15)' },
     rejected: { c: '#b91c1c', b: 'rgba(239,68,68,0.15)' },
-    hidden: { c: '#475569', b: 'rgba(100,116,139,0.15)' },
+    hidden: { c: '#4b5563', b: 'rgba(100,116,139,0.15)' },
   }
   const s = map[status] || map.pending
   return (

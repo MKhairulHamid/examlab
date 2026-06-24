@@ -21,7 +21,7 @@ function relativeDays(d) {
 }
 
 const labelStyle = { fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(231,238,246,0.45)' }
-const valueStyle = { fontSize: '0.95rem', fontWeight: 700, color: '#e7eef6' }
+const valueStyle = { fontSize: '0.95rem', fontWeight: 700, color: '#e5e7eb' }
 
 function Stat({ label, value, accent }) {
   return (
@@ -92,7 +92,7 @@ export default function UsersManager() {
           width: '100%', boxSizing: 'border-box', marginBottom: '1.25rem',
           padding: '0.6rem 0.85rem', borderRadius: '0.6rem',
           background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)',
-          color: '#e7eef6', fontSize: '0.875rem',
+          color: '#e5e7eb', fontSize: '0.875rem',
         }}
       />
 
@@ -149,11 +149,11 @@ export default function UsersManager() {
                     <div style={{ ...labelStyle, marginBottom: '0.5rem' }}>Account</div>
                     <dl style={{ margin: 0, fontSize: '0.8rem', display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '0.3rem 0.75rem' }}>
                       <dt style={{ color: 'rgba(231,238,246,0.5)' }}>User ID</dt>
-                      <dd style={{ margin: 0, color: '#e7eef6', wordBreak: 'break-all', fontFamily: 'monospace', fontSize: '0.72rem' }}>{u.id}</dd>
+                      <dd style={{ margin: 0, color: '#e5e7eb', wordBreak: 'break-all', fontFamily: 'monospace', fontSize: '0.72rem' }}>{u.id}</dd>
                       <dt style={{ color: 'rgba(231,238,246,0.5)' }}>Joined</dt>
-                      <dd style={{ margin: 0, color: '#e7eef6' }}>{fmtDate(u.created_at)}</dd>
+                      <dd style={{ margin: 0, color: '#e5e7eb' }}>{fmtDate(u.created_at)}</dd>
                       <dt style={{ color: 'rgba(231,238,246,0.5)' }}>AI calls</dt>
-                      <dd style={{ margin: 0, color: '#e7eef6' }}>{u.stats.ai_calls_total}</dd>
+                      <dd style={{ margin: 0, color: '#e5e7eb' }}>{u.stats.ai_calls_total}</dd>
                     </dl>
                   </section>
 
@@ -163,11 +163,11 @@ export default function UsersManager() {
                     {u.subscription ? (
                       <dl style={{ margin: 0, fontSize: '0.8rem', display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '0.3rem 0.75rem' }}>
                         <dt style={{ color: 'rgba(231,238,246,0.5)' }}>Plan</dt>
-                        <dd style={{ margin: 0, color: '#e7eef6' }}>{u.subscription.plan?.name || '—'}</dd>
+                        <dd style={{ margin: 0, color: '#e5e7eb' }}>{u.subscription.plan?.name || '—'}</dd>
                         <dt style={{ color: 'rgba(231,238,246,0.5)' }}>Status</dt>
-                        <dd style={{ margin: 0, color: '#e7eef6' }}>{u.subscription.status}</dd>
+                        <dd style={{ margin: 0, color: '#e5e7eb' }}>{u.subscription.status}</dd>
                         <dt style={{ color: 'rgba(231,238,246,0.5)' }}>Renews</dt>
-                        <dd style={{ margin: 0, color: '#e7eef6' }}>{fmtDate(u.subscription.current_period_end)}</dd>
+                        <dd style={{ margin: 0, color: '#e5e7eb' }}>{fmtDate(u.subscription.current_period_end)}</dd>
                       </dl>
                     ) : (
                       <p style={{ margin: 0, fontSize: '0.8rem', color: 'rgba(231,238,246,0.45)' }}>Free user — no subscription.</p>
@@ -179,13 +179,13 @@ export default function UsersManager() {
                     <div style={{ ...labelStyle, marginBottom: '0.5rem' }}>Exam activity</div>
                     <dl style={{ margin: 0, fontSize: '0.8rem', display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '0.3rem 0.75rem' }}>
                       <dt style={{ color: 'rgba(231,238,246,0.5)' }}>Attempts</dt>
-                      <dd style={{ margin: 0, color: '#e7eef6' }}>{u.stats.attempts_total} ({u.stats.attempts_completed} done)</dd>
+                      <dd style={{ margin: 0, color: '#e5e7eb' }}>{u.stats.attempts_total} ({u.stats.attempts_completed} done)</dd>
                       <dt style={{ color: 'rgba(231,238,246,0.5)' }}>Passed</dt>
-                      <dd style={{ margin: 0, color: '#e7eef6' }}>{u.stats.attempts_passed}</dd>
+                      <dd style={{ margin: 0, color: '#e5e7eb' }}>{u.stats.attempts_passed}</dd>
                       <dt style={{ color: 'rgba(231,238,246,0.5)' }}>Avg / Best</dt>
-                      <dd style={{ margin: 0, color: '#e7eef6' }}>{u.stats.avg_score != null ? `${u.stats.avg_score}%` : '—'} / {u.stats.best_score != null ? `${u.stats.best_score}%` : '—'}</dd>
+                      <dd style={{ margin: 0, color: '#e5e7eb' }}>{u.stats.avg_score != null ? `${u.stats.avg_score}%` : '—'} / {u.stats.best_score != null ? `${u.stats.best_score}%` : '—'}</dd>
                       <dt style={{ color: 'rgba(231,238,246,0.5)' }}>Last active</dt>
-                      <dd style={{ margin: 0, color: '#e7eef6' }}>{fmtDateTime(u.stats.last_active)}</dd>
+                      <dd style={{ margin: 0, color: '#e5e7eb' }}>{fmtDateTime(u.stats.last_active)}</dd>
                     </dl>
                   </section>
 
@@ -195,13 +195,13 @@ export default function UsersManager() {
                     {u.streak ? (
                       <dl style={{ margin: 0, fontSize: '0.8rem', display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '0.3rem 0.75rem' }}>
                         <dt style={{ color: 'rgba(231,238,246,0.5)' }}>Current</dt>
-                        <dd style={{ margin: 0, color: '#e7eef6' }}>{u.streak.current_streak} days</dd>
+                        <dd style={{ margin: 0, color: '#e5e7eb' }}>{u.streak.current_streak} days</dd>
                         <dt style={{ color: 'rgba(231,238,246,0.5)' }}>Longest</dt>
-                        <dd style={{ margin: 0, color: '#e7eef6' }}>{u.streak.longest_streak} days</dd>
+                        <dd style={{ margin: 0, color: '#e5e7eb' }}>{u.streak.longest_streak} days</dd>
                         <dt style={{ color: 'rgba(231,238,246,0.5)' }}>Study days</dt>
-                        <dd style={{ margin: 0, color: '#e7eef6' }}>{u.streak.total_study_days}</dd>
+                        <dd style={{ margin: 0, color: '#e5e7eb' }}>{u.streak.total_study_days}</dd>
                         <dt style={{ color: 'rgba(231,238,246,0.5)' }}>Daily goal</dt>
-                        <dd style={{ margin: 0, color: '#e7eef6' }}>{u.streak.daily_goal_questions} q/day</dd>
+                        <dd style={{ margin: 0, color: '#e5e7eb' }}>{u.streak.daily_goal_questions} q/day</dd>
                       </dl>
                     ) : (
                       <p style={{ margin: 0, fontSize: '0.8rem', color: 'rgba(231,238,246,0.45)' }}>No streak data.</p>
@@ -209,7 +209,7 @@ export default function UsersManager() {
                     {u.courses.length > 0 && (
                       <div style={{ marginTop: '0.6rem', fontSize: '0.78rem', color: 'rgba(231,238,246,0.7)' }}>
                         {u.courses.map(c => (
-                          <div key={c.course_slug}>{c.course_slug}: <strong style={{ color: '#e7eef6' }}>{c.completed_sessions}</strong> sessions done</div>
+                          <div key={c.course_slug}>{c.course_slug}: <strong style={{ color: '#e5e7eb' }}>{c.completed_sessions}</strong> sessions done</div>
                         ))}
                       </div>
                     )}
@@ -239,22 +239,22 @@ export default function UsersManager() {
                           return (
                             <dl key={i} style={{ margin: 0, fontSize: '0.8rem', display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '0.25rem 0.75rem' }}>
                               <dt style={{ color: 'rgba(231,238,246,0.5)' }}>Code</dt>
-                              <dd style={{ margin: 0, color: '#e7eef6', fontFamily: 'monospace', fontSize: '0.75rem' }}>{v.code}</dd>
+                              <dd style={{ margin: 0, color: '#e5e7eb', fontFamily: 'monospace', fontSize: '0.75rem' }}>{v.code}</dd>
                               <dt style={{ color: 'rgba(231,238,246,0.5)' }}>Scope</dt>
-                              <dd style={{ margin: 0, color: '#e7eef6' }}>
+                              <dd style={{ margin: 0, color: '#e5e7eb' }}>
                                 {v.all_programs ? 'All programs' : (v.exam_type || '—')}
                                 {v.duration_days ? <span style={{ color: 'rgba(231,238,246,0.4)' }}> · {v.duration_days}d</span> : null}
                               </dd>
                               {v.target_group && (
                                 <>
                                   <dt style={{ color: 'rgba(231,238,246,0.5)' }}>Group</dt>
-                                  <dd style={{ margin: 0, color: '#e7eef6' }}>{v.target_group}</dd>
+                                  <dd style={{ margin: 0, color: '#e5e7eb' }}>{v.target_group}</dd>
                                 </>
                               )}
                               <dt style={{ color: 'rgba(231,238,246,0.5)' }}>Redeemed</dt>
-                              <dd style={{ margin: 0, color: '#e7eef6' }}>{fmtDate(v.redeemed_at)}</dd>
+                              <dd style={{ margin: 0, color: '#e5e7eb' }}>{fmtDate(v.redeemed_at)}</dd>
                               <dt style={{ color: 'rgba(231,238,246,0.5)' }}>Expires</dt>
-                              <dd style={{ margin: 0, color: '#e7eef6' }}>
+                              <dd style={{ margin: 0, color: '#e5e7eb' }}>
                                 {fmtDate(v.expires_at)}
                                 <span style={{ marginLeft: '0.5rem', fontSize: '0.65rem', fontWeight: 700, color: activeBadge.color, background: activeBadge.bg, padding: '0.1rem 0.4rem', borderRadius: '0.3rem' }}>
                                   {activeBadge.text}

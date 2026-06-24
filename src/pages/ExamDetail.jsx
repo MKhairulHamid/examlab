@@ -202,7 +202,7 @@ function ExamDetail() {
     const studied = studyStats?.totalDone || 0
     const { attempts, best, passed } = practiceStats
     if (studied === 0 && attempts === 0)
-      return { level: 'Not started', color: '#94a3b8', hint: 'Begin with the study material' }
+      return { level: 'Not started', color: '#9ca3af', hint: 'Begin with the study material' }
     if (passed || (best != null && best >= passThreshold))
       return { level: 'Exam ready', color: '#10b981', hint: 'You\'ve cleared the passing bar in practice' }
     if (attempts > 0 && best != null && best >= passThreshold - 10)

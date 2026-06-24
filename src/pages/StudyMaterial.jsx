@@ -1021,7 +1021,7 @@ function LegacyStudyMaterial({ hasAccess = true, onSubscribe }) {
                             <h3 style={{ fontSize: '1.375rem', fontWeight: 700, color: '#0A2540', marginBottom: '0.5rem' }}>
                                 Unlock the full study course
                             </h3>
-                            <p style={{ color: '#475569', fontSize: '0.9375rem', lineHeight: 1.6, maxWidth: '440px', margin: '0 auto 1.5rem' }}>
+                            <p style={{ color: '#4b5563', fontSize: '0.9375rem', lineHeight: 1.6, maxWidth: '440px', margin: '0 auto 1.5rem' }}>
                                 You're viewing the free preview. Subscribe to access every domain — all concepts,
                                 use cases, exam distractors, flashcards, and quizzes.
                             </p>
@@ -1072,11 +1072,11 @@ function LegacyStudyMaterial({ hasAccess = true, onSubscribe }) {
                                             padding: '1rem',
                                             textAlign: 'left',
                                             background: showQuizResult
-                                                ? (idx === quizItem.quiz[0].correct ? 'rgba(34,197,94,0.1)' : 
+                                                ? (idx === quizItem.quiz[0].correct ? 'rgba(16,185,129,0.1)' : 
                                                    idx === quizAnswer ? 'rgba(239,68,68,0.1)' : 'white')
                                                 : (quizAnswer === idx ? 'rgba(0,212,170,0.1)' : 'white'),
                                             border: showQuizResult
-                                                ? (idx === quizItem.quiz[0].correct ? '2px solid #22c55e' :
+                                                ? (idx === quizItem.quiz[0].correct ? '2px solid #10b981' :
                                                    idx === quizAnswer ? '2px solid #ef4444' : '1px solid #e5e7eb')
                                                 : (quizAnswer === idx ? '2px solid #00D4AA' : '1px solid #e5e7eb'),
                                             borderRadius: '0.75rem',
@@ -1107,10 +1107,10 @@ function LegacyStudyMaterial({ hasAccess = true, onSubscribe }) {
                                 <div style={{
                                     padding: '1.25rem',
                                     background: quizAnswer === quizItem.quiz[0].correct 
-                                        ? 'rgba(34,197,94,0.1)' 
+                                        ? 'rgba(16,185,129,0.1)' 
                                         : 'rgba(239,68,68,0.1)',
                                     border: quizAnswer === quizItem.quiz[0].correct
-                                        ? '2px solid #22c55e'
+                                        ? '2px solid #10b981'
                                         : '2px solid #ef4444',
                                     borderRadius: '0.75rem',
                                     marginBottom: '1rem'
@@ -1118,7 +1118,7 @@ function LegacyStudyMaterial({ hasAccess = true, onSubscribe }) {
                                     <p style={{
                                         fontSize: '1.125rem',
                                         fontWeight: '700',
-                                        color: quizAnswer === quizItem.quiz[0].correct ? '#15803d' : '#991b1b',
+                                        color: quizAnswer === quizItem.quiz[0].correct ? '#059669' : '#991b1b',
                                         marginBottom: '0.5rem'
                                     }}>
                                         {quizAnswer === quizItem.quiz[0].correct ? '🎉 Correct!' : '❌ Incorrect'}

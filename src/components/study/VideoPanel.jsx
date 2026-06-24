@@ -32,14 +32,14 @@ export default function VideoPanel({ videos, showHeader = true }) {
     <div style={{ margin: showHeader ? '1.75rem 0' : 0 }}>
       {showHeader && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-          <div style={{ flex: 1, height: '1px', background: '#e2e8f0' }} />
+          <div style={{ flex: 1, height: '1px', background: '#e5e7eb' }} />
           <h4 style={{
             fontSize: '0.6875rem', fontWeight: 700, color: NAVY,
             textTransform: 'uppercase', letterSpacing: '0.07em', margin: 0,
           }}>
             Watch to reinforce
           </h4>
-          <div style={{ flex: 1, height: '1px', background: '#e2e8f0' }} />
+          <div style={{ flex: 1, height: '1px', background: '#e5e7eb' }} />
         </div>
       )}
 
@@ -54,8 +54,8 @@ export default function VideoPanel({ videos, showHeader = true }) {
                 fontSize: '0.75rem', fontWeight: 700, padding: '0.3rem 0.75rem',
                 borderRadius: '0.4rem', cursor: 'pointer',
                 background: i === activeIdx ? NAVY : 'white',
-                color: i === activeIdx ? 'white' : '#64748b',
-                border: `1.5px solid ${i === activeIdx ? NAVY : '#e2e8f0'}`,
+                color: i === activeIdx ? 'white' : '#6b7280',
+                border: `1.5px solid ${i === activeIdx ? NAVY : '#e5e7eb'}`,
               }}
             >
               {vid.title.length > 40 ? vid.title.slice(0, 40) + '…' : vid.title}
@@ -67,7 +67,7 @@ export default function VideoPanel({ videos, showHeader = true }) {
       {/* Video card */}
       <div style={{
         background: 'white', borderRadius: '1rem', overflow: 'hidden',
-        border: '1.5px solid #e2e8f0', boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+        border: '1.5px solid #e5e7eb', boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
       }}>
         {/* Embed */}
         <div style={{ position: 'relative', paddingBottom: '56.25%', background: '#0f0f0f' }}>
@@ -136,7 +136,7 @@ export default function VideoPanel({ videos, showHeader = true }) {
             <p style={{ fontSize: '0.9375rem', fontWeight: 700, color: NAVY, margin: '0 0 0.2rem' }}>
               {v.title}
             </p>
-            <p style={{ fontSize: '0.75rem', color: '#64748b', margin: 0 }}>
+            <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: 0 }}>
               {v.channel}
               {(v.startSeconds != null || v.endSeconds != null) && (
                 <span style={{ marginLeft: '0.5rem', color: TEAL_DARK, fontWeight: 600 }}>
@@ -146,7 +146,7 @@ export default function VideoPanel({ videos, showHeader = true }) {
             </p>
           </div>
           {v.relevance && (
-            <p style={{ fontSize: '0.8125rem', color: '#475569', lineHeight: 1.55, margin: '0 0 0.75rem' }}>
+            <p style={{ fontSize: '0.8125rem', color: '#4b5563', lineHeight: 1.55, margin: '0 0 0.75rem' }}>
               {v.relevance}
             </p>
           )}
@@ -168,9 +168,9 @@ export default function VideoPanel({ videos, showHeader = true }) {
 
         {/* Disclaimer */}
         <div style={{
-          padding: '0.6rem 1.125rem', borderTop: '1px solid #f1f5f9',
-          background: '#fafbfd',
-          fontSize: '0.6875rem', color: '#94a3b8', lineHeight: 1.5,
+          padding: '0.6rem 1.125rem', borderTop: '1px solid #f3f4f6',
+          background: '#f9fafb',
+          fontSize: '0.6875rem', color: '#9ca3af', lineHeight: 1.5,
         }}>
           This is a public YouTube video. CloudExamLab is not affiliated with the channel and does not host or own this content. We link to it as a free supplementary resource to support your learning.
         </div>

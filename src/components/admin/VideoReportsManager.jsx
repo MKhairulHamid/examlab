@@ -98,19 +98,19 @@ export default function VideoReportsManager() {
                 <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', color: '#b91c1c', background: 'rgba(239,68,68,0.12)', padding: '0.15rem 0.5rem', borderRadius: '0.35rem' }}>
                   {REASON_LABELS[r.reason] || r.reason}
                 </span>
-                <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>{new Date(r.created_at).toLocaleString()}</span>
-                {v && <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>· video is "{v.status}" · ⚑ {v.report_count}</span>}
+                <span style={{ fontSize: '0.7rem', color: '#9ca3af' }}>{new Date(r.created_at).toLocaleString()}</span>
+                {v && <span style={{ fontSize: '0.7rem', color: '#9ca3af' }}>· video is "{v.status}" · ⚑ {v.report_count}</span>}
               </div>
 
-              {r.detail && <p style={{ fontSize: '0.875rem', color: '#1e293b', margin: '0 0 0.5rem', lineHeight: 1.5 }}>"{r.detail}"</p>}
+              {r.detail && <p style={{ fontSize: '0.875rem', color: '#1f2937', margin: '0 0 0.5rem', lineHeight: 1.5 }}>"{r.detail}"</p>}
 
               {v ? (
-                <p style={{ fontSize: '0.8125rem', color: '#64748b', margin: '0 0 0.75rem' }}>
+                <p style={{ fontSize: '0.8125rem', color: '#6b7280', margin: '0 0 0.75rem' }}>
                   <strong style={{ color: '#0A2540' }}>{v.title}</strong> by {v.submitter_name} · {v.course_slug} / {v.session_id} ·{' '}
                   <a href={watchUrl(v)} target="_blank" rel="noopener noreferrer" style={{ color: '#00A884', fontWeight: 600 }}>Open ↗</a>
                 </p>
               ) : (
-                <p style={{ fontSize: '0.8125rem', color: '#94a3b8', margin: '0 0 0.75rem' }}>(video was deleted)</p>
+                <p style={{ fontSize: '0.8125rem', color: '#9ca3af', margin: '0 0 0.75rem' }}>(video was deleted)</p>
               )}
 
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>

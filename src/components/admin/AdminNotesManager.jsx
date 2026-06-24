@@ -226,7 +226,7 @@ export default function AdminNotesManager() {
             background: 'rgba(255,255,255,0.06)',
             border: '1px solid rgba(255,255,255,0.1)',
             borderRadius: 6,
-            color: '#e7eef6',
+            color: '#e5e7eb',
             fontSize: '0.75rem',
             padding: '0.35rem 0.6rem',
             cursor: 'pointer',
@@ -318,7 +318,7 @@ export default function AdminNotesManager() {
                           </span>
                         </div>
                         {/* Note text */}
-                        <div style={{ fontSize: '0.82rem', color: '#e7eef6', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
+                        <div style={{ fontSize: '0.82rem', color: '#e5e7eb', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
                           {n.note}
                         </div>
                       </div>
