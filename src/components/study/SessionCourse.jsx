@@ -112,7 +112,7 @@ function PrecisionRecallWidget() {
     : perfectP
     ? { bg: '#fef2f2', bd: '#dc2626', fg: '#b91c1c', badge: true,
         text: '100% Precision — everything flagged really is fraud, but a couple of fraud cases slipped out. Stretch the box to reach them for higher recall — and watch precision fall.' }
-    : { bg: '#f8fafc', bd: '#cbd5e1', fg: '#475569', badge: false,
+    : { bg: '#f9fafb', bd: '#d1d5db', fg: '#4b5563', badge: false,
         text: 'Precision vs. recall is a trade-off: wrap only red dots to push precision up, or cover all red dots to push recall up. Maxing one costs the other.' }
 
   // 8 resize handle positions. H = visible handle size, HIT = invisible
@@ -131,7 +131,7 @@ function PrecisionRecallWidget() {
 
   return (
     <div style={{
-      background: '#fafbfd', border: `2px solid rgba(0,212,170,0.3)`,
+      background: '#f9fafb', border: `2px solid rgba(0,212,170,0.3)`,
       borderRadius: '1rem', padding: '1.25rem', margin: '1.25rem 0',
     }}>
       {/* Header */}
@@ -146,7 +146,7 @@ function PrecisionRecallWidget() {
         </span>
       </div>
 
-      <p style={{ fontSize: '0.8125rem', color: '#475569', lineHeight: 1.6, margin: '0 0 0.875rem' }}>
+      <p style={{ fontSize: '0.8125rem', color: '#4b5563', lineHeight: 1.6, margin: '0 0 0.875rem' }}>
         100 transactions: <strong style={{ color: '#16a34a' }}>90 innocent</strong> and{' '}
         <strong style={{ color: '#dc2626' }}>10 actual fraud</strong> — a tight red cluster plus a
         couple hiding among the greens. The red dashed box = what the model predicts as fraud.{' '}
@@ -162,12 +162,12 @@ function PrecisionRecallWidget() {
           { bright: '#16a34a', dim: '#bbf7d0', label: 'Innocent (90)' },
           { bright: '#dc2626', dim: '#fecaca', label: 'Actual fraud (10)' },
         ].map(({ bright, dim, label }) => (
-          <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem', color: '#475569' }}>
+          <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem', color: '#4b5563' }}>
             <svg width="30" height="16" style={{ flexShrink: 0 }}>
               <circle cx="8"  cy="8" r="7" fill={bright} />
               <circle cx="22" cy="8" r="7" fill={dim} />
             </svg>
-            <span>{label} <span style={{ color: '#94a3b8' }}>(bright = inside box)</span></span>
+            <span>{label} <span style={{ color: '#9ca3af' }}>(bright = inside box)</span></span>
           </div>
         ))}
       </div>
@@ -252,17 +252,17 @@ function PrecisionRecallWidget() {
       <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '0.875rem' }}>
         {[
           { label: 'True Positives',  count: tp, color: '#dc2626', note: `fraud caught (of ${FRAUD_TOTAL})` },
-          { label: 'False Positives', count: fp, color: '#475569', note: 'innocent flagged' },
+          { label: 'False Positives', count: fp, color: '#4b5563', note: 'innocent flagged' },
           { label: 'False Negatives', count: fn, color: '#d97706', note: 'fraud missed' },
         ].map(({ label, count, color, note }) => (
           <div key={label} style={{
             flex: '1 1 80px', textAlign: 'center',
-            background: 'white', border: '1.5px solid #e2e8f0', borderRadius: '0.6rem',
+            background: 'white', border: '1.5px solid #e5e7eb', borderRadius: '0.6rem',
             padding: '0.5rem 0.25rem',
           }}>
             <div style={{ fontSize: '1.375rem', fontWeight: 800, color, lineHeight: 1 }}>{count}</div>
             <div style={{ fontSize: '0.625rem', fontWeight: 700, color: NAVY, textTransform: 'uppercase', letterSpacing: '0.04em', marginTop: '0.15rem' }}>{label}</div>
-            <div style={{ fontSize: '0.6rem', color: '#94a3b8' }}>{note}</div>
+            <div style={{ fontSize: '0.6rem', color: '#9ca3af' }}>{note}</div>
           </div>
         ))}
       </div>
@@ -275,7 +275,7 @@ function PrecisionRecallWidget() {
       ].map(({ label, value, color, formula }) => (
         <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
           <span style={{ fontSize: '0.75rem', fontWeight: 700, color, width: 72, flexShrink: 0 }}>{label}</span>
-          <div style={{ flex: 1, position: 'relative', height: 10, background: '#e2e8f0', borderRadius: 5 }}>
+          <div style={{ flex: 1, position: 'relative', height: 10, background: '#e5e7eb', borderRadius: 5 }}>
             <div style={{
               position: 'absolute', left: 0, top: 0, bottom: 0,
               width: `${value * 100}%`, background: color, borderRadius: 5,
@@ -284,7 +284,7 @@ function PrecisionRecallWidget() {
           <span style={{ fontSize: '0.8125rem', fontWeight: 800, color: NAVY, width: 40, textAlign: 'right' }}>
             {label === 'F1 Score' ? f1.toFixed(2) : pct(value)}
           </span>
-          <span style={{ fontSize: '0.6875rem', color: '#94a3b8', width: 90, flexShrink: 0 }}>{formula}</span>
+          <span style={{ fontSize: '0.6875rem', color: '#9ca3af', width: 90, flexShrink: 0 }}>{formula}</span>
         </div>
       ))}
     </div>
@@ -361,7 +361,7 @@ function InferenceParametersWidget() {
 
   return (
     <div style={{
-      background: '#fafbfd', border: `2px solid rgba(0,212,170,0.3)`,
+      background: '#f9fafb', border: `2px solid rgba(0,212,170,0.3)`,
       borderRadius: '1rem', padding: '1.25rem', margin: '1.25rem 0',
     }}>
       {/* Header */}
@@ -376,14 +376,14 @@ function InferenceParametersWidget() {
         </span>
       </div>
 
-      <p style={{ fontSize: '0.8125rem', color: '#475569', lineHeight: 1.6, margin: '0 0 0.875rem' }}>
+      <p style={{ fontSize: '0.8125rem', color: '#4b5563', lineHeight: 1.6, margin: '0 0 0.875rem' }}>
         The model scores every possible next word. These parameters reshape those odds before
         one is picked. Watch the bars — and the sampled outputs — react.
       </p>
 
       {/* Prompt */}
       <div style={{
-        background: 'white', border: '1.5px solid #e2e8f0', borderRadius: '0.6rem',
+        background: 'white', border: '1.5px solid #e5e7eb', borderRadius: '0.6rem',
         padding: '0.6rem 0.85rem', marginBottom: '0.875rem', fontSize: '0.9rem', color: NAVY,
       }}>
         <span style={{ fontFamily: 'ui-monospace, monospace' }}>{PROMPT} </span>
@@ -404,25 +404,25 @@ function InferenceParametersWidget() {
                 width: 74, flexShrink: 0, textAlign: 'right', fontSize: '0.8rem',
                 fontFamily: 'ui-monospace, monospace',
                 fontWeight: o.keep ? 700 : 400,
-                color: o.keep ? NAVY : '#cbd5e1',
+                color: o.keep ? NAVY : '#d1d5db',
                 textDecoration: o.keep ? 'none' : 'line-through',
               }}>{o.w}</span>
               <div style={{ flex: 1, position: 'relative', height: 18, background: '#eef2f7', borderRadius: 4, overflow: 'hidden' }}>
                 <div style={{
                   position: 'absolute', left: 0, top: 0, bottom: 0,
                   width: `${w}%`,
-                  background: o.keep ? `linear-gradient(90deg, ${TEAL}, ${TEAL_DARK})` : '#e2e8f0',
+                  background: o.keep ? `linear-gradient(90deg, ${TEAL}, ${TEAL_DARK})` : '#e5e7eb',
                   borderRadius: 4, transition: 'width 0.18s ease, background 0.18s ease',
                 }} />
               </div>
               <span style={{
                 width: 42, flexShrink: 0, textAlign: 'right', fontSize: '0.8rem', fontWeight: 800,
-                color: o.keep ? TEAL_DARK : '#cbd5e1',
+                color: o.keep ? TEAL_DARK : '#d1d5db',
               }}>{Math.round((o.keep ? o.fp : 0) * 100)}%</span>
             </div>
           )
         })}
-        <div style={{ fontSize: '0.6875rem', color: '#94a3b8', marginTop: '0.35rem' }}>
+        <div style={{ fontSize: '0.6875rem', color: '#9ca3af', marginTop: '0.35rem' }}>
           {eligible} of {N} tokens eligible · greyed + struck-through = cut by Top-K / Top-P
         </div>
       </div>
@@ -432,7 +432,7 @@ function InferenceParametersWidget() {
         <div key={s.label} style={{ marginBottom: '0.7rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.15rem' }}>
             <span style={{ fontSize: '0.8rem', fontWeight: 700, color: NAVY }}>
-              {s.label} <span style={{ fontWeight: 400, color: '#94a3b8', fontSize: '0.7rem' }}>· {s.hint}</span>
+              {s.label} <span style={{ fontWeight: 400, color: '#9ca3af', fontSize: '0.7rem' }}>· {s.hint}</span>
             </span>
             <span style={{ fontSize: '0.85rem', fontWeight: 800, color: TEAL_DARK, fontFamily: 'ui-monospace, monospace' }}>{s.fmt(s.val)}</span>
           </div>
@@ -458,7 +458,7 @@ function InferenceParametersWidget() {
 
       {/* Sampled outputs */}
       <div style={{
-        background: 'white', border: '1.5px solid #e2e8f0', borderRadius: '0.6rem', padding: '0.7rem 0.85rem',
+        background: 'white', border: '1.5px solid #e5e7eb', borderRadius: '0.6rem', padding: '0.7rem 0.85rem',
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
           <span style={{ fontSize: '0.75rem', fontWeight: 700, color: NAVY, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
@@ -483,7 +483,7 @@ function InferenceParametersWidget() {
             }}>{w}</span>
           ))}
         </div>
-        <div style={{ fontSize: '0.6875rem', color: '#94a3b8', marginTop: '0.5rem' }}>
+        <div style={{ fontSize: '0.6875rem', color: '#9ca3af', marginTop: '0.5rem' }}>
           Low temperature → every sample is the same safe word. High temperature → variety, and the occasional surprise.
         </div>
       </div>
@@ -495,7 +495,7 @@ function InferenceParametersWidget() {
 function WidgetShell({ title, intro, children }) {
   return (
     <div style={{
-      background: '#fafbfd', border: '2px solid rgba(0,212,170,0.3)',
+      background: '#f9fafb', border: '2px solid rgba(0,212,170,0.3)',
       borderRadius: '1rem', padding: '1.25rem', margin: '1.25rem 0',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.6rem' }}>
@@ -506,7 +506,7 @@ function WidgetShell({ title, intro, children }) {
         }}>Try it</span>
         <span style={{ fontSize: '0.875rem', fontWeight: 700, color: NAVY }}>{title}</span>
       </div>
-      {intro && <p style={{ fontSize: '0.8125rem', color: '#475569', lineHeight: 1.6, margin: '0 0 0.875rem' }}>{intro}</p>}
+      {intro && <p style={{ fontSize: '0.8125rem', color: '#4b5563', lineHeight: 1.6, margin: '0 0 0.875rem' }}>{intro}</p>}
       {children}
     </div>
   )
@@ -538,7 +538,7 @@ function LearningTypesWidget() {
     >
       <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '0.875rem' }}>
         {CATS.map(c => (
-          <div key={c.id} style={{ flex: '1 1 150px', fontSize: '0.7rem', color: '#475569', borderLeft: `3px solid ${c.color}`, paddingLeft: '0.5rem' }}>
+          <div key={c.id} style={{ flex: '1 1 150px', fontSize: '0.7rem', color: '#4b5563', borderLeft: `3px solid ${c.color}`, paddingLeft: '0.5rem' }}>
             <strong style={{ color: c.color }}>{c.label}</strong><br />{c.desc}
           </div>
         ))}
@@ -547,7 +547,7 @@ function LearningTypesWidget() {
         const chosen = picks[i]
         const correct = chosen === it.a
         return (
-          <div key={i} style={{ background: 'white', border: '1.5px solid #e2e8f0', borderRadius: '0.6rem', padding: '0.6rem 0.7rem', marginBottom: '0.6rem' }}>
+          <div key={i} style={{ background: 'white', border: '1.5px solid #e5e7eb', borderRadius: '0.6rem', padding: '0.6rem 0.7rem', marginBottom: '0.6rem' }}>
             <div style={{ fontSize: '0.82rem', color: NAVY, marginBottom: '0.5rem', lineHeight: 1.45 }}>{it.t}</div>
             <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
               {CATS.map(c => {
@@ -556,14 +556,14 @@ function LearningTypesWidget() {
                   <button key={c.id} onClick={() => setPicks(p => ({ ...p, [i]: c.id }))}
                     style={{
                       fontSize: '0.72rem', fontWeight: 700, padding: '0.34rem 0.65rem', borderRadius: '0.4rem', cursor: 'pointer',
-                      border: `1.5px solid ${sel ? c.color : '#cbd5e1'}`,
-                      background: sel ? c.color : 'white', color: sel ? 'white' : '#475569',
+                      border: `1.5px solid ${sel ? c.color : '#d1d5db'}`,
+                      background: sel ? c.color : 'white', color: sel ? 'white' : '#4b5563',
                     }}>{c.label}</button>
                 )
               })}
             </div>
             {chosen && (
-              <div style={{ marginTop: '0.5rem', fontSize: '0.72rem', fontWeight: 600, lineHeight: 1.45, color: correct ? '#15803d' : '#b91c1c' }}>
+              <div style={{ marginTop: '0.5rem', fontSize: '0.72rem', fontWeight: 600, lineHeight: 1.45, color: correct ? '#059669' : '#b91c1c' }}>
                 {correct ? '✓ Correct — ' : '✗ Not quite — '}{it.why}
               </div>
             )}
@@ -607,9 +607,9 @@ function TokenizerWidget() {
       intro="Models can't read words — they break text into subword tokens, each mapped to an integer ID. Token count drives both cost and context limits. Type below and watch it split."
     >
       <textarea value={text} onChange={e => setText(e.target.value)} rows={2}
-        style={{ width: '100%', boxSizing: 'border-box', fontSize: '0.9rem', padding: '0.6rem 0.7rem', border: '1.5px solid #cbd5e1', borderRadius: '0.6rem', resize: 'vertical', fontFamily: 'inherit', marginBottom: '0.75rem' }} />
+        style={{ width: '100%', boxSizing: 'border-box', fontSize: '0.9rem', padding: '0.6rem 0.7rem', border: '1.5px solid #d1d5db', borderRadius: '0.6rem', resize: 'vertical', fontFamily: 'inherit', marginBottom: '0.75rem' }} />
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem', marginBottom: '0.75rem' }}>
-        {tokens.length === 0 && <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>Type something…</span>}
+        {tokens.length === 0 && <span style={{ color: '#9ca3af', fontSize: '0.8rem' }}>Type something…</span>}
         {tokens.map((tk, i) => (
           <span key={i} style={{
             fontFamily: 'ui-monospace, monospace', fontSize: '0.78rem',
@@ -625,13 +625,13 @@ function TokenizerWidget() {
           { k: 'Chars / token', v: ratio.toFixed(1), c: NAVY },
           { k: 'Cost / 10K calls', v: `$${costPer10k.toFixed(2)}`, c: '#b45309' },
         ].map(s => (
-          <div key={s.k} style={{ flex: '1 1 90px', textAlign: 'center', background: 'white', border: '1.5px solid #e2e8f0', borderRadius: '0.6rem', padding: '0.5rem 0.25rem' }}>
+          <div key={s.k} style={{ flex: '1 1 90px', textAlign: 'center', background: 'white', border: '1.5px solid #e5e7eb', borderRadius: '0.6rem', padding: '0.5rem 0.25rem' }}>
             <div style={{ fontSize: '1.2rem', fontWeight: 800, color: s.c }}>{s.v}</div>
-            <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{s.k}</div>
+            <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{s.k}</div>
           </div>
         ))}
       </div>
-      <div style={{ fontSize: '0.6875rem', color: '#94a3b8', marginTop: '0.6rem', lineHeight: 1.5 }}>
+      <div style={{ fontSize: '0.6875rem', color: '#9ca3af', marginTop: '0.6rem', lineHeight: 1.5 }}>
         Simplified split (real BPE tokenizers differ), but the lesson holds: long words become several tokens, punctuation counts, and more tokens = more cost. Rule of thumb: ~4 characters ≈ 1 token. Cost shown at $0.30 / 1M tokens.
       </div>
     </WidgetShell>
@@ -669,7 +669,7 @@ function RagVsFineTuneWidget() {
       intro="The exam rewards decision rules, not trivia. Answer these three and the guide names the right adaptation approach — and why."
     >
       {QS.map(q => (
-        <div key={q.id} style={{ background: 'white', border: '1.5px solid #e2e8f0', borderRadius: '0.6rem', padding: '0.6rem 0.7rem', marginBottom: '0.6rem' }}>
+        <div key={q.id} style={{ background: 'white', border: '1.5px solid #e5e7eb', borderRadius: '0.6rem', padding: '0.6rem 0.7rem', marginBottom: '0.6rem' }}>
           <div style={{ fontSize: '0.82rem', color: NAVY, marginBottom: '0.5rem', lineHeight: 1.45 }}>{q.q}</div>
           <div style={{ display: 'flex', gap: '0.5rem' }}>
             {[['Yes', true], ['No', false]].map(([lab, val]) => {
@@ -678,8 +678,8 @@ function RagVsFineTuneWidget() {
                 <button key={lab} onClick={() => setA(p => ({ ...p, [q.id]: val }))}
                   style={{
                     flex: 1, fontSize: '0.78rem', fontWeight: 700, padding: '0.42rem', borderRadius: '0.4rem', cursor: 'pointer',
-                    border: `1.5px solid ${sel ? (val ? '#16a34a' : '#dc2626') : '#cbd5e1'}`,
-                    background: sel ? (val ? '#16a34a' : '#dc2626') : 'white', color: sel ? 'white' : '#475569',
+                    border: `1.5px solid ${sel ? (val ? '#16a34a' : '#dc2626') : '#d1d5db'}`,
+                    background: sel ? (val ? '#16a34a' : '#dc2626') : 'white', color: sel ? 'white' : '#4b5563',
                   }}>{lab}</button>
               )
             })}
@@ -688,13 +688,13 @@ function RagVsFineTuneWidget() {
       ))}
       {rec ? (
         <div style={{ background: 'white', border: `2px solid ${rec.color}`, borderRadius: '0.7rem', padding: '0.85rem', marginTop: '0.4rem' }}>
-          <div style={{ fontSize: '0.66rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Recommended approach</div>
+          <div style={{ fontSize: '0.66rem', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Recommended approach</div>
           <div style={{ fontSize: '1.15rem', fontWeight: 800, color: rec.color, margin: '0.15rem 0 0.4rem' }}>{rec.pick}</div>
-          <div style={{ fontSize: '0.8rem', color: '#475569', lineHeight: 1.55 }}>{rec.why}</div>
-          <div style={{ fontSize: '0.72rem', color: NAVY, marginTop: '0.5rem', fontWeight: 700 }}>On AWS: <span style={{ fontWeight: 400, color: '#475569' }}>{rec.aws}</span></div>
+          <div style={{ fontSize: '0.8rem', color: '#4b5563', lineHeight: 1.55 }}>{rec.why}</div>
+          <div style={{ fontSize: '0.72rem', color: NAVY, marginTop: '0.5rem', fontWeight: 700 }}>On AWS: <span style={{ fontWeight: 400, color: '#4b5563' }}>{rec.aws}</span></div>
         </div>
       ) : (
-        <div style={{ fontSize: '0.75rem', color: '#94a3b8', textAlign: 'center', padding: '0.5rem' }}>Answer all three to see the recommendation.</div>
+        <div style={{ fontSize: '0.75rem', color: '#9ca3af', textAlign: 'center', padding: '0.5rem' }}>Answer all three to see the recommendation.</div>
       )}
     </WidgetShell>
   )
@@ -739,7 +739,7 @@ function NgramOverlapWidget() {
   const bar = (label, v, color) => (
     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
       <span style={{ width: 70, flexShrink: 0, fontSize: '0.74rem', fontWeight: 700, color }}>{label}</span>
-      <div style={{ flex: 1, height: 10, background: '#e2e8f0', borderRadius: 5, position: 'relative' }}>
+      <div style={{ flex: 1, height: 10, background: '#e5e7eb', borderRadius: 5, position: 'relative' }}>
         <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${v * 100}%`, background: color, borderRadius: 5, transition: 'width 0.18s ease' }} />
       </div>
       <span style={{ width: 38, textAlign: 'right', fontSize: '0.78rem', fontWeight: 800, color: NAVY }}>{Math.round(v * 100)}%</span>
@@ -751,29 +751,29 @@ function NgramOverlapWidget() {
       title="ROUGE & BLEU — Word-Overlap Scoring"
       intro="Automated text metrics score a generated answer by how much its words and n-grams overlap a human reference. Edit the candidate — or try a preset — and watch the scores. Notice a perfect paraphrase still scores near zero."
     >
-      <div style={{ background: 'white', border: '1.5px solid #e2e8f0', borderRadius: '0.6rem', padding: '0.55rem 0.7rem', marginBottom: '0.6rem' }}>
-        <span style={{ fontSize: '0.62rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Human reference</span>
+      <div style={{ background: 'white', border: '1.5px solid #e5e7eb', borderRadius: '0.6rem', padding: '0.55rem 0.7rem', marginBottom: '0.6rem' }}>
+        <span style={{ fontSize: '0.62rem', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Human reference</span>
         <div style={{ fontFamily: 'ui-monospace, monospace', fontSize: '0.85rem', color: NAVY }}>{REFERENCE}</div>
       </div>
       <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
         {PRESETS.map(p => (
           <button key={p.label} onClick={() => setCand(p.text)}
             style={{ fontSize: '0.68rem', fontWeight: 600, padding: '0.26rem 0.55rem', borderRadius: '0.35rem', cursor: 'pointer',
-              border: `1.5px solid ${cand === p.text ? TEAL_DARK : '#cbd5e1'}`, background: cand === p.text ? '#f0fdfa' : 'white', color: cand === p.text ? TEAL_DARK : '#475569' }}>{p.label}</button>
+              border: `1.5px solid ${cand === p.text ? TEAL_DARK : '#d1d5db'}`, background: cand === p.text ? '#f0fdfa' : 'white', color: cand === p.text ? TEAL_DARK : '#4b5563' }}>{p.label}</button>
         ))}
       </div>
       <input value={cand} onChange={e => setCand(e.target.value)}
-        style={{ width: '100%', boxSizing: 'border-box', fontSize: '0.85rem', padding: '0.5rem 0.6rem', border: '1.5px solid #cbd5e1', borderRadius: '0.5rem', marginBottom: '0.6rem', fontFamily: 'ui-monospace, monospace' }} />
+        style={{ width: '100%', boxSizing: 'border-box', fontSize: '0.85rem', padding: '0.5rem 0.6rem', border: '1.5px solid #d1d5db', borderRadius: '0.5rem', marginBottom: '0.6rem', fontFamily: 'ui-monospace, monospace' }} />
       <div style={{ marginBottom: '0.7rem', fontSize: '0.85rem', lineHeight: 1.8 }}>
         {m.c.length ? m.c.map((w, i) => (
-          <span key={i} style={{ background: m.hl[i] ? 'rgba(0,168,132,0.18)' : 'transparent', color: m.hl[i] ? TEAL_DARK : '#94a3b8', fontWeight: m.hl[i] ? 700 : 400, borderRadius: '0.25rem', padding: '0.05rem 0.2rem', fontFamily: 'ui-monospace, monospace' }}>{w} </span>
-        )) : <span style={{ color: '#94a3b8' }}>Type a candidate…</span>}
-        <div style={{ fontSize: '0.66rem', color: '#94a3b8', marginTop: '0.25rem' }}>Green = word also in the reference (the only thing these metrics can see).</div>
+          <span key={i} style={{ background: m.hl[i] ? 'rgba(0,168,132,0.18)' : 'transparent', color: m.hl[i] ? TEAL_DARK : '#9ca3af', fontWeight: m.hl[i] ? 700 : 400, borderRadius: '0.25rem', padding: '0.05rem 0.2rem', fontFamily: 'ui-monospace, monospace' }}>{w} </span>
+        )) : <span style={{ color: '#9ca3af' }}>Type a candidate…</span>}
+        <div style={{ fontSize: '0.66rem', color: '#9ca3af', marginTop: '0.25rem' }}>Green = word also in the reference (the only thing these metrics can see).</div>
       </div>
       {bar('ROUGE-1', m.r1, '#2563eb')}
       {bar('ROUGE-L', m.rL, '#7c3aed')}
       {bar('BLEU', m.bleu, '#16a34a')}
-      <div style={{ fontSize: '0.6875rem', color: '#94a3b8', marginTop: '0.5rem', lineHeight: 1.5 }}>
+      <div style={{ fontSize: '0.6875rem', color: '#9ca3af', marginTop: '0.5rem', lineHeight: 1.5 }}>
         ROUGE rewards overlap (recall-leaning, used for summaries); BLEU rewards matching n-grams (precision-leaning, used for translation). Both are blind to meaning — that's why a paraphrase scores low, and why BERTScore and human evaluation exist.
       </div>
     </WidgetShell>
@@ -805,7 +805,7 @@ function InterpretabilityTradeoffWidget() {
     >
       <input type="range" min={0} max={MODELS.length - 1} step={1} value={i} onChange={e => setI(Number(e.target.value))}
         style={{ width: '100%', accentColor: TEAL, cursor: 'pointer', height: 24, marginBottom: '0.3rem' }} />
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.62rem', color: '#94a3b8', marginBottom: '0.75rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.62rem', color: '#9ca3af', marginBottom: '0.75rem' }}>
         <span>← Simple / explainable</span><span>Complex / accurate →</span>
       </div>
       <div style={{ textAlign: 'center', marginBottom: '0.75rem' }}>
@@ -818,17 +818,17 @@ function InterpretabilityTradeoffWidget() {
       ].map(b => (
         <div key={b.label} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.45rem' }}>
           <span style={{ width: 110, flexShrink: 0, fontSize: '0.75rem', fontWeight: 700, color: b.c }}>{b.label}</span>
-          <div style={{ flex: 1, height: 12, background: '#e2e8f0', borderRadius: 6, position: 'relative' }}>
+          <div style={{ flex: 1, height: 12, background: '#e5e7eb', borderRadius: 6, position: 'relative' }}>
             <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${b.v * 100}%`, background: b.c, borderRadius: 6, transition: 'width 0.2s ease' }} />
           </div>
           <span style={{ width: 38, textAlign: 'right', fontSize: '0.8rem', fontWeight: 800, color: NAVY }}>{Math.round(b.v * 100)}%</span>
         </div>
       ))}
-      <div style={{ background: '#f8fafc', border: `1.5px solid ${boxColor}`, borderRadius: '0.6rem', padding: '0.55rem 0.75rem', margin: '0.6rem 0', fontSize: '0.75rem', lineHeight: 1.5, color: '#334155', fontWeight: 600 }}>
+      <div style={{ background: '#f9fafb', border: `1.5px solid ${boxColor}`, borderRadius: '0.6rem', padding: '0.55rem 0.75rem', margin: '0.6rem 0', fontSize: '0.75rem', lineHeight: 1.5, color: '#374151', fontWeight: 600 }}>
         {banner}
       </div>
-      <div style={{ fontSize: '0.74rem', color: '#475569', lineHeight: 1.5 }}><strong style={{ color: NAVY }}>Best when:</strong> {mdl.use}</div>
-      <div style={{ fontSize: '0.6875rem', color: '#94a3b8', marginTop: '0.5rem' }}>Figures are illustrative — the real numbers depend on the dataset, but the direction always holds.</div>
+      <div style={{ fontSize: '0.74rem', color: '#4b5563', lineHeight: 1.5 }}><strong style={{ color: NAVY }}>Best when:</strong> {mdl.use}</div>
+      <div style={{ fontSize: '0.6875rem', color: '#9ca3af', marginTop: '0.5rem' }}>Figures are illustrative — the real numbers depend on the dataset, but the direction always holds.</div>
     </WidgetShell>
   )
 }
@@ -843,7 +843,7 @@ function ScenarioSorter({ title, intro, cats, items }) {
     <WidgetShell title={title} intro={intro}>
       <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '0.875rem' }}>
         {cats.map(c => (
-          <div key={c.id} style={{ flex: '1 1 150px', fontSize: '0.7rem', color: '#475569', borderLeft: `3px solid ${c.color}`, paddingLeft: '0.5rem' }}>
+          <div key={c.id} style={{ flex: '1 1 150px', fontSize: '0.7rem', color: '#4b5563', borderLeft: `3px solid ${c.color}`, paddingLeft: '0.5rem' }}>
             <strong style={{ color: c.color }}>{c.label}</strong><br />{c.desc}
           </div>
         ))}
@@ -852,7 +852,7 @@ function ScenarioSorter({ title, intro, cats, items }) {
         const chosen = picks[i]
         const correct = chosen === it.a
         return (
-          <div key={i} style={{ background: 'white', border: '1.5px solid #e2e8f0', borderRadius: '0.6rem', padding: '0.6rem 0.7rem', marginBottom: '0.6rem' }}>
+          <div key={i} style={{ background: 'white', border: '1.5px solid #e5e7eb', borderRadius: '0.6rem', padding: '0.6rem 0.7rem', marginBottom: '0.6rem' }}>
             <div style={{ fontSize: '0.82rem', color: NAVY, marginBottom: '0.5rem', lineHeight: 1.45 }}>{it.t}</div>
             <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
               {cats.map(c => {
@@ -861,14 +861,14 @@ function ScenarioSorter({ title, intro, cats, items }) {
                   <button key={c.id} onClick={() => setPicks(p => ({ ...p, [i]: c.id }))}
                     style={{
                       fontSize: '0.72rem', fontWeight: 700, padding: '0.34rem 0.65rem', borderRadius: '0.4rem', cursor: 'pointer',
-                      border: `1.5px solid ${sel ? c.color : '#cbd5e1'}`,
-                      background: sel ? c.color : 'white', color: sel ? 'white' : '#475569',
+                      border: `1.5px solid ${sel ? c.color : '#d1d5db'}`,
+                      background: sel ? c.color : 'white', color: sel ? 'white' : '#4b5563',
                     }}>{c.label}</button>
                 )
               })}
             </div>
             {chosen && (
-              <div style={{ marginTop: '0.5rem', fontSize: '0.72rem', fontWeight: 600, lineHeight: 1.45, color: correct ? '#15803d' : '#b91c1c' }}>
+              <div style={{ marginTop: '0.5rem', fontSize: '0.72rem', fontWeight: 600, lineHeight: 1.45, color: correct ? '#059669' : '#b91c1c' }}>
                 {correct ? '✓ Correct — ' : '✗ Not quite — '}{it.why}
               </div>
             )}
@@ -911,7 +911,7 @@ function DrStrategyWidget() {
       title="Pick the DR Strategy"
       intro="Disaster recovery is a spectrum from cheap-and-slow to costly-and-instant. Match each requirement to the strategy that fits its RPO, RTO, and budget."
       cats={[
-        { id: 'br', label: 'Backup & Restore', color: '#64748b', desc: 'Cheapest; RPO/RTO in hours' },
+        { id: 'br', label: 'Backup & Restore', color: '#6b7280', desc: 'Cheapest; RPO/RTO in hours' },
         { id: 'pl', label: 'Pilot Light', color: '#0891b2', desc: 'Core data live; rest provisioned on disaster' },
         { id: 'ws', label: 'Warm Standby', color: '#d97706', desc: 'Scaled-down full stack always running' },
         { id: 'aa', label: 'Active-Active', color: '#16a34a', desc: 'Both Regions live; near-zero RPO/RTO' },
@@ -998,8 +998,8 @@ function DdbCapacityWidget() {
             <button key={m.id} onClick={() => setMode(m.id)}
               style={{
                 fontSize: '0.72rem', fontWeight: 700, padding: '0.34rem 0.65rem', borderRadius: '0.4rem', cursor: 'pointer',
-                border: `1.5px solid ${sel ? TEAL_DARK : '#cbd5e1'}`,
-                background: sel ? TEAL_DARK : 'white', color: sel ? 'white' : '#475569',
+                border: `1.5px solid ${sel ? TEAL_DARK : '#d1d5db'}`,
+                background: sel ? TEAL_DARK : 'white', color: sel ? 'white' : '#4b5563',
               }}>{m.label}</button>
           )
         })}
@@ -1010,13 +1010,13 @@ function DdbCapacityWidget() {
           { k: 'RCU / sec', v: rcu, c: TEAL_DARK },
           { k: 'WCU / sec', v: wcu, c: '#b45309' },
         ].map(s => (
-          <div key={s.k} style={{ flex: '1 1 90px', textAlign: 'center', background: 'white', border: '1.5px solid #e2e8f0', borderRadius: '0.6rem', padding: '0.5rem 0.25rem' }}>
+          <div key={s.k} style={{ flex: '1 1 90px', textAlign: 'center', background: 'white', border: '1.5px solid #e5e7eb', borderRadius: '0.6rem', padding: '0.5rem 0.25rem' }}>
             <div style={{ fontSize: '1.2rem', fontWeight: 800, color: s.c }}>{s.v}</div>
-            <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{s.k}</div>
+            <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{s.k}</div>
           </div>
         ))}
       </div>
-      <div style={{ marginTop: '0.75rem', fontSize: '0.74rem', fontWeight: 600, lineHeight: 1.5, color: '#475569', background: '#f1f5f9', borderRadius: '0.5rem', padding: '0.6rem 0.7rem' }}>
+      <div style={{ marginTop: '0.75rem', fontSize: '0.74rem', fontWeight: 600, lineHeight: 1.5, color: '#4b5563', background: '#f3f4f6', borderRadius: '0.5rem', padding: '0.6rem 0.7rem' }}>
         A {size} KB item rounds up to {readBlocks * 4} KB for reads ({readBlocks} block{readBlocks > 1 ? 's' : ''} of 4 KB) and {writeBlocks} KB for writes.{' '}
         {mode === 'eventual' && `Eventually consistent reads cost half of strong — ${rcu} RCU instead of ${baseR}.`}
         {mode === 'strong' && `Strongly consistent reads cost a full unit per 4 KB block — ${rcu} RCU (eventual would be ${Math.ceil(baseR / 2)}).`}
@@ -1062,16 +1062,16 @@ function LambdaConcurrencyWidget() {
       <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
         {[
           { k: 'Required concurrency', v: concurrency, c: NAVY },
-          { k: 'Cold starts', v: `${cold} (${coldPct}%)`, c: cold ? '#b45309' : '#15803d' },
-          { k: 'Throttled', v: throttled, c: throttled ? '#b91c1c' : '#15803d' },
+          { k: 'Cold starts', v: `${cold} (${coldPct}%)`, c: cold ? '#b45309' : '#059669' },
+          { k: 'Throttled', v: throttled, c: throttled ? '#b91c1c' : '#059669' },
         ].map(s => (
-          <div key={s.k} style={{ flex: '1 1 100px', textAlign: 'center', background: 'white', border: '1.5px solid #e2e8f0', borderRadius: '0.6rem', padding: '0.5rem 0.25rem' }}>
+          <div key={s.k} style={{ flex: '1 1 100px', textAlign: 'center', background: 'white', border: '1.5px solid #e5e7eb', borderRadius: '0.6rem', padding: '0.5rem 0.25rem' }}>
             <div style={{ fontSize: '1.15rem', fontWeight: 800, color: s.c }}>{s.v}</div>
-            <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{s.k}</div>
+            <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{s.k}</div>
           </div>
         ))}
       </div>
-      <div style={{ marginTop: '0.75rem', fontSize: '0.74rem', fontWeight: 600, lineHeight: 1.5, color: '#475569', background: '#f1f5f9', borderRadius: '0.5rem', padding: '0.6rem 0.7rem' }}>
+      <div style={{ marginTop: '0.75rem', fontSize: '0.74rem', fontWeight: 600, lineHeight: 1.5, color: '#4b5563', background: '#f3f4f6', borderRadius: '0.5rem', padding: '0.6rem 0.7rem' }}>
         At {rps} req/s × {dur} ms you need {concurrency} concurrent environments.{' '}
         {throttled > 0
           ? `Reserved concurrency is capped at ${reserved}, so ${throttled} invocation${throttled > 1 ? 's are' : ' is'} throttled — raise the cap or it will reject requests.`
@@ -1091,7 +1091,7 @@ function DeployStrategyWidget() {
       title="Pick the Deployment Strategy"
       intro="Each release strategy trades speed, risk, and cost differently. Match each requirement to the strategy that fits — the card confirms instantly."
       cats={[
-        { id: 'aao', label: 'All-at-once', color: '#64748b', desc: 'Fastest, cheapest; brief downtime and full blast radius' },
+        { id: 'aao', label: 'All-at-once', color: '#6b7280', desc: 'Fastest, cheapest; brief downtime and full blast radius' },
         { id: 'rolling', label: 'Rolling', color: '#0891b2', desc: 'Replace in batches; no extra fleet, slower rollback' },
         { id: 'canary', label: 'Canary', color: '#d97706', desc: 'Shift a small % first, then the rest; limits blast radius' },
         { id: 'bg', label: 'Blue/Green', color: '#16a34a', desc: 'Full parallel environment; instant switch and rollback' },
@@ -1947,7 +1947,7 @@ const INTERACTIVE_WIDGETS = {
 
 function ContentTable({ table }) {
   return (
-    <div style={{ overflowX: 'auto', margin: '1rem 0', borderRadius: '0.75rem', border: '1px solid #e2e8f0' }}>
+    <div style={{ overflowX: 'auto', margin: '1rem 0', borderRadius: '0.75rem', border: '1px solid #e5e7eb' }}>
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
         <thead>
           <tr>
@@ -1963,9 +1963,9 @@ function ContentTable({ table }) {
         </thead>
         <tbody>
           {table.rows.map((row, ri) => (
-            <tr key={ri} style={{ background: ri % 2 ? '#f8fafc' : 'white' }}>
+            <tr key={ri} style={{ background: ri % 2 ? '#f9fafb' : 'white' }}>
               {row.map((cell, ci) => (
-                <td key={ci} style={{ padding: '0.55rem 1rem', borderBottom: '1px solid #f1f5f9', color: '#374151', verticalAlign: 'top' }}>{cell}</td>
+                <td key={ci} style={{ padding: '0.55rem 1rem', borderBottom: '1px solid #f3f4f6', color: '#374151', verticalAlign: 'top' }}>{cell}</td>
               ))}
             </tr>
           ))}
@@ -2050,7 +2050,7 @@ function SampleQuestion({ sample }) {
           letterSpacing: '0.06em', color: 'white', background: NAVY,
           padding: '0.25rem 0.7rem', borderRadius: '0.4rem',
         }}>Exam Sample</span>
-        <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>
+        <span style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: 600 }}>
           {isMulti ? `Select ${correctSet.size} answers` : 'Single best answer'}
         </span>
       </div>
@@ -2063,9 +2063,9 @@ function SampleQuestion({ sample }) {
         {sample.options.map((opt, idx) => {
           const isSel = selected.includes(idx)
           const isCorr = correctSet.has(idx)
-          let bg = '#fafbfd', border = '1.5px solid #e2e8f0', color = NAVY
+          let bg = '#f9fafb', border = '1.5px solid #e5e7eb', color = NAVY
           if (revealed) {
-            if (isCorr)        { bg = 'rgba(34,197,94,0.09)';  border = '2px solid #22c55e' }
+            if (isCorr)        { bg = 'rgba(16,185,129,0.09)';  border = '2px solid #10b981' }
             else if (isSel)    { bg = 'rgba(239,68,68,0.09)';  border = '2px solid #ef4444' }
           } else if (isSel)    { bg = 'rgba(0,212,170,0.1)';   border = `2px solid ${TEAL}` }
 
@@ -2085,7 +2085,7 @@ function SampleQuestion({ sample }) {
               </button>
               {revealed && sample.explanation?.perOption?.[idx] && (
                 <p style={{
-                  fontSize: '0.8125rem', color: isCorr ? '#15803d' : '#6b7280',
+                  fontSize: '0.8125rem', color: isCorr ? '#059669' : '#6b7280',
                   margin: '0.3rem 0 0', paddingLeft: '0.75rem', lineHeight: 1.5,
                 }}>
                   {sample.explanation.perOption[idx]}
@@ -2102,8 +2102,8 @@ function SampleQuestion({ sample }) {
           disabled={selected.length === 0}
           style={{
             padding: '0.7rem 1.5rem',
-            background: selected.length ? `linear-gradient(135deg, ${TEAL}, ${TEAL_DARK})` : '#e2e8f0',
-            color: selected.length ? 'white' : '#94a3b8',
+            background: selected.length ? `linear-gradient(135deg, ${TEAL}, ${TEAL_DARK})` : '#e5e7eb',
+            color: selected.length ? 'white' : '#9ca3af',
             border: 'none', borderRadius: '0.6rem', fontWeight: 700,
             fontSize: '0.9375rem', cursor: selected.length ? 'pointer' : 'not-allowed',
           }}
@@ -2113,10 +2113,10 @@ function SampleQuestion({ sample }) {
       ) : (
         <div style={{
           padding: '1rem 1.25rem', borderRadius: '0.75rem',
-          background: isCorrectOverall ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.08)',
-          border: `2px solid ${isCorrectOverall ? '#22c55e' : '#ef4444'}`,
+          background: isCorrectOverall ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)',
+          border: `2px solid ${isCorrectOverall ? '#10b981' : '#ef4444'}`,
         }}>
-          <p style={{ fontWeight: 700, color: isCorrectOverall ? '#15803d' : '#991b1b', marginBottom: '0.4rem' }}>
+          <p style={{ fontWeight: 700, color: isCorrectOverall ? '#059669' : '#991b1b', marginBottom: '0.4rem' }}>
             {isCorrectOverall ? '🎉 Correct!' : '❌ Not quite — review the explanation below'}
           </p>
           <p style={{ fontSize: '0.9375rem', color: '#374151', lineHeight: 1.65, marginBottom: '0.5rem' }}>
@@ -2131,7 +2131,7 @@ function SampleQuestion({ sample }) {
             onClick={() => { setRevealed(false); setSelected([]) }}
             style={{
               marginTop: '0.875rem', padding: '0.4rem 1rem',
-              background: 'white', color: NAVY, border: '1.5px solid #e2e8f0',
+              background: 'white', color: NAVY, border: '1.5px solid #e5e7eb',
               borderRadius: '0.5rem', fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer',
             }}
           >
@@ -2164,8 +2164,8 @@ function SidebarItem({ session, isActive, isDone, isLocked, onClick }) {
         width: '1.5rem', height: '1.5rem', minWidth: '1.5rem', borderRadius: '50%',
         background: isDone
           ? `linear-gradient(135deg, ${TEAL}, ${TEAL_DARK})`
-          : isActive ? NAVY : '#e2e8f0',
-        color: isDone || isActive ? 'white' : '#94a3b8',
+          : isActive ? NAVY : '#e5e7eb',
+        color: isDone || isActive ? 'white' : '#9ca3af',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: '0.625rem', fontWeight: 700, flexShrink: 0,
       }}>
@@ -2174,7 +2174,7 @@ function SidebarItem({ session, isActive, isDone, isLocked, onClick }) {
       <span style={{
         flex: 1, minWidth: 0,
         fontSize: '0.8125rem', fontWeight: isActive ? 700 : 500,
-        color: isLocked ? '#94a3b8' : isActive ? NAVY : isDone ? '#475569' : '#374151',
+        color: isLocked ? '#9ca3af' : isActive ? NAVY : isDone ? '#4b5563' : '#374151',
         lineHeight: 1.35,
         overflow: 'hidden', textOverflow: 'ellipsis',
         display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
@@ -2198,7 +2198,7 @@ function LockedSession({ onSubscribe, freeModuleLabel }) {
       <h3 style={{ fontSize: 'clamp(1.25rem, 3vw, 1.5rem)', fontWeight: 800, color: NAVY, marginBottom: '0.6rem' }}>
         This session is part of the full course
       </h3>
-      <p style={{ fontSize: '1rem', color: '#475569', lineHeight: 1.7, maxWidth: '460px', margin: '0 auto 1.5rem' }}>
+      <p style={{ fontSize: '1rem', color: '#4b5563', lineHeight: 1.7, maxWidth: '460px', margin: '0 auto 1.5rem' }}>
         {freeModuleLabel
           ? <>You're on the free preview — <strong>{freeModuleLabel}</strong> is open to everyone. Subscribe to unlock every remaining session, with full lessons, exam tips, and practice questions.</>
           : <>You're on the free preview. Subscribe to unlock every remaining session, with full lessons, exam tips, and practice questions.</>}
@@ -2231,7 +2231,7 @@ function ConceptList({ bullets }) {
         const sep = b.indexOf(' — ')
         if (sep === -1) {
           return (
-            <div key={i} style={{ display: 'flex', gap: '0.6rem', padding: '0.3rem 0.25rem', fontSize: '0.9rem', color: '#475569', lineHeight: 1.6 }}>
+            <div key={i} style={{ display: 'flex', gap: '0.6rem', padding: '0.3rem 0.25rem', fontSize: '0.9rem', color: '#4b5563', lineHeight: 1.6 }}>
               <span style={{ color: TEAL, fontWeight: 700, flexShrink: 0 }}>•</span>
               <span>{b}</span>
             </div>
@@ -2239,13 +2239,13 @@ function ConceptList({ bullets }) {
         }
         return (
           <div key={i} style={{
-            background: '#fafbfd', border: '1px solid #eef2f7', borderLeft: `3px solid ${TEAL}`,
+            background: '#f9fafb', border: '1px solid #eef2f7', borderLeft: `3px solid ${TEAL}`,
             borderRadius: '0.6rem', padding: '0.65rem 0.85rem',
           }}>
             <div style={{ fontWeight: 700, color: NAVY, fontSize: '0.875rem', marginBottom: '0.2rem' }}>
               {b.slice(0, sep)}
             </div>
-            <div style={{ color: '#475569', fontSize: '0.875rem', lineHeight: 1.55 }}>
+            <div style={{ color: '#4b5563', fontSize: '0.875rem', lineHeight: 1.55 }}>
               {b.slice(sep + 3)}
             </div>
           </div>
@@ -2307,7 +2307,7 @@ function EnhancedSection({ section, index, anchorId }) {
             <>
               {firstPara && (
                 <p style={{
-                  fontSize: '0.8125rem', color: '#94a3b8', lineHeight: 1.5,
+                  fontSize: '0.8125rem', color: '#9ca3af', lineHeight: 1.5,
                   margin: '0.3rem 0 0',
                   overflow: 'hidden', display: '-webkit-box',
                   WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
@@ -2316,7 +2316,7 @@ function EnhancedSection({ section, index, anchorId }) {
                 </p>
               )}
               {metaHint && (
-                <span style={{ display: 'inline-block', fontSize: '0.6875rem', fontWeight: 600, color: '#94a3b8', marginTop: '0.25rem' }}>
+                <span style={{ display: 'inline-block', fontSize: '0.6875rem', fontWeight: 600, color: '#9ca3af', marginTop: '0.25rem' }}>
                   {metaHint}
                 </span>
               )}
@@ -2332,9 +2332,9 @@ function EnhancedSection({ section, index, anchorId }) {
 
       {/* Body — hidden when collapsed */}
       {open && (
-        <div style={{ padding: '0 1.15rem 1.15rem', borderTop: '1px solid #f1f5f9' }}>
+        <div style={{ padding: '0 1.15rem 1.15rem', borderTop: '1px solid #f3f4f6' }}>
           {section.body && section.body.split('\n\n').map((para, i, arr) => (
-            <p key={i} style={{ fontSize: '0.9rem', color: '#475569', lineHeight: 1.6, margin: i === 0 ? '0.75rem 0 0' : '0.6rem 0 0', marginBottom: i < arr.length - 1 ? '0.1rem' : 0 }}>
+            <p key={i} style={{ fontSize: '0.9rem', color: '#4b5563', lineHeight: 1.6, margin: i === 0 ? '0.75rem 0 0' : '0.6rem 0 0', marginBottom: i < arr.length - 1 ? '0.1rem' : 0 }}>
               {para}
             </p>
           ))}
@@ -2373,7 +2373,7 @@ function PreLearningCheck({ check }) {
         }}>
           Before you read
         </span>
-        <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>
+        <span style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: 600 }}>
           Attempt this first — it helps your memory
         </span>
       </div>
@@ -2386,9 +2386,9 @@ function PreLearningCheck({ check }) {
         {check.options.map((opt, idx) => {
           const isSel = selected === idx
           const isCorr = check.correct === idx
-          let bg = '#fafbfd', border = '1.5px solid #e2e8f0', color = NAVY
+          let bg = '#f9fafb', border = '1.5px solid #e5e7eb', color = NAVY
           if (revealed) {
-            if (isCorr)     { bg = 'rgba(34,197,94,0.09)'; border = '2px solid #22c55e' }
+            if (isCorr)     { bg = 'rgba(16,185,129,0.09)'; border = '2px solid #10b981' }
             else if (isSel) { bg = 'rgba(239,68,68,0.09)'; border = '2px solid #ef4444' }
           } else if (isSel) { bg = 'rgba(10,37,64,0.08)'; border = `2px solid ${NAVY}` }
           return (
@@ -2415,8 +2415,8 @@ function PreLearningCheck({ check }) {
           disabled={selected === null}
           style={{
             padding: '0.55rem 1.25rem',
-            background: selected !== null ? NAVY : '#e2e8f0',
-            color: selected !== null ? 'white' : '#94a3b8',
+            background: selected !== null ? NAVY : '#e5e7eb',
+            color: selected !== null ? 'white' : '#9ca3af',
             border: 'none', borderRadius: '0.6rem', fontWeight: 700,
             fontSize: '0.875rem', cursor: selected !== null ? 'pointer' : 'not-allowed',
           }}
@@ -2426,13 +2426,13 @@ function PreLearningCheck({ check }) {
       ) : (
         <div style={{
           marginTop: '0.5rem', padding: '0.875rem 1.125rem', borderRadius: '0.75rem',
-          background: isCorrect ? 'rgba(34,197,94,0.07)' : 'rgba(59,130,246,0.06)',
+          background: isCorrect ? 'rgba(16,185,129,0.07)' : 'rgba(59,130,246,0.06)',
           border: `1.5px solid ${isCorrect ? '#86efac' : '#93c5fd'}`,
         }}>
-          <p style={{ fontSize: '0.875rem', fontWeight: 700, color: isCorrect ? '#15803d' : '#1d4ed8', marginBottom: '0.3rem' }}>
+          <p style={{ fontSize: '0.875rem', fontWeight: 700, color: isCorrect ? '#059669' : '#1d4ed8', marginBottom: '0.3rem' }}>
             {isCorrect ? 'You already had it — read on to reinforce why.' : 'Good — your brain is now primed.'}
           </p>
-          <p style={{ fontSize: '0.8125rem', color: '#475569', lineHeight: 1.6, margin: 0 }}>
+          <p style={{ fontSize: '0.8125rem', color: '#4b5563', lineHeight: 1.6, margin: 0 }}>
             {check.note}
           </p>
         </div>
@@ -2451,9 +2451,9 @@ function SpeedBump({ quiz, cleared, onClear }) {
   if (cleared) {
     return (
       <div style={{
-        background: 'rgba(34,197,94,0.08)', border: '1.5px solid rgba(34,197,94,0.4)',
+        background: 'rgba(16,185,129,0.08)', border: '1.5px solid rgba(16,185,129,0.4)',
         borderRadius: '0.75rem', padding: '0.75rem 1.125rem', margin: '0.5rem 0 1.5rem',
-        fontSize: '0.875rem', fontWeight: 700, color: '#15803d',
+        fontSize: '0.875rem', fontWeight: 700, color: '#059669',
       }}>
         ✓ Checkpoint cleared — nicely done.
       </div>
@@ -2479,9 +2479,9 @@ function SpeedBump({ quiz, cleared, onClear }) {
         {quiz.options.map((opt, idx) => {
           const isSel = selected === idx
           const isCorr = quiz.correct === idx
-          let bg = '#fafbfd', border = '1.5px solid #e2e8f0', color = NAVY
+          let bg = '#f9fafb', border = '1.5px solid #e5e7eb', color = NAVY
           if (checked) {
-            if (isCorr)     { bg = 'rgba(34,197,94,0.09)'; border = '2px solid #22c55e' }
+            if (isCorr)     { bg = 'rgba(16,185,129,0.09)'; border = '2px solid #10b981' }
             else if (isSel) { bg = 'rgba(239,68,68,0.09)'; border = '2px solid #ef4444' }
           } else if (isSel) { bg = 'rgba(0,212,170,0.1)';  border = `2px solid ${TEAL}` }
           return (
@@ -2508,8 +2508,8 @@ function SpeedBump({ quiz, cleared, onClear }) {
           disabled={selected === null}
           style={{
             padding: '0.6rem 1.35rem',
-            background: selected !== null ? `linear-gradient(135deg, ${TEAL}, ${TEAL_DARK})` : '#e2e8f0',
-            color: selected !== null ? 'white' : '#94a3b8',
+            background: selected !== null ? `linear-gradient(135deg, ${TEAL}, ${TEAL_DARK})` : '#e5e7eb',
+            color: selected !== null ? 'white' : '#9ca3af',
             border: 'none', borderRadius: '0.6rem', fontWeight: 700,
             fontSize: '0.875rem', cursor: selected !== null ? 'pointer' : 'not-allowed',
           }}
@@ -2520,7 +2520,7 @@ function SpeedBump({ quiz, cleared, onClear }) {
         <div>
           <p style={{
             fontSize: '0.9rem', fontWeight: 700, marginBottom: quiz.elaborativePrompt && isCorrect ? '0.75rem' : '0.5rem',
-            color: isCorrect ? '#15803d' : '#991b1b',
+            color: isCorrect ? '#059669' : '#991b1b',
           }}>
             {isCorrect ? `Correct! ${quiz.explainCorrect || ''}` : 'Not quite — give it another try.'}
           </p>
@@ -2552,7 +2552,7 @@ function SpeedBump({ quiz, cleared, onClear }) {
               onClick={() => { setChecked(false); setSelected(null) }}
               style={{
                 padding: '0.5rem 1.1rem', background: 'white', color: NAVY,
-                border: '1.5px solid #e2e8f0', borderRadius: '0.5rem',
+                border: '1.5px solid #e5e7eb', borderRadius: '0.5rem',
                 fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer',
               }}
             >
@@ -2573,21 +2573,21 @@ function LockedSection({ heading, onJump }) {
       onClick={onJump}
       style={{
         display: 'flex', alignItems: 'center', gap: '0.75rem', width: '100%', textAlign: 'left',
-        background: '#f8fafc', border: '1.5px dashed #cbd5e1', borderRadius: '0.85rem',
+        background: '#f9fafb', border: '1.5px dashed #d1d5db', borderRadius: '0.85rem',
         padding: '0.85rem 1rem', margin: '0.5rem 0', cursor: 'pointer',
       }}
     >
       <span style={{
-        flexShrink: 0, width: 30, height: 30, borderRadius: '50%', background: '#e2e8f0',
+        flexShrink: 0, width: 30, height: 30, borderRadius: '50%', background: '#e5e7eb',
         display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
       }}>
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#64748b"
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6b7280"
           strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
           <rect x="3" y="11" width="18" height="11" rx="2" />
           <path d="M7 11V7a5 5 0 0 1 10 0v4" />
         </svg>
       </span>
-      <span style={{ flex: 1, fontSize: '0.95rem', fontWeight: 700, color: '#94a3b8', lineHeight: 1.4 }}>
+      <span style={{ flex: 1, fontSize: '0.95rem', fontWeight: 700, color: '#9ca3af', lineHeight: 1.4 }}>
         {heading}
       </span>
       <span style={{ flexShrink: 0, fontSize: '0.7rem', fontWeight: 700, color: TEAL_DARK, whiteSpace: 'nowrap' }}>
@@ -2829,23 +2829,23 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
   const Sidebar = (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Progress summary */}
-      <div style={{ padding: '1rem 1.125rem', borderBottom: '1px solid #f1f5f9', background: '#fafbfd', flexShrink: 0 }}>
+      <div style={{ padding: '1rem 1.125rem', borderBottom: '1px solid #f3f4f6', background: '#f9fafb', flexShrink: 0 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-          <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             Your Progress
           </span>
           <span style={{ fontSize: '0.75rem', fontWeight: 700, color: TEAL_DARK }}>
             {done}/{total}
           </span>
         </div>
-        <div style={{ height: '5px', background: '#e2e8f0', borderRadius: '999px', overflow: 'hidden' }}>
+        <div style={{ height: '5px', background: '#e5e7eb', borderRadius: '999px', overflow: 'hidden' }}>
           <div style={{
             height: '100%', width: `${pct}%`,
             background: `linear-gradient(90deg, ${TEAL}, ${TEAL_DARK})`,
             transition: 'width 0.4s ease',
           }} />
         </div>
-        <div style={{ fontSize: '0.6875rem', color: '#94a3b8', marginTop: '0.3rem', textAlign: 'right' }}>
+        <div style={{ fontSize: '0.6875rem', color: '#9ca3af', marginTop: '0.3rem', textAlign: 'right' }}>
           {pct}% complete
         </div>
       </div>
@@ -2863,7 +2863,7 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
               }}>
                 <span style={{
-                  fontSize: '0.6625rem', fontWeight: 700, color: '#94a3b8',
+                  fontSize: '0.6625rem', fontWeight: 700, color: '#9ca3af',
                   textTransform: 'uppercase', letterSpacing: '0.05em', lineHeight: 1.3,
                   flex: 1, minWidth: 0, paddingRight: '0.5rem',
                 }}>
@@ -2897,7 +2897,7 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
   )
 
   return (
-    <div style={{ height: '100dvh', overflow: 'hidden', background: '#f1f5f9', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ height: '100dvh', overflow: 'hidden', background: '#f3f4f6', display: 'flex', flexDirection: 'column' }}>
       {/* ── Top navbar ─────────────────────────────────────────────────────── */}
       <nav style={{
         background: NAVY, borderBottom: `3px solid ${TEAL}`,
@@ -2990,15 +2990,15 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
                 style={{
                   position: 'absolute', right: 0, top: 'calc(100% + 8px)',
                   width: '200px', background: 'white', borderRadius: '0.75rem',
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.18)', border: '1px solid #e2e8f0',
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.18)', border: '1px solid #e5e7eb',
                   overflow: 'hidden', zIndex: 300,
                 }}
               >
-                <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid #f1f5f9' }}>
+                <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid #f3f4f6' }}>
                   <p style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 700, color: NAVY, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {profile?.full_name || user?.email?.split('@')[0] || 'Student'}
                   </p>
-                  <p style={{ margin: '0.15rem 0 0', fontSize: '0.6875rem', color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <p style={{ margin: '0.15rem 0 0', fontSize: '0.6875rem', color: '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {user?.email}
                   </p>
                 </div>
@@ -3011,12 +3011,12 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
                     color: '#374151', cursor: 'pointer', fontWeight: 500,
                     display: 'flex', alignItems: 'center', gap: '0.5rem',
                   }}
-                  onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'}
+                  onMouseEnter={e => e.currentTarget.style.background = '#f9fafb'}
                   onMouseLeave={e => e.currentTarget.style.background = 'none'}
                 >
                   ⬡ Dashboard
                 </button>
-                <div style={{ height: '1px', background: '#f1f5f9' }} />
+                <div style={{ height: '1px', background: '#f3f4f6' }} />
                 <button
                   role="menuitem"
                   onClick={handleLogout}
@@ -3042,7 +3042,7 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
         {/* Desktop sidebar */}
         <aside style={{
           width: '272px', minWidth: '272px',
-          background: 'white', borderRight: '1px solid #e2e8f0',
+          background: 'white', borderRight: '1px solid #e5e7eb',
           overflowY: 'auto',
         }} className="course-sidebar">
           {Sidebar}
@@ -3061,7 +3061,7 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
             <div style={{
               position: 'fixed', top: '56px', left: 0, bottom: 0,
               width: '288px', background: 'white', zIndex: 160,
-              overflowY: 'auto', borderRight: '1px solid #e2e8f0',
+              overflowY: 'auto', borderRight: '1px solid #e5e7eb',
             }}>
               {Sidebar}
             </div>
@@ -3097,8 +3097,8 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
                   </span>
                   {activeSession.task && (
                     <span style={{
-                      fontSize: '0.6875rem', fontWeight: 700, color: '#64748b',
-                      background: '#f1f5f9', padding: '0.25rem 0.65rem', borderRadius: '0.35rem',
+                      fontSize: '0.6875rem', fontWeight: 700, color: '#6b7280',
+                      background: '#f3f4f6', padding: '0.25rem 0.65rem', borderRadius: '0.35rem',
                     }}>
                       {activeSession.task}
                     </span>
@@ -3120,7 +3120,7 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
                   {activeSession.title}
                 </h1>
 
-                <p style={{ fontSize: '1.0625rem', color: '#64748b', lineHeight: 1.7, margin: 0 }}>
+                <p style={{ fontSize: '1.0625rem', color: '#6b7280', lineHeight: 1.7, margin: 0 }}>
                   {activeSession.summary}
                 </p>
               </div>
@@ -3141,7 +3141,7 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
                 </h4>
                 <ul style={{ paddingLeft: '1.3rem', margin: 0, display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
                   {activeSession.objectives.map((o, i) => (
-                    <li key={i} style={{ fontSize: '0.9375rem', color: '#1e293b', lineHeight: 1.6 }}>{o}</li>
+                    <li key={i} style={{ fontSize: '0.9375rem', color: '#1f2937', lineHeight: 1.6 }}>{o}</li>
                   ))}
                 </ul>
               </div>
@@ -3161,7 +3161,7 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
               {/* Key terms */}
               {activeSession.keyTerms?.length > 0 && (
                 <div style={{
-                  background: '#f8fafc', border: '1.5px solid #e2e8f0',
+                  background: '#f9fafb', border: '1.5px solid #e5e7eb',
                   borderRadius: '1rem', padding: '1.25rem 1.5rem', margin: '1.75rem 0',
                 }}>
                   <h4 style={{
@@ -3174,7 +3174,7 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
                     {activeSession.keyTerms.map((t, i) => (
                       <div key={i}>
                         <dt style={{ display: 'inline', fontWeight: 700, color: NAVY, fontSize: '0.9375rem' }}>{t.term}</dt>
-                        <dd style={{ display: 'inline', color: '#475569', fontSize: '0.9375rem' }}> — {t.def}</dd>
+                        <dd style={{ display: 'inline', color: '#4b5563', fontSize: '0.9375rem' }}> — {t.def}</dd>
                       </div>
                     ))}
                   </dl>
@@ -3197,7 +3197,7 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
                     {activeSession.awsServices.map((s, i) => (
                       <div key={i}>
                         <dt style={{ display: 'inline', fontWeight: 700, color: NAVY, fontSize: '0.9375rem' }}>{s.name}</dt>
-                        <dd style={{ display: 'inline', color: '#475569', fontSize: '0.9375rem' }}> — {s.purpose}</dd>
+                        <dd style={{ display: 'inline', color: '#4b5563', fontSize: '0.9375rem' }}> — {s.purpose}</dd>
                       </div>
                     ))}
                   </dl>
@@ -3218,7 +3218,7 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
                   </h4>
                   <ul style={{ paddingLeft: '1.3rem', margin: 0, display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                     {activeSession.examTips.map((t, i) => (
-                      <li key={i} style={{ fontSize: '0.9375rem', color: '#1e293b', lineHeight: 1.6 }}>{t}</li>
+                      <li key={i} style={{ fontSize: '0.9375rem', color: '#1f2937', lineHeight: 1.6 }}>{t}</li>
                     ))}
                   </ul>
                 </div>
@@ -3238,26 +3238,26 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
               {activeSession.sample && (
                 <div style={{ margin: '2.5rem 0 0' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-                    <div style={{ flex: 1, height: '1px', background: '#e2e8f0' }} />
+                    <div style={{ flex: 1, height: '1px', background: '#e5e7eb' }} />
                     <h4 style={{
                       fontSize: '0.6875rem', fontWeight: 700, color: NAVY,
                       textTransform: 'uppercase', letterSpacing: '0.07em', margin: 0,
                     }}>
                       Practice Question
                     </h4>
-                    <div style={{ flex: 1, height: '1px', background: '#e2e8f0' }} />
+                    <div style={{ flex: 1, height: '1px', background: '#e5e7eb' }} />
                   </div>
                   <SampleQuestion sample={activeSession.sample} />
                 </div>
               )}
 
               {/* ── Session footer ─────────────────────────────────────────── */}
-              <div style={{ marginTop: '3rem', paddingTop: '2rem', borderTop: '2px solid #e2e8f0' }}>
+              <div style={{ marginTop: '3rem', paddingTop: '2rem', borderTop: '2px solid #e5e7eb' }}>
 
                 {/* Mark complete — clearly a progress checkpoint, not a quiz action */}
                 <div style={{
-                  background: isCompleted ? 'rgba(34,197,94,0.06)' : '#fafbfd',
-                  border: `1.5px solid ${isCompleted ? 'rgba(34,197,94,0.3)' : '#e2e8f0'}`,
+                  background: isCompleted ? 'rgba(16,185,129,0.06)' : '#f9fafb',
+                  border: `1.5px solid ${isCompleted ? 'rgba(16,185,129,0.3)' : '#e5e7eb'}`,
                   borderRadius: '0.875rem', padding: '1rem 1.25rem',
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                   gap: '1rem', marginBottom: '1.25rem', flexWrap: 'wrap',
@@ -3266,7 +3266,7 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
                     <p style={{ fontSize: '0.875rem', fontWeight: 700, color: NAVY, margin: '0 0 0.2rem' }}>
                       {isCompleted ? 'Session marked as complete' : 'Done reading this session?'}
                     </p>
-                    <p style={{ fontSize: '0.75rem', color: '#64748b', margin: 0 }}>
+                    <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: 0 }}>
                       {isCompleted
                         ? 'Your progress is saved. You can unmark it any time.'
                         : 'Mark it complete to track your progress through the course.'}
@@ -3279,8 +3279,8 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
                       fontSize: '0.875rem', cursor: 'pointer', transition: 'all 0.2s',
                       flexShrink: 0, whiteSpace: 'nowrap',
                       background: isCompleted ? 'white' : `linear-gradient(135deg, ${TEAL}, ${TEAL_DARK})`,
-                      color: isCompleted ? '#64748b' : 'white',
-                      border: isCompleted ? '1.5px solid #e2e8f0' : 'none',
+                      color: isCompleted ? '#6b7280' : 'white',
+                      border: isCompleted ? '1.5px solid #e5e7eb' : 'none',
                       boxShadow: isCompleted ? 'none' : '0 3px 12px rgba(0,212,170,0.3)',
                     }}
                   >
@@ -3297,13 +3297,13 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
                       style={{
                         padding: '0.875rem 1rem', borderRadius: '0.75rem', fontWeight: 600,
                         background: 'white', color: NAVY,
-                        border: '1.5px solid #e2e8f0',
+                        border: '1.5px solid #e5e7eb',
                         cursor: 'pointer', textAlign: 'left', transition: 'border-color 0.15s',
                       }}
-                      onMouseEnter={e => e.currentTarget.style.borderColor = '#cbd5e1'}
-                      onMouseLeave={e => e.currentTarget.style.borderColor = '#e2e8f0'}
+                      onMouseEnter={e => e.currentTarget.style.borderColor = '#d1d5db'}
+                      onMouseLeave={e => e.currentTarget.style.borderColor = '#e5e7eb'}
                     >
-                      <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.25rem' }}>
+                      <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.25rem' }}>
                         ← Previous session
                       </div>
                       <div style={{ fontSize: '0.875rem', color: NAVY, lineHeight: 1.35 }}>
@@ -3351,7 +3351,7 @@ function SessionCourse({ course, onBack, hasAccess = true, onSubscribe }) {
                   <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: NAVY, marginBottom: '0.5rem' }}>
                     Course complete!
                   </h3>
-                  <p style={{ fontSize: '0.9375rem', color: '#64748b', lineHeight: 1.6 }}>
+                  <p style={{ fontSize: '0.9375rem', color: '#6b7280', lineHeight: 1.6 }}>
                     You've covered all {total} sessions. Head to the exam section to test your knowledge with real practice questions.
                   </p>
                   <button

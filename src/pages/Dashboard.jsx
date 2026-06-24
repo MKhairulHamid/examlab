@@ -14,7 +14,7 @@ import HowToEarn from '../components/certificate/HowToEarn'
 import { PROGRAMS, getProgram, getProgramBySlug } from '../data/programs'
 import { getSessionCourse } from '../utils/sessionCourses'
 import supabase from '../services/supabase'
-import { Button, Card, Badge, Container, SectionHeader } from '../design-system'
+import { Button, Card, Badge, Container, SectionHeader, DOMAIN_PALETTE } from '../design-system'
 import {
   BookOpen, ClipboardList, CheckCircle2, CalendarDays, BarChart2,
   Flame, LayoutGrid, Award, PlayCircle, ArrowRight, Rocket, GraduationCap, Lock, AlertTriangle,
@@ -23,7 +23,8 @@ import {
 // Every session-based program slug we ship a course for. Used to detect a
 // returning learner who has local study progress but no formal enrollment yet.
 const KNOWN_COURSE_SLUGS = ['aif-c01', 'clf-c02', 'saa-c03', 'dva-c02', 'mla-c01', 'sap-c02', 'aip-c01', 'soa-c03', 'dop-c02', 'dea-c01', 'scs-c03', 'ans-c01']
-const DOMAIN_PALETTE = ['#0EA5E9', '#8B5CF6', '#00D4AA', '#F59E0B', '#EF4444', '#6366F1']
+// DOMAIN_PALETTE now lives in the design-system tokens (single source of truth,
+// shared with the course widgets).
 
 const TABS = [
   { id: 'overview',    label: 'Overview',    Icon: LayoutGrid },
@@ -1083,7 +1084,7 @@ function Dashboard() {
                             <span className="text-lg font-mono font-bold leading-none" style={{ color: result.passed ? '#10b981' : '#0A2540' }}>
                               {result.percentageScore ?? 0}%
                             </span>
-                            <span className={`text-[0.625rem] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full ${result.passed ? 'bg-[#10b981]/10 text-[#0d9668]' : 'bg-amber-100 text-amber-700'}`}>
+                            <span className={`text-[0.625rem] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full ${result.passed ? 'bg-[#10b981]/10 text-[#059669]' : 'bg-amber-100 text-amber-700'}`}>
                               {result.passed ? 'Passed' : 'Not passed'}
                             </span>
                           </div>

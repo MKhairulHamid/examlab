@@ -19,6 +19,13 @@ export default {
         primary:   { DEFAULT: '#0A2540', light: '#1e3a5f', dark: '#051423' },
         accent:    { DEFAULT: '#00D4AA', light: '#00E8BC', dark: '#00A884' },
         secondary: '#1A3B5C',
+        // Semantic status tokens — one canonical colour per meaning. Teal stays
+        // the brand/primary accent; success is a distinct emerald so that
+        // "primary action" and "success" never collapse to the same colour.
+        success: { DEFAULT: '#10b981', dark: '#059669' },
+        danger:  { DEFAULT: '#dc2626', dark: '#b91c1c' },
+        warning: { DEFAULT: '#d97706', dark: '#b45309' },
+        info:    { DEFAULT: '#2563eb', dark: '#1d4ed8' },
       },
       fontFamily: {
         sans: [
