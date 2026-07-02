@@ -28,7 +28,7 @@ const BlogPost = lazy(() => import('./pages/BlogPost'))
 
 // Protected Route wrapper — by the time this renders, auth loading is already done
 function ProtectedRoute({ children }) {
-  const { user } = useAuthStore()
+  const { user, loading: authLoading } = useAuthStore()
 
   // Handle magic link / OAuth callback tokens still in the hash
   const hasAuthTokens = window.location.hash.includes('access_token') ||
@@ -40,6 +40,19 @@ function ProtectedRoute({ children }) {
         <div className="loading-content">
           <div className="spinner"></div>
           <p>Signing you in...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Wait for the auth check before deciding — otherwise a logged-in user hitting
+  // a protected URL directly would be bounced to "/" before auth resolves.
+  if (authLoading) {
+    return (
+      <div className="loading-container">
+        <div className="loading-content">
+          <div className="spinner"></div>
+          <p>Loading...</p>
         </div>
       </div>
     )
@@ -59,7 +72,6 @@ function ScrollToTop() {
 }
 
 function App() {
-  const { loading: authLoading } = useAuthStore()
   const initializeAuth = useAuthStore(state => state.initialize)
   const initializeSync = useSyncStore(state => state.initialize)
 
@@ -85,18 +97,10 @@ function App() {
     }
   }, [initializeAuth, initializeSync])
 
-  // Wait for auth check before rendering routes — prevents the Landing page
-  // flashing briefly for logged-in users before the redirect fires.
-  if (authLoading) {
-    return (
-      <div className="loading-container">
-        <div className="loading-content">
-          <div className="spinner"></div>
-          <p>Loading...</p>
-        </div>
-      </div>
-    )
-  }
+  // NOTE: we intentionally do NOT block rendering on authLoading here. Public
+  // routes (Landing, blog, program pages) paint immediately without waiting for
+  // the Supabase auth round-trip; protected routes wait inside ProtectedRoute.
+  // Landing self-redirects logged-in users once auth resolves.
 
   return (
     <BrowserRouter>

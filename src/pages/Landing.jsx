@@ -195,6 +195,7 @@ function Landing() {
       >
         <button
           type="button"
+          aria-label="CloudExamLab — back to top"
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           className="flex items-center gap-2.5 bg-transparent border-none cursor-pointer p-0 shrink-0"
         >
@@ -215,6 +216,7 @@ function Landing() {
         </button>
       </header>
 
+      <main>
       {/* HERO */}
       <section
         className="hero-section"
@@ -683,6 +685,7 @@ function Landing() {
           </div>
         </div>
       </section>
+      </main>
 
       {/* Footer */}
       <footer className="bg-[#0A2540] pt-12 pb-6 px-6 border-t border-white/[0.06]">
@@ -716,7 +719,7 @@ function Landing() {
               <h3 className="text-white font-bold mb-3.5 text-sm">How You Learn</h3>
               <ul className="list-none p-0 m-0">
                 {['Structured study sessions', 'Teach to Learn method', 'Timed practice exams', 'Official AWS doc links'].map((item, i) => (
-                  <li key={i} className="text-white/45 text-sm mb-1.5 flex items-center gap-1.5">
+                  <li key={i} className="text-white/70 text-sm mb-1.5 flex items-center gap-1.5">
                     <Check size={12} className="text-[#00D4AA] shrink-0" strokeWidth={3} /> {item}
                   </li>
                 ))}
@@ -741,10 +744,10 @@ function Landing() {
           </div>
 
           <div className="border-t border-white/[0.08] pt-6">
-            <p className="text-white/40 text-xs text-center mb-1.5">
+            <p className="text-white/65 text-xs text-center mb-1.5">
               <strong>Disclaimer:</strong> Independent study materials and practice questions. Not affiliated with or endorsed by Amazon Web Services (AWS).
             </p>
-            <p className="text-white/40 text-xs text-center">
+            <p className="text-white/65 text-xs text-center">
               © {new Date().getFullYear()} Cloud Exam Lab. All rights reserved.
             </p>
           </div>
