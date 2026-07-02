@@ -135,7 +135,8 @@ export const ASSET_SPECS = {
   igStory:      { label: 'Instagram Story',   width: 1080, height: 1920, group: 'Social' },
   profileAvatar:{ label: 'Profile avatar',    width: 1080, height: 1080, group: 'Social' },
   xHeader:      { label: 'X / Twitter header', width: 1500, height: 500, group: 'Social' },
-  linkedinCover:{ label: 'LinkedIn cover',    width: 1128, height: 191, group: 'Social' },
+  linkedinCover:{ label: 'LinkedIn cover · Profile', width: 1128, height: 191, group: 'Social' },
+  linkedinBanner:{ label: 'LinkedIn banner · Company Page', width: 1128, height: 191, group: 'Social' },
   ogCard:       { label: 'Social share / OG card', width: 1200, height: 630, group: 'Social' },
 
   // Favicon / app-icon set

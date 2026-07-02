@@ -177,6 +177,22 @@ function linkedinCoverSvg() {
   </svg>`
 }
 
+// ── LinkedIn Company Page banner 1128×191 ─────────────────────────────────────
+// The company logo (a 300×300 square) overlaps the bottom-left of the banner on
+// LinkedIn, so the lockup is centred — clear of that overlap — with the tagline
+// below it and the domain quietly anchored to the right.
+function linkedinBannerSvg() {
+  const W = 1128, H = 191
+  // LinkedIn overlays the company logo on the bottom-left of the banner, so the
+  // wordmark and tagline are centred (via text-anchor, no width guessing) to
+  // stay clear of that overlap, with the domain quietly anchored bottom-right.
+  return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">${brandDefs()}${frame(W, H)}
+    <text x="${W / 2}" y="${H / 2 + 4}" text-anchor="middle" font-family="${FONT}" font-size="56" font-weight="800" fill="${COLORS.white.hex}">${esc(BRAND.name)}</text>
+    <text x="${W / 2}" y="${H / 2 + 48}" text-anchor="middle" font-family="${FONT}" font-size="28" font-weight="600" fill="url(#cel-teal)">Skills first, certificate second.</text>
+    <text x="${W - 44}" y="${H - 22}" text-anchor="end" font-family="${FONT}" font-size="20" fill="rgba(255,255,255,0.5)">${esc(BRAND.domain)}</text>
+  </svg>`
+}
+
 // ── Social share / OG card 1200×630 (regenerated from tokens) ──────────────────
 function ogCardSvg() {
   const W = 1200, H = 630
@@ -215,6 +231,7 @@ export function buildAssetSvg(id) {
     case 'profileAvatar': return avatarSvg()
     case 'xHeader': return xHeaderSvg()
     case 'linkedinCover': return linkedinCoverSvg()
+    case 'linkedinBanner': return linkedinBannerSvg()
     case 'ogCard': return ogCardSvg()
 
     case 'favicon512':
