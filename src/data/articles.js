@@ -14,7 +14,11 @@
 // ARTICLES_META in vite.config.js — that mirror drives SEO prerendering.
 // No emoji in article content (brand guideline).
 
-export const ARTICLES = [
+import { PROGRAMS } from './programs'
+
+// Hand-written editorial articles (method, platform, study plans). Program guides
+// are generated below from PROGRAMS so their exam facts stay in sync automatically.
+const EDITORIAL_ARTICLES = [
   {
     slug: 'welcome-to-cloud-exam-lab',
     title: 'Welcome to Cloud Exam Lab: Learn Cloud the Way It Sticks',
@@ -215,6 +219,87 @@ export const ARTICLES = [
     ],
   },
 ]
+
+// ---------------------------------------------------------------------------
+// Program guides — one article per certification, generated from PROGRAMS so the
+// exam facts, domains, and learning outcomes never drift from the marketing
+// catalog. Keep PROGRAM_ARTICLE_META (slug/date, below) and the ARTICLES_META
+// mirror in vite.config.js in sync when adding or removing a program.
+// ---------------------------------------------------------------------------
+
+// slug + publish date per exam code. Dates place the guides as the newest cluster,
+// foundational first, so beginners see the natural starting point on top.
+const PROGRAM_ARTICLE_META = {
+  'CLF-C02': { slug: 'aws-cloud-practitioner-clf-c02', date: '2026-07-02' },
+  'AIF-C01': { slug: 'aws-ai-practitioner-aif-c01', date: '2026-06-30' },
+  'SAA-C03': { slug: 'aws-solutions-architect-associate-saa-c03', date: '2026-06-27' },
+  'DVA-C02': { slug: 'aws-developer-associate-dva-c02', date: '2026-06-25' },
+  'MLA-C01': { slug: 'aws-machine-learning-engineer-mla-c01', date: '2026-06-23' },
+  'SOA-C03': { slug: 'aws-cloudops-engineer-associate-soa-c03', date: '2026-06-20' },
+  'DEA-C01': { slug: 'aws-data-engineer-associate-dea-c01', date: '2026-06-18' },
+  'SAP-C02': { slug: 'aws-solutions-architect-professional-sap-c02', date: '2026-06-16' },
+  'AIP-C01': { slug: 'aws-generative-ai-developer-professional-aip-c01', date: '2026-06-13' },
+  'DOP-C02': { slug: 'aws-devops-engineer-professional-dop-c02', date: '2026-06-11' },
+  'SCS-C03': { slug: 'aws-security-specialty-scs-c03', date: '2026-06-09' },
+  'ANS-C01': { slug: 'aws-advanced-networking-specialty-ans-c01', date: '2026-06-06' },
+}
+
+const READING_TIME_BY_LEVEL = {
+  Foundational: '6 min read',
+  Associate: '7 min read',
+  Professional: '8 min read',
+  Specialty: '8 min read',
+}
+
+function buildProgramArticle(p) {
+  const meta = PROGRAM_ARTICLE_META[p.code]
+  const programName = p.name.replace('AWS Certified ', '')
+  return {
+    slug: meta.slug,
+    title: `${p.name} (${p.code}): Is It Worth It, What It Tests, and How to Prepare`,
+    description:
+      `${p.shortName} (${p.code}) explained — why it matters for your career, the knowledge and skills the exam tests, and how Cloud Exam Lab’s structured sessions and exam-realistic practice help you pass.`,
+    date: meta.date,
+    updated: meta.date,
+    author: 'Cloud Exam Lab Team',
+    readingTime: READING_TIME_BY_LEVEL[p.level] || '7 min read',
+    tags: ['Certification Guide', p.level, p.code],
+    heroLead: p.tagline,
+    body: [
+      { type: 'p', text: p.blurb },
+      { type: 'p', text: p.whyTopic },
+      { type: 'h2', text: 'Why this certification is worth your time' },
+      { type: 'p', text: p.careerBenefit },
+      { type: 'ul', items: [
+        `**Ideal for:** ${p.roles.join(', ')}.`,
+        `**Level:** ${p.level} — ${p.sessions} structured study sessions in the Cloud Exam Lab program.`,
+        `**The lasting payoff:** ${p.evergreenValue}`,
+      ] },
+      { type: 'h2', text: 'What the exam actually tests' },
+      { type: 'p', text: `The ${p.code} exam is **${p.facts.questions} questions** in **${p.facts.time}**, with a passing score of ${p.facts.passing} and an exam fee of ${p.facts.cost}. It is weighted across ${p.domains.length} domains, and your study time should follow the same weighting rather than spreading evenly:` },
+      { type: 'ul', items: p.domains.map((d) => `${d.label} — **${d.weight}** of the exam`) },
+      { type: 'h2', text: 'The knowledge and skills you will build' },
+      { type: 'p', text: 'By the time you are exam-ready, you will be able to reason confidently about:' },
+      { type: 'ul', items: p.learnOutcomes },
+      { type: 'h2', text: 'How Cloud Exam Lab prepares you' },
+      { type: 'p', text: `Our ${programName} program breaks the full ${p.code} blueprint into ${p.sessions} focused study sessions, then puts everything you learn under exam conditions. The method is built around how memory actually works: you learn a concept, explain it back in your own words, and prove you can apply it before moving on.` },
+      { type: 'ul', items: [
+        'Structured study sessions — each scoped to a single concept you can finish in one sitting, ending with active recall instead of passive reading.',
+        'A Teach-to-Learn step in every session that makes you explain the idea back, surfacing the gaps a re-read would quietly hide.',
+        'Interactive widgets for the concepts that are far easier to understand by doing than by reading about them.',
+        `Full-length, timed mock exams weighted to the official ${p.code} domains, with a detailed explanation on every question — so exam day feels like a rehearsal you have already done.`,
+        'Progress that advances only when you clear checkpoints, so a finished program genuinely means exam-ready — not just pages scrolled.',
+      ] },
+      { type: 'callout', text: `You do not pass ${p.code} by consuming more content. You pass it by retrieving what you know, on demand, under time pressure — which is exactly what every session here trains.` },
+      { type: 'h2', text: 'Try it before you commit' },
+      { type: 'p', text: `You can experience the ${p.shortName} program before paying anything. Start with the free question set, or redeem a promo code at /redeem, and run a few real study sessions and a practice exam yourself. If the method works for you — and it is built so it does — you will feel the difference within a week. Pick ${p.code} and start your first session today.` },
+    ],
+  }
+}
+
+const PROGRAM_ARTICLES = PROGRAMS.map(buildProgramArticle)
+
+export const ARTICLES = [...EDITORIAL_ARTICLES, ...PROGRAM_ARTICLES]
 
 // Newest first for the index page.
 export const ARTICLES_SORTED = [...ARTICLES].sort((a, b) => (a.date < b.date ? 1 : -1))
